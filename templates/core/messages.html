@@ -1,0 +1,58 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}Messages - Tipster Arena{% endblock %}
+
+{% block content %}
+    <!-- Messages Feed (narrower center column, like X’s Messages sidebar) -->
+    <div class="messages-feed">
+        <h2 class="messages-header">
+            <span class="messages-title">Messages</span>
+            <span class="messages-icons">
+                <span class="messages-settings"><i class="fa-solid fa-gear"></i></span> <!-- Updated to fa-solid for Font Awesome 6 -->
+                <span class="messages-new"><i class="fa-solid fa-envelope"></i></span> <!-- Updated to fa-solid for Font Awesome 6 -->
+            </span>
+        </h2>
+        {% if message_threads %}
+            {% for thread in message_threads %}
+                <div class="card">
+                    {% if thread.participants.0.userprofile.avatar %}
+                        <img src="{{ thread.participants.0.userprofile.avatar.url }}" alt="User Avatar" class="avatar">
+                    {% else %}
+                        <img src="{% static 'images/default-avatar.png' %}" alt="Default Avatar" class="avatar" onerror="this.style.display='none'">
+                    {% endif %}
+                    <div class="card-content">
+                        <p><strong>{{ thread.participants.0.username|default:"Unknown User" }}</strong> {{ thread.last_message|truncatechars:30|default:"No message" }}</p>
+                        <small>{{ thread.updated_at|date:"F j, Y, g:i a"|default:"No date" }}</small>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="card">
+                    <div class="card-content">
+                        <p>No messages yet. Start a conversation!</p>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="card">
+                <div class="card-content">
+                    <p>No messages yet. Start a conversation!</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block sidebar %}
+    <!-- Override the entire sidebar for the Messages page to remove all default content -->
+    <aside class="sidebar-messages">
+        <div class="sidebar-message-content">
+            <h3>Select a message</h3>
+            <p>Choose from your existing conversations, start a new one, or just keep swimming.</p>
+            <button class="new-message-btn">New message</button>
+        </div>
+        <style>
+            .sidebar, .sidebar-card, .search-input, .messages-carrot { display: none !important; }
+            .sidebar-messages { display: block !important; }
+        </style>
+    </aside>
+{% endblock %}

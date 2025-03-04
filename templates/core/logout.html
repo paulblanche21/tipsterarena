@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logout - Tipster Arena</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <div class="auth-container">
+        <h1>Logout of Tipster Arena</h1>
+        <p class="auth-subtitle">Are you sure you want to log out?</p>
+        <form method="post" class="auth-form">
+            {% csrf_token %}
+            <button type="submit" class="logout-button">Log Out</button>
+        </form>
+        <p class="auth-links"><a href="{% url 'landing' %}" class="auth-link">Cancel and Return to Landing</a></p>
+    </div>
+</body>
+</html>

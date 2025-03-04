@@ -1,0 +1,74 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}Tennis - Tipster Arena{% endblock %}
+
+{% block content %}
+    <!-- Post Box (like X’s “What’s happening?”) -->
+    <div class="post-box">
+        <div class="post-user">
+            {% if request.user.is_authenticated and request.user.userprofile.avatar %}
+                <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar">
+            {% else %}
+                <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.style.display='none'"> <!-- Fallback with onerror to hide if broken -->
+            {% endif %}
+            <div class="post-username-container">
+                <span class="post-username">{{ request.user.username|default:"Guest" }}</span>
+                <select class="post-audience">
+                    <option value="everyone">Everyone</option>
+                    <option value="followers">Followers</option>
+                </select>
+            </div>
+        </div>
+        <textarea placeholder="Post a Tennis Tip..." class="post-input"></textarea>
+        <div class="post-actions">
+            <button class="post-action-btn">📷</button> <!-- Image -->
+            <button class="post-action-btn">🎦</button> <!-- GIF -->
+            <button class="post-action-btn">📊</button> <!-- Poll -->
+            <button class="post-action-btn">😊</button> <!-- Emoji -->
+            <button class="post-action-btn">📍</button> <!-- Location -->
+            <button class="post-action-btn">🕒</button> <!-- Scheduled Post -->
+            <button class="post-action-btn">B</button> <!-- Bold -->
+            <button class="post-action-btn">I</button> <!-- Italic -->
+        </div>
+        <button class="post-submit">Post</button>
+    </div>
+
+    <!-- Tip Feed for Tennis -->
+    <div class="tip-feed">
+        {% for tip in tips %}
+            <div class="tip">
+                {% if tip.user.userprofile.avatar %}
+                    <img src="{{ tip.user.userprofile.avatar.url }}" alt="{{ tip.user.username }} Avatar" class="tip-avatar">
+                {% else %}
+                    <img src="{% static 'images/default-avatar.png' %}" alt="{{ tip.user.username }} Avatar" class="tip-avatar" onerror="this.style.display='none'">
+                {% endif %}
+                <div class="tip-content">
+                    <strong>{{ tip.user.username }}</strong> 🎾
+                    <p>{{ tip.text }}</p>
+                    <small>{{ tip.created_at|date:"F j, Y, g:i a" }}</small>
+                    <div class="tip-actions">
+                        <a href="#" class="tip-action">❤️ Like</a>
+                        <a href="#" class="tip-action">🔄 Share</a>
+                        <a href="#" class="tip-action">💬 Comment</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <p>No tennis tips yet. Be the first to post!</p>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block upcoming_events %}
+<div class="sidebar-card trending-card">
+    <h3>Upcoming ATP Events</h3>
+    <p>Matches Today</p>
+</div>
+{% endblock %}
+
+{% block trending_tips %}
+<div class="sidebar-card">
+    <h3>Trending Tips</h3>
+    <p>Hot tips for today’s big matches...</p>    
+</div>
+{% endblock %}

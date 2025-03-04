@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Tipster Arena</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <div class="auth-container">
+        <!-- Tipster Arena Logo -->
+        <div class="auth-logo">
+            <img src="{% static 'images/tipster-arena-logo.png' %}" alt="Tipster Arena Logo" class="auth-logo-img">
+        </div>
+
+        <h1>Sign Up for Tipster Arena</h1>
+        <p class="auth-subtitle">Join our thriving community of sports tipsters and enthusiasts!</p>
+
+        <form method="post" class="auth-form">
+            {% csrf_token %}
+            <!-- Username Field -->
+            <div class="form-group">
+                <label for="{{ form.username.id_for_label }}">Username</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                    <span class="error">{{ form.username.errors }}</span>
+                {% endif %}
+            </div>
+
+             <!-- Debugging Email Field -->
+            <div class="form-group">
+                <label for="{{ form.email.id_for_label }}">Email</label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                    <span class="error">{{ form.email.errors }}</span>
+                {% endif %}
+            </div>
+
+            <!-- Password Field -->
+            <div class="form-group">
+                <label for="{{ form.password1.id_for_label }}">Password</label>
+                {{ form.password1 }}
+                {% if form.password1.errors %}
+                    <span class="error">{{ form.password1.errors }}</span>
+                {% endif %}
+            </div>
+
+            <!-- Confirm Password Field -->
+            <div class="form-group">
+                <label for="{{ form.password2.id_for_label }}">Confirm Password</label>
+                {{ form.password2 }}
+                {% if form.password2.errors %}
+                    <span class="error">{{ form.password2.errors }}</span>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="landing-button">Sign Up</button>
+        </form>
+
+        {% if form.errors %}
+            <p class="error">Please correct the errors above.</p>
+        {% endif %}
+
+        <p class="auth-links">Already have an account? <a href="{% url 'login' %}" class="auth-link">Log in here</a>.</p>
+        <p class="auth-links"><a href="{% url 'landing' %}" class="auth-link">Back to Landing</a></p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Join Tipster Arena, your ultimate platform for sports tips and predictions. Connect with expert tipsters worldwide.">
+    <meta name="keywords" content="sports tips, predictions, tipsters, football, golf, tennis, horse racing">
+    <title>Welcome to Tipster Arena</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="landing-nav">
+        <div class="landing-nav-brand">
+            <img src="{% static 'images/tipster-arena-logo.png' %}" alt="Tipster Arena Logo" class="landing-nav-logo">
+        </div>
+        <div class="landing-nav-buttons">
+            <a href="{% url 'login' %}" class="landing-button">Login</a>
+            <a href="{% url 'signup' %}" class="landing-button">Signup</a>
+        </div>
+    </nav>
+
+    <!-- Landing Page Content -->
+    <div class="landing-full-container">
+        <div class="landing-zigzag">
+            <!-- Section 1: Image on Left, Text on Right -->
+            <div class="landing-section left">
+                <div class="landing-image">
+                    <img src="{% static 'images/sports1.jpg' %}" alt="Sports Action 1" class="landing-section-image">
+                </div>
+                <div class="landing-text">
+                    <h2 class="landing-section-title">Expert Tips at Your Fingertips</h2>
+                    <p class="landing-section-description">
+                        Gain access to insider sports tips from top tipsters on football, golf, tennis, and horse racing. Stay ahead of the game with real-time predictions tailored to your interests.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Section 2: Image on Right, Text on Left -->
+            <div class="landing-section right">
+                <div class="landing-text">
+                    <h2 class="landing-section-title">Join a Thriving Community</h2>
+                    <p class="landing-section-description">
+                        Connect with thousands of sports enthusiasts and tipsters worldwide. Share insights, discuss strategies, and build your network on Tipster Arena.
+                    </p>
+                </div>
+                <div class="landing-image">
+                    <img src="{% static 'images/sports2.jpg' %}" alt="Sports Community" class="landing-section-image">
+                </div>
+            </div>
+
+            <!-- Section 3: Image on Left, Text on Right -->
+            <div class="landing-section left">
+                <div class="landing-image">
+                    <img src="{% static 'images/sports3.jpg' %}" alt="Sports Predictions" class="landing-section-image">
+                </div>
+                <div class="landing-text">
+                    <h2 class="landing-section-title">Become a Top Tipster</h2>
+                    <p class="landing-section-description">
+                        We hear the top tipsters say they are the best. Then prove it by sharing your predictions with the world. Gain followers, earn reputation points, and climb the leaderboard.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Call to Action at the Bottom -->
+            <div class="landing-cta">
+                <h2 class="landing-cta-title">Ready to Elevate Your Game?</h2>
+                <div class="landing-buttons">
+                    <a href="{% url 'login' %}" class="landing-button">Login</a>
+                    <a href="{% url 'signup' %}" class="landing-button">Signup</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,36 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}Bookmarks - Tipster Arena{% endblock %}
+
+{% block content %}
+    <!-- Bookmarks Feed (like X’s bookmarks) -->
+    <div class="tip-feed">
+        <h2>Bookmarks</h2>
+        <div class="tip">
+            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar">
+            <div class="tip-content">
+                <strong>User1</strong>
+                <p>Sample bookmarked tip: "This is a test tip..."</p>
+                <small>March 3, 2025, 10:00 am</small>
+                <div class="tip-actions">
+                    <a href="#" class="tip-action">❤️ Like</a>
+                    <a href="#" class="tip-action">↻ Share</a>
+                    <a href="#" class="tip-action">💬 Comment</a>
+                </div>
+            </div>
+        </div>
+        <div class="tip">
+            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar">
+            <div class="tip-content">
+                <strong>User2</strong>
+                <p>Another bookmarked tip: "Testing layout..."</p>
+                <small>March 3, 2025, 10:05 am</small>
+                <div class="tip-actions">
+                    <a href="#" class="tip-action">❤️ Like</a>
+                    <a href="#" class="tip-action">↻ Share</a>
+                    <a href="#" class="tip-action">💬 Comment</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,23 @@
+from django.urls import path
+from . import views
+from django.contrib.auth import views as auth_views
+from django.conf import settings
+from django.conf.urls.static import static
+
+urlpatterns = [
+    path('', views.landing, name='landing'),  # Root URL
+    path('home/', views.home, name='home'),
+    path('sport/<str:sport>/', views.sport_view, name='sport'),
+    path('explore/', views.explore, name='explore'),
+    path('profile/<str:username>/', views.profile, name='profile'),
+    path('profile/<str:username>/edit/', views.profile_edit, name='profile_edit'),
+    path('messages/', views.messages, name='messages'),
+    path('notifications/', views.notifications, name='notifications'),
+    path('bookmarks/', views.bookmarks, name='bookmarks'),
+    path('login/', views.login_view, name='login'),  # Separate login view
+    path('signup/', views.signup, name='signup'),    # Separate signup view
+    path('logout/', auth_views.LogoutView.as_view(next_page='landing'), name='logout'),
+]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Tipster Arena</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <div class="auth-container">
+        <!-- Tipster Arena Logo -->
+        <div class="auth-logo">
+            <img src="{% static 'images/tipster-arena-logo.png' %}" alt="Tipster Arena Logo" class="auth-logo-img">
+        </div>
+
+        <h1>Login to Tipster Arena</h1>
+        <p class="auth-subtitle">Access your account and dive into the world of sports tips!</p>
+
+        <form method="post" class="auth-form">
+            {% csrf_token %}
+            <!-- Username Field -->
+            <div class="form-group">
+                <label for="{{ form.username.id_for_label }}">Username</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                    <span class="error">{{ form.username.errors }}</span>
+                {% endif %}
+            </div>
+
+            <!-- Password Field -->
+            <div class="form-group">
+                <label for="{{ form.password.id_for_label }}">Password</label>
+                {{ form.password }}
+                {% if form.password.errors %}
+                    <span class="error">{{ form.password.errors }}</span>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="landing-button">Log In</button>
+        </form>
+
+        {% if form.errors %}
+            <p class="error">Invalid username or password. Please try again.</p>
+        {% endif %}
+
+        <p class="auth-links">Don’t have an account? <a href="{% url 'signup' %}" class="auth-link">Sign up here</a>.</p>
+        <p class="auth-links"><a href="{% url 'landing' %}" class="auth-link">Back to Landing</a></p>
+    </div>
+</body>
+</html>

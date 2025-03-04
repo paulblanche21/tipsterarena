@@ -1,0 +1,80 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}Notifications - Tipster Arena{% endblock %}
+
+{% block content %}
+    <!-- Notification Feed (like X’s notifications) -->
+    <div class="tip-feed">
+        <h2>Notifications</h2>
+        {% if like_notifications or follow_notifications or share_notifications %}
+            <!-- Likes -->
+            {% for like in like_notifications %}
+                <div class="notification">
+                    {% if like.user.userprofile.avatar %}
+                        <img src="{{ like.user.userprofile.avatar.url }}" alt="User Avatar" class="tip-avatar">
+                    {% else %}
+                        <img src="{% static 'images/default-avatar.png' %}" alt="Default Avatar" class="tip-avatar" onerror="this.style.display='none'">
+                    {% endif %}
+                    <div class="tip-content">
+                        <p><strong>{{ like.user.username|default:"Unknown User" }}</strong> liked your tip: "{{ like.tip.text|truncatechars:20|default:"No tip text" }}"</p>
+                        <small>{{ like.created_at|date:"F j, Y, g:i a"|default:"No date" }}</small>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="notification">
+                    <div class="tip-content">
+                        <p>No likes yet. Engage with tips to get updates!</p>
+                    </div>
+                </div>
+            {% endfor %}
+
+            <!-- Follows -->
+            {% for follow in follow_notifications %}
+                <div class="notification">
+                    {% if follow.follower.userprofile.avatar %}
+                        <img src="{{ follow.follower.userprofile.avatar.url }}" alt="User Avatar" class="tip-avatar">
+                    {% else %}
+                        <img src="{% static 'images/default-avatar.png' %}" alt="Default Avatar" class="tip-avatar" onerror="this.style.display='none'">
+                    {% endif %}
+                    <div class="tip-content">
+                        <p><strong>{{ follow.follower.username|default:"Unknown User" }}</strong> followed you</p>
+                        <small>{{ follow.created_at|date:"F j, Y, g:i a"|default:"No date" }}</small>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="notification">
+                    <div class="tip-content">
+                        <p>No follows yet. Engage with tips to get updates!</p>
+                    </div>
+                </div>
+            {% endfor %}
+
+            <!-- Shares -->
+            {% for share in share_notifications %}
+                <div class="notification">
+                    {% if share.user.userprofile.avatar %}
+                        <img src="{{ share.user.userprofile.avatar.url }}" alt="User Avatar" class="tip-avatar">
+                    {% else %}
+                        <img src="{% static 'images/default-avatar.png' %}" alt="Default Avatar" class="tip-avatar" onerror="this.style.display='none'">
+                    {% endif %}
+                    <div class="tip-content">
+                        <p><strong>{{ share.user.username|default:"Unknown User" }}</strong> shared your tip: "{{ share.tip.text|truncatechars:20|default:"No tip text" }}"</p>
+                        <small>{{ share.created_at|date:"F j, Y, g:i a"|default:"No date" }}</small>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="notification">
+                    <div class="tip-content">
+                        <p>No shares yet. Engage with tips to get updates!</p>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="notification">
+                <div class="tip-content">
+                    <p>No notifications yet. Engage with tips to get updates!</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

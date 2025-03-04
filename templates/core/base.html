@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Tipster Arena{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <!-- Navbar (updated with Post Tip button triggering pop-up) -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <img src="{% static 'images/tipster-arena-logo.png' %}" alt="Tipster Arena Logo" class="nav-brand-logo">
+        </div>
+        <ul class="nav-menu">
+            <li><a href="{% url 'home' %}"><span class="nav-icon">🏠</span> Home</a></li>
+            <li><a href="{% url 'explore' %}"><span class="nav-icon">🔍</span> Explore</a></li>
+            <li><a href="{% url 'notifications' %}"><span class="nav-icon">🔔</span> Notifications</a></li>
+            <li><a href="{% url 'sport' 'football' %}"><span class="nav-icon">⚽</span> Football</a></li>
+            <li><a href="{% url 'sport' 'golf' %}"><span class="nav-icon">⛳</span> Golf</a></li>
+            <li><a href="{% url 'sport' 'tennis' %}"><span class="nav-icon">🎾</span> Tennis</a></li>
+            <li><a href="{% url 'sport' 'horse_racing' %}"><span class="nav-icon">🏇</span> Horse Racing</a></li>
+            <li><a href="{% url 'profile' request.user.username|default:'guest' %}"><span class="nav-icon">👤</span> Profile</a></li>
+            <li><a href="{% url 'messages' %}"><span class="nav-icon">✉️</span> Messages</a></li>
+            <li><a href="{% url 'bookmarks' %}"><span class="nav-icon">📚</span> Bookmarks</a></li>
+        </ul>
+        <div class="nav-post">
+            <button class="post-btn" data-toggle="post-modal">Post Tip</button>
+        </div>
+        <div class="nav-user">
+            <div class="nav-user-content">
+                {% if request.user.is_authenticated and request.user.userprofile.avatar %}
+                    <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="nav-avatar">
+                {% else %}
+                    <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="nav-avatar" onerror="this.style.display='none'"> <!-- Fallback with onerror to hide if broken -->
+                {% endif %}
+                <span class="nav-username">{{ request.user.username|default:"Guest" }}</span>
+                <span class="nav-menu-icon">⋯</span>
+            </div>
+            <div class="nav-user-dropdown">
+                <a href="#" class="nav-dropdown-item">Add an Existing Account</a>
+                <form method="post" action="{% url 'logout' %}" class="nav-dropdown-form">
+                    {% csrf_token %}
+                    <button type="submit" class="nav-dropdown-item">Log Out @{{ request.user.username|default:"Guest" }}</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container for Content and Sidebar -->
+    <div class="main-container">
+        <!-- Main Content -->
+        <main class="content">
+            {% block content %}
+            <!-- Child templates will fill this -->
+            {% endblock %}
+        </main>
+
+        <!-- Right Sidebar -->
+        <aside class="sidebar">
+            <input type="text" placeholder="Search Tipster Arena..." class="search-input">
+            <div class="sidebar-scrollable">
+                {% block upcoming_events %}
+                <div class="sidebar-card trending-card">
+                    <h3>Upcoming Events</h3>
+                    <p>Events Today</p>
+                </div>
+                {% endblock %}
+                {% block trending_tips %}
+                <div class="sidebar-card">
+                    <h3>Trending Tips</h3>
+                    <p>Hot tips for today’s big events...</p>    
+                </div>
+                {% endblock %}
+                <div class="sidebar-card">
+                    <h3>Who to Follow</h3>
+                    <p>Suggested tipsters will appear here...</p>
+                </div>
+            </div>
+            <a href="{% url 'messages' %}" class="messages-carrot">Messages</a>
+        </aside>
+    </div>
+
+    <!-- Post Modal (bubble window, hidden by default) -->
+    <div class="post-modal" id="post-modal">
+        <div class="post-modal-content">
+            <div class="post-user">
+                {% if request.user.is_authenticated and request.user.userprofile.avatar %}
+                    <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar">
+                {% else %}
+                    <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.style.display='none'"> <!-- Fallback with onerror to hide if broken -->
+                {% endif %}
+                <div class="post-username-container">
+                    <span class="post-username">{{ request.user.username|default:"Guest" }}</span>
+                    <select class="post-audience">
+                        <option value="everyone">Everyone</option>
+                        <option value="followers">Followers</option>
+                    </select>
+                </div>
+            </div>
+            <textarea placeholder="Post a Tip..." class="post-input"></textarea>
+            <div class="post-actions">
+                <button class="post-action-btn">📷</button> <!-- Image -->
+                <button class="post-action-btn">🎦</button> <!-- GIF -->
+                <button class="post-action-btn">📊</button> <!-- Poll -->
+                <button class="post-action-btn">😊</button> <!-- Emoji -->
+                <button class="post-action-btn">📍</button> <!-- Location -->
+                <button class="post-action-btn">🕒</button> <!-- Scheduled Post -->
+                <button class="post-action-btn">B</button> <!-- Bold -->
+                <button class="post-action-btn">I</button> <!-- Italic -->
+            </div>
+            <button class="post-submit">Post</button>
+            <span class="post-modal-close">×</span>
+        </div>
+    </div>
+
+    <!-- JavaScript for Post Modal -->
+    <script src="{% static 'js/scripts.js' %}" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+</body>
+</html>

@@ -1,0 +1,160 @@
+
+
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}{{ user.username }} - Tipster Arena{% endblock %}
+
+{% block content %}
+    <!-- Center Panel for Profile (matching X layout) -->
+    <div class="profile-content">
+        <!-- Username and Post Count (Header) with Back Arrow -->
+        <div class="profile-header-top">
+            <a href="{% url 'home' %}" class="profile-back-arrow"><i class="fas fa-arrow-left"></i></a>
+            <div class="profile-username-container">
+                <h1 class="profile-username">{{ user.username }}</h1>
+                <p class="profile-post-count">{{ user_tips.count }} Posts</p>
+            </div>
+        </div>
+
+        <!-- Banner and Avatar -->
+        <div class="profile-header">
+            {% if user_profile.banner %}
+                <img src="{{ user_profile.banner.url }}" alt="Banner Image" class="profile-banner" onerror="this.src='https://via.placeholder.com/598x200'; return true;">
+            {% else %}
+                <img src="https://via.placeholder.com/598x200" alt="Banner Image" class="profile-banner">
+            {% endif %}
+            
+            {% if user_profile.avatar %}
+                <img src="{{ user_profile.avatar.url }}" alt="{{ user.username }} Avatar" class="profile-avatar" onerror="setDefaultAvatar(this);">
+            {% else %}
+                <img src="{% static 'images/default-avatar.png' %}" alt="{{ user.username }} Avatar" class="profile-avatar">
+            {% endif %}
+        </div>
+
+        <!-- Username, Profile Description, and Edit Profile Button -->
+        <div class="profile-user-info">
+            <h2 class="profile-username">{{ user.username }}</h2>
+            <p class="profile-description">{{ user_profile.description|default:"No description provided." }}</p>
+            <button class="profile-edit-btn" id="editProfileBtn">Edit Profile</button>
+        </div>
+
+        <!-- Remaining sections unchanged -->
+        <div class="profile-details">
+            <span class="profile-detail-item"><i class="fas fa-map-marker-alt"></i> {{ user_profile.location|default:"Not specified" }}</span>
+            <span class="profile-detail-item"><i class="fas fa-birthday-cake"></i> {{ user_profile.date_of_birth|date:"F d, Y"|default:"Not specified" }}</span>
+            <span class="profile-detail-item"><i class="fas fa-calendar-check"></i> {{ user.date_joined|date:"F Y" }}</span>
+        </div>
+
+        <div class="profile-follow">
+            <span><strong>{{ following_count }}</strong> Following</span>
+            <span><strong>{{ followers_count }}</strong> Followers</span>
+        </div>
+
+        <div class="profile-nav">
+            <a href="#" class="profile-nav-item active">Posts</a>
+            <a href="#" class="profile-nav-item">Replies</a>
+            <a href="#" class="profile-nav-item">Media</a>
+            <a href="#" class="profile-nav-item">Articles</a>
+            <a href="#" class="profile-nav-item">Likes</a>
+        </div>
+
+        <div class="tip-feed">
+            {% for tip in user_tips %}
+                <div class="tip">
+                    {% if tip.user.userprofile.avatar %}
+                        <img src="{{ tip.user.userprofile.avatar.url }}" alt="{{ tip.user.username }} Avatar" class="tip-avatar">
+                    {% else %}
+                        <img src="{% static 'images/default-avatar.png' %}" alt="{{ tip.user.username }} Avatar" class="tip-avatar" onerror="this.style.display='none'">
+                    {% endif %}
+                    <div class="tip-content">
+                        <strong>{{ tip.user.username }}</strong>
+                        {% if tip.sport == 'football' %}⚽{% endif %}
+                        {% if tip.sport == 'golf' %}⛳{% endif %}
+                        {% if tip.sport == 'tennis' %}🎾{% endif %}
+                        {% if tip.sport == 'horse_racing' %}🏇{% endif %}
+                        <p>{{ tip.text }}</p>
+                        <small>{{ tip.created_at|date:"F j, Y, g:i a" }}</small>
+                        <div class="tip-actions">
+                            <a href="#" class="tip-action">❤️ Like</a>
+                            <a href="#" class="tip-action">🔄 Share</a>
+                            <a href="#" class="tip-action">💬 Comment</a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <p>No posts yet. Start posting tips!</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal (Moved outside profile-content) -->
+    <div id="editProfileModal" class="profile-edit-modal">
+        <div class="profile-edit-modal-content">
+            <span class="profile-edit-modal-close">×</span>
+            <h2>Edit Profile</h2>
+            <div class="edit-profile-header">
+                <div class="profile-edit-banner">
+                    {% if user_profile.banner %}
+                        <img src="{{ user_profile.banner.url }}" alt="Banner Image" class="profile-edit-banner-img" onerror="this.src='https://via.placeholder.com/598x200';">
+                    {% else %}
+                        <img src="https://via.placeholder.com/598x200" alt="Banner Image" class="profile-edit-banner-img">
+                    {% endif %}
+                    <div class="profile-edit-avatar">
+                        {% if user_profile.avatar %}
+                        <img src="{{ user_profile.avatar.url }}" alt="Avatar" class="profile-edit-avatar-img" onerror="setDefaultAvatar(this);">
+                        {% else %}
+                            <img src="{% static 'images/default-avatar.png' %}" alt="Avatar" class="profile-edit-avatar-img">
+                        {% endif %}
+                        <div class="profile-edit-actions">
+                            <button class="profile-edit-action-btn" data-action="add-avatar"><i class="fas fa-camera"></i></button>
+                        </div>
+                    </div>
+                    <div class="profile-edit-actions">
+                        <button class="profile-edit-action-btn" data-action="add-banner"><i class="fas fa-camera"></i></button>
+                        <button class="profile-edit-action-btn" data-action="delete-banner"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+                <div class="avatar-spacer"></div>
+            </div>
+            <form method="post" enctype="multipart/form-data" id="editProfileForm">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="id_description">Bio</label>
+                    {{ form.description }}
+                    <small class="char-count" style="color: #666666; font-size: 12px;">{{ form.description.value|length }} / 160 characters</small>
+                </div>
+                <div class="form-group">
+                    <label for="id_location">Location (Optional)</label>
+                    {{ form.location }}
+                </div>
+                <div class="form-group">
+                    <label for="id_date_of_birth">Birth Date (Optional)</label>
+                    {{ form.date_of_birth }}
+                </div>
+                <div class="form-group">
+                    <label for="id_banner">Banner</label>
+                    {{ form.banner }}
+                </div>
+                <div class="form-group">
+                    <label for="id_avatar">Avatar</label>
+                    {{ form.avatar }}
+                </div>
+                <button type="submit" class="post-submit">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+   
+{% endblock %}
+
+{% block extra_styles %}
+    <!-- No inline CSS; styles are in styles.css -->
+{% endblock %}
+
+{% block extra_scripts %}
+    <script>
+        function setDefaultAvatar(img) {
+            img.src = "{% static 'images/default-avatar.png' %}";
+        }
+    </script>
+{% endblock %}
