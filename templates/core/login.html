@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Tipster Arena</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/landing.css' %}">
 </head>
 <body>
     <div class="auth-container">
@@ -37,7 +37,7 @@
                 {% endif %}
             </div>
 
-            <button type="submit" class="landing-button">Log In</button>
+            <button type="submit" class="landing-button landing-button--primary">Log In</button>
         </form>
 
         {% if form.errors %}

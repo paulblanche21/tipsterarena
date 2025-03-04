@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up - Tipster Arena</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/landing.css' %}">
 </head>
 <body>
     <div class="auth-container">
@@ -28,7 +28,7 @@
                 {% endif %}
             </div>
 
-             <!-- Debugging Email Field -->
+            <!-- Email Field -->
             <div class="form-group">
                 <label for="{{ form.email.id_for_label }}">Email</label>
                 {{ form.email }}
@@ -55,7 +55,7 @@
                 {% endif %}
             </div>
 
-            <button type="submit" class="landing-button">Sign Up</button>
+            <button type="submit" class="landing-button landing-button--primary">Sign Up</button>
         </form>
 
         {% if form.errors %}

@@ -7,7 +7,7 @@
     <meta name="keywords" content="sports tips, predictions, tipsters, football, golf, tennis, horse racing">
     <title>Welcome to Tipster Arena</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/landing.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
@@ -17,8 +17,8 @@
             <img src="{% static 'images/tipster-arena-logo.png' %}" alt="Tipster Arena Logo" class="landing-nav-logo">
         </div>
         <div class="landing-nav-buttons">
-            <a href="{% url 'login' %}" class="landing-button">Login</a>
-            <a href="{% url 'signup' %}" class="landing-button">Signup</a>
+            <a href="{% url 'login' %}" class="landing-button landing-button--primary">Login</a>
+            <a href="{% url 'signup' %}" class="landing-button landing-button--primary">Signup</a>
         </div>
     </nav>
 
@@ -68,11 +68,16 @@
             <div class="landing-cta">
                 <h2 class="landing-cta-title">Ready to Elevate Your Game?</h2>
                 <div class="landing-buttons">
-                    <a href="{% url 'login' %}" class="landing-button">Login</a>
-                    <a href="{% url 'signup' %}" class="landing-button">Signup</a>
+                    <a href="{% url 'login' %}" class="landing-button landing-button--primary">Login</a>
+                    <a href="{% url 'signup' %}" class="landing-button landing-button--primary">Signup</a>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Footer -->
+    <footer class="landing-footer">
+        <p>&copy; 2025 Tipster Arena. All rights reserved.</p>
+    </footer>
 </body>
 </html>
