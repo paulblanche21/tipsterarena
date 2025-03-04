@@ -1,75 +1,105 @@
 // scripts.js
 document.addEventListener('DOMContentLoaded', function() {
-    // Post Modal (Post Tip button)
+    console.log('DOM fully loaded'); // Confirm script runs
+
+    // Post Modal Logic
     const postModal = document.getElementById('post-modal');
     const postBtn = document.querySelector('.post-btn');
-    const postCloseBtn = document.querySelector('.post-modal-close');
+    const closeBtn = document.querySelector('.post-modal-close');
 
-    // Show post modal when Post Tip button is clicked
     if (postBtn) {
+        console.log('Post button found');
         postBtn.addEventListener('click', function() {
-            if (postModal) {
-                postModal.style.display = 'flex';
-            }
+            postModal.style.display = 'flex';
+        });
+    } else {
+        console.warn('Post button not found');
+    }
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+            postModal.style.display = 'none';
         });
     }
 
-    // Hide post modal when close button is clicked
-    if (postCloseBtn) {
-        postCloseBtn.addEventListener('click', function() {
-            if (postModal) {
-                postModal.style.display = 'none';
-            }
-        });
-    }
-
-    // Hide post modal when clicking outside
     window.addEventListener('click', function(event) {
-        if (postModal && event.target === postModal) {
+        if (event.target === postModal) {
             postModal.style.display = 'none';
         }
     });
 
-    // Edit Profile Modal
-    const editModal = document.getElementById('editProfileModal');
-    const editBtn = document.getElementById('editProfileBtn');
-    const editCloseBtn = document.querySelector('.profile-edit-modal-close');
+    // Navbar Dropdown Logic (Target three dots)
+    const navMenuIcon = document.querySelector('.nav-menu-icon');
+    const navUserDropdown = document.querySelector('.nav-user-dropdown');
+    const logoutBtn = document.querySelector('.nav-logout-btn');
 
-    // Show edit profile modal when button is clicked
-    if (editBtn) {
-        editBtn.addEventListener('click', function() {
-            if (editModal) {
-                editModal.style.display = 'flex';
-            }
+    if (navMenuIcon) {
+        console.log('Nav menu icon found:', navMenuIcon);
+        navMenuIcon.addEventListener('click', function(e) {
+            console.log('Three dots clicked');
+            navUserDropdown.style.display = navUserDropdown.style.display === 'block' ? 'none' : 'block';
+            e.stopPropagation();
         });
+    } else {
+        console.error('Nav menu icon not found');
     }
 
-    // Hide edit profile modal when close button is clicked
+    if (navUserDropdown) {
+        console.log('Nav user dropdown found:', navUserDropdown);
+        document.addEventListener('click', function(event) {
+            if (!navMenuIcon.contains(event.target) && !navUserDropdown.contains(event.target)) {
+                console.log('Clicked outside, hiding dropdown');
+                navUserDropdown.style.display = 'none';
+            }
+        });
+    } else {
+        console.error('Nav user dropdown not found');
+    }
+
+    if (logoutBtn) {
+        console.log('Logout button found');
+        logoutBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    } else {
+        console.warn('Logout button not found');
+    }
+
+    // Edit Profile Modal Logic
+    const editProfileModal = document.getElementById("editProfileModal");
+    const editProfileBtn = document.getElementById("editProfileBtn");
+    const editCloseBtn = editProfileModal ? editProfileModal.getElementsByClassName("profile-edit-modal-close")[0] : null;
+
+    if (editProfileBtn) {
+        editProfileBtn.onclick = function() {
+            if (editProfileModal) {
+                editProfileModal.style.display = "block";
+            }
+        };
+    }
+
     if (editCloseBtn) {
-        editCloseBtn.addEventListener('click', function() {
-            if (editModal) {
-                editModal.style.display = 'none';
+        editCloseBtn.onclick = function() {
+            if (editProfileModal) {
+                editProfileModal.style.display = "none";
             }
-        });
+        };
     }
 
-    // Hide edit profile modal when clicking outside
     window.addEventListener('click', function(event) {
-        if (editModal && event.target === editModal) {
-            editModal.style.display = 'none';
+        if (event.target === postModal) {
+            postModal.style.display = 'none';
+        }
+        if (editProfileModal && event.target === editProfileModal) {
+            editProfileModal.style.display = "none";
         }
     });
 
-    // Handle edit profile form submission via AJAX with bio length check
-    const editForm = document.getElementById('editProfileForm');
-    const bioInput = document.getElementById('id_description'); // Bio input field
-    if (editForm) {
-        editForm.addEventListener('submit', function(e) {
+    // Handle form submission via AJAX to prevent page reload
+    const editProfileForm = document.getElementById('editProfileForm');
+    if (editProfileForm) {
+        editProfileForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            if (bioInput && bioInput.value.length > 160) {
-                alert('Bio cannot exceed 160 characters.');
-                return;
-            }
             const formData = new FormData(this);
             fetch('/profile/' + encodeURIComponent("{{ user.username }}") + '/edit/', {
                 method: 'POST',
@@ -82,10 +112,10 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 if (data.success) {
                     alert('Profile updated successfully!');
-                    if (editModal) {
-                        editModal.style.display = 'none';
+                    if (editProfileModal) {
+                        editProfileModal.style.display = "none";
                     }
-                    location.reload(); // Reload to update profile data on the page
+                    location.reload();
                 } else {
                     alert('Error updating profile: ' + data.error);
                 }
@@ -96,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Banner and Avatar Upload/Deletion (with preview in modal and profile update)
+    // Banner and Avatar Upload/Deletion
     const bannerInput = document.createElement('input');
     bannerInput.type = 'file';
     bannerInput.accept = 'image/*';
@@ -109,44 +139,37 @@ document.addEventListener('DOMContentLoaded', function() {
     avatarInput.style.display = 'none';
     document.body.appendChild(avatarInput);
 
-    // Add banner
     const addBannerBtn = document.querySelector('.profile-edit-action-btn[data-action="add-banner"]');
+    const deleteBannerBtn = document.querySelector('.profile-edit-action-btn[data-action="delete-banner"]');
+    const addAvatarBtn = document.querySelector('.profile-edit-action-btn[data-action="add-avatar"]');
+
     if (addBannerBtn) {
         addBannerBtn.addEventListener('click', function() {
             bannerInput.click();
         });
     }
 
-    // Delete banner (set flag and update preview, but don't submit immediately)
-    const deleteBannerBtn = document.querySelector('.profile-edit-action-btn[data-action="delete-banner"]');
     if (deleteBannerBtn) {
         deleteBannerBtn.addEventListener('click', function() {
             if (confirm('Are you sure you want to delete your banner?')) {
                 const form = document.getElementById('editProfileForm');
-                let input = form.querySelector('input[name="banner-clear"]');
-                if (!input) {
-                    input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = 'banner-clear';
-                    input.value = '1';
-                    form.appendChild(input);
-                }
-                document.querySelector('.profile-edit-banner-img').src = 'https://via.placeholder.com/598x200';
-                document.querySelector('.profile-banner').src = 'https://via.placeholder.com/598x200';
-                // Form is not submitted here; user must submit manually
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'banner-clear';
+                input.value = '1';
+                form.appendChild(input);
+                document.querySelector('.profile-edit-banner img').src = 'https://via.placeholder.com/650x200';
+                form.submit();
             }
         });
     }
 
-    // Add avatar
-    const addAvatarBtn = document.querySelector('.profile-edit-action-btn[data-action="add-avatar"]');
     if (addAvatarBtn) {
         addAvatarBtn.addEventListener('click', function() {
             avatarInput.click();
         });
     }
 
-    // Handle banner upload (preview in modal and update profile)
     bannerInput.addEventListener('change', function(e) {
         if (e.target.files && e.target.files[0]) {
             const form = document.getElementById('editProfileForm');
@@ -162,9 +185,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    const bannerUrl = URL.createObjectURL(e.target.files[0]);
-                    document.querySelector('.profile-edit-banner-img').src = bannerUrl; // Update modal preview
-                    document.querySelector('.profile-banner').src = bannerUrl; // Update profile page banner
+                    document.querySelector('.profile-edit-banner img').src = URL.createObjectURL(e.target.files[0]);
                     alert('Banner updated successfully!');
                 } else {
                     alert('Error updating banner: ' + data.error);
@@ -176,7 +197,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Handle avatar upload (preview in modal and update profile)
     avatarInput.addEventListener('change', function(e) {
         if (e.target.files && e.target.files[0]) {
             const form = document.getElementById('editProfileForm');
@@ -192,9 +212,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    const avatarUrl = URL.createObjectURL(e.target.files[0]);
-                    document.querySelector('.profile-edit-avatar-img').src = avatarUrl; // Update modal preview
-                    document.querySelector('.profile-avatar').src = avatarUrl; // Update profile page avatar
+                    document.querySelector('.profile-edit-avatar img').src = URL.createObjectURL(e.target.files[0]);
                     alert('Avatar updated successfully!');
                 } else {
                     alert('Error updating avatar: ' + data.error);
@@ -207,20 +225,18 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Bio Character Count
+    const bioInput = document.getElementById('id_bio');
     const charCount = document.querySelector('.char-count');
+
     if (bioInput && charCount) {
         bioInput.addEventListener('input', function() {
             const length = this.value.length;
             charCount.textContent = length + ' / 160 characters';
-            if (length > 160) {
-                charCount.style.color = '#ff4136';
-            } else {
-                charCount.style.color = '#666666';
-            }
+            charCount.style.color = length > 160 ? '#ff4136' : '#666666';
         });
     }
 
-    // Function to get CSRF token (for Django security)
+    // Function to get CSRF token
     function getCSRFToken() {
         return document.querySelector('input[name="csrfmiddlewaretoken"]').value;
     }
