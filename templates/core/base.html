@@ -29,21 +29,18 @@
             <button class="post-btn" data-toggle="post-modal">Post Tip</button>
         </div>
         <div class="nav-user">
-            <div class="nav-user-content">
+            <div class="nav-user-content" tabindex="0">
                 {% if request.user.is_authenticated and request.user.userprofile.avatar %}
                     <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="nav-avatar">
                 {% else %}
-                    <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="nav-avatar" onerror="this.style.display='none'"> <!-- Fallback with onerror to hide if broken -->
+                    <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="nav-avatar" onerror="this.style.display='none'">
                 {% endif %}
                 <span class="nav-username">{{ request.user.username|default:"Guest" }}</span>
                 <span class="nav-menu-icon">⋯</span>
             </div>
             <div class="nav-user-dropdown">
                 <a href="#" class="nav-dropdown-item">Add an Existing Account</a>
-                <form method="post" action="{% url 'logout' %}" class="nav-dropdown-form">
-                    {% csrf_token %}
-                    <button type="submit" class="nav-dropdown-item nav-logout-btn">Log Out @{{ request.user.username|default:"Guest" }}</button>
-                </form>
+                <a href="{% url 'logout' %}" class="nav-dropdown-item nav-logout-btn">Log Out @{{ request.user.username|default:"Guest" }}</a>
             </div>
         </div>
     </nav>
@@ -58,29 +55,32 @@
         </main>
 
         <!-- Right Sidebar -->
+        <!-- Right Sidebar -->
         <aside class="sidebar">
             <input type="text" placeholder="Search Tipster Arena..." class="search-input">
             <div class="sidebar-scrollable">
                 {% block upcoming_events %}
-                <div class="sidebar-card trending-card">
+                <div class="sidebar-card trending-card" data-card="upcoming-events">
                     <h3>Upcoming Events</h3>
                     <p>Events Today</p>
+                    <a href="#" class="show-more" data-target="upcoming-events">Show more</a>
                 </div>
                 {% endblock %}
                 {% block trending_tips %}
-                <div class="sidebar-card">
+                <div class="sidebar-card" data-card="trending-tips">
                     <h3>Trending Tips</h3>
-                    <p>Hot tips for today’s big events...</p>    
+                    <p>Hot tips for today’s big events...</p>
+                    <a href="#" class="show-more" data-target="trending-tips">Show more</a>
                 </div>
                 {% endblock %}
-                <div class="sidebar-card">
+                <div class="sidebar-card" data-card="who-to-follow">
                     <h3>Who to Follow</h3>
                     <p>Suggested tipsters will appear here...</p>
+                    <a href="#" class="show-more" data-target="who-to-follow">Show more</a>
                 </div>
             </div>
             <a href="{% url 'messages' %}" class="messages-carrot">Messages</a>
         </aside>
-    </div>
 
     <!-- Post Modal (bubble window, hidden by default) -->
     <div class="post-modal" id="post-modal">
@@ -116,6 +116,10 @@
     </div>
 
     <!-- JavaScript for Post Modal -->
+    <script>
+        // Define the static URL for default-avatar.png
+        const DEFAULT_AVATAR_URL = "{% static 'images/default-avatar.png' %}";
+    </script>
     <script src="{% static 'js/scripts.js' %}" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     

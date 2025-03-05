@@ -5,7 +5,6 @@
     box-sizing: border-box;
 }
 
-
 /* Custom CSS Variables */
 :root {
     --primary-bg: #001f3f;
@@ -14,6 +13,7 @@
     --twitter-blue: #1DA1F2;
     --red-accent: #ff4136;
     --gray-light: #666666;
+    --black:black;
     --shadow-light: 0 1px 3px rgba(0, 0, 0, 0.1);
     --shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.15);
     --padding-small: 12px;
@@ -30,8 +30,34 @@ body {
     color: #ffffff;
 }
 
+.back-arrow-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    z-index: 1002;
+    background-color: #ffffff;
+}
 
-.card, .bookmark, .tip, .notification{
+.back-arrow {
+    color: #000000; /* Black, like Twitter/X back arrows */
+    font-size: 18px;
+    text-decoration: none;
+    margin-right: 15px;
+    cursor: pointer;
+    font-weight: bold;
+    position:relative;
+}
+
+.back-arrow:hover {
+    color: #333333; /* Darker gray on hover, like Twitter/X */
+}
+
+.back-arrow i {
+    display: inline-flex; /* Ensure the Font Awesome icon renders correctly */
+    align-items: center;
+}
+
+.card, .bookmark, .tip, .notification {
     background-color: var(--secondary-bg);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
@@ -44,12 +70,201 @@ body {
     align-items: flex-start;
 }
 
+/* Main Content */
+.content {
+    flex: 1;
+    max-width: calc(100vw - 600px); /* Adjusted to accommodate sidebar */;
+    padding: 10px 20px 10px 0;
+    background-color: var(--primary-bg); /* Changed to white to match Twitter/X */
+    color: #001f3f;
+    min-height: 100vh;
+    margin-left: 5px; /* Add left margin to match sidebar’s right margin */    
+}
+
+/* Ensure dynamically generated content (like "Who to Follow") has a white background */
+.content h2, 
+.content p, 
+.content ul, 
+.content .follow-list, 
+.content .follow-item {
+    background-color: var(--secondary-bg); /* White background for content sections */
+    color: var(--primary-bg); /* Dark text for readability on white background */
+    border-radius: 12px; /* Match the card style */
+    padding: 12px; /* Add padding for consistency */
+    margin-bottom: 12px; /* Space between sections */
+}
+
+
+/* Ensure the "Show less" link stays visible on white background */
+.content .show-less {
+    color: #ff4136; /* Red text for consistency with your design */
+    background: none; /* Ensure no background interference */
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+/* Ensure follow buttons and other elements maintain their styling */
+.content .follow-btn {
+    background-color: #000000; /* Black background for follow buttons */
+    color: #ffffff;
+    border: none;
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    min-width: 80px;
+    text-align: center;
+    display: inline-block; /* Ensure visibility */
+}
+
+.content .follow-btn:hover {
+    background-color: #333333; /* Darker gray on hover */
+}
+
+/* Adjust text colors for lists and links within white sections */
+.content li, 
+.content a {
+    color: #001f3f; /* Dark text for readability on white background */
+}
+
+.content li a:hover,
+.content .follow-username:hover {
+    color: #ff4136; /* Red for hover effects, matching your design */
+    text-decoration: underline;
+}
 
 .error {
     color: red;
     font-size: 0.9em;
     margin-top: 10px;
 }
+
+/* Who to Follow list styling */
+.follow-card {
+    background-color: #ffffff; /* White background for the card */
+    color: #001f3f; /* Dark text for readability */
+    border-radius: 12px; /* Match card style */
+    padding: 12px; /* Add padding for consistency */
+    margin-bottom: 12px; /* Space below the card */
+    display: flex; /* Use flex to stack content vertically */
+    flex-direction: column; /* Stack children vertically */
+}
+
+
+.follow-card .show-less {
+    margin-top: 12px; /* Add space above "Show Less" */
+    color: #ff4136; /* Red text for consistency */
+    text-decoration: none;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0;
+    background: none;
+    border: none;
+    width: fit-content;
+}
+
+.back-arrow i {
+    display: inline-flex; /* Ensure the Font Awesome icon renders correctly */
+    align-items: center;
+   }
+
+.follow-card .show-less:hover {
+    text-decoration: underline; /* Optional hover effect */
+}
+
+.follow-card h2{
+    background-color: transparent; /* Ensure no background color overrides */
+    margin: 0 0 8px 0; /* Reduce margin to eliminate gaps */
+    padding: 0; /* No padding to avoid extra space */
+    font: size 24px;
+    font-weight: bold;
+    color: var(--black);
+
+}
+.follow-card p {
+    background-color: transparent; /* Ensure no background color overrides */
+    margin: 0 0 8px 0; /* Reduce margin to eliminate gaps */
+    padding: 0; /* No padding to avoid extra space */
+}
+
+.follow-card p {
+    font-size: 16px;
+    color: #001f3f;
+    line-height: 1.5;
+}
+
+
+.follow-list {
+    margin-bottom: 15px;
+}
+
+.follow-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #e1e8ed; /* Light border between items, like Twitter/X */
+}
+
+.follow-item:last-child {
+    border-bottom: none; /* Remove border from the last item */
+}
+
+.follow-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.follow-details {
+    flex: 1;
+}
+
+.follow-username {
+    color: var(--black); /* Black links instead of Twitter blue */
+    font-weight: 600;
+    font-size: 16px;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.follow-username:hover {
+    text-decoration: underline; /* Optional: Minimal hover effect, like Twitter/X */
+}
+
+.follow-bio {
+    font-size: 14px;
+    color: #666666;
+    margin: 0;
+    line-height: 1.4;
+    max-width: 300px; /* Prevent overflow, like Twitter/X */
+    overflow-wrap: break-word;
+}
+
+/* Follow button styling (Twitter/X black oval) */
+.follow-btn {
+    background-color: #000000; /* Black background, like Twitter/X */
+    color: #ffffff;
+    border: none;
+    border-radius: 20px; /* Oval shape, like Twitter/X */
+    padding: 6px 16px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    min-width: 80px;
+    text-align: center;
+}
+
+.follow-btn:hover {
+    background-color: #333333; /* Darker gray on hover, like Twitter/X */
+}
+
+
 
 form#editProfileForm {
     margin-top: 20px;
@@ -107,16 +322,9 @@ form#editProfileForm {
     margin-left: 250px;
     min-height: 100vh;
     background-color: #001f3f;
+    z-index: 1000; /* Lower than 1002 for navbar dropdown */
 }
 
-/* Main Content */
-.content {
-    flex: 1;
-    padding: 10px 10px 10px 0;
-    background-color: #001f3f;
-    color: #001f3f;
-    min-height: 100vh;
-}
 
 /* Messages Feed (narrow center column, like X’s Messages sidebar)*/
 .messages-feed {
@@ -204,22 +412,21 @@ form#editProfileForm {
 .nav-brand h1 {
     color: #ffffff;
     font-size: 24px;
-    margin-bottom: 30px;
+    margin-bottom: 5px;
 }
 
 .nav-brand-logo {
     width: 209px;
     height: auto;
-    margin-bottom: 30px;
+    margin-bottom: 5px;
 }
 
-.nav-dropdown-item,
-.nav-dropdown-form button {
+.nav-dropdown-item {
     display: block;
-    padding: 12px 16px;
-    font-family: 'Helvetica Neue', Arial, sans-serif;
+    padding: var(--padding-small) var(--padding-small) 12px 16px; /* Use CSS variable for padding */
+    font-family: var(--font-default);
     font-size: 15px;
-    color: #1DA1F2;
+    color: var(--red-accent); /* Red instead of Twitter blue */
     text-decoration: none;
     border: none;
     background: none;
@@ -229,16 +436,25 @@ form#editProfileForm {
     line-height: 1.2;
 }
 
-.nav-dropdown-form {
-    margin: 0;
-    padding: 0;
+.nav-logout-btn {
+    display: block;
+    padding: 0; /* Remove padding for plain text */
+    font-family: var(--font-default);
+    font-size: 15px;
+    color: var(--red-accent); /* Match red text for consistency */
+    text-decoration: none; /* No underline */
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    line-height: 1.2;
 }
 
-.nav-dropdown-item:hover,
-.nav-dropdown-form button:hover {
-    background: none;
-    color: #1DA1F2;
-    text-decoration: none;
+.nav-logout-btn:hover {
+    background: none; /* No hover background */
+    color: var(--red-accent); /* No color change on hover */
+    text-decoration: none; /* No underline on hover */
 }
 
 .nav-icon {
@@ -278,11 +494,11 @@ form#editProfileForm {
 }
 
 .nav-user {
+    position: relative; /* Explicitly set to ensure absolute positioning works */
     display: flex;
     align-items: center;
     margin-top: auto;
     padding: 5px 0;
-    position: relative;
 }
 
 .nav-user-content {
@@ -290,25 +506,38 @@ form#editProfileForm {
     align-items: center;
     width: 100%;
     cursor: pointer;
+    /* Prevent movement on hover by using padding consistently */
+    padding: 5px; /* Match the hover padding to avoid layout shifts */
 }
 
 .nav-user-content:hover {
     background-color: #333333;
     border-radius: 20px;
-    padding: 5px;
+    /* Removed padding: 5px to match default, preventing movement */
 }
 
+/* Position dropdown above the button with dynamic adjustment */
 .nav-user-dropdown {
     position: absolute;
-    top: 100%;
+    bottom: 100%; /* Start above the button */
     right: 0;
-    background-color: #ffffff;
-    border: 1px solid #e1e8ed;
-    border-radius: 8px;
+    background-color: var(--secondary-bg); /* Use CSS variable for consistency */
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
     min-width: 200px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    z-index: 1002;
-    display: none;
+    box-shadow: var(--shadow-hover);
+    z-index: 1002; /* Ensure it stays above other elements */
+    display: none; /* Default to hidden, show on hover/focus */
+    transform: translateY(-5px); /* Fine-tune vertical positioning */
+    /* Ensure dropdown fits within viewport if near top */
+    max-height: calc(100vh - 20px); /* Limit height to avoid overflow */
+    overflow-y: auto; /* Scroll if content exceeds viewport height */
+}
+
+/* Show dropdown on hover or focus (CSS-only) */
+.nav-user-content:hover .nav-user-dropdown,
+.nav-user-content:focus-within .nav-user-dropdown {
+    display: block;
 }
 
 .nav-username {
@@ -320,9 +549,8 @@ form#editProfileForm {
 }
 
 .nav-username:hover {
-    text-decoration: underline;
+    text-decoration: none; /* Remove underline for X-like minimalism */
 }
-
 
 .notification-feed {
     background-color: #ffffff;
@@ -544,21 +772,8 @@ form#editProfileForm {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1003;
-    justify-content: center;
-    align-items: center;
-}
-
-.profile-edit-modal {
-    display: none; 
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
     background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
-    z-index: 1003; 
+    z-index: 1003;
     justify-content: center;
     align-items: center;
 }
@@ -568,13 +783,14 @@ form#editProfileForm {
     border: 1px solid #e1e8ed;
     border-radius: 12px;
     padding: 20px;
-    width: 500px; /* Adjust width as needed for edit profile form /
-    max-height: 80vh; / Limit height to 80% of viewport /
-    overflow-y: auto; / Scroll if content exceeds height */
+    width: 500px; /* Adjust width as needed for edit profile form */
+    max-height: 80vh; /* Limit height to 80% of viewport */
+    overflow-y: auto; /* Scroll if content exceeds height */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     position: relative;
     color: #001f3f;
 }
+
 .profile-edit-modal-close {
     position: absolute;
     top: 10px;
@@ -585,6 +801,7 @@ form#editProfileForm {
     border: none;
     background: none;
 }
+
 .profile-edit-modal-close:hover {
     color: #ff4136;
 }
@@ -603,6 +820,7 @@ form#editProfileForm {
 .profile-edit-note a:hover {
     text-decoration: underline;
 }
+
 /* Edit Profile Modal Content Styles */
 .profile-edit-modal-content .form-group {
     margin-bottom: 15px;
@@ -638,6 +856,7 @@ form#editProfileForm {
     cursor: pointer;
     z-index: 2;
 }
+
 /* Move Char Count and Note to Styles.css (Remove Inline Styles) */
 .char-count {
     color: #666666;
@@ -655,12 +874,14 @@ form#editProfileForm {
     border-color: #ff4136;
 }
 
-.profile-edit-modal-content .profile-edit-banner, .profile-edit-modal-content .profile-edit-avatar {
+.profile-edit-modal-content .profile-edit-banner,
+.profile-edit-modal-content .profile-edit-avatar {
     position: relative;
     margin-bottom: 20px;
 }
 
-.profile-edit-modal-content .profile-edit-banner img, .profile-edit-modal-content .profile-edit-avatar img {
+.profile-edit-modal-content .profile-edit-banner img,
+.profile-edit-modal-content .profile-edit-avatar img {
     width: 100%;
     height: 200px;
     object-fit: cover;
@@ -704,6 +925,7 @@ form#editProfileForm {
     border-color: #ff4136;
     color: #ff4136;
 }
+
 /* Edit Profile Modal Note */
 .profile-edit-modal-content .profile-edit-note {
     color: #666666;
@@ -719,7 +941,6 @@ form#editProfileForm {
 .profile-edit-modal-content .profile-edit-note a:hover {
     text-decoration: underline;
 }
-
 
 .profile-content {
     max-width: 650px;
@@ -800,6 +1021,7 @@ form#editProfileForm {
     border-top-left-radius: 12px;
     border-top-right-radius: 12px;
 }
+
 .profile-avatar {
     width: 120px; /* Larger avatar, matching X style */
     height: 120px;
@@ -818,14 +1040,14 @@ form#editProfileForm {
     padding-left: 0;
 }
 
-
 /* Username and Description Below Banner */
 .profile-username:nth-of-type(2) {
     font-size: 20px;
     font-weight: bold;
     color: #000000;
     margin: 0 0 10px 0; 
-    text-align: left;}
+    text-align: left;
+}
     
 .profile-description {
     font-size: 16px;
@@ -833,13 +1055,14 @@ form#editProfileForm {
     margin: 0 0 20px 0;
     text-align: left;
 }
+
 /* Profile Details (Location, DOB, Joined) */
 .profile-details {
     margin: 0 20px 20px 20px;
     font-size: 14px;
     color: #666666;
-    display:flex;
-    gap:15px;
+    display: flex;
+    gap: 15px;
     flex-wrap: wrap; /* Allows items to wrap on smaller screens */
 }
 
@@ -894,8 +1117,6 @@ form#editProfileForm {
     color: #000000;
 }
 
-
-
 /* Ensure .tip-feed matches */
 .tip-feed {
     max-width: 650px;
@@ -903,11 +1124,50 @@ form#editProfileForm {
     padding: 0;
 }
 
+/* Show more button styling (Tipster Arena red, Twitter/X-like layout) */
+.show-more {
+    display: block;
+    color: var(--red-accent); /* Use your red accent (#ff4136) */
+    text-decoration: none;
+    font-size: 14px;
+    margin-top: 8px;
+    cursor: pointer;
+    padding: 0; /* No padding for minimalism */
+    background: none;
+    border: none;
+    width: fit-content;
+}
+
+.show-more:hover {
+    text-decoration: underline; /* Optional: Minimal hover effect, like Twitter/X */
+    color: var(--red-accent); /* No color change on hover */
+}
+
+
+/* Show less button styling (Tipster Arena red, Twitter/X-like layout) */
+.show-less {
+    display: block;
+    color: var(--red-accent); /* Use your red accent (#ff4136) */
+    text-decoration: none;
+    font-size: 14px;
+    margin-top: 15px;
+    cursor: pointer;
+    padding: 0; /* No padding for minimalism */
+    background: none;
+    border: none;
+    width: fit-content;
+}
+
+.show-less:hover {
+    text-decoration: underline; /* Optional: Minimal hover effect, like Twitter/X */
+    color: var(--red-accent); /* No color change on hover */
+}
+
 
 /* Sidebar */
 .sidebar {
     width: 350px;
-    padding: 10px 10px 10px 0;
+    padding: 10px 0 10px 0;
     background-color: #001f3f;
     color: #001f3f;
     position: fixed;
@@ -917,16 +1177,22 @@ form#editProfileForm {
     display: flex;
     flex-direction: column;
     margin-right: 10px;
+    z-index: 1001; /* Lower than 1002 for navbar dropdown */
 }
 
+/* Ensure sidebar cards have enough space for "Show more" */
 .sidebar-card {
-    background-color: rgba(255, 255, 255, 0.95);
+    background-color: var(--secondary-bg);
     border: 1px solid #e1e8ed;
     border-radius: 12px;
     padding: 12px;
     margin-bottom: 12px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     min-height: 200px;
+    position: relative; /* For positioning "Show more" */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Pushes "Show more" to the bottom */
 }
 
 .sidebar-card h3 {
@@ -936,11 +1202,15 @@ form#editProfileForm {
     margin-bottom: 8px;
 }
 
+
+/* Adjust padding or height if needed to accommodate "Show more" */
 .sidebar-card p {
     color: #666666;
     font-size: 14px;
     line-height: 1.4;
+    margin-bottom: 0; /* Remove bottom margin to let flex handle spacing */
 }
+
 
 .sidebar-message-content {
     position: fixed;
@@ -1006,8 +1276,6 @@ form#editProfileForm {
     gap: 4px;
 }
 
-
-
 .tip-action:hover {
     color: #ff4136;
 }
@@ -1064,3 +1332,7 @@ form#editProfileForm {
 .trending-card {
     min-height: 250px;
 }
+
+
+
+
