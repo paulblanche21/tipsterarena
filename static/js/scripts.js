@@ -2,103 +2,129 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM fully loaded'); // Confirm script runs
 
-    // Show more button logic
-    const showMoreButtons = document.querySelectorAll('.show-more');
+       // Show more button logic
+       const showMoreButtons = document.querySelectorAll('.show-more');
 
-    showMoreButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault(); // Prevent default link behavior
-            const target = this.getAttribute('data-target');
-            const content = document.querySelector('.content');
-
-            // Clear existing content
-            content.innerHTML = '';
-
-            // Add dynamic content based on the target
-            switch (target) {
-                case 'upcoming-events':
-                    content.innerHTML = `
-                        <h2>Upcoming Events</h2>
-                        <p>Here are more details about upcoming events in Tipster Arena:</p>
-                        <ul>
-                            <li>Football Match: Premier League - Arsenal vs. Manchester City, March 10, 2025</li>
-                            <li>Tennis Tournament: Australian Open Finals, March 15, 2025</li>
-                            <li>Horse Racing: Grand National, March 20, 2025</li>
-                        </ul>
-                        <a href="#" class="show-less" data-target="${target}">Show less</a>
-                    `;
-                    break;
-                case 'trending-tips':
-                    content.innerHTML = `
-                        <h2>Trending Tips</h2>
-                        <p>Hot tips for today’s big events in Tipster Arena:</p>
-                        <ul>
-                            <li>Solanke to score first in Arsenal vs. Manchester City (Odds: 2.5)</li>
-                            <li>Federer to win the Grand Slam (Odds: 3.0)</li>
-                            <li>McIlroy to win The Masters (Odds: 4.0)</li>
-                        </ul>
-                        <a href="#" class="show-less" data-target="${target}">Show less</a>
-                    `;
-                    break;
-                    case 'who-to-follow':
-                        content.innerHTML = `
-                            <div class="follow-card">
-                                <div class="back-arrow-container">
-                                    <a href="#" class="back-arrow"><i class="fas fa-arrow-left"></i></a>
-                                    <h2>Who to Follow</h2>
-                                </div>
-                                <p>Suggested tipsters for you to follow in Tipster Arena:</p>
-                                <div class="follow-list">
-                                    <div class="follow-item">
-                                        <img src="${DEFAULT_AVATAR_URL}" alt="Mikkel Mortensen" class="follow-avatar">
-                                        <div class="follow-details">
-                                            <a href="#" class="follow-username">@MMortensen</a>
-                                            <p class="follow-bio">Tottenham</p>
-                                        </div>
-                                        <button class="follow-btn">Follow</button>
-                                    </div>
-                                    <div class="follow-item">
-                                        <img src="${DEFAULT_AVATAR_URL}" alt="Jedo" class="follow-avatar">
-                                        <div class="follow-details">
-                                            <a href="#" class="follow-username">@theJedo</a>
-                                            <p class="follow-bio">Planeswalker, Historian</p>
-                                        </div>
-                                        <button class="follow-btn">Follow</button>
-                                    </div>
-                                    <div class="follow-item">
-                                        <img src="${DEFAULT_AVATAR_URL}" alt="Bhattg" class="follow-avatar">
-                                        <div class="follow-details">
-                                            <a href="#" class="follow-username">@bhattg</a>
-                                            <p class="follow-bio">I am an active #hive user. My hive user name is @bhattg my referral code:--https://h...</p>
-                                        </div>
-                                        <button class="follow-btn">Follow</button>
-                                    </div>
-                                </div>
-                                <a href="#" class="show-less" data-target="${target}">Show less</a>
-                            </div>
-                        `;
-                        break;
-                                }
-
-            // Add "Show less" button functionality
-            const showLessButtons = document.querySelectorAll('.show-less');
-            showLessButtons.forEach(lessButton => {
-                lessButton.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    content.innerHTML = ''; // Clear content to show original child templates
-                });
-            });
-
-            // Add back arrow functionality
-            const backArrows = document.querySelectorAll('.back-arrow');
-            backArrows.forEach(arrow => {
-                arrow.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    content.innerHTML = ''; // Clear content to show original child templates
-                });
-            });
-        }); // Added closing bracket for click event listener
-    }); // Added closing bracket for forEach
+       showMoreButtons.forEach(button => {
+           button.addEventListener('click', function(e) {
+               e.preventDefault(); // Prevent default link behavior
+               const target = this.getAttribute('data-target');
+               const content = document.querySelector('.content');
+   
+               // Store the current URL before updating content
+               previousUrl = window.location.pathname;
+   
+               // Clear existing content
+               content.innerHTML = '';
+   
+               // Add dynamic content based on the target
+               switch (target) {
+                   case 'upcoming-events':
+                       content.innerHTML = `
+                           <div class="follow-card"> <!-- Reuse follow-card for consistency -->
+                               <div class="back-arrow-container">
+                                   <a href="#" class="back-arrow"><i class="fas fa-arrow-left"></i></a>
+                                   <h2>Upcoming Events</h2>
+                               </div>
+                               <p>Here are the latest upcoming events in Tipster Arena:</p>
+                               <div class="event-list">
+                                   <div class="event-item">
+                                       <p>Football Match: Premier League - Manchester United vs. Tottenham, March 12, 2025</p>
+                                   </div>
+                               </div>
+                               <a href="#" class="show-less" data-target="${target}">Show less</a>
+                           </div>
+                       `;
+                       break;
+                   case 'trending-tips':
+                       content.innerHTML = `
+                           <div class="follow-card"> <!-- Reuse follow-card for consistency -->
+                               <div class="back-arrow-container">
+                                   <a href="#" class="back-arrow"><i class="fas fa-arrow-left"></i></a>
+                                   <h2>Trending Tips</h2>
+                               </div>
+                               <p>Hot tips for today’s big events in Tipster Arena:</p>
+                               <div class="tip-list">
+                                   <div class="tip-item">
+                                       <img src="${DEFAULT_AVATAR_URL}" alt="User Avatar" class="tip-avatar">
+                                       <div class="tip-details">
+                                           <strong>User 1</strong> - Solanke to score first in Manchester United vs. Tottenham (Odds: 2.5) - Likes: 150
+                                       </div>
+                                   </div>
+                                   <div class="tip-item">
+                                       <img src="${DEFAULT_AVATAR_URL}" alt="User Avatar" class="tip-avatar">
+                                       <div class="tip-details">
+                                           <strong>User 2</strong> - Kane to score in Manchester United vs. Tottenham (Odds: 2.0) - Likes: 120
+                                       </div>
+                                   </div>
+                               </div>
+                               <a href="#" class="show-less" data-target="${target}">Show less</a>
+                           </div>
+                       `;
+                       break;
+                   case 'who-to-follow':
+                       content.innerHTML = `
+                           <div class="follow-card">
+                               <div class="back-arrow-container">
+                                   <a href="#" class="back-arrow"><i class="fas fa-arrow-left"></i></a>
+                                   <h2>Who to Follow</h2>
+                               </div>
+                               <p>Suggested tipsters for you to follow in Tipster Arena:</p>
+                               <div class="follow-list">
+                                   <div class="follow-item">
+                                       <img src="${DEFAULT_AVATAR_URL}" alt="Mikkel Mortensen" class="follow-avatar">
+                                       <div class="follow-details">
+                                           <a href="#" class="follow-username">@MMortensen</a>
+                                           <p class="follow-bio">Tottenham</p>
+                                       </div>
+                                       <button class="follow-btn">Follow</button>
+                                   </div>
+                                   <div class="follow-item">
+                                       <img src="${DEFAULT_AVATAR_URL}" alt="Jedo" class="follow-avatar">
+                                       <div class="follow-details">
+                                           <a href="#" class="follow-username">@theJedo</a>
+                                           <p class="follow-bio">Planeswalker, Historian</p>
+                                       </div>
+                                       <button class="follow-btn">Follow</button>
+                                   </div>
+                                   <div class="follow-item">
+                                       <img src="${DEFAULT_AVATAR_URL}" alt="Bhattg" class="follow-avatar">
+                                       <div class="follow-details">
+                                           <a href="#" class="follow-username">@bhattg</a>
+                                           <p class="follow-bio">I am an active #hive user. My hive user name is @bhattg my referral code:--https://h...</p>
+                                       </div>
+                                       <button class="follow-btn">Follow</button>
+                                   </div>
+                               </div>
+                               <a href="#" class="show-less" data-target="${target}">Show less</a>
+                           </div>
+                       `;
+                       break;
+               }
+   
+               // Add "Show less" button functionality
+               const showLessButtons = document.querySelectorAll('.show-less');
+               showLessButtons.forEach(lessButton => {
+                   lessButton.addEventListener('click', function(e) {
+                       e.preventDefault();
+                       content.innerHTML = ''; // Clear content to show original child templates
+                   });
+               });
+   
+               // Add back arrow functionality (navigate back to previous URL)
+               const backArrows = document.querySelectorAll('.back-arrow');
+               backArrows.forEach(arrow => {
+                   arrow.addEventListener('click', function(e) {
+                       e.preventDefault();
+                       if (previousUrl) {
+                           window.location.href = previousUrl; // Navigate back to the stored URL
+                       } else {
+                           window.history.back(); // Fallback to browser history
+                       }
+                   });
+               });
+           });
+       });
 
     // Post Modal Logic
     const postModal = document.getElementById('post-modal');

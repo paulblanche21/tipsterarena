@@ -133,3 +133,14 @@ def notifications(request):
         'share_notifications': share_notifications,
     })
 
+def terms_of_service(request):
+    return render(request, 'terms_of_service.html')
+
+def privacy_policy(request):
+    return render(request, 'privacy_policy.html')
+
+def cookie_policy(request):
+    return render(request, 'cookie_policy.html')
+
+def accessibility(request):
+    return render(request, 'accessibility.html')

@@ -135,10 +135,44 @@ body {
     text-decoration: underline;
 }
 
+/* Copyright Notice */
+.copyright-notice {
+    color: #666666; /* Gray, like X */
+    font-size: 11px; /* Even smaller font, matching X */
+    margin: 0; /* Remove margin to align with links */
+    padding-top: 4px; /* Small padding above to separate from links */
+    border-top: 1px solid #e1e8ed; /* Light border to visually separate */
+}
 .error {
     color: red;
     font-size: 0.9em;
     margin-top: 10px;
+}
+
+/* Event List Styling */
+.event-list {
+    margin-bottom: 15px;
+}
+
+.event-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #e1e8ed; /* Light border between items, like Twitter/X */
+}
+
+.event-item:last-child {
+    border-bottom: none; /* Remove border from the last item */
+}
+
+.event-item p {
+    font-size: 14px;
+    color: #666666;
+    margin: 0;
+    line-height: 1.4;
+    max-width: 300px; /* Prevent overflow */
+    overflow-wrap: break-word;
 }
 
 /* Who to Follow list styling */
@@ -588,6 +622,30 @@ form#editProfileForm {
 
 .notification strong:hover {
     text-decoration: underline;
+}
+
+/* Policy Links Container */
+.policy-links {
+    padding: 12px;
+    background-color: transparent; /* No background to match X's layout */
+    color: #666666; /* Gray text, like X */
+    font-size: 12px; /* Smaller font, matching X */
+    display: flex;
+    flex-direction: column; /* Stack links vertically, then add copyright */
+    gap: 8px; /* Space between links, like X */
+    justify-content: flex-start; /* Align to the left */
+}
+
+/* Individual Policy Links */
+.policy-link {
+    color: #666666; /* Gray, like X */
+    text-decoration: none; /* No underline by default */
+    font-size: 12px; /* Small font, matching X */
+}
+
+.policy-link:hover {
+    text-decoration: underline; /* Underline on hover, like X */
+    color: #ff4136; /* Red on hover, matching your theme */
 }
 
 /* Post Box (like X’s “What’s happening?”) */
@@ -1211,6 +1269,12 @@ form#editProfileForm {
     margin-bottom: 0; /* Remove bottom margin to let flex handle spacing */
 }
 
+/* Ensure Sidebar Card Fits Policy Links */
+.sidebar-card[data-card="policy-links"] {
+    min-height: auto; /* Allow card to shrink to content height */
+    padding: 12px; /* Match other cards */
+}
+
 
 .sidebar-message-content {
     position: fixed;
@@ -1298,14 +1362,43 @@ form#editProfileForm {
     flex: 1;
 }
 
+.tip-details {
+    flex: 1;
+}
+
+.tip-details strong {
+    color: #000000;
+    font-weight: 600;
+    font-size: 16px;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 4px;
+}
+
 .tip-feed {
     max-width: 650px;
     margin: 0 10px 10px 10px;
     padding: 0;
 }
 
+.tip-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #e1e8ed; /* Light border between items, like Twitter/X */
+}
+
+.tip-item:last-child {
+    border-bottom: none; /* Remove border from the last item */
+}
+
 .tip:hover {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.tip-list {
+    margin-bottom: 15px;
 }
 
 .tip p {

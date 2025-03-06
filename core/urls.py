@@ -16,6 +16,10 @@ urlpatterns = [
     path('bookmarks/', views.bookmarks, name='bookmarks'),
     path('login/', views.login_view, name='login'),  # Separate login view
     path('signup/', views.signup, name='signup'),    # Separate signup view
+    path('terms-of-service/', views.terms_of_service, name='terms_of_service'),
+    path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
+    path('cookie-policy/', views.cookie_policy, name='cookie_policy'),
+    path('accessibility/', views.accessibility, name='accessibility'),
     path('logout/', auth_views.LogoutView.as_view(next_page='landing'), name='logout'),
 ]
 

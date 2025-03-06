@@ -78,7 +78,18 @@
                     <p>Suggested tipsters will appear here...</p>
                     <a href="#" class="show-more" data-target="who-to-follow">Show more</a>
                 </div>
-            </div>
+                 <!-- Add Policy Links Below "Who to Follow" Card -->
+                        <!-- Add Policy Links Inside a Card -->
+                <div class="sidebar-card" data-card="policy-links">
+                    <div class="policy-links">
+                        <a href="{% url 'terms_of_service' %}" class="policy-link">Terms of Service</a>
+                        <a href="{% url 'privacy_policy' %}" class="policy-link">Privacy Policy</a>
+                        <a href="{% url 'cookie_policy' %}" class="policy-link">Cookie Policy</a>
+                        <a href="{% url 'accessibility' %}" class="policy-link">Accessibility</a>
+                        <p class="copyright-notice">© 2025 Tipster Arena. All Rights Reserved.</p>
+                    </div>
+                </div>
+
             <a href="{% url 'messages' %}" class="messages-carrot">Messages</a>
         </aside>
 
