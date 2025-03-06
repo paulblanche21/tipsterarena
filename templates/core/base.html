@@ -73,8 +73,21 @@
                 </div>
                 {% endblock %}
                 <div class="sidebar-card" data-card="who-to-follow">
-                    <h3>Who to Follow</h3>
-                    <p>Suggested tipsters will appear here...</p>
+                    <h3 class="who-to-follow-header">Who to Follow</h3>
+                    <div class="follow-list">
+                        {% for tipster in suggested_tipsters|slice:":3" %} <!-- Show first 3 tipsters by default -->
+                            <div class="follow-item">
+                                <img src="{% static 'images/default-avatar.png' %}" alt="{{ tipster.username }} Avatar" class="follow-avatar">
+                                <div class="follow-details">
+                                    <a href="#" class="follow-username">{{ tipster.username }}</a>
+                                    <p class="follow-bio">{{ tipster.bio|default:"" }}</p>
+                                </div>
+                                <button class="follow-btn">Follow</button>
+                            </div>
+                        {% empty %}
+                            <p>No suggested tipsters available.</p>
+                        {% endfor %}
+                    </div>
                     <a href="#" class="show-more" data-target="who-to-follow">Show more</a>
                 </div>
                  <!-- Add Policy Links Below "Who to Follow" Card -->
