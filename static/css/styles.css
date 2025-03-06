@@ -359,6 +359,12 @@ form#editProfileForm {
     z-index: 1000; /* Lower than 1002 for navbar dropdown */
 }
 
+/* Messages Container */
+.messages-container {
+    position: relative;
+    width: 350px; /* Match sidebar width */
+    margin-right: 10px; /* Align with sidebar's margin */
+}
 
 /* Messages Feed (narrow center column, like X’s Messages sidebar)*/
 .messages-feed {
@@ -370,19 +376,45 @@ form#editProfileForm {
     background-color: #ffffff;
 } 
 
-.messages-carrot {
-    position: sticky;
+/* Messages Card */
+.messages-card {
+    position: fixed;
     right: 10px;
     bottom: 10px;
-    background-color: #ff4136;
-    color: #ffffff;
-    padding: 8px 15px;
-    border-radius: 20px;
+    width: 350px; /* Match sidebar content width (350px - 20px padding) */
+    background-color: #ffffff; /* White background like X */
+    color: #000000; /* Black text */
+    padding: 8px 12px;
+    border: 1px solid #e1e8ed; /* Light border like X cards */
+    border-radius: 12px; /* Rounded corners like X cards */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    z-index: 1001; /* Above sidebar */
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Space between text, icon, and caret */
     text-decoration: none;
     font-size: 14px;
-    font-weight: bold;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
+    font-weight: 600; /* Bold text like X */
+    transition: background-color 0.2s; /* Smooth hover transition */
+}
+
+/* Messages Text */
+.messages-text {
+    flex-grow: 1; /* Allow text to take available space */
+    color: #000000;
+}
+
+/* Messages Icon */
+.messages-icon {
+    margin-left: 8px; /* Space between text and icon */
+    color: #1da1f2; /* Blue icon, matching X */
+}
+
+/* Messages Caret */
+.messages-caret {
+    margin-left: 8px; /* Space between icon and caret */
+    color: #666666; /* Gray caret, matching X */
+    font-size: 12px; /* Slightly smaller caret */
 }
 
 .messages-carrot:hover {
@@ -648,26 +680,38 @@ form#editProfileForm {
     color: #ff4136; /* Red on hover, matching your theme */
 }
 
-/* Post Box (like X’s “What’s happening?”) */
 .post-action-btn {
-    background-color: #ffffff;
-    border: 1px solid #e1e8ed;
-    border-radius: 4px;
-    padding: 4px 8px;
-    font-size: 16px;
-    color: #001f3f;
+    background-color: transparent; /* Remove background for a cleaner look */
+    border: none; /* Remove border for a flat design */
+    padding: 6px; /* Adjusted padding for icon size */
+    font-size: 16px; /* Ensure icons are visible */
+    color: #1da1f2; /* Blue color, matching X's icon style */
     cursor: pointer;
+    transition: color 0.2s, transform 0.1s; /* Smooth hover effect */
+    border-radius: 50%; /* Circular buttons like X */
+    width: 32px; /* Fixed width for consistency */
+    height: 32px; /* Fixed height for consistency */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .post-action-btn:hover {
-    background-color: #f5f8fa;
+    color: #0066cc; /* Darker blue on hover, like X */
+    transform: scale(1.1); /* Slight scale-up on hover for interactivity */
+}
+
+
+.post-action-btn i {
+    margin: 0; /* Remove default margin on icons */
 }
 
 .post-actions {
     margin-top: 8px;
     display: flex;
-    gap: 6px;
+    gap: 8px; /* Slightly larger gap for better spacing */
     flex-wrap: wrap;
+    align-items: center; /* Vertically center icons */
 }
 
 .post-avatar {
@@ -693,7 +737,7 @@ form#editProfileForm {
     background-color: #ff4136;
     color: #ffffff;
     text-align: center;
-    padding: 10px;
+    padding: 20px;
     border-radius: 20px;
     text-decoration: none;
     font-weight: bold;
@@ -1236,7 +1280,9 @@ form#editProfileForm {
     flex-direction: column;
     margin-right: 10px;
     z-index: 1001; /* Lower than 1002 for navbar dropdown */
+    padding-bottom: 60px; /* Extra space at bottom to avoid overlap with fixed messages */
 }
+
 
 /* Ensure sidebar cards have enough space for "Show more" */
 .sidebar-card {
@@ -1274,6 +1320,23 @@ form#editProfileForm {
     min-height: auto; /* Allow card to shrink to content height */
     padding: 12px; /* Match other cards */
 }
+
+/* Specific Heights for Who to Follow */
+.sidebar-card[data-card="who-to-follow"] {
+    min-height: 350px; /* Increased height for more content */
+}
+
+/* Specific Heights for Who to Follow */
+.sidebar-card[data-card="trending-tips"] {
+    min-height: 350px; /* Increased height for more content */
+}
+
+/* Specific Heights for Who to Follow */
+.sidebar-card[data-card="upcoming-events"] {
+    min-height: 350px; /* Increased height for more content */
+}
+
+
 
 
 .sidebar-message-content {
@@ -1419,11 +1482,6 @@ form#editProfileForm {
 
 .tip strong:hover {
     text-decoration: underline;
-}
-
-/* Trending Tips Card (like X’s “Live on X”) - Even taller */
-.trending-card {
-    min-height: 250px;
 }
 
 

@@ -55,7 +55,6 @@
         </main>
 
         <!-- Right Sidebar -->
-        <!-- Right Sidebar -->
         <aside class="sidebar">
             <input type="text" placeholder="Search Tipster Arena..." class="search-input">
             <div class="sidebar-scrollable">
@@ -89,8 +88,15 @@
                         <p class="copyright-notice">© 2025 Tipster Arena. All Rights Reserved.</p>
                     </div>
                 </div>
-
-            <a href="{% url 'messages' %}" class="messages-carrot">Messages</a>
+            </div>
+             <!-- Updated Messages Button -->
+            <div class="messages-container">
+                <a href="{% url 'messages' %}" class="messages-card">
+                    <span class="messages-text">Messages</span>
+                    <span class="messages-icon"><i class="fas fa-envelope"></i></span>
+                    <span class="messages-caret"><i class="fas fa-caret-down"></i></span>
+                </a>
+            </div>
         </aside>
 
     <!-- Post Modal (bubble window, hidden by default) -->
@@ -112,14 +118,14 @@
             </div>
             <textarea placeholder="Post a Tip..." class="post-input"></textarea>
             <div class="post-actions">
-                <button class="post-action-btn">📷</button> <!-- Image -->
-                <button class="post-action-btn">🎦</button> <!-- GIF -->
-                <button class="post-action-btn">📊</button> <!-- Poll -->
-                <button class="post-action-btn">😊</button> <!-- Emoji -->
-                <button class="post-action-btn">📍</button> <!-- Location -->
-                <button class="post-action-btn">🕒</button> <!-- Scheduled Post -->
-                <button class="post-action-btn">B</button> <!-- Bold -->
-                <button class="post-action-btn">I</button> <!-- Italic -->
+                <button class="post-action-btn"><i class="fas fa-image"></i></button> <!-- Image -->
+                <button class="post-action-btn"><i class="far fa-file-image"></i></button> <!-- GIF -->
+                <button class="post-action-btn"><i class="fas fa-chart-bar"></i></button> <!-- Poll -->
+                <button class="post-action-btn"><i class="far fa-smile"></i></button> <!-- Emoji -->
+                <button class="post-action-btn"><i class="fas fa-map-marker-alt"></i></button> <!-- Location -->
+                <button class="post-action-btn"><i class="fas fa-clock"></i></button> <!-- Scheduled Post -->
+                <button class="post-action-btn"><i class="fas fa-bold"></i></button> <!-- Bold -->
+                <button class="post-action-btn"><i class="fas fa-italic"></i></button> <!-- Italic -->
             </div>
             <button class="post-submit">Post</button>
             <span class="post-modal-close">×</span>
