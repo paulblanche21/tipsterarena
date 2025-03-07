@@ -83,7 +83,7 @@ body {
 
 /* Ensure dynamically generated content (like "Who to Follow") has a white background */
 .content h2, 
-.content p, 
+
 .content ul, 
 .content .follow-list, 
 .content .follow-item {
@@ -528,7 +528,10 @@ form#editProfileForm {
 
 .nav-menu {
     list-style: none;
-    margin-bottom: 20px;
+    padding:0;
+    margin-bottom: 0;
+    width: 100%; /* Ensure it takes full width of navbar */
+
 }
 
 .nav-menu a {
@@ -544,7 +547,27 @@ form#editProfileForm {
 }
 
 .nav-menu li {
-    margin: 20px 0;
+    margin: 5px 0;
+}
+
+.nav-menu li a {
+    display: block;
+    color: #ffffff; /* White text */
+    text-decoration: none;
+    padding: 10px 20px; /* Consistent padding */
+    transition: background-color 0.2s, color 0.2s; /* Smooth transitions */
+    border-radius: 20px; /* Rounded corners for rectangular hover */
+}
+
+.nav-menu li a:hover {
+    background-color: rgba(74, 144, 226, 0.1); /* Light blue spotlight */
+    color: #4a90e2; /* Blue text on hover to match spotlight */
+}
+
+/* Optional: Active state (if you have an active class) */
+.nav-menu li a.active {
+    background-color: rgba(74, 144, 226, 0.2); /* Slightly stronger spotlight for active */
+    color: #4a90e2;
 }
 
 .nav-menu-icon {
@@ -1257,6 +1280,7 @@ form#editProfileForm {
 .profile-detail-item {
     display: inline-flex; /* Ensures icons and text align properly */
     align-items: center; /* Vertically centers icons and text */
+    margin-right: 15px; /* Space between items */;
 }
 
 /* Follower and Following Counts */
@@ -1579,8 +1603,6 @@ form#editProfileForm {
 }
 
 
-
-
 .tip-avatar {
     width: 48px;
     height: 48px;
@@ -1591,7 +1613,7 @@ form#editProfileForm {
 
 .tip-content {
     flex: 1;
-    margin-left: 12px; /* Space between avatar and content */
+    margin-left: 5px; /* Space between avatar and content */
 }
 
 .tip-details {
