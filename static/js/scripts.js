@@ -2,138 +2,180 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM fully loaded'); // Confirm script runs
 
-       // Show more button logic
-       const showMoreButtons = document.querySelectorAll('.show-more');
+    // Function to attach follow button listeners
+    function attachFollowButtonListeners() {
+        const followButtons = document.querySelectorAll('.follow-btn');
+        followButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const username = this.getAttribute('data-username');
+                followUser(username, this);
+            });
+        });
+    }
 
-       showMoreButtons.forEach(button => {
-           button.addEventListener('click', function(e) {
-               e.preventDefault(); // Prevent default link behavior
-               const target = this.getAttribute('data-target');
-               const content = document.querySelector('.content');
-   
-               // Store the current URL before updating content
-               previousUrl = window.location.pathname;
-   
-               // Clear existing content
-               content.innerHTML = '';
-   
-               // Add dynamic content based on the target
-               switch (target) {
-                   case 'upcoming-events':
-                       content.innerHTML = `
-                           <div class="follow-card"> <!-- Reuse follow-card for consistency -->
-                               <div class="back-arrow-container">
-                                   <a href="#" class="back-arrow"><i class="fas fa-arrow-left"></i></a>
-                                   <h2>Upcoming Events</h2>
-                               </div>
-                               <p>Here are the latest upcoming events in Tipster Arena:</p>
-                               <div class="event-list">
-                                   <div class="event-item">
-                                       <p>Football Match: Premier League - Manchester United vs. Tottenham, March 12, 2025</p>
-                                   </div>
-                               </div>
-                               <a href="#" class="show-less" data-target="${target}">Show less</a>
-                           </div>
-                       `;
-                       break;
-                   case 'trending-tips':
-                       content.innerHTML = `
-                           <div class="follow-card"> <!-- Reuse follow-card for consistency -->
-                               <div class="back-arrow-container">
-                                   <a href="#" class="back-arrow"><i class="fas fa-arrow-left"></i></a>
-                                   <h2>Trending Tips</h2>
-                               </div>
-                               <p>Hot tips for today’s big events in Tipster Arena:</p>
-                               <div class="tip-list">
-                                   <div class="tip-item">
-                                       <img src="${DEFAULT_AVATAR_URL}" alt="User Avatar" class="tip-avatar">
-                                       <div class="tip-details">
-                                           <strong>User 1</strong> - Solanke to score first in Manchester United vs. Tottenham (Odds: 2.5) - Likes: 150
-                                       </div>
-                                   </div>
-                                   <div class="tip-item">
-                                       <img src="${DEFAULT_AVATAR_URL}" alt="User Avatar" class="tip-avatar">
-                                       <div class="tip-details">
-                                           <strong>User 2</strong> - Kane to score in Manchester United vs. Tottenham (Odds: 2.0) - Likes: 120
-                                       </div>
-                                   </div>
-                               </div>
-                               <a href="#" class="show-less" data-target="${target}">Show less</a>
-                           </div>
-                       `;
-                       break;
-                       case 'who-to-follow':
-                        content.innerHTML = `
-                            <div class="follow-card">
-                                <div class="back-arrow-container">
-                                    <a href="#" class="back-arrow"><i class="fas fa-arrow-left"></i></a>
-                                    <h2>Who to Follow</h2>
-                                </div>
-                                <p>Suggested tipsters for you to follow in Tipster Arena:</p>
-                                <div class="follow-list" id="follow-list">
-                                    <p>Loading suggestions...</p>
-                                </div>
-                                <a href="#" class="show-less" data-target="${target}">Show less</a>
+    // Function to follow a user via AJAX
+    function followUser(username, button) {
+        const formData = new FormData();
+        formData.append('username', username);
+        fetch('/api/follow/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': getCSRFToken(),
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                button.textContent = 'Following';
+                button.disabled = true;
+                button.classList.add('followed'); // Optional: for styling
+                console.log(data.message);
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error following user:', error);
+            alert('An error occurred while following.');
+        });
+    }
+
+    // Attach follow button listeners on initial page load
+    attachFollowButtonListeners();
+
+    // Show more button logic
+    const showMoreButtons = document.querySelectorAll('.show-more');
+    showMoreButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent default link behavior
+            const target = this.getAttribute('data-target');
+            const content = document.querySelector('.content');
+
+            // Store the current URL before updating content
+            previousUrl = window.location.pathname;
+
+            // Clear existing content
+            content.innerHTML = '';
+
+            // Add dynamic content based on the target
+            switch (target) {
+                case 'upcoming-events':
+                    content.innerHTML = `
+                        <div class="follow-card">
+                            <div class="back-arrow-container">
+                                <a href="#" class="back-arrow"><i class="fas fa-arrow-left"></i></a>
+                                <h2>Upcoming Events</h2>
                             </div>
-                        `;
-                        // Fetch suggested users via AJAX (no CSRF for GET)
-                        fetch('/api/suggested-users/', {
-                            method: 'GET',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            const followList = document.getElementById('follow-list');
-                            followList.innerHTML = ''; // Clear "Loading..." message
-                            if (data.users && data.users.length > 0) {
-                                data.users.forEach(user => {
-                                    followList.innerHTML += `
-                                        <div class="follow-item">
-                                            <img src="${user.avatar_url}" alt="${user.username}" class="follow-avatar">
-                                            <div class="follow-details">
-                                                <a href="${user.profile_url}" class="follow-username">@${user.username}</a>
-                                                <p class="follow-bio">${user.bio}</p>
-                                            </div>
-                                            <button class="follow-btn" data-username="${user.username}">Follow</button>
+                            <p>Here are the latest upcoming events in Tipster Arena:</p>
+                            <div class="event-list">
+                                <div class="event-item">
+                                    <p>Football Match: Premier League - Manchester United vs. Tottenham, March 12, 2025</p>
+                                </div>
+                            </div>
+                            <a href="#" class="show-less" data-target="${target}">Show less</a>
+                        </div>
+                    `;
+                    break;
+                case 'trending-tips':
+                    content.innerHTML = `
+                        <div class="follow-card">
+                            <div class="back-arrow-container">
+                                <a href="#" class="back-arrow"><i class="fas fa-arrow-left"></i></a>
+                                <h2>Trending Tips</h2>
+                            </div>
+                            <p>Hot tips for today’s big events in Tipster Arena:</p>
+                            <div class="tip-list">
+                                <div class="tip-item">
+                                    <img src="${DEFAULT_AVATAR_URL}" alt="User Avatar" class="tip-avatar">
+                                    <div class="tip-details">
+                                        <strong>User 1</strong> - Solanke to score first in Manchester United vs. Tottenham (Odds: 2.5) - Likes: 150
+                                    </div>
+                                </div>
+                                <div class="tip-item">
+                                    <img src="${DEFAULT_AVATAR_URL}" alt="User Avatar" class="tip-avatar">
+                                    <div class="tip-details">
+                                        <strong>User 2</strong> - Kane to score in Manchester United vs. Tottenham (Odds: 2.0) - Likes: 120
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="#" class="show-less" data-target="${target}">Show less</a>
+                        </div>
+                    `;
+                    break;
+                case 'who-to-follow':
+                    content.innerHTML = `
+                        <div class="follow-card">
+                            <div class="back-arrow-container">
+                                <a href="#" class="back-arrow"><i class="fas fa-arrow-left"></i></a>
+                                <h2>Who to Follow</h2>
+                            </div>
+                            <p>Suggested tipsters for you to follow in Tipster Arena:</p>
+                            <div class="follow-list" id="follow-list">
+                                <p>Loading suggestions...</p>
+                            </div>
+                            <a href="#" class="show-less" data-target="${target}">Show less</a>
+                        </div>
+                    `;
+                    fetch('/api/suggested-users/', {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        const followList = document.getElementById('follow-list');
+                        followList.innerHTML = '';
+                        if (data.users && data.users.length > 0) {
+                            data.users.forEach(user => {
+                                followList.innerHTML += `
+                                    <div class="follow-item">
+                                        <img src="${user.avatar_url}" alt="${user.username}" class="follow-avatar">
+                                        <div class="follow-details">
+                                            <a href="${user.profile_url}" class="follow-username">@${user.username}</a>
+                                            <p class="follow-bio">${user.bio}</p>
                                         </div>
-                                    `;
-                                });
-                            } else {
-                                followList.innerHTML = '<p>No suggestions available.</p>';
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error fetching suggested users:', error);
-                            document.getElementById('follow-list').innerHTML = '<p>Error loading suggestions.</p>';
-                        });
-                        break;
-               }
-   
-               // Add "Show less" button functionality
-               const showLessButtons = document.querySelectorAll('.show-less');
-               showLessButtons.forEach(lessButton => {
-                   lessButton.addEventListener('click', function(e) {
-                       e.preventDefault();
-                       content.innerHTML = ''; // Clear content to show original child templates
-                   });
-               });
-   
-               // Add back arrow functionality (navigate back to previous URL)
-               const backArrows = document.querySelectorAll('.back-arrow');
-               backArrows.forEach(arrow => {
-                   arrow.addEventListener('click', function(e) {
-                       e.preventDefault();
-                       if (previousUrl) {
-                           window.location.href = previousUrl; // Navigate back to the stored URL
-                       } else {
-                           window.history.back(); // Fallback to browser history
-                       }
-                   });
-               });
-           });
-       });
+                                        <button class="follow-btn" data-username="${user.username}">Follow</button>
+                                    </div>
+                                `;
+                            });
+                            // Re-attach follow button listeners after new buttons are added
+                            attachFollowButtonListeners();
+                        } else {
+                            followList.innerHTML = '<p>No suggestions available.</p>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching suggested users:', error);
+                        document.getElementById('follow-list').innerHTML = '<p>Error loading suggestions.</p>';
+                    });
+                    break;
+            }
+
+            // Add "Show less" button functionality
+            const showLessButtons = document.querySelectorAll('.show-less');
+            showLessButtons.forEach(lessButton => {
+                lessButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    content.innerHTML = ''; // Clear content to show original child templates
+                });
+            });
+
+            // Add back arrow functionality (navigate back to previous URL)
+            const backArrows = document.querySelectorAll('.back-arrow');
+            backArrows.forEach(arrow => {
+                arrow.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (previousUrl) {
+                        window.location.href = previousUrl; // Navigate back to the stored URL
+                    } else {
+                        window.history.back(); // Fallback to browser history
+                    }
+                });
+            });
+        });
+    });
 
     // Post Modal Logic
     const postModal = document.getElementById('post-modal');
@@ -332,9 +374,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    
     // Function to get CSRF token
     function getCSRFToken() {
-        return document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+        const tokenElement = document.querySelector('input[name="csrfmiddlewaretoken"]');
+        if (!tokenElement) {
+            console.warn("CSRF token not found on page");
+            return null;
+        }
+        return tokenElement.value;
     }
 }); // Closing DOMContentLoaded event listener

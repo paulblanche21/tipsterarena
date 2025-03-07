@@ -7,6 +7,8 @@ from .models import Tip, Like, Follow, Share, UserProfile, MessageThread
 from .forms import UserProfileForm, CustomUserCreationForm 
 from django.contrib.auth.forms import AuthenticationForm 
 from django.conf import settings
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
 
 def landing(request):
     if request.user.is_authenticated:
@@ -61,6 +63,30 @@ def sport_view(request, sport):
 def explore(request):
     tips = Tip.objects.all().order_by('-created_at')[:20]  # Latest 20 tips from all users, X-like Explore
     return render(request, 'core/explore.html', {'tips': tips})
+
+@login_required
+@require_POST
+def follow_user(request):
+    follower = request.user
+    followed_username = request.POST.get('username')
+    if not followed_username:
+        return JsonResponse({'success': False, 'error': 'No username provided'}, status=400)
+    
+    followed = get_object_or_404(User, username=followed_username)
+    if follower == followed:
+        return JsonResponse({'success': False, 'error': 'Cannot follow yourself'}, status=400)
+    
+    # Create or check follow relationship
+    follow, created = Follow.objects.get_or_create(
+        follower=follower,
+        followed=followed,
+    )
+    if created:
+        return JsonResponse({'success': True, 'message': f'Now following {followed_username}'})
+    else:
+        return JsonResponse({'success': True, 'message': f'Already following {followed_username}'})
+
+
 
 @login_required
 def profile(request, username):
