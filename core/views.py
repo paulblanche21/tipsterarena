@@ -46,19 +46,9 @@ def login_view(request):
 def home(request):
     tips = Tip.objects.all().order_by('-created_at')[:20]  # Latest 20 tips
     # Suggest tipsters: Users who have posted tips, excluding the current user
-    suggested_tipsters = User.objects.filter(tip__isnull=False).exclude(id=request.user.id).distinct()[:23]
+    context = {'tips': tips}  # No suggested_tipsters
     # Annotate with UserProfile data if available
-    suggested_tipsters = [
-        {
-            'username': user.username,
-            'bio': getattr(user.userprofile, 'description', '') or f"{user.username}'s bio",  # Default bio if none
-        }
-        for user in suggested_tipsters
-    ]
-    context = {
-        'tips': tips,
-        'suggested_tipsters': suggested_tipsters,
-    }
+    
     return render(request, 'core/home.html', context)
 
 def sport_view(request, sport):
@@ -189,3 +179,4 @@ def suggested_users_api(request):
         })
 
     return JsonResponse({'users': users_data})
+
