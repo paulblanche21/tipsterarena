@@ -491,7 +491,7 @@ form#editProfileForm {
     padding: var(--padding-small) var(--padding-small) 12px 16px; /* Use CSS variable for padding */
     font-family: var(--font-default);
     font-size: 15px;
-    color: var(--red-accent); /* Red instead of Twitter blue */
+    color: var(--secondary-bg); /* Red instead of Twitter blue */
     text-decoration: none;
     border: none;
     background: none;
@@ -503,10 +503,10 @@ form#editProfileForm {
 
 .nav-logout-btn {
     display: block;
-    padding: 0; /* Remove padding for plain text */
+    padding: var(--padding-small) var(--padding-small) 12px 16px; /* Use CSS variable for padding */
     font-family: var(--font-default);
     font-size: 15px;
-    color: var(--red-accent); /* Match red text for consistency */
+    color: var(--secondary-bg); /* Match red text for consistency */
     text-decoration: none; /* No underline */
     border: none;
     background: none;
@@ -615,24 +615,18 @@ form#editProfileForm {
     position: absolute;
     bottom: 100%; /* Start above the button */
     right: 0;
-    background-color: var(--secondary-bg); /* Use CSS variable for consistency */
-    border: 1px solid var(--border-color);
+    background-color: var(--primary-bg); /* Match the background */
+    border: 1px solid var(--primary-bg); /* Match the background */
     border-radius: var(--border-radius);
     min-width: 200px;
     box-shadow: var(--shadow-hover);
-    z-index: 1002; /* Ensure it stays above other elements */
-    display: none; /* Default to hidden, show on hover/focus */
-    transform: translateY(-5px); /* Fine-tune vertical positioning */
-    /* Ensure dropdown fits within viewport if near top */
-    max-height: calc(100vh - 20px); /* Limit height to avoid overflow */
-    overflow-y: auto; /* Scroll if content exceeds viewport height */
+    z-index: 1002;
+    display: none; /* Controlled by JavaScript now */
+    transform: translateY(-5px); /* Slight upward offset */
+    max-height: calc(100vh - 20px);
+    overflow-y: auto;
 }
 
-/* Show dropdown on hover or focus (CSS-only) */
-.nav-user-content:hover .nav-user-dropdown,
-.nav-user-content:focus-within .nav-user-dropdown {
-    display: block;
-}
 
 .nav-username {
     color: #ffffff;
