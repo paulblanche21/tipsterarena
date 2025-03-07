@@ -231,7 +231,7 @@ body {
 
 
 .follow-list {
-    margin-bottom: 15px;
+    margin-bottom: 8px;
 }
 
 .follow-item {
@@ -261,7 +261,7 @@ body {
 .follow-username {
     color: var(--black); /* Black links instead of Twitter blue */
     font-weight: 600;
-    font-size: 16px;
+    font-size: 15px;
     text-decoration: none;
     display: block;
     margin-bottom: 4px;
@@ -276,7 +276,7 @@ body {
     color: #666666;
     margin: 0;
     line-height: 1.4;
-    max-width: 300px; /* Prevent overflow, like Twitter/X */
+    max-width: 200px; /* Prevent overflow, like Twitter/X */
     overflow-wrap: break-word;
 }
 
@@ -297,7 +297,6 @@ body {
 .follow-btn:hover {
     background-color: #333333; /* Darker gray on hover, like Twitter/X */
 }
-
 
 
 form#editProfileForm {
@@ -1329,6 +1328,9 @@ form#editProfileForm {
 /* Specific Heights for Who to Follow */
 .sidebar-card[data-card="trending-tips"] {
     min-height: 350px; /* Increased height for more content */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 /* Specific Heights for Who to Follow */
@@ -1484,6 +1486,13 @@ form#editProfileForm {
     text-decoration: underline;
 }
 
+/* Who to Follow Header */
+.who-to-follow-header {
+    font-size: 18px; /* Larger font size like X */
+    font-weight: 700; /* Bolder text */
+    color: #000000;
+    margin-bottom: 12px;
+}
 
 
 

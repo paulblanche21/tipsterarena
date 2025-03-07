@@ -7,12 +7,10 @@ from .models import Tip, Like, Follow, Share, UserProfile, MessageThread
 from .forms import UserProfileForm, CustomUserCreationForm
 from django.contrib.auth.forms import AuthenticationForm
 
-
 def landing(request):
     if request.user.is_authenticated:
         return redirect('home')  # Redirect logged-in users to home
     return render(request, 'core/landing.html')  # No forms needed here
-
 
 def signup(request):
     if request.user.is_authenticated:
@@ -26,7 +24,6 @@ def signup(request):
     else:
         form = CustomUserCreationForm()
     return render(request, 'core/signup.html', {'form': form})
-
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -44,11 +41,24 @@ def login_view(request):
         form = AuthenticationForm()
     return render(request, 'core/login.html', {'form': form})
 
-
 @login_required  # Require users to log in to see the home page
 def home(request):
     tips = Tip.objects.all().order_by('-created_at')[:20]  # Latest 20 tips
-    return render(request, 'core/home.html', {'tips': tips})
+    # Suggest tipsters: Users who have posted tips, excluding the current user
+    suggested_tipsters = User.objects.filter(tip__isnull=False).exclude(id=request.user.id).distinct()[:23]
+    # Annotate with UserProfile data if available
+    suggested_tipsters = [
+        {
+            'username': user.username,
+            'bio': getattr(user.userprofile, 'description', '') or f"{user.username}'s bio",  # Default bio if none
+        }
+        for user in suggested_tipsters
+    ]
+    context = {
+        'tips': tips,
+        'suggested_tipsters': suggested_tipsters,
+    }
+    return render(request, 'core/home.html', context)
 
 def sport_view(request, sport):
     tips = Tip.objects.filter(sport=sport).order_by('-created_at')[:20]  # Latest 20 tips for the sport
