@@ -62,44 +62,53 @@ document.addEventListener('DOMContentLoaded', function() {
                            </div>
                        `;
                        break;
-                   case 'who-to-follow':
-                       content.innerHTML = `
-                           <div class="follow-card">
-                               <div class="back-arrow-container">
-                                   <a href="#" class="back-arrow"><i class="fas fa-arrow-left"></i></a>
-                                   <h2>Who to Follow</h2>
-                               </div>
-                               <p>Suggested tipsters for you to follow in Tipster Arena:</p>
-                               <div class="follow-list">
-                                   <div class="follow-item">
-                                       <img src="${DEFAULT_AVATAR_URL}" alt="Mikkel Mortensen" class="follow-avatar">
-                                       <div class="follow-details">
-                                           <a href="#" class="follow-username">@MMortensen</a>
-                                           <p class="follow-bio">Tottenham</p>
-                                       </div>
-                                       <button class="follow-btn">Follow</button>
-                                   </div>
-                                   <div class="follow-item">
-                                       <img src="${DEFAULT_AVATAR_URL}" alt="Jedo" class="follow-avatar">
-                                       <div class="follow-details">
-                                           <a href="#" class="follow-username">@theJedo</a>
-                                           <p class="follow-bio">Planeswalker, Historian</p>
-                                       </div>
-                                       <button class="follow-btn">Follow</button>
-                                   </div>
-                                   <div class="follow-item">
-                                       <img src="${DEFAULT_AVATAR_URL}" alt="Bhattg" class="follow-avatar">
-                                       <div class="follow-details">
-                                           <a href="#" class="follow-username">@bhattg</a>
-                                           <p class="follow-bio">I am an active #hive user. My hive user name is @bhattg my referral code:--https://h...</p>
-                                       </div>
-                                       <button class="follow-btn">Follow</button>
-                                   </div>
-                               </div>
-                               <a href="#" class="show-less" data-target="${target}">Show less</a>
-                           </div>
-                       `;
-                       break;
+                       case 'who-to-follow':
+                        content.innerHTML = `
+                            <div class="follow-card">
+                                <div class="back-arrow-container">
+                                    <a href="#" class="back-arrow"><i class="fas fa-arrow-left"></i></a>
+                                    <h2>Who to Follow</h2>
+                                </div>
+                                <p>Suggested tipsters for you to follow in Tipster Arena:</p>
+                                <div class="follow-list" id="follow-list">
+                                    <p>Loading suggestions...</p>
+                                </div>
+                                <a href="#" class="show-less" data-target="${target}">Show less</a>
+                            </div>
+                        `;
+                        // Fetch suggested users via AJAX (no CSRF for GET)
+                        fetch('/api/suggested-users/', {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            const followList = document.getElementById('follow-list');
+                            followList.innerHTML = ''; // Clear "Loading..." message
+                            if (data.users && data.users.length > 0) {
+                                data.users.forEach(user => {
+                                    followList.innerHTML += `
+                                        <div class="follow-item">
+                                            <img src="${user.avatar_url}" alt="${user.username}" class="follow-avatar">
+                                            <div class="follow-details">
+                                                <a href="${user.profile_url}" class="follow-username">@${user.username}</a>
+                                                <p class="follow-bio">${user.bio}</p>
+                                            </div>
+                                            <button class="follow-btn" data-username="${user.username}">Follow</button>
+                                        </div>
+                                    `;
+                                });
+                            } else {
+                                followList.innerHTML = '<p>No suggestions available.</p>';
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching suggested users:', error);
+                            document.getElementById('follow-list').innerHTML = '<p>Error loading suggestions.</p>';
+                        });
+                        break;
                }
    
                // Add "Show less" button functionality

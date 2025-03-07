@@ -1,11 +1,12 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
-from django.http import JsonResponse
-from .models import Tip, Like, Follow, Share, UserProfile, MessageThread
-from .forms import UserProfileForm, CustomUserCreationForm
-from django.contrib.auth.forms import AuthenticationForm
+from django.shortcuts import render, get_object_or_404, redirect 
+from django.contrib.auth import authenticate, login 
+from django.contrib.auth.decorators import login_required 
+from django.contrib.auth.models import User 
+from django.http import JsonResponse 
+from .models import Tip, Like, Follow, Share, UserProfile, MessageThread 
+from .forms import UserProfileForm, CustomUserCreationForm 
+from django.contrib.auth.forms import AuthenticationForm 
+from django.conf import settings
 
 def landing(request):
     if request.user.is_authenticated:
@@ -61,7 +62,10 @@ def home(request):
     return render(request, 'core/home.html', context)
 
 def sport_view(request, sport):
-    tips = Tip.objects.filter(sport=sport).order_by('-created_at')[:20]  # Latest 20 tips for the sport
+    tips = Tip.objects.filter(sport=sport).order_by('-created_at')[:20]
+    print(f"Sport: {sport}, Tip count: {tips.count()}")
+    for tip in tips:
+        print(f" - {tip.sport}: {tip.text}")
     return render(request, f'core/sport_{sport}.html', {'tips': tips, 'sport': sport})
 
 def explore(request):
@@ -154,3 +158,34 @@ def cookie_policy(request):
 
 def accessibility(request):
     return render(request, 'accessibility.html')
+
+
+@login_required
+def suggested_users_api(request):
+    current_user = request.user
+    followed_users = Follow.objects.filter(follower=current_user).values_list('followed_id', flat=True)
+    suggested_users = User.objects.filter(
+        tip__isnull=False
+    ).exclude(
+        id__in=followed_users
+    ).exclude(
+        id=current_user.id
+    ).distinct()[:10]
+
+    users_data = []
+    for user in suggested_users:
+        try:
+            profile = user.userprofile
+            avatar_url = profile.avatar.url if profile.avatar else settings.STATIC_URL + 'images/default-avatar.png'
+            bio = profile.description or "No bio available"
+        except UserProfile.DoesNotExist:
+            avatar_url = settings.STATIC_URL + 'images/default-avatar.png'
+            bio = "No bio available"
+        users_data.append({
+            'username': user.username,
+            'avatar_url': avatar_url,
+            'bio': bio,
+            'profile_url': f"/profile/{user.username}/"
+        })
+
+    return JsonResponse({'users': users_data})

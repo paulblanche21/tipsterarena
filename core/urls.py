@@ -21,6 +21,7 @@ urlpatterns = [
     path('cookie-policy/', views.cookie_policy, name='cookie_policy'),
     path('accessibility/', views.accessibility, name='accessibility'),
     path('logout/', auth_views.LogoutView.as_view(next_page='landing'), name='logout'),
+    path('api/suggested-users/', views.suggested_users_api, name='suggested_users_api'),
 ]
 
 if settings.DEBUG:
