@@ -20,15 +20,15 @@
             </div>
         </div>
         <textarea placeholder="Post a Tennis Tip..." class="post-input"></textarea>
-        <div class="post-actions">
-            <button class="post-action-btn">📷</button> <!-- Image -->
-            <button class="post-action-btn">🎦</button> <!-- GIF -->
-            <button class="post-action-btn">📊</button> <!-- Poll -->
-            <button class="post-action-btn">😊</button> <!-- Emoji -->
-            <button class="post-action-btn">📍</button> <!-- Location -->
-            <button class="post-action-btn">🕒</button> <!-- Scheduled Post -->
-            <button class="post-action-btn">B</button> <!-- Bold -->
-            <button class="post-action-btn">I</button> <!-- Italic -->
+        <<div class="post-actions">
+            <button class="post-action-btn"><i class="fas fa-image"></i></button> <!-- Image -->
+            <button class="post-action-btn"><i class="far fa-file-image"></i></button> <!-- GIF -->
+            <button class="post-action-btn"><i class="fas fa-chart-bar"></i></button> <!-- Poll -->
+            <button class="post-action-btn"><i class="far fa-smile"></i></button> <!-- Emoji -->
+            <button class="post-action-btn"><i class="fas fa-map-marker-alt"></i></button> <!-- Location -->
+            <button class="post-action-btn"><i class="fas fa-clock"></i></button> <!-- Scheduled Post -->
+            <button class="post-action-btn"><i class="fas fa-bold"></i></button> <!-- Bold -->
+            <button class="post-action-btn"><i class="fas fa-italic"></i></button> <!-- Italic -->
         </div>
         <button class="post-submit">Post</button>
     </div>
@@ -53,9 +53,30 @@
                     <p>{{ tip.text }}</p>
                     <small>{{ tip.created_at|date:"F j, Y, g:i a" }}</small>
                     <div class="tip-actions">
-                        <a href="#" class="tip-action">❤️ Like</a>
-                        <a href="#" class="tip-action">🔄 Share</a>
-                        <a href="#" class="tip-action">💬 Comment</a>
+                        <div class="tip-action-group">
+                            <a href="#" class="tip-action tip-action-like"><i class="fas fa-heart"></i></a>
+                            <span class="tip-action-count">{{ tip.likes.count|default:"0" }}</span>
+                        </div>
+                        <div class="tip-action-group">
+                            <a href="#" class="tip-action tip-action-retweet"><i class="fas fa-retweet"></i></a>
+                            <span class="tip-action-count">{{ tip.retweets.count|default:"0" }}</span>
+                        </div>
+                        <div class="tip-action-group">
+                            <a href="#" class="tip-action tip-action-comment"><i class="fas fa-comment-dots"></i></a>
+                            <span class="tip-action-count">{{ tip.comments.count|default:"0" }}</span>
+                        </div>
+                        <div class="tip-action-spacer"></div>
+                        <div class="tip-action-group">
+                            <a href="#" class="tip-action tip-action-engagement"><i class="fas fa-users"></i></a>
+                            <span class="tip-action-count">{{ tip.engagement|default:"0" }}</span>
+                        </div>
+                        <div class="tip-action-spacer-large"></div>
+                        <div class="tip-action-group">
+                            <a href="#" class="tip-action tip-action-bookmark"><i class="fas fa-bookmark"></i></a>
+                        </div>
+                        <div class="tip-action-group">
+                            <a href="#" class="tip-action tip-action-share"><i class="fas fa-arrow-up"></i></a>
+                        </div>
                     </div>
                 </div>
             </div>

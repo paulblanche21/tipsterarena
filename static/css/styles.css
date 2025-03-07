@@ -684,7 +684,7 @@ form#editProfileForm {
     border: none; /* Remove border for a flat design */
     padding: 6px; /* Adjusted padding for icon size */
     font-size: 16px; /* Ensure icons are visible */
-    color: #1da1f2; /* Blue color, matching X's icon style */
+    color: var(--primary-bg); /* Dark text for visibility */
     cursor: pointer;
     transition: color 0.2s, transform 0.1s; /* Smooth hover effect */
     border-radius: 50%; /* Circular buttons like X */
@@ -696,7 +696,7 @@ form#editProfileForm {
 }
 
 .post-action-btn:hover {
-    color: #0066cc; /* Darker blue on hover, like X */
+    color: darkblue; /* Darker blue on hover, like X */
     transform: scale(1.1); /* Slight scale-up on hover for interactivity */
 }
 
@@ -1420,24 +1420,113 @@ form#editProfileForm {
     border-color: #ff4136;
 }
 
-.tip-action {
-    color: #666666;
-    text-decoration: none;
-    font-size: 14px;
+/* Ensure compatibility with existing tip styles */
+.tip {
+    background-color: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--padding-small);
+    box-shadow: var(--shadow-light);
+    margin-bottom: var(--margin-small);
+    color: var(--primary-bg);
+    transition: box-shadow 0.2s;
     display: flex;
-    align-items: center;
-    gap: 4px;
+    align-items: flex-start;
 }
 
-.tip-action:hover {
-    color: #ff4136;
-}
-
+/* Tip Actions Styling */
 .tip-actions {
     margin-top: 8px;
     display: flex;
-    gap: 12px;
+    justify-content: space-between;
+    align-items: center;
 }
+
+.tip-action {
+    color: var(--gray-light) !important;  /* Default grey color */
+    text-decoration: none;
+    font-size: 1.2rem;
+    transition: color 0.2s, background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%; /* Circular buttons */
+}
+
+/* Unique hover spotlight colors for each icon */
+.tip-action-like:hover {
+    color: #f91880; /* Pink for like */
+    background-color: rgba(249, 24, 128, 0.1); /* Light pink spotlight */
+}
+
+.tip-action-retweet:hover {
+    color: #00ba7c; /* Green for retweet */
+    background-color: rgba(0, 186, 124, 0.1); /* Light green spotlight */
+}
+
+
+.tip-action-comment:hover {
+    color: var(--twitter-blue); /* Blue for comment */
+    background-color: rgba(29, 161, 242, 0.1); /* Light blue spotlight */
+}
+
+.tip-action-engagement:hover {
+    color: #ffad1f; /* Yellow for engagement (users) */
+    background-color: rgba(255, 173, 31, 0.1); /* Light yellow spotlight */
+}
+
+.tip-action-bookmark:hover {
+    color: #1d9bf0; /* Blue for bookmark */
+    background-color: rgba(29, 155, 240, 0.1); /* Light blue spotlight */
+}
+
+.tip-action-share:hover {
+    color: #17bf63; /* Green for share */
+    background-color: rgba(23, 191, 99, 0.1); /* Light green spotlight */
+}
+
+.tip-action i {
+    vertical-align: middle;
+}
+
+/* Count styling */
+.tip-action-count {
+    font-size: 0.9rem;
+    color: var(--gray-light); /* Grey color for counts */
+    margin-right: 0.75rem; /* More space between count and next icon */
+}
+
+.tip-action-counts span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.tip-action-counts i {
+    font-size: 0.9rem;
+    color: var(--gray-light); /* Match text color */
+}
+
+/* Group for each icon and its count */
+.tip-action-group {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem; /* Space between icon and count */
+}
+
+/* Spacer to push bookmark and share to the right */
+.tip-action-spacer {
+    flex-grow: 0.5; /* Takes up remaining space to push bookmark and share to the right */
+}
+
+.tip-action-spacer-large {
+    flex-grow: 1; /* Full space to push bookmark and share to the right */
+}
+
+
+
 
 .tip-avatar {
     width: 48px;
@@ -1449,6 +1538,7 @@ form#editProfileForm {
 
 .tip-content {
     flex: 1;
+    margin-left: 12px; /* Space between avatar and content */
 }
 
 .tip-details {
