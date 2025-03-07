@@ -100,8 +100,16 @@ def profile(request, username):
     following_count = Follow.objects.filter(follower=user).count()
     followers_count = Follow.objects.filter(followed=user).count()
     
-    # Add the form to the context
-    form = UserProfileForm(instance=user_profile)
+    # Check if the logged-in user is the profile owner
+    is_owner = request.user == user
+    
+    # Only include the form if the user is the profile owner
+    form = UserProfileForm(instance=user_profile) if is_owner else None
+    
+    # Check if the logged-in user is following this profile
+    is_following = False
+    if not is_owner:
+        is_following = Follow.objects.filter(follower=request.user, followed=user).exists()
     
     return render(request, 'core/profile.html', {
         'user': user,
@@ -109,7 +117,9 @@ def profile(request, username):
         'user_tips': user_tips,
         'following_count': following_count,
         'followers_count': followers_count,
-        'form': form,  # Pass the form
+        'form': form,
+        'is_owner': is_owner,
+        'is_following': is_following,
     })
 
 @login_required  # Require users to log in to edit their profile

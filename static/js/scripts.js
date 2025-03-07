@@ -41,6 +41,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+     // Handle tip feed usernames
+     document.querySelectorAll('.tip-username').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = this.getAttribute('href');
+        });
+    });
+
     // Attach follow button listeners on initial page load
     attachFollowButtonListeners();
 

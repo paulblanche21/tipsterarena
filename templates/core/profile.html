@@ -17,9 +17,9 @@
         <!-- Banner and Avatar -->
         <div class="profile-header">
             {% if user_profile.banner %}
-                <img src="{{ user_profile.banner.url }}" alt="Banner Image" class="profile-banner" onerror="this.src='https://via.placeholder.com/598x200'; return true;">
+                <img src="{{ user_profile.banner.url }}" alt="Banner Image" class="profile-banner" onerror="setDefaultBanner(this);">
             {% else %}
-                <img src="https://via.placeholder.com/598x200" alt="Banner Image" class="profile-banner">
+                <img src="{% static 'images/default-banner.png' %}" alt="Default Banner Image" class="profile-banner">
             {% endif %}
             
             {% if user_profile.avatar %}
@@ -27,7 +27,16 @@
             {% else %}
                 <img src="{% static 'images/default-avatar.png' %}" alt="{{ user.username }} Avatar" class="profile-avatar">
             {% endif %}
-            <button class="profile-edit-btn" id="editProfileBtn">Edit Profile</button>
+            <!-- Conditional Profile Action Button -->
+            <div class="profile-actions">
+                {% if is_owner %}
+                    <button class="profile-edit-btn" id="editProfileBtn">Edit Profile</button>
+                {% else %}
+                    <button class="follow-btn" data-username="{{ user.username }}">
+                        {% if is_following %}Following{% else %}Follow{% endif %}
+                    </button>
+                {% endif %}
+            </div>
         </div>
 
         <!-- Username, Profile Description, and Edit Profile Button -->
@@ -95,9 +104,9 @@
             <div class="edit-profile-header">
                 <div class="profile-edit-banner">
                     {% if user_profile.banner %}
-                        <img src="{{ user_profile.banner.url }}" alt="Banner Image" class="profile-edit-banner-img" onerror="this.src='https://via.placeholder.com/598x200';">
+                        <img src="{{ user_profile.banner.url }}" alt="Banner Image" class="profile-edit-banner-img" onerror="setDefaultBanner(this);">
                     {% else %}
-                        <img src="https://via.placeholder.com/598x200" alt="Banner Image" class="profile-edit-banner-img">
+                        <img src="{% static 'images/default-banner.png' %}" alt="Default Banner Image" class="profile-edit-banner-img">
                     {% endif %}
                     <div class="profile-edit-avatar">
                         {% if user_profile.avatar %}
@@ -151,9 +160,5 @@
 {% endblock %}
 
 {% block extra_scripts %}
-    <script>
-        function setDefaultAvatar(img) {
-            img.src = "{% static 'images/default-avatar.png' %}";
-        }
-    </script>
+    <!-- Removed redundant DEFAULT_BANNER_URL declaration -->
 {% endblock %}

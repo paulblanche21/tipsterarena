@@ -152,6 +152,18 @@
     <script>
         // Define the static URL for default-avatar.png
         const DEFAULT_AVATAR_URL = "{% static 'images/default-avatar.png' %}";
+        const DEFAULT_BANNER_URL = "{% static 'images/default-banner.png' %}";
+            // Function to set default banner
+        function setDefaultBanner(img) {
+            img.src = DEFAULT_BANNER_URL;
+            img.onerror = null; // Prevent infinite loops
+        }
+
+        // Function to set default avatar (already used elsewhere)
+        function setDefaultAvatar(img) {
+            img.src = DEFAULT_AVATAR_URL;
+            img.onerror = null; // Prevent infinite loops
+        }
     </script>
     <script src="{% static 'js/scripts.js' %}" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
