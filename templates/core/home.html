@@ -43,7 +43,9 @@
                 <img src="{% static 'images/default-avatar.png' %}" alt="{{ tip.user.username }} Avatar" class="tip-avatar" onerror="this.style.display='none'">
             {% endif %}
             <div class="tip-content">
-                <strong>{{ tip.user.username }}</strong>
+                <a href="{% url 'profile' tip.user.username %}" class="tip-username">
+                    <strong>{{ tip.user.username }}</strong>
+                </a>
                 {% if tip.sport == 'football' %}⚽{% endif %}
                 {% if tip.sport == 'golf' %}⛳{% endif %}
                 {% if tip.sport == 'tennis' %}🎾{% endif %}

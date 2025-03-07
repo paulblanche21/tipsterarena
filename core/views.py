@@ -9,6 +9,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.conf import settings
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 def landing(request):
     if request.user.is_authenticated:
@@ -216,3 +217,31 @@ def suggested_users_api(request):
 
     return JsonResponse({'users': users_data})
 
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from .models import Tip
+import json
+
+@csrf_exempt
+@login_required
+def post_tip(request):
+    if request.method == 'POST':
+        try:
+            text = request.POST.get('text')
+            audience = request.POST.get('audience', 'everyone')  # Default to everyone
+
+            if not text:
+                return JsonResponse({'success': False, 'error': 'Tip text cannot be empty.'}, status=400)
+
+            # Create the tip
+            tip = Tip.objects.create(
+                user=request.user,
+                text=text,
+                audience=audience,
+                # Sport field can be added later if implemented
+            )
+            return JsonResponse({'success': True, 'message': 'Tip posted successfully!'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)

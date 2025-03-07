@@ -1,6 +1,6 @@
 // scripts.js
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM fully loaded'); // Confirm script runs
+    console.log('DOM fully loaded');
 
     // Function to attach follow button listeners
     function attachFollowButtonListeners() {
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 button.textContent = 'Following';
                 button.disabled = true;
-                button.classList.add('followed'); // Optional: for styling
+                button.classList.add('followed');
                 console.log(data.message);
             } else {
                 alert('Error: ' + data.error);
@@ -41,14 +41,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-     // Handle tip feed usernames
-     document.querySelectorAll('.tip-username').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            window.location.href = this.getAttribute('href');
-        });
-    });
-
     // Attach follow button listeners on initial page load
     attachFollowButtonListeners();
 
@@ -56,17 +48,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const showMoreButtons = document.querySelectorAll('.show-more');
     showMoreButtons.forEach(button => {
         button.addEventListener('click', function(e) {
-            e.preventDefault(); // Prevent default link behavior
+            e.preventDefault();
             const target = this.getAttribute('data-target');
             const content = document.querySelector('.content');
-
-            // Store the current URL before updating content
             previousUrl = window.location.pathname;
 
-            // Clear existing content
             content.innerHTML = '';
 
-            // Add dynamic content based on the target
             switch (target) {
                 case 'upcoming-events':
                     content.innerHTML = `
@@ -148,7 +136,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                     </div>
                                 `;
                             });
-                            // Re-attach follow button listeners after new buttons are added
                             attachFollowButtonListeners();
                         } else {
                             followList.innerHTML = '<p>No suggestions available.</p>';
@@ -161,55 +148,72 @@ document.addEventListener('DOMContentLoaded', function() {
                     break;
             }
 
-            // Add "Show less" button functionality
             const showLessButtons = document.querySelectorAll('.show-less');
             showLessButtons.forEach(lessButton => {
                 lessButton.addEventListener('click', function(e) {
                     e.preventDefault();
-                    content.innerHTML = ''; // Clear content to show original child templates
+                    content.innerHTML = '';
                 });
             });
 
-            // Add back arrow functionality (navigate back to previous URL)
             const backArrows = document.querySelectorAll('.back-arrow');
             backArrows.forEach(arrow => {
                 arrow.addEventListener('click', function(e) {
                     e.preventDefault();
                     if (previousUrl) {
-                        window.location.href = previousUrl; // Navigate back to the stored URL
+                        window.location.href = previousUrl;
                     } else {
-                        window.history.back(); // Fallback to browser history
+                        window.history.back();
                     }
                 });
             });
         });
     });
 
-    // Post Modal Logic
-    const postModal = document.getElementById('post-modal');
-    const postBtn = document.querySelector('.post-btn');
-    const closeBtn = document.querySelector('.post-modal-close');
+    // Post Tip Logic (for home.html)
+    const postSubmitBtn = document.querySelector('.post-submit');
+    const postInput = document.querySelector('.post-input');
+    const postAudience = document.querySelector('.post-audience');
 
-    if (postBtn) {
-        console.log('Post button found');
-        postBtn.addEventListener('click', function() {
-            postModal.style.display = 'flex';
+    if (postSubmitBtn && postInput && postAudience) {
+        postSubmitBtn.addEventListener('click', function() {
+            const text = postInput.value.trim();
+            const audience = postAudience.value;
+
+            if (!text) {
+                alert('Please enter a tip before posting.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('text', text);
+            formData.append('audience', audience);
+            // Add sport selection if implemented in the future
+            // formData.append('sport', sportValue);
+
+            fetch('/api/post-tip/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCSRFToken(),
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Tip posted successfully!');
+                    postInput.value = ''; // Clear the input
+                    location.reload(); // Refresh the page to show the new tip
+                } else {
+                    alert('Error posting tip: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error posting tip:', error);
+                alert('An error occurred while posting the tip.');
+            });
         });
-    } else {
-        console.warn('Post button not found');
     }
-
-    if (closeBtn) {
-        closeBtn.addEventListener('click', function() {
-            postModal.style.display = 'none';
-        });
-    }
-
-    window.addEventListener('click', function(event) {
-        if (event.target === postModal) {
-            postModal.style.display = 'none';
-        }
-    });
 
     // Edit Profile Modal Logic
     const editProfileModal = document.getElementById("editProfileModal");
@@ -233,9 +237,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     window.addEventListener('click', function(event) {
-        if (event.target === postModal) {
-            postModal.style.display = 'none';
-        }
         if (editProfileModal && event.target === editProfileModal) {
             editProfileModal.style.display = "none";
         }
@@ -391,4 +392,4 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return tokenElement.value;
     }
-}); // Closing DOMContentLoaded event listener
+});

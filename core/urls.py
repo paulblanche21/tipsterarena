@@ -6,10 +6,12 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('', views.landing, name='landing'),  # Root URL
+    path('api/suggested-users/', views.suggested_users_api, name='suggested_users_api'),
+    path('api/post-tip/', views.post_tip, name='api_post_tip'),  # New endpoint
+    path('api/follow/', views.follow_user, name='follow_user'),
     path('home/', views.home, name='home'),
     path('sport/<str:sport>/', views.sport_view, name='sport'),
     path('explore/', views.explore, name='explore'),
-    path('api/follow/', views.follow_user, name='follow_user'),
     path('profile/<str:username>/', views.profile, name='profile'),
     path('profile/<str:username>/edit/', views.profile_edit, name='profile_edit'),
     path('messages/', views.messages, name='messages'),
@@ -22,7 +24,6 @@ urlpatterns = [
     path('cookie-policy/', views.cookie_policy, name='cookie_policy'),
     path('accessibility/', views.accessibility, name='accessibility'),
     path('logout/', auth_views.LogoutView.as_view(next_page='landing'), name='logout'),
-    path('api/suggested-users/', views.suggested_users_api, name='suggested_users_api'),
 ]
 
 if settings.DEBUG:

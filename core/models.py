@@ -10,6 +10,14 @@ class Tip(models.Model):
         ('horse_racing', 'Horse Racing'),
     ])
     text = models.TextField()
+    audience = models.CharField(  # New field
+        max_length=20,
+        choices=[
+            ('everyone', 'Everyone'),
+            ('followers', 'Followers'),
+        ],
+        default='everyone'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
