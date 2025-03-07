@@ -26,7 +26,7 @@
             <li><a href="{% url 'bookmarks' %}"><span class="nav-icon">📚</span> Bookmarks</a></li>
         </ul>
         <div class="nav-post">
-            <button class="post-btn" data-toggle="post-modal">Post Tip</button>
+            <button class="nav-post-btn" data-toggle="post-modal">Post Tip</button>
         </div>
         <div class="nav-user">
             <div class="nav-user-content" tabindex="0">
@@ -112,38 +112,38 @@
             </div>
         </aside>
 
-    <!-- Post Modal (bubble window, hidden by default) -->
-    <div class="post-modal" id="post-modal">
-        <div class="post-modal-content">
-            <div class="post-user">
-                {% if request.user.is_authenticated and request.user.userprofile.avatar %}
-                    <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar">
-                {% else %}
-                    <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.style.display='none'"> <!-- Fallback with onerror to hide if broken -->
-                {% endif %}
-                <div class="post-username-container">
-                    <span class="post-username">{{ request.user.username|default:"Guest" }}</span>
-                    <select class="post-audience">
-                        <option value="everyone">Everyone</option>
-                        <option value="followers">Followers</option>
-                    </select>
+            <!-- Post Modal (bubble window, hidden by default) -->
+        <div class="post-modal" id="post-modal">
+            <div class="post-modal-content">
+                <div class="post-user">
+                    {% if request.user.is_authenticated and request.user.userprofile.avatar %}
+                        <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar">
+                    {% else %}
+                        <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.style.display='none'"> <!-- Fallback with onerror to hide if broken -->
+                    {% endif %}
+                    <div class="post-username-container">
+                        <span class="post-username">{{ request.user.username|default:"Guest" }}</span>
+                        <select class="post-audience">
+                            <option value="everyone">Everyone</option>
+                            <option value="followers">Followers</option>
+                        </select>
+                    </div>
                 </div>
+                <textarea placeholder="Post a Tip..." class="post-input"></textarea>
+                <div class="post-actions">
+                    <button class="post-action-btn image"><i class="fas fa-image"></i></button> <!-- Image -->
+                    <button class="post-action-btn gif"><i class="far fa-file-image"></i></button> <!-- GIF -->
+                    <button class="post-action-btn poll"><i class="fas fa-chart-bar"></i></button> <!-- Poll -->
+                    <button class="post-action-btn emoji"><i class="far fa-smile"></i></button> <!-- Emoji -->
+                    <button class="post-action-btn location"><i class="fas fa-map-marker-alt"></i></button> <!-- Location -->
+                    <button class="post-action-btn schedule"><i class="fas fa-clock"></i></button> <!-- Scheduled Post -->
+                    <button class="post-action-btn bold"><i class="fas fa-bold"></i></button> <!-- Bold -->
+                    <button class="post-action-btn italic"><i class="fas fa-italic"></i></button> <!-- Italic -->
+                </div>
+                <button class="post-submit">Post</button>
+                <span class="post-modal-close">×</span>
             </div>
-            <textarea placeholder="Post a Tip..." class="post-input"></textarea>
-            <div class="post-actions">
-                <button class="post-action-btn"><i class="fas fa-image"></i></button> <!-- Image -->
-                <button class="post-action-btn"><i class="far fa-file-image"></i></button> <!-- GIF -->
-                <button class="post-action-btn"><i class="fas fa-chart-bar"></i></button> <!-- Poll -->
-                <button class="post-action-btn"><i class="far fa-smile"></i></button> <!-- Emoji -->
-                <button class="post-action-btn"><i class="fas fa-map-marker-alt"></i></button> <!-- Location -->
-                <button class="post-action-btn"><i class="fas fa-clock"></i></button> <!-- Scheduled Post -->
-                <button class="post-action-btn"><i class="fas fa-bold"></i></button> <!-- Bold -->
-                <button class="post-action-btn"><i class="fas fa-italic"></i></button> <!-- Italic -->
-            </div>
-            <button class="post-submit">Post</button>
-            <span class="post-modal-close">×</span>
         </div>
-    </div>
 
     <!-- CSRF Token (Add Here) -->
     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">

@@ -566,6 +566,35 @@ form#editProfileForm {
     padding: 5px 0;
 }
 
+/* Styling for Post Tip button in navbar */
+.nav-post-btn {
+    background-color: transparent; /* No background by default */
+    border: var(--secondary-bg); /* Add a whiteborder to match the button color */
+    color: var(--secondary-bg);  /* white to match post-action-btn */
+    font-size: 16px; /* Match icon size */
+    cursor: pointer;
+    transition: color 0.2s, background-color 0.2s, transform 0.1s, border-color 0.2s; /* Add border-color transition */
+    padding: 8px 16px; /* Padding for a button-like feel */
+    border-radius: 20px; /* Oval shape to match navbar style */
+    display: inline-flex; /* Ensure text and icon align */
+    align-items: center;
+    justify-content: center;
+    width: 100%; /* Full width of nav-post div */
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.nav-post-btn:hover {
+    color: #4a90e2; /* Blue spotlight color */
+    background-color: rgba(74, 144, 226, 0.1); /* Light blue spotlight */
+    transform: scale(1.1); /* Slight scale-up on hover */
+}
+
+/* Ensure the button fits within nav-post */
+.nav-post {
+    margin-bottom: 10px;
+}
+
 .nav-user-content {
     display: flex;
     align-items: center;
@@ -679,14 +708,23 @@ form#editProfileForm {
     color: #ff4136; /* Red on hover, matching your theme */
 }
 
+.post-actions {
+    margin-top: 8px;
+    display: flex;
+    gap: 8px; /* Slightly larger gap for better spacing */
+    flex-wrap: wrap;
+    align-items: center; /* Vertically center icons */
+}
+
+/* Post Action Button Styling */
 .post-action-btn {
     background-color: transparent; /* Remove background for a cleaner look */
     border: none; /* Remove border for a flat design */
     padding: 6px; /* Adjusted padding for icon size */
     font-size: 16px; /* Ensure icons are visible */
-    color: var(--primary-bg); /* Dark text for visibility */
+    color: #999999; /* Light grey color (adjust to your preference or use a variable like var(--gray-light)) */
     cursor: pointer;
-    transition: color 0.2s, transform 0.1s; /* Smooth hover effect */
+    transition: color 0.2s, background-color 0.2s, transform 0.1s; /* Include background-color transition for spotlight */
     border-radius: 50%; /* Circular buttons like X */
     width: 32px; /* Fixed width for consistency */
     height: 32px; /* Fixed height for consistency */
@@ -695,9 +733,53 @@ form#editProfileForm {
     justify-content: center;
 }
 
-.post-action-btn:hover {
-    color: darkblue; /* Darker blue on hover, like X */
-    transform: scale(1.1); /* Slight scale-up on hover for interactivity */
+/* Unique hover spotlight colors for each icon */
+.post-action-btn.image:hover {
+    color: #4a90e2; /* Blue for image */
+    background-color: rgba(74, 144, 226, 0.1); /* Light blue spotlight */
+    transform: scale(1.1); /* Slight scale-up on hover */
+}
+
+.post-action-btn.gif:hover {
+    color: #50e3c2; /* Teal for GIF */
+    background-color: rgba(80, 227, 194, 0.1); /* Light teal spotlight */
+    transform: scale(1.1);
+}
+
+.post-action-btn.poll:hover {
+    color: #f5a623; /* Orange for poll */
+    background-color: rgba(245, 166, 35, 0.1); /* Light orange spotlight */
+    transform: scale(1.1);
+}
+
+.post-action-btn.emoji:hover {
+    color: #9b59b6; /* Purple for emoji */
+    background-color: rgba(155, 89, 182, 0.1); /* Light purple spotlight */
+    transform: scale(1.1);
+}
+
+.post-action-btn.location:hover {
+    color: #2ecc71; /* Green for location */
+    background-color: rgba(46, 204, 113, 0.1); /* Light green spotlight */
+    transform: scale(1.1);
+}
+
+.post-action-btn.schedule:hover {
+    color: #e74c3c; /* Red for scheduled post */
+    background-color: rgba(231, 76, 60, 0.1); /* Light red spotlight */
+    transform: scale(1.1);
+}
+
+.post-action-btn.bold:hover {
+    color: #3498db; /* Blue for bold */
+    background-color: rgba(52, 152, 219, 0.1); /* Light blue spotlight */
+    transform: scale(1.1);
+}
+
+.post-action-btn.italic:hover {
+    color: #8e44ad; /* Purple for italic */
+    background-color: rgba(142, 68, 173, 0.1); /* Light purple spotlight */
+    transform: scale(1.1);
 }
 
 
@@ -705,13 +787,7 @@ form#editProfileForm {
     margin: 0; /* Remove default margin on icons */
 }
 
-.post-actions {
-    margin-top: 8px;
-    display: flex;
-    gap: 8px; /* Slightly larger gap for better spacing */
-    flex-wrap: wrap;
-    align-items: center; /* Vertically center icons */
-}
+
 
 .post-avatar {
     width: 48px;
@@ -731,23 +807,6 @@ form#editProfileForm {
     max-width: 650px;
 }
 
-.post-btn {
-    display: block;
-    background-color: #ff4136;
-    color: #ffffff;
-    text-align: center;
-    padding: 20px;
-    border-radius: 20px;
-    text-decoration: none;
-    font-weight: bold;
-    width: 100%;
-    border: none;
-    cursor: pointer;
-}
-
-.post-btn:hover {
-    background-color: #d9362e;
-}
 
 .post-input {
     width: 100%;

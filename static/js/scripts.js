@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             const target = this.getAttribute('data-target');
             const content = document.querySelector('.content');
-            previousUrl = window.location.pathname;
+            let previousUrl = window.location.pathname;
 
             content.innerHTML = '';
 
@@ -175,8 +175,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const postInput = document.querySelector('.post-input');
     const postAudience = document.querySelector('.post-audience');
 
+    console.log('Post Submit Btn:', postSubmitBtn); // Debug log
+    console.log('Post Input:', postInput); // Debug log
+    console.log('Post Audience:', postAudience); // Debug log
+
     if (postSubmitBtn && postInput && postAudience) {
         postSubmitBtn.addEventListener('click', function() {
+            console.log('Post button clicked'); // Debug log
             const text = postInput.value.trim();
             const audience = postAudience.value;
 
@@ -213,6 +218,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('An error occurred while posting the tip.');
             });
         });
+    } else {
+        console.warn('One or more post modal elements not found:', { postSubmitBtn, postInput, postAudience });
     }
 
     // Edit Profile Modal Logic
@@ -381,6 +388,31 @@ document.addEventListener('DOMContentLoaded', function() {
             charCount.textContent = length + ' / 160 characters';
             charCount.style.color = length > 160 ? '#ff4136' : '#666666';
         });
+    }
+
+    // Toggle Post Modal
+    const postTipBtn = document.querySelector('.nav-post-btn[data-toggle="post-modal"]');
+    const postModal = document.getElementById('post-modal');
+
+    if (postTipBtn && postModal) {
+        postTipBtn.addEventListener('click', function() {
+            postModal.style.display = postModal.style.display === 'block' ? 'none' : 'block';
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target === postModal) {
+                postModal.style.display = 'none';
+            }
+        });
+
+        // Ensure the close button works
+        const postModalClose = document.querySelector('.post-modal-close');
+        if (postModalClose) {
+            postModalClose.addEventListener('click', function() {
+                postModal.style.display = 'none';
+            });
+        }
     }
 
     // Function to get CSRF token
