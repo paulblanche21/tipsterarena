@@ -6,9 +6,10 @@
     <title>{% block title %}Tipster Arena{% endblock %}</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <!-- Navbar (updated with Post Tip button triggering pop-up) -->
+    <!-- Navbar -->
     <nav class="navbar">
         <div class="nav-brand">
             <img src="{% static 'images/tipster-arena-logo.png' %}" alt="Tipster Arena Logo" class="nav-brand-logo">
@@ -58,103 +59,8 @@
         <aside class="sidebar">
             <input type="text" placeholder="Search Tipster Arena..." class="search-input">
             <div class="sidebar-scrollable">
-                {% block upcoming_events %}
-                <div class="sidebar-card upcoming-events-card" data-card="upcoming-events" style="background-color: white;">
-                    <h3>Upcoming Events</h3>
-                    <div class="carousel-container">
-                        <div class="carousel-slide active" data-sport="football">
-                            <div class="event-list">
-                                <!-- Initial Events (5) -->
-                                <p class="event-item"><span class="sport-icon">⚽</span> Football: Premier League - Manchester United vs. Tottenham, Mar 12, 2025</p>
-                                <p class="event-item"><span class="sport-icon">⚽</span> Football: La Liga - Real Madrid vs. Barcelona, Mar 15, 2025</p>
-                                <p class="event-item"><span class="sport-icon">⚽</span> Football: Champions League - Bayern Munich vs. PSG, Mar 16, 2025</p>
-                                <p class="event-item"><span class="sport-icon">⚽</span> Football: FA Cup - Chelsea vs. Arsenal, Mar 17, 2025</p>
-                                <p class="event-item"><span class="sport-icon">⚽</span> Football: Serie A - Juventus vs. Inter Milan, Mar 18, 2025</p>
-                                <!-- Hidden Events (for potential future use) -->
-                                <p class="event-item hidden"><span class="sport-icon">⚽</span> Football: Bundesliga - Dortmund vs. Leipzig, Mar 19, 2025</p>
-                            </div>
-                        </div>
-                        <div class="carousel-slide" data-sport="golf">
-                            <div class="event-list">
-                                <p class="event-item"><span class="sport-icon">⛳</span> Golf: PGA Championship, Mar 20-23, 2025</p>
-                                <p class="event-item"><span class="sport-icon">⛳</span> Golf: The Masters Preview, Mar 25, 2025</p>
-                                <p class="event-item"><span class="sport-icon">⛳</span> Golf: US Open Qualifier, Mar 26, 2025</p>
-                                <p class="event-item"><span class="sport-icon">⛳</span> Golf: Open Championship Warm-Up, Mar 27, 2025</p>
-                                <p class="event-item"><span class="sport-icon">⛳</span> Golf: Ryder Cup Trials, Mar 28, 2025</p>
-                                <p class="event-item hidden"><span class="sport-icon">⛳</span> Golf: Women’s PGA, Mar 29, 2025</p>
-                            </div>
-                        </div>
-                        <div class="carousel-slide" data-sport="tennis">
-                            <div class="event-list">
-                                <p class="event-item"><span class="sport-icon">🎾</span> Tennis: Australian Open Qualifiers, Mar 10-12, 2025</p>
-                                <p class="event-item"><span class="sport-icon">🎾</span> Tennis: Wimbledon Warm-Up, Mar 18, 2025</p>
-                                <p class="event-item"><span class="sport-icon">🎾</span> Tennis: French Open Trials, Mar 20, 2025</p>
-                                <p class="event-item"><span class="sport-icon">🎾</span> Tennis: US Open Prep, Mar 21, 2025</p>
-                                <p class="event-item"><span class="sport-icon">🎾</span> Tennis: ATP Finals Qualifier, Mar 22, 2025</p>
-                                <p class="event-item hidden"><span class="sport-icon">🎾</span> Tennis: WTA Finals, Mar 23, 2025</p>
-                            </div>
-                        </div>
-                        <div class="carousel-slide" data-sport="horse_racing">
-                            <div class="event-list">
-                                <p class="event-item"><span class="sport-icon">🏇</span> Horse Racing: Grand National Trials, Mar 14, 2025</p>
-                                <p class="event-item"><span class="sport-icon">🏇</span> Horse Racing: Cheltenham Festival, Mar 19, 2025</p>
-                                <p class="event-item"><span class="sport-icon">🏇</span> Horse Racing: Kentucky Derby Prep, Mar 21, 2025</p>
-                                <p class="event-item"><span class="sport-icon">🏇</span> Horse Racing: Preakness Stakes Warm-Up, Mar 22, 2025</p>
-                                <p class="event-item"><span class="sport-icon">🏇</span> Horse Racing: Belmont Stakes Trials, Mar 23, 2025</p>
-                                <p class="event-item hidden"><span class="sport-icon">🏇</span> Horse Racing: Royal Ascot Preview, Mar 24, 2025</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="carousel-dots">
-                        <span class="dot active" data-sport="football"></span>
-                        <span class="dot" data-sport="golf"></span>
-                        <span class="dot" data-sport="tennis"></span>
-                        <span class="dot" data-sport="horse_racing"></span>
-                    </div>
-                    <a href="#" class="show-more" data-target="upcoming-events">Show more</a>
-                </div>
-                {% endblock %}
-                {% block trending_tips %}
-                <div class="sidebar-card trending-tips-card" data-card="trending-tips" style="background-color: white;">
-                    <h3>Trending Tips</h3>
-                    <div class="trending-tips-list">
-                        <div class="trending-tip">
-                            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.style.display='none'">
-                            <div class="tip-details">
-                                <a href="#" class="tip-username"><strong>@TennisGuru</strong></a>
-                                <p class="tip-text">Djokovic to win Australian Open - Odds: 3.5</p>
-                            </div>
-                            <span class="tip-likes"><i class="fas fa-heart"></i> 250</span>
-                        </div>
-                        <div class="trending-tip">
-                            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.style.display='none'">
-                            <div class="tip-details">
-                                <a href="#" class="tip-username"><strong>@AceBettor</strong></a>
-                                <p class="tip-text">Swiatek top 4 at French Open - Odds: 2.0</p>
-                            </div>
-                            <span class="tip-likes"><i class="fas fa-heart"></i> 180</span>
-                        </div>
-                        <div class="trending-tip">
-                            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.style.display='none'">
-                            <div class="tip-details">
-                                <a href="#" class="tip-username"><strong>@RacketTip</strong></a>
-                                <p class="tip-text">Nadal to reach Wimbledon QF - Odds: 4.0</p>
-                            </div>
-                            <span class="tip-likes"><i class="fas fa-heart"></i> 150</span>
-                        </div>
-                        <div class="trending-tip">
-                            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.style.display='none'">
-                            <div class="tip-details">
-                                <a href="#" class="tip-username"><strong>@ServeMaster</strong></a>
-                                <p class="tip-text">Alcaraz to win Miami Open - Odds: 5.0</p>
-                            </div>
-                            <span class="tip-likes"><i class="fas fa-heart"></i> 120</span>
-                        </div>
-                    </div>
-                    <a href="#" class="show-more" data-target="trending-tips">Show more</a>
-                </div>
-                {% endblock %}
-                
+                {% block upcoming_events %}{% endblock %}
+                {% block trending_tips %}{% endblock %}
                 <div class="sidebar-card" data-card="who-to-follow">
                     <h3 class="who-to-follow-header">Who to Follow</h3>
                     <div class="follow-list">
@@ -173,19 +79,19 @@
                     </div>
                     <a href="#" class="show-more" data-target="who-to-follow">Show more</a>
                 </div>
-                 <!-- Add Policy Links Below "Who to Follow" Card -->
-                        <!-- Add Policy Links Inside a Card -->
                 <div class="sidebar-card" data-card="policy-links">
                     <div class="policy-links">
-                        <a href="{% url 'terms_of_service' %}" class="policy-link">Terms of Service</a>
-                        <a href="{% url 'privacy_policy' %}" class="policy-link">Privacy Policy</a>
-                        <a href="{% url 'cookie_policy' %}" class="policy-link">Cookie Policy</a>
-                        <a href="{% url 'accessibility' %}" class="policy-link">Accessibility</a>
+                        <div class="policy-links-columns">
+                            <a href="{% url 'terms_of_service' %}" class="policy-link">Terms of Service</a>
+                            <a href="{% url 'privacy_policy' %}" class="policy-link">Privacy Policy</a>
+                            <a href="{% url 'cookie_policy' %}" class="policy-link">Cookie Policy</a>
+                            <a href="{% url 'accessibility' %}" class="policy-link">Accessibility</a>
+                        </div>
                         <p class="copyright-notice">© 2025 Tipster Arena. All Rights Reserved.</p>
                     </div>
                 </div>
             </div>
-             <!-- Updated Messages Button -->
+            <!-- Messages Button -->
             <div class="messages-container">
                 <a href="{% url 'messages' %}" class="messages-card">
                     <span class="messages-text">Messages</span>
@@ -194,62 +100,58 @@
                 </a>
             </div>
         </aside>
+    </div>
 
-            <!-- Post Modal (bubble window, hidden by default) -->
-        <div class="post-modal" id="post-modal">
-            <div class="post-modal-content">
-                <div class="post-user">
-                    {% if request.user.is_authenticated and request.user.userprofile.avatar %}
-                        <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar">
-                    {% else %}
-                        <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.style.display='none'"> <!-- Fallback with onerror to hide if broken -->
-                    {% endif %}
-                    <div class="post-username-container">
-                        <span class="post-username">{{ request.user.username|default:"Guest" }}</span>
-                        <select class="post-audience">
-                            <option value="everyone">Everyone</option>
-                            <option value="followers">Followers</option>
-                        </select>
-                    </div>
+    <!-- Post Modal (Restored for Navbar Button) -->
+    <div class="post-modal" id="post-modal">
+        <div class="post-modal-content">
+            <div class="post-user">
+                {% if request.user.is_authenticated and request.user.userprofile.avatar %}
+                    <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar">
+                {% else %}
+                    <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.style.display='none'">
+                {% endif %}
+                <div class="post-username-container">
+                    <span class="post-username">{{ request.user.username|default:"Guest" }}</span>
+                    <select class="post-audience">
+                        <option value="everyone">Everyone</option>
+                        <option value="followers">Followers</option>
+                    </select>
                 </div>
-                <textarea placeholder="Post a Tip..." class="post-input"></textarea>
-                <div class="post-actions">
-                    <button class="post-action-btn image"><i class="fas fa-image"></i></button> <!-- Image -->
-                    <button class="post-action-btn gif"><i class="far fa-file-image"></i></button> <!-- GIF -->
-                    <button class="post-action-btn poll"><i class="fas fa-chart-bar"></i></button> <!-- Poll -->
-                    <button class="post-action-btn emoji"><i class="far fa-smile"></i></button> <!-- Emoji -->
-                    <button class="post-action-btn location"><i class="fas fa-map-marker-alt"></i></button> <!-- Location -->
-                    <button class="post-action-btn schedule"><i class="fas fa-clock"></i></button> <!-- Scheduled Post -->
-                    <button class="post-action-btn bold"><i class="fas fa-bold"></i></button> <!-- Bold -->
-                    <button class="post-action-btn italic"><i class="fas fa-italic"></i></button> <!-- Italic -->
-                </div>
-                <button class="post-submit">Post</button>
-                <span class="post-modal-close">×</span>
             </div>
+            <textarea placeholder="Post a Tip..." class="post-input"></textarea>
+            <div class="post-actions">
+                <button class="post-action-btn image"><i class="fas fa-image"></i></button>
+                <button class="post-action-btn gif"><i class="far fa-file-image"></i></button>
+                <button class="post-action-btn poll"><i class="fas fa-chart-bar"></i></button>
+                <button class="post-action-btn emoji"><i class="far fa-smile"></i></button>
+                <button class="post-action-btn location"><i class="fas fa-map-marker-alt"></i></button>
+                <button class="post-action-btn schedule"><i class="fas fa-clock"></i></button>
+                <button class="post-action-btn bold"><i class="fas fa-bold"></i></button>
+                <button class="post-action-btn italic"><i class="fas fa-italic"></i></button>
+            </div>
+            <button class="post-submit">Post</button>
+            <span class="post-modal-close">×</span>
         </div>
+    </div>
 
-    <!-- CSRF Token (Add Here) -->
+    <!-- CSRF Token -->
     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 
-    <!-- JavaScript for Post Modal -->
+    <!-- JavaScript -->
     <script>
-        // Define the static URL for default-avatar.png
+        // Define static URLs for fallbacks
         const DEFAULT_AVATAR_URL = "{% static 'images/default-avatar.png' %}";
         const DEFAULT_BANNER_URL = "{% static 'images/default-banner.png' %}";
-            // Function to set default banner
         function setDefaultBanner(img) {
             img.src = DEFAULT_BANNER_URL;
             img.onerror = null; // Prevent infinite loops
         }
-
-        // Function to set default avatar (already used elsewhere)
         function setDefaultAvatar(img) {
             img.src = DEFAULT_AVATAR_URL;
             img.onerror = null; // Prevent infinite loops
         }
     </script>
     <script src="{% static 'js/scripts.js' %}" defer></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
 </body>
 </html>
