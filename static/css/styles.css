@@ -70,6 +70,69 @@ body {
     align-items: flex-start;
 }
 
+.carousel-container {
+    position: relative;
+    flex: 1; /* Take up available space within the fixed-height card */
+    overflow: hidden;
+}
+
+
+.carousel-container.expanded {
+    max-height: 400px; /* Adjust based on content */
+}
+
+.carousel-slide {
+    display: none;
+    padding: 5px 0;
+    height: 100%; /* Ensure slide fills the container */
+    overflow: hidden; /* Prevent overflow within slide */
+}
+
+.carousel-slide.active {
+    display: block;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+
+.carousel-slide.active {
+    display: block;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+carousel-prev, .carousel-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.carousel-prev {
+    left: 5px;
+}
+
+.carousel-next {
+    right: 5px;
+}
+
+.carousel-prev:hover, .carousel-next:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.carousel-dots {
+    text-align: center;
+    padding: 10px 0;
+}
+
 /* Main Content */
 .content {
     flex: 1;
@@ -143,6 +206,26 @@ body {
     padding-top: 4px; /* Small padding above to separate from links */
     border-top: 1px solid #e1e8ed; /* Light border to visually separate */
 }
+
+
+.dot {
+    height: 10px;
+    width: 10px;
+    background-color: #bbb;
+    border-radius: 50%;
+    display: inline-block;
+    margin: 0 5px;
+    cursor: pointer;
+}
+
+.dot.active {
+    background-color: var(--primary-bg);
+}
+
+.dot:hover {
+    background-color: #999;
+}
+
 .error {
     color: red;
     font-size: 0.9em;
@@ -151,28 +234,22 @@ body {
 
 /* Event List Styling */
 .event-list {
-    margin-bottom: 15px;
+    margin: 0;
+    padding: 0;
+    height:100%;
 }
 
 .event-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 0;
-    border-bottom: 1px solid #e1e8ed; /* Light border between items, like Twitter/X */
+    margin: 3px 0;
+    padding: 3px 0;
 }
 
-.event-item:last-child {
-    border-bottom: none; /* Remove border from the last item */
+.event-item.hidden {
+    display: none;
 }
 
-.event-item p {
-    font-size: 14px;
-    color: #666666;
-    margin: 0;
-    line-height: 1.4;
-    max-width: 300px; /* Prevent overflow */
-    overflow-wrap: break-word;
+.event-item.hidden.visible {
+    display: block;
 }
 
 /* Who to Follow list styling */
@@ -334,6 +411,7 @@ form#editProfileForm {
     min-height: 100px;
     resize: vertical;
 }
+
 
 /* Landing Page Call to Action */
 .landing-cta {
@@ -852,9 +930,7 @@ form#editProfileForm {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 1003;
-    justify-content: flex-start;
-    align-items: flex-start;
-    padding-top: 50px;
+    
 }
 
 .post-modal-close {
@@ -1326,24 +1402,20 @@ form#editProfileForm {
 }
 
 
-/* Show more button styling (Tipster Arena red, Twitter/X-like layout) */
+
 .show-more {
     display: block;
-    color: var(--red-accent); /* Use your red accent (#ff4136) */
+    margin-top: 10px;
+    color: #4a90e2;
     text-decoration: none;
-    font-size: 14px;
-    margin-top: 8px;
-    cursor: pointer;
-    padding: 0; /* No padding for minimalism */
-    background: none;
-    border: none;
-    width: fit-content;
+    font-size: 0.9em;
+    text-align: center; /* Center the button */
 }
 
 .show-more:hover {
-    text-decoration: underline; /* Optional: Minimal hover effect, like Twitter/X */
-    color: var(--red-accent); /* No color change on hover */
+    text-decoration: underline;
 }
+
 
 
 /* Show less button styling (Tipster Arena red, Twitter/X-like layout) */
@@ -1439,9 +1511,6 @@ form#editProfileForm {
     min-height: 350px; /* Increased height for more content */
 }
 
-
-
-
 .sidebar-message-content {
     position: fixed;
     width: 200px;
@@ -1495,6 +1564,10 @@ form#editProfileForm {
 .search-input:focus {
     outline: none;
     border-color: #ff4136;
+}
+
+.sport-icon {
+    margin-right: 5px;
 }
 
 /* Ensure compatibility with existing tip styles */
@@ -1698,6 +1771,21 @@ form#editProfileForm {
     text-decoration: underline;
     color: #ff4136;
 }
+
+
+/* Upcoming Events Carousel Styling */
+.upcoming-events-card {
+    padding: 10px;
+    background-color: var(--secondary-bg);
+    border-radius: var(--border-radius);
+    margin-bottom: 15px;
+    height: 350px; /* Fixed height to prevent resizing */
+    display:flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
 
 /* Who to Follow Header */
 .who-to-follow-header {
