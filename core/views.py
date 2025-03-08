@@ -217,11 +217,6 @@ def suggested_users_api(request):
 
     return JsonResponse({'users': users_data})
 
-from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
-from .models import Tip
-import json
 
 @csrf_exempt
 @login_required

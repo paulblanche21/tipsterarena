@@ -13,12 +13,34 @@
                 <p>Sample bookmarked tip: "This is a test tip..."</p>
                 <small>March 3, 2025, 10:00 am</small>
                 <div class="tip-actions">
-                    <a href="#" class="tip-action">❤️ Like</a>
-                    <a href="#" class="tip-action">↻ Share</a>
-                    <a href="#" class="tip-action">💬 Comment</a>
+                    <div class="tip-action-group">
+                        <a href="#" class="tip-action tip-action-like"><i class="fas fa-heart"></i></a>
+                        <span class="tip-action-count">79</span>
+                    </div>
+                    <div class="tip-action-group">
+                        <a href="#" class="tip-action tip-action-retweet"><i class="fas fa-retweet"></i></a>
+                        <span class="tip-action-count">7</span>
+                    </div>
+                    <div class="tip-action-group">
+                        <a href="#" class="tip-action tip-action-comment"><i class="fas fa-comment-dots"></i></a>
+                        <span class="tip-action-count">11</span>
+                    </div>
+                    <div class="tip-action-spacer"></div> <!-- Spacer to position engagement icon -->
+                    <div class="tip-action-group">
+                        <a href="#" class="tip-action tip-action-engagement"><i class="fas fa-users"></i></a>
+                        <span class="tip-action-count">6.5K</span>
+                    </div>
+                    <div class="tip-action-spacer-large"></div> <!-- Larger spacer to push bookmark and share right -->
+                    <div class="tip-action-group">
+                        <a href="#" class="tip-action tip-action-bookmark"><i class="fas fa-bookmark"></i></a>
+                    </div>
+                    <div class="tip-action-group">
+                        <a href="#" class="tip-action tip-action-share"><i class="fas fa-arrow-up"></i></a>
+                    </div>
                 </div>
             </div>
-        </div>
+            </div>
+        
         <div class="tip">
             <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar">
             <div class="tip-content">
@@ -26,10 +48,32 @@
                 <p>Another bookmarked tip: "Testing layout..."</p>
                 <small>March 3, 2025, 10:05 am</small>
                 <div class="tip-actions">
-                    <a href="#" class="tip-action">❤️ Like</a>
-                    <a href="#" class="tip-action">↻ Share</a>
-                    <a href="#" class="tip-action">💬 Comment</a>
+                    <div class="tip-action-group">
+                        <a href="#" class="tip-action tip-action-like"><i class="fas fa-heart"></i></a>
+                        <span class="tip-action-count">79</span>
+                    </div>
+                    <div class="tip-action-group">
+                        <a href="#" class="tip-action tip-action-retweet"><i class="fas fa-retweet"></i></a>
+                        <span class="tip-action-count">7</span>
+                    </div>
+                    <div class="tip-action-group">
+                        <a href="#" class="tip-action tip-action-comment"><i class="fas fa-comment-dots"></i></a>
+                        <span class="tip-action-count">11</span>
+                    </div>
+                    <div class="tip-action-spacer"></div> <!-- Spacer to position engagement icon -->
+                    <div class="tip-action-group">
+                        <a href="#" class="tip-action tip-action-engagement"><i class="fas fa-users"></i></a>
+                        <span class="tip-action-count">6.5K</span>
+                    </div>
+                    <div class="tip-action-spacer-large"></div> <!-- Larger spacer to push bookmark and share right -->
+                    <div class="tip-action-group">
+                        <a href="#" class="tip-action tip-action-bookmark"><i class="fas fa-bookmark"></i></a>
+                    </div>
+                    <div class="tip-action-group">
+                        <a href="#" class="tip-action tip-action-share"><i class="fas fa-arrow-up"></i></a>
+                    </div>
                 </div>
+            </div>
             </div>
         </div>
     </div>
