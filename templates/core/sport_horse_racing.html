@@ -153,8 +153,42 @@
 {% endblock %}
 
 {% block trending_tips %}
-<div class="sidebar-card">
+<div class="sidebar-card trending-tips-card" data-card="trending-tips" style="background-color: white;">
     <h3>Trending Tips</h3>
-    <p>Hot tips for today’s big races...</p>    
+    <div class="trending-tips-list">
+        <div class="trending-tip">
+            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.style.display='none'">
+            <div class="tip-details">
+                <a href="#" class="tip-username"><strong>@TennisGuru</strong></a>
+                <p class="tip-text">Djokovic to win Australian Open - Odds: 3.5</p>
+            </div>
+            <span class="tip-likes"><i class="fas fa-heart"></i> 250</span>
+        </div>
+        <div class="trending-tip">
+            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.style.display='none'">
+            <div class="tip-details">
+                <a href="#" class="tip-username"><strong>@AceBettor</strong></a>
+                <p class="tip-text">Swiatek top 4 at French Open - Odds: 2.0</p>
+            </div>
+            <span class="tip-likes"><i class="fas fa-heart"></i> 180</span>
+        </div>
+        <div class="trending-tip">
+            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.style.display='none'">
+            <div class="tip-details">
+                <a href="#" class="tip-username"><strong>@GoalMaster</strong></a>
+                <p class="tip-text">Man Utd to beat Tottenham - Odds: 2.8</p>
+            </div>
+            <span class="tip-likes"><i class="fas fa-heart"></i> 200</span>
+        </div>
+        <div class="trending-tip">
+            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.style.display='none'">
+            <div class="tip-details">
+                <a href="#" class="tip-username"><strong>@RaceKing</strong></a>
+                <p class="tip-text">Horse X to win Grand National - Odds: 8.0</p>
+            </div>
+            <span class="tip-likes"><i class="fas fa-heart"></i> 150</span>
+        </div>
+    </div>
+    <a href="#" class="show-more" data-target="trending-tips">Show more</a>
 </div>
 {% endblock %}
