@@ -252,6 +252,71 @@ carousel-prev, .carousel-next {
     display: block;
 }
 
+
+/* Events Popup Styling (specific to center feed popup) */
+.events-popup {
+    max-width: 650px; /* Match your tip-feed width */
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #e1e8ed;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 1000;
+    overflow: hidden; /* Contain inner scrolling */
+}
+
+.events-popup h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #001f3f;
+    margin-bottom: 10px;
+}
+
+.events-popup p {
+    font-size: 14px;
+    color: #666666;
+    margin-bottom: 15px;
+}
+
+.events-popup .event-list {
+    max-height: 70vh; /* Scrollable height, adjust as needed */
+    overflow-y: auto; /* Enable vertical scrolling */
+    padding-right: 10px; /* Space for scrollbar */
+}
+
+.events-popup .event-item {
+    padding: 8px 0;
+    border-bottom: 1px solid #e1e8ed;
+}
+
+.events-popup .event-item:last-child {
+    border-bottom: none;
+}
+
+.events-popup .event-item p {
+    margin: 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.events-popup .event-item .sport-icon {
+    margin-right: 5px;
+}
+
+.events-popup .show-less {
+    display: inline-block;
+    margin-top: 15px;
+    color: #ff4136;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.events-popup .show-less:hover {
+    text-decoration: underline;
+}
+
 /* Who to Follow list styling */
 .follow-card {
     background-color: #ffffff; /* White background for the card */

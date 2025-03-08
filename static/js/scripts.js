@@ -103,12 +103,63 @@ document.addEventListener('DOMContentLoaded', function() {
 
             switch (target) {
                 case 'upcoming-events':
-                    // Detect current page and display sport-specific fixtures
+                    // Detect current page and display sport-specific or all fixtures
                     const currentPath = window.location.pathname.toLowerCase(); // Case-insensitive match
-                    if (currentPath.includes('/sports/football/')) {
+                    if (currentPath === '/' || currentPath === '/home/') {
+                        // Home page: Show all upcoming events
+                        content.innerHTML = `
+                            <div class="events-popup">
+                                <h2>Upcoming Events</h2>
+                                <p>Here are the latest upcoming events in Tipster Arena:</p>
+                                <div class="event-list">
+                                    <div class="event-item"><p><span class="sport-icon">⚽</span> Premier League: Manchester United vs. Tottenham, Mar 12, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">⚽</span> La Liga: Real Madrid vs. Barcelona, Mar 15, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">⚽</span> Champions League: Bayern Munich vs. PSG, Mar 16, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">⚽</span> FA Cup: Chelsea vs. Arsenal, Mar 17, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">⚽</span> Serie A: Juventus vs. Inter Milan, Mar 18, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">⚽</span> Bundesliga: Dortmund vs. Leipzig, Mar 19, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">⚽</span> Europa League: Ajax vs. Roma, Mar 20, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">⚽</span> Premier League: Liverpool vs. Manchester City, Mar 21, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">⚽</span> La Liga: Atletico Madrid vs. Sevilla, Mar 22, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">⚽</span> Serie A: AC Milan vs. Napoli, Mar 23, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">⚽</span> Premier League: Arsenal vs. Chelsea, Mar 25, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">⚽</span> La Liga: Barcelona vs. Real Madrid, Mar 26, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">⚽</span> Champions League: PSG vs. Bayern Munich, Mar 27, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">⚽</span> FA Cup: Tottenham vs. Manchester United, Mar 28, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">⚽</span> Serie A: Inter Milan vs. Juventus, Mar 29, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">⚽</span> Bundesliga: Leipzig vs. Dortmund, Mar 30, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">⚽</span> Europa League: Roma vs. Ajax, Mar 31, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">⚽</span> Premier League: Manchester City vs. Liverpool, Apr 1, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">⚽</span> La Liga: Sevilla vs. Atletico Madrid, Apr 2, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">⚽</span> Serie A: Napoli vs. AC Milan, Apr 3, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">⛳</span> US PGA Tour: The Players Championship, Mar 13-16, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">⛳</span> US PGA Tour: Valspar Championship, Mar 20-23, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">⛳</span> US PGA Tour: WGC-Dell Technologies Match Play, Mar 26-30, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">⛳</span> US PGA Tour: Houston Open, Apr 3-6, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">⛳</span> US PGA Tour: Masters Tournament, Apr 10-13, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">⛳</span> DP World Tour: Magical Kenya Open, Mar 13-16, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">⛳</span> DP World Tour: Qatar Masters, Mar 20-23, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">⛳</span> DP World Tour: Hero Indian Open, Mar 27-30, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">⛳</span> DP World Tour: Volvo China Open, Apr 3-6, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">⛳</span> DP World Tour: Open de Espana, Apr 10-13, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">🎾</span> Tennis: Australian Open Qualifiers, Mar 10-12, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">🎾</span> Tennis: Wimbledon Warm-Up, Mar 18, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">🎾</span> Tennis: French Open Trials, Mar 20, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">🎾</span> Tennis: US Open Prep, Mar 21, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">🎾</span> Tennis: ATP Finals Qualifier, Mar 22, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">🏇</span> Horse Racing: Grand National Trials, Mar 14, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">🏇</span> Horse Racing: Cheltenham Festival, Mar 19, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">🏇</span> Horse Racing: Kentucky Derby Prep, Mar 21, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">🏇</span> Horse Racing: Preakness Stakes Warm-Up, Mar 22, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">🏇</span> Horse Racing: Belmont Stakes Trials, Mar 23, 2025</p></div>
+                                </div>
+                                <a href="#" class="show-less" data-target="${target}">Show less</a>
+                            </div>
+                        `;
+                    } else if (currentPath.includes('/sport/football/')) {
                         // Football fixtures only
                         content.innerHTML = `
-                            <div class="follow-card">
+                            <div class="events-popup">
                                 <h2>Upcoming Football Fixtures</h2>
                                 <p>Here are the latest football fixtures in Tipster Arena:</p>
                                 <div class="event-list">
@@ -136,10 +187,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <a href="#" class="show-less" data-target="${target}">Show less</a>
                             </div>
                         `;
-                    } else if (currentPath.includes('/sports/golf/')) {
+                    } else if (currentPath.includes('/sport/golf/')) {
                         // Golf fixtures only
                         content.innerHTML = `
-                            <div class="follow-card">
+                            <div class="events-popup">
                                 <h2>Upcoming Golf Events</h2>
                                 <p>Here are the latest golf events in Tipster Arena:</p>
                                 <div class="event-list">
@@ -167,18 +218,42 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <a href="#" class="show-less" data-target="${target}">Show less</a>
                             </div>
                         `;
-                    } else {
-                        // Default case for home page or other pages
+                    } else if (currentPath.includes('/sport/tennis/')) {
+                        // Tennis fixtures only
                         content.innerHTML = `
-                            <div class="follow-card">
-                                <h2>Upcoming Events</h2>
-                                <p>Here are the latest upcoming events in Tipster Arena:</p>
+                            <div class="events-popup">
+                                <h2>Upcoming Tennis Events</h2>
+                                <p>Here are the latest tennis events in Tipster Arena:</p>
                                 <div class="event-list">
-                                    <div class="event-item"><p><span class="sport-icon">⚽</span> Premier League: Manchester United vs. Tottenham, Mar 12, 2025</p></div>
-                                    <div class="event-item"><p><span class="sport-icon">⛳</span> US PGA Tour: The Players Championship, Mar 13-16, 2025</p></div>
-                                    <div class="event-item"><p><span class="sport-icon">🎾</span> Tennis: Australian Open Qualifiers, Mar 10-12, 2025</p></div>
-                                    <div class="event-item"><p><span class="sport-icon">🏇</span> Horse Racing: Grand National Trials, Mar 14, 2025</p></div>
-                                    <!-- Add more events as needed for default view -->
+                                    <div class="event-item"><p><span class="sport-icon">🎾</span> Australian Open Qualifiers, Mar 10-12, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">🎾</span> Wimbledon Warm-Up, Mar 18, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">🎾</span> French Open Trials, Mar 20, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">🎾</span> US Open Prep, Mar 21, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">🎾</span> ATP Finals Qualifier, Mar 22, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">🎾</span> WTA Finals, Mar 23, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">🎾</span> Australian Open, Jan 12-26, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">🎾</span> French Open Qualifiers, May 19-24, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">🎾</span> French Open, May 25-Jun 8, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">🎾</span> Wimbledon, Jun 30-Jul 13, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">🎾</span> US Open, Aug 25-Sep 7, 2025</p></div>
+                                </div>
+                                <a href="#" class="show-less" data-target="${target}">Show less</a>
+                            </div>
+                        `;
+                    } else if (currentPath.includes('/sport/horse_racing/')) {
+                        // Horse Racing fixtures only
+                        content.innerHTML = `
+                            <div class="events-popup">
+                                <h2>Upcoming Horse Racing Events</h2>
+                                <p>Here are the latest horse racing events in Tipster Arena:</p>
+                                <div class="event-list">
+                                    <div class="event-item"><p><span class="sport-icon">🏇</span> Grand National Trials, Mar 14, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">🏇</span> Cheltenham Festival, Mar 19, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">🏇</span> Kentucky Derby Prep, Mar 21, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">🏇</span> Preakness Stakes Warm-Up, Mar 22, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">🏇</span> Belmont Stakes Trials, Mar 23, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">🏇</span> Royal Ascot Preview, Mar 24, 2025</p></div>
+                                    <div class="event-item"><p><span class="sport-icon">🏇</span> Grand National, Apr 5, 2025</p></div>
                                 </div>
                                 <a href="#" class="show-less" data-target="${target}">Show less</a>
                             </div>
@@ -264,6 +339,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
+
 
     // Post Tip Logic (for home.html)
     const postSubmitBtn = document.querySelector('.post-submit');
