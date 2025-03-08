@@ -1139,8 +1139,8 @@ form#editProfileForm {
 
 .profile-edit-btn:hover {
     background-color: var(--shadow-hover);
-    border-color: #ff4136;
-    color: #ff4136;
+    border-color: darkred;
+    color: darkred;
 }
 
 .profile-edit-modal-content .form-input:focus {
@@ -1770,6 +1770,45 @@ form#editProfileForm {
 .tip-username:hover {
     text-decoration: underline;
     color: #ff4136;
+}
+
+.tip-text {
+    font-size: 13px;
+    margin: 2px 0 0 0;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tip-likes {
+    font-size: 12px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.tip-likes i {
+    color: #e0245e; /* Heart color */
+}
+
+.trending-tips-card {
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.trending-tips-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.trending-tip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 

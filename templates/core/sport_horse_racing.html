@@ -87,9 +87,68 @@
 {% endblock %}
 
 {% block upcoming_events %}
-<div class="sidebar-card trending-card">
-    <h3>Upcoming Race Meetings</h3>
-    <p>Races Today</p>
+<div class="sidebar-card upcoming-events-card" data-card="upcoming-events" style="background-color: white;">
+    <h3>Upcoming Meetings</h3>
+    <div class="carousel-container">
+        <div class="carousel-slide active" data-country="uk">
+            <div class="event-list">
+                <!-- UK Horse Racing Meetings (5) -->
+                <p class="event-item"><span class="sport-icon">🏇</span> Cheltenham Festival: Gold Cup, Mar 14, 2025</p>
+                <p class="event-item"><span class="sport-icon">🏇</span> Grand National, Apr 5, 2025</p>
+                <p class="event-item"><span class="sport-icon">🏇</span> Epsom Derby, Jun 7, 2025</p>
+                <p class="event-item"><span class="sport-icon">🏇</span> Royal Ascot: Gold Cup, Jun 19, 2025</p>
+                <p class="event-item"><span class="sport-icon">🏇</span> York Ebor Festival: Ebor Handicap, Aug 23, 2025</p>
+            </div>
+        </div>
+        <div class="carousel-slide" data-country="ireland">
+            <div class="event-list">
+                <!-- Ireland Horse Racing Meetings (5) -->
+                <p class="event-item"><span class="sport-icon">🏇</span> Irish Grand National, Apr 14, 2025</p>
+                <p class="event-item"><span class="sport-icon">🏇</span> Punchestown Festival: Champion Chase, Apr 29, 2025</p>
+                <p class="event-item"><span class="sport-icon">🏇</span> Irish Derby, Jun 29, 2025</p>
+                <p class="event-item"><span class="sport-icon">🏇</span> Irish Oaks, Jul 20, 2025</p>
+                <p class="event-item"><span class="sport-icon">🏇</span> Galway Races: Galway Plate, Jul 30, 2025</p>
+            </div>
+        </div>
+        <div class="carousel-slide" data-country="usa">
+            <div class="event-list">
+                <!-- USA Horse Racing Meetings (5) -->
+                <p class="event-item"><span class="sport-icon">🏇</span> Kentucky Derby, May 3, 2025</p>
+                <p class="event-item"><span class="sport-icon">🏇</span> Preakness Stakes, May 17, 2025</p>
+                <p class="event-item"><span class="sport-icon">🏇</span> Belmont Stakes, Jun 7, 2025</p>
+                <p class="event-item"><span class="sport-icon">🏇</span> Travers Stakes, Aug 23, 2025</p>
+                <p class="event-item"><span class="sport-icon">🏇</span> Breeders’ Cup Classic, Nov 1, 2025</p>
+            </div>
+        </div>
+        <div class="carousel-slide" data-country="australia">
+            <div class="event-list">
+                <!-- Australia Horse Racing Meetings (5) -->
+                <p class="event-item"><span class="sport-icon">🏇</span> Golden Slipper Stakes, Mar 22, 2025</p>
+                <p class="event-item"><span class="sport-icon">🏇</span> The Championships: Queen Elizabeth Stakes, Apr 12, 2025</p>
+                <p class="event-item"><span class="sport-icon">🏇</span> Caulfield Cup, Oct 18, 2025</p>
+                <p class="event-item"><span class="sport-icon">🏇</span> Cox Plate, Oct 25, 2025</p>
+                <p class="event-item"><span class="sport-icon">🏇</span> Melbourne Cup, Nov 4, 2025</p>
+            </div>
+        </div>
+        <div class="carousel-slide" data-country="dubai">
+            <div class="event-list">
+                <!-- Dubai Horse Racing Meetings (5) -->
+                <p class="event-item"><span class="sport-icon">🏇</span> Dubai World Cup, Mar 5, 2025</p>
+                <p class="event-item"><span class="sport-icon">🏇</span> Dubai Sheema Classic, Mar 5, 2025</p>
+                <p class="event-item"><span class="sport-icon">🏇</span> Dubai Turf, Mar 5, 2025</p>
+                <p class="event-item"><span class="sport-icon">🏇</span> Al Quoz Sprint, Mar 5, 2025</p>
+                <p class="event-item"><span class="sport-icon">🏇</span> Dubai Golden Shaheen, Mar 5, 2025</p>
+            </div>
+        </div>
+    </div>
+    <div class="carousel-dots">
+        <span class="dot active" data-country="uk"></span>
+        <span class="dot" data-country="ireland"></span>
+        <span class="dot" data-country="usa"></span>
+        <span class="dot" data-country="australia"></span>
+        <span class="dot" data-country="dubai"></span>
+    </div>
+    <a href="#" class="show-more" data-target="upcoming-events">Show more</a>
 </div>
 {% endblock %}
 

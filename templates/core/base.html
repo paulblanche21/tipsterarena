@@ -115,12 +115,46 @@
                 </div>
                 {% endblock %}
                 {% block trending_tips %}
-                <div class="sidebar-card" data-card="trending-tips">
+                <div class="sidebar-card trending-tips-card" data-card="trending-tips" style="background-color: white;">
                     <h3>Trending Tips</h3>
-                    <p>Hot tips for today’s big events...</p>
+                    <div class="trending-tips-list">
+                        <div class="trending-tip">
+                            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.style.display='none'">
+                            <div class="tip-details">
+                                <a href="#" class="tip-username"><strong>@TennisGuru</strong></a>
+                                <p class="tip-text">Djokovic to win Australian Open - Odds: 3.5</p>
+                            </div>
+                            <span class="tip-likes"><i class="fas fa-heart"></i> 250</span>
+                        </div>
+                        <div class="trending-tip">
+                            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.style.display='none'">
+                            <div class="tip-details">
+                                <a href="#" class="tip-username"><strong>@AceBettor</strong></a>
+                                <p class="tip-text">Swiatek top 4 at French Open - Odds: 2.0</p>
+                            </div>
+                            <span class="tip-likes"><i class="fas fa-heart"></i> 180</span>
+                        </div>
+                        <div class="trending-tip">
+                            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.style.display='none'">
+                            <div class="tip-details">
+                                <a href="#" class="tip-username"><strong>@RacketTip</strong></a>
+                                <p class="tip-text">Nadal to reach Wimbledon QF - Odds: 4.0</p>
+                            </div>
+                            <span class="tip-likes"><i class="fas fa-heart"></i> 150</span>
+                        </div>
+                        <div class="trending-tip">
+                            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.style.display='none'">
+                            <div class="tip-details">
+                                <a href="#" class="tip-username"><strong>@ServeMaster</strong></a>
+                                <p class="tip-text">Alcaraz to win Miami Open - Odds: 5.0</p>
+                            </div>
+                            <span class="tip-likes"><i class="fas fa-heart"></i> 120</span>
+                        </div>
+                    </div>
                     <a href="#" class="show-more" data-target="trending-tips">Show more</a>
                 </div>
                 {% endblock %}
+                
                 <div class="sidebar-card" data-card="who-to-follow">
                     <h3 class="who-to-follow-header">Who to Follow</h3>
                     <div class="follow-list">
