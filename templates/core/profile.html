@@ -10,6 +10,7 @@
             <a href="{% url 'home' %}" class="profile-back-arrow"><i class="fas fa-arrow-left"></i></a>
             <div class="profile-username-container">
                 <h1 class="profile-username">{{ user.username }}</h1>
+                <span class="profile-handle">{{ user_profile.handle }}</span>
                 <p class="profile-post-count">{{ user_tips.count }} Posts</p>
             </div>
         </div>
@@ -43,6 +44,7 @@
         <div class="profile-user-info">
             <div class="profile-user-details">
                 <h2 class="profile-username">{{ user.username }}</h2>
+                <span class="user-handle">{{ tip.user.userprofile.handle }}</span>
                 <p class="profile-description">{{ user_profile.description|default:"No description provided." }}</p>
             </div>  
         </div>
@@ -77,6 +79,7 @@
                     {% endif %}
                     <div class="tip-content">
                         <strong>{{ tip.user.username }}</strong>
+                        <span class="user-handle">{{ tip.user.userprofile.handle }}</span>
                         {% if tip.sport == 'football' %}⚽{% endif %}
                         {% if tip.sport == 'golf' %}⛳{% endif %}
                         {% if tip.sport == 'tennis' %}🎾{% endif %}

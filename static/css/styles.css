@@ -806,6 +806,7 @@ form#editProfileForm {
     text-decoration: none; /* Remove underline for X-like minimalism */
 }
 
+
 .notification-feed {
     background-color: #ffffff;
     border: 1px solid #e1e8ed;
@@ -1168,7 +1169,10 @@ form#editProfileForm {
     color: #001f3f;
 }
 
-
+.profile-handle {
+    color: #657786;
+    font-size: 0.9em;
+}
 
 /* Style both buttons consistently in the profile header */
 .profile-actions .profile-edit-btn,
@@ -1848,9 +1852,15 @@ form#editProfileForm {
     cursor:pointer;
 }
 
+.tip-header {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Space between username, handle, and date */
+}
+
 .tip-username:hover {
     text-decoration: underline;
-    color: #ff4136;
+    color: (var(--black));
 }
 
 /* Tip Text (updated to allow multiple lines) */
@@ -1911,6 +1921,11 @@ form#editProfileForm {
     overflow: hidden;
 }
 
+.user-info {
+    display: flex;
+    flex-direction: column;
+}
+
 
 /* Upcoming Events Carousel Styling */
 .upcoming-events-card {
@@ -1923,6 +1938,21 @@ form#editProfileForm {
     flex-direction: column;
     position: relative;
     overflow: hidden;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-display-name {
+    font-weight: bold;
+    color: var(--secondary-bg); /* Black for display name */
+}
+
+.user-handle {
+    font-size: 0.9em; /* Slightly smaller */
+    color: #657786; /* Grey color like X */
 }
 
 
