@@ -15,16 +15,16 @@
             <img src="{% static 'images/tipster-arena-logo.png' %}" alt="Tipster Arena Logo" class="nav-brand-logo">
         </div>
         <ul class="nav-menu">
-            <li><a href="{% url 'home' %}"><span class="nav-icon">🏠</span> Home</a></li>
-            <li><a href="{% url 'explore' %}"><span class="nav-icon">🔍</span> Explore</a></li>
-            <li><a href="{% url 'notifications' %}"><span class="nav-icon">🔔</span> Notifications</a></li>
-            <li><a href="{% url 'sport' 'football' %}"><span class="nav-icon">⚽</span> Football</a></li>
-            <li><a href="{% url 'sport' 'golf' %}"><span class="nav-icon">⛳</span> Golf</a></li>
-            <li><a href="{% url 'sport' 'tennis' %}"><span class="nav-icon">🎾</span> Tennis</a></li>
-            <li><a href="{% url 'sport' 'horse_racing' %}"><span class="nav-icon">🏇</span> Horse Racing</a></li>
-            <li><a href="{% url 'profile' request.user.username|default:'guest' %}"><span class="nav-icon">👤</span> Profile</a></li>
-            <li><a href="{% url 'messages' %}"><span class="nav-icon">✉️</span> Messages</a></li>
-            <li><a href="{% url 'bookmarks' %}"><span class="nav-icon">📚</span> Bookmarks</a></li>
+            <li><a href="{% url 'home' %}"><i class="fas fa-home nav-icon"></i> Home</a></li>
+            <li><a href="{% url 'explore' %}"><i class="fas fa-search nav-icon"></i> Explore</a></li>
+            <li><a href="{% url 'notifications' %}"><i class="fas fa-bell nav-icon"></i> Notifications</a></li>
+            <li><a href="{% url 'sport' 'football' %}"><i class="fas fa-futbol nav-icon"></i> Football</a></li>
+            <li><a href="{% url 'sport' 'golf' %}"><i class="fas fa-golf-ball nav-icon"></i> Golf</a></li>
+            <li><a href="{% url 'sport' 'tennis' %}"><i class="fas fa-table-tennis nav-icon"></i> Tennis</a></li>
+            <li><a href="{% url 'sport' 'horse_racing' %}"><i class="fas fa-horse nav-icon"></i> Horse Racing</a></li>
+            <li><a href="{% url 'profile' request.user.username|default:'guest' %}"><i class="fas fa-user nav-icon"></i> Profile</a></li>
+            <li><a href="{% url 'messages' %}"><i class="fas fa-envelope nav-icon"></i> Messages</a></li>
+            <li><a href="{% url 'bookmarks' %}"><i class="fas fa-bookmark nav-icon"></i> Bookmarks</a></li>
         </ul>
         <div class="nav-post">
             <button class="nav-post-btn" data-toggle="post-modal">Post Tip</button>

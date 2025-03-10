@@ -137,24 +137,23 @@ carousel-prev, .carousel-next {
 .content {
     flex: 1;
     max-width: calc(100vw - 600px); /* Adjusted to accommodate sidebar */;
-    padding: 10px 20px 10px 0;
+    padding: 0;
     background-color: var(--primary-bg); /* Changed to white to match Twitter/X */
     color: #001f3f;
     min-height: 100vh;
-    margin-left: 5px; /* Add left margin to match sidebar’s right margin */    
+    
 }
 
 /* Ensure dynamically generated content (like "Who to Follow") has a white background */
 .content h2, 
-
 .content ul, 
 .content .follow-list, 
 .content .follow-item {
     background-color: var(--secondary-bg); /* White background for content sections */
     color: var(--primary-bg); /* Dark text for readability on white background */
     border-radius: 12px; /* Match the card style */
-    padding: 12px; /* Add padding for consistency */
-    margin-bottom: 12px; /* Space between sections */
+    padding: 0px; /* Add padding for consistency */
+    margin-bottom: 0px; /* Space between sections */
 }
 
 
@@ -1225,27 +1224,51 @@ form#editProfileForm {
     border-color: #ff4136;
 }
 
-.profile-edit-modal-content .profile-edit-banner,
-.profile-edit-modal-content .profile-edit-avatar {
-    position: relative;
-    margin-bottom: 20px;
+.profile-edit-modal-content .profile-edit-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 10px;
 }
 
-.profile-edit-modal-content .profile-edit-banner img,
-.profile-edit-modal-content .profile-edit-avatar img {
+.profile-edit-modal-content {
+    background-color: #ffffff;
+    border: 1px solid #e1e8ed;
+    border-radius: 12px;
+    padding: 20px;
+    width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+    color: #001f3f;
+}
+
+.profile-edit-modal-content .profile-edit-banner {
+    position: relative;
+    width: 100%;
+    height: 200px; /* Match main profile banner height */
+}
+
+.profile-edit-modal-content .profile-edit-banner img {
     width: 100%;
     height: 200px;
     object-fit: cover;
     border-radius: 12px 12px 0 0;
 }
 
+.profile-edit-modal-content .profile-edit-avatar {
+    position: absolute;
+    bottom: -60px; /* Half of 120px height below banner */
+    left: 20px;
+    z-index: 1;
+}
+
 .profile-edit-modal-content .profile-edit-avatar img {
     width: 120px;
     height: 120px;
     border-radius: 50%;
-    position: absolute;
-    left: 20px;
-    top: 80px; /* Halfway into the banner */
     border: 4px solid #ffffff;
     object-fit: cover;
 }
@@ -1256,6 +1279,10 @@ form#editProfileForm {
     right: 10px;
     display: flex;
     gap: 10px;
+}
+
+.edit-profile-form {
+    margin-top: 80px; /* Clear the avatar (60px overlap + 20px gap) */
 }
 
 .profile-edit-modal-content .profile-edit-action-btn {
@@ -1297,10 +1324,9 @@ form#editProfileForm {
 .profile-actions {
     position: absolute;
     right: 20px;
-    bottom: -60px;
+    bottom: -20px;
     z-index: 2;
 }
-
 
 .profile-content {
     max-width: 650px;
@@ -1313,13 +1339,19 @@ form#editProfileForm {
     color: #001f3f;
 }
 
-/* Profile Header Top (Username and Back Arrow) */
+.profile-header {
+    position: relative;
+    width: 100%;
+    height: 200px;
+}
+
+
 .profile-header-top {
-    position: sticky; /* Stays fixed to the top of the scrollable area */
-    top: 0; /* Sticks to the top of .profile-content */
+    position: sticky;
+    top: 0;
     background-color: #ffffff;
-    z-index: 1000; /* Above other content but below modal */
-    padding: 5px 20px; /* Reduced padding for less height */
+    z-index: 1000;
+    padding: 5px 20px;
     border-bottom: 1px solid rgba(225, 232, 237, 0.5);
     display: flex;
     align-items: center;
@@ -1327,24 +1359,16 @@ form#editProfileForm {
     -webkit-backdrop-filter: blur(5px);
 }
 
-/* Ensure back arrow doesn’t add unnecessary height */
 .profile-back-arrow {
-    font-size: 18px; /* Reduced from 20px */
+    font-size: 18px;
     color: #000000;
     text-decoration: none;
-    margin-right: 15px; /* Reduced from 20px */
+    margin-right: 15px;
     cursor: pointer;
-    position: relative;
-    top: -3px; /* Slight adjustment for alignment */
     display: inline-flex;
     align-items: center;
 }
 
-.profile-back-arrow:hover {
-    color: #ff4136; /* Red on hover, matching your site’s theme */
-}
-
-/* Username and Post Count Container */
 .profile-username-container {
     display: flex;
     flex-direction: column;
@@ -1352,26 +1376,28 @@ form#editProfileForm {
 }
 
 .profile-username {
-    font-size: 20px; /* Reduced from 24px for less height */
+    font-size: 20px;
     font-weight: bold;
     color: #000000;
-    margin: 0 0 2px 0; /* Reduced margin for compactness */
+    margin: 0;
+    padding: 0;
     text-align: left;
+    display: block
+
+
 }
 
-/* Post Count Below Username */
 .profile-post-count {
-    font-size: 12px; /* Reduced from 14px for less height */
+    font-size: 12px;
     color: #666666;
-    margin: 0; /* Removed margin to eliminate extra space */
+    margin: 0;
     text-align: left;
 }
 
-/* Banner and Avatar */
 .profile-header {
     position: relative;
     width: 100%;
-    height: 200px; 
+    height: 200px;
 }
 
 .profile-banner {
@@ -1383,60 +1409,62 @@ form#editProfileForm {
 }
 
 .profile-avatar {
-    width: 120px; /* Larger avatar, matching X style */
+    width: 120px;
     height: 120px;
     border-radius: 50%;
-    border: 4px solid #ffffff; 
+    border: 4px solid #ffffff;
     position: absolute;
-    bottom: -60px; 
-    left: 20px; 
+    bottom: -60px;
+    left: 20px;
     object-fit: cover;
-    z-index: 1; 
+    z-index: 1;
 }
 
-/* Profile User Info (Username and Bio Below Avatar) */
+.profile-actions {
+    position: absolute;
+    right: 20px;
+    top: 205px; /* Place below banner */
+    margin-top: 10px; /* Small gap below banner */
+    z-index: 2;
+    display: flex;
+    align-items: flex-start; /* Align button with avatar’s bottom */
+}
+
 .profile-user-info {
-    margin: 80px 20px 20px 20px; 
-    padding-left: 0;
+    margin: 80px 20px 20px 20px;
+    padding: 0;
 }
 
-/* Username and Description Below Banner */
-.profile-username:nth-of-type(2) {
-    font-size: 20px;
-    font-weight: bold;
-    color: #000000;
-    margin: 0 0 10px 0; 
-    text-align: left;
+.profile-user-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin: 0;
+    padding: 0;
 }
-    
+
 .profile-description {
     font-size: 16px;
     color: #001f3f;
-    margin: 0 0 20px 0;
-    text-align: left;
+    margin: 5px 0 20px 0;
 }
 
-/* Profile Details (Location, DOB, Joined) */
+/* Remaining unchanged sections */
 .profile-details {
     margin: 0 20px 20px 20px;
     font-size: 14px;
     color: #666666;
     display: flex;
     gap: 15px;
-    flex-wrap: wrap; /* Allows items to wrap on smaller screens */
-}
-
-.profile-details p {
-    margin: 5px 0;
+    flex-wrap: wrap;
 }
 
 .profile-detail-item {
-    display: inline-flex; /* Ensures icons and text align properly */
-    align-items: center; /* Vertically centers icons and text */
-    margin-right: 15px; /* Space between items */;
+    display: inline-flex;
+    align-items: center;
+    margin-right: 15px;
 }
 
-/* Follower and Following Counts */
 .profile-follow {
     display: flex;
     gap: 20px;
@@ -1450,7 +1478,6 @@ form#editProfileForm {
     color: #000000;
 }
 
-/* Profile Navigation Bar */
 .profile-nav {
     display: flex;
     gap: 20px;
@@ -1479,6 +1506,7 @@ form#editProfileForm {
 }
 
 
+/* Show More Button Styling (Tipster Arena blue) */
 
 .show-more {
     display: block;
@@ -1921,6 +1949,16 @@ form#editProfileForm {
     overflow: hidden;
 }
 
+.user-handle {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-weight: normal;
+    font-size: 13px;
+    color: #657786;
+    margin: 0;
+    line-height: 1.1;
+    padding:0;
+}
+
 .user-info {
     display: flex;
     flex-direction: column;
@@ -1948,11 +1986,6 @@ form#editProfileForm {
 .user-display-name {
     font-weight: bold;
     color: var(--secondary-bg); /* Black for display name */
-}
-
-.user-handle {
-    font-size: 0.9em; /* Slightly smaller */
-    color: #657786; /* Grey color like X */
 }
 
 

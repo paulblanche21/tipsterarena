@@ -3,14 +3,13 @@
 {% block title %}{{ user.username }} - Tipster Arena{% endblock %}
 
 {% block content %}
-    <!-- Center Panel for Profile (matching X layout) -->
     <div class="profile-content">
         <!-- Username and Post Count (Header) with Back Arrow -->
         <div class="profile-header-top">
             <a href="{% url 'home' %}" class="profile-back-arrow"><i class="fas fa-arrow-left"></i></a>
             <div class="profile-username-container">
                 <h1 class="profile-username">{{ user.username }}</h1>
-                <span class="profile-handle">{{ user_profile.handle }}</span>
+                <span class="user-handle">{{ user_profile.handle }}</span> <!-- Changed to user-handle for consistency -->
                 <p class="profile-post-count">{{ user_tips.count }} Posts</p>
             </div>
         </div>
@@ -22,13 +21,11 @@
             {% else %}
                 <img src="{% static 'images/default-banner.png' %}" alt="Default Banner Image" class="profile-banner">
             {% endif %}
-            
             {% if user_profile.avatar %}
                 <img src="{{ user_profile.avatar.url }}" alt="{{ user.username }} Avatar" class="profile-avatar" onerror="setDefaultAvatar(this);">
             {% else %}
                 <img src="{% static 'images/default-avatar.png' %}" alt="{{ user.username }} Avatar" class="profile-avatar">
             {% endif %}
-            <!-- Conditional Profile Action Button -->
             <div class="profile-actions">
                 {% if is_owner %}
                     <button class="profile-edit-btn" id="editProfileBtn">Edit Profile</button>
@@ -40,11 +37,11 @@
             </div>
         </div>
 
-        <!-- Username, Profile Description, and Edit Profile Button -->
+        <!-- Username, Handle, and Bio Below Avatar -->
         <div class="profile-user-info">
             <div class="profile-user-details">
                 <h2 class="profile-username">{{ user.username }}</h2>
-                <span class="user-handle">{{ tip.user.userprofile.handle }}</span>
+                <span class="user-handle">{{ user_profile.handle }}</span> <!-- Fixed from tip.user.userprofile.handle -->
                 <p class="profile-description">{{ user_profile.description|default:"No description provided." }}</p>
             </div>  
         </div>
@@ -120,7 +117,6 @@
         </div>
     </div>
 
-    <!-- Edit Profile Modal (Moved outside profile-content) -->
     <div id="editProfileModal" class="profile-edit-modal">
         <div class="profile-edit-modal-content">
             <span class="profile-edit-modal-close">×</span>
@@ -132,9 +128,13 @@
                     {% else %}
                         <img src="{% static 'images/default-banner.png' %}" alt="Default Banner Image" class="profile-edit-banner-img">
                     {% endif %}
+                    <div class="profile-edit-actions">
+                        <button class="profile-edit-action-btn" data-action="add-banner"><i class="fas fa-camera"></i></button>
+                        <button class="profile-edit-action-btn" data-action="delete-banner"><i class="fas fa-times"></i></button>
+                    </div>
                     <div class="profile-edit-avatar">
                         {% if user_profile.avatar %}
-                        <img src="{{ user_profile.avatar.url }}" alt="Avatar" class="profile-edit-avatar-img" onerror="setDefaultAvatar(this);">
+                            <img src="{{ user_profile.avatar.url }}" alt="Avatar" class="profile-edit-avatar-img" onerror="setDefaultAvatar(this);">
                         {% else %}
                             <img src="{% static 'images/default-avatar.png' %}" alt="Avatar" class="profile-edit-avatar-img">
                         {% endif %}
@@ -142,42 +142,140 @@
                             <button class="profile-edit-action-btn" data-action="add-avatar"><i class="fas fa-camera"></i></button>
                         </div>
                     </div>
-                    <div class="profile-edit-actions">
-                        <button class="profile-edit-action-btn" data-action="add-banner"><i class="fas fa-camera"></i></button>
-                        <button class="profile-edit-action-btn" data-action="delete-banner"><i class="fas fa-times"></i></button>
-                    </div>
                 </div>
-                <div class="avatar-spacer"></div>
             </div>
-            <form method="post" enctype="multipart/form-data" id="editProfileForm">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label for="id_description">Bio</label>
-                    {{ form.description }}
-                    <small class="char-count" style="color: #666666; font-size: 12px;">{{ form.description.value|length }} / 160 characters</small>
-                </div>
-                <div class="form-group">
-                    <label for="id_location">Location (Optional)</label>
-                    {{ form.location }}
-                </div>
-                <div class="form-group">
-                    <label for="id_date_of_birth">Birth Date (Optional)</label>
-                    {{ form.date_of_birth }}
-                </div>
-                <div class="form-group">
-                    <label for="id_banner">Banner</label>
-                    {{ form.banner }}
-                </div>
-                <div class="form-group">
-                    <label for="id_avatar">Avatar</label>
-                    {{ form.avatar }}
-                </div>
-                <button type="submit" class="post-submit">Save Changes</button>
-            </form>
+            <div class="edit-profile-form">
+                <form method="post" enctype="multipart/form-data" id="editProfileForm">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="id_description">Bio</label>
+                        {{ form.description }}
+                        <small class="char-count" style="color: #666666; font-size: 12px;">{{ form.description.value|length }} / 160 characters</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="id_location">Location (Optional)</label>
+                        {{ form.location }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_date_of_birth">Birth Date (Optional)</label>
+                        {{ form.date_of_birth }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_banner">Banner</label>
+                        {{ form.banner }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_avatar">Avatar</label>
+                        {{ form.avatar }}
+                    </div>
+                    <button type="submit" class="post-submit">Save Changes</button>
+                </form>
+            </div>
         </div>
     </div>
+    {% endblock %}
+    {% block upcoming_events %}
+    <div class="sidebar-card upcoming-events-card" data-card="upcoming-events" style="background-color: white;">
+        <h3>Upcoming Fixtures</h3>
+        <div class="carousel-container">
+            <div class="carousel-slide active" data-league="premier-league">
+                <div class="event-list">
+                    <!-- Premier League Fixtures (5) -->
+                    <p class="event-item"><span class="sport-icon">⚽</span> Premier League: Manchester United vs. Tottenham, Mar 12, 2025</p>
+                    <p class="event-item"><span class="sport-icon">⚽</span> Premier League: Liverpool vs. Manchester City, Mar 21, 2025</p>
+                    <p class="event-item"><span class="sport-icon">⚽</span> Premier League: Arsenal vs. Chelsea, Mar 25, 2025</p>
+                    <p class="event-item"><span class="sport-icon">⚽</span> Premier League: Tottenham vs. Manchester United, Mar 28, 2025</p>
+                    <p class="event-item"><span class="sport-icon">⚽</span> Premier League: Manchester City vs. Liverpool, Apr 1, 2025</p>
+                </div>
+            </div>
+            <div class="carousel-slide" data-league="la-liga">
+                <div class="event-list">
+                    <p class="event-item"><span class="sport-icon">⚽</span> La Liga: Real Madrid vs. Barcelona, Mar 15, 2025</p>
+                    <p class="event-item"><span class="sport-icon">⚽</span> La Liga: Atletico Madrid vs. Sevilla, Mar 22, 2025</p>
+                    <p class="event-item"><span class="sport-icon">⚽</span> La Liga: Barcelona vs. Real Madrid, Mar 26, 2025</p>
+                    <p class="event-item"><span class="sport-icon">⚽</span> La Liga: Sevilla vs. Atletico Madrid, Apr 2, 2025</p>
+                    <p class="event-item"><span class="sport-icon">⚽</span> La Liga: Real Madrid vs. Valencia, Apr 5, 2025</p>
+                </div>
+            </div>
+            <div class="carousel-slide" data-league="serie-a">
+                <div class="event-list">
+                    <p class="event-item"><span class="sport-icon">⚽</span> Serie A: Juventus vs. Inter Milan, Mar 18, 2025</p>
+                    <p class="event-item"><span class="sport-icon">⚽</span> Serie A: AC Milan vs. Napoli, Mar 23, 2025</p>
+                    <p class="event-item"><span class="sport-icon">⚽</span> Serie A: Inter Milan vs. Juventus, Mar 29, 2025</p>
+                    <p class="event-item"><span class="sport-icon">⚽</span> Serie A: Napoli vs. AC Milan, Apr 3, 2025</p>
+                    <p class="event-item"><span class="sport-icon">⚽</span> Serie A: Juventus vs. Roma, Apr 6, 2025</p>
+                </div>
+            </div>
+            <div class="carousel-slide" data-league="bundesliga">
+                <div class="event-list">
+                    <p class="event-item"><span class="sport-icon">⚽</span> Bundesliga: Dortmund vs. Leipzig, Mar 19, 2025</p>
+                    <p class="event-item"><span class="sport-icon">⚽</span> Bundesliga: Leipzig vs. Dortmund, Mar 30, 2025</p>
+                    <p class="event-item"><span class="sport-icon">⚽</span> Bundesliga: Bayern Munich vs. Frankfurt, Apr 4, 2025</p>
+                    <p class="event-item"><span class="sport-icon">⚽</span> Bundesliga: Dortmund vs. Bayern Munich, Apr 7, 2025</p>
+                    <p class="event-item"><span class="sport-icon">⚽</span> Bundesliga: Leipzig vs. Wolfsburg, Apr 10, 2025</p>
+                </div>
+            </div>
+            <div class="carousel-slide" data-league="champions-league">
+                <div class="event-list">
+                    <p class="event-item"><span class="sport-icon">⚽</span> Champions League: Bayern Munich vs. PSG, Mar 16, 2025</p>
+                    <p class="event-item"><span class="sport-icon">⚽</span> Champions League: PSG vs. Bayern Munich, Mar 27, 2025</p>
+                    <p class="event-item"><span class="sport-icon">⚽</span> Champions League: Manchester City vs. Real Madrid, Apr 8, 2025</p>
+                    <p class="event-item"><span class="sport-icon">⚽</span> Champions League: Real Madrid vs. Manchester City, Apr 11, 2025</p>
+                    <p class="event-item"><span class="sport-icon">⚽</span> Champions League: Barcelona vs. Juventus, Apr 14, 2025</p>
+                </div>
+            </div>
+        </div>
+        <div class="carousel-dots">
+            <span class="dot active" data-league="premier-league"></span>
+            <span class="dot" data-league="la-liga"></span>
+            <span class="dot" data-league="serie-a"></span>
+            <span class="dot" data-league="bundesliga"></span>
+            <span class="dot" data-league="champions-league"></span>
+        </div>
+        <a href="#" class="show-more" data-target="upcoming-events">Show more</a>
+    </div>
+    {% endblock %}
 
-{% endblock %}
+    {% block trending_tips %}
+    <div class="sidebar-card trending-tips-card" data-card="trending-tips" style="background-color: white;">
+        <h3>Trending Tips</h3>
+        <div class="trending-tips-list">
+            <div class="trending-tip">
+                <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.style.display='none'">
+                <div class="tip-details">
+                    <a href="#" class="tip-username"><strong>@TennisGuru</strong></a>
+                    <p class="tip-text">Djokovic to win Australian Open - Odds: 3.5</p>
+                </div>
+                <span class="tip-likes"><i class="fas fa-heart"></i> 250</span>
+            </div>
+            <div class="trending-tip">
+                <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.style.display='none'">
+                <div class="tip-details">
+                    <a href="#" class="tip-username"><strong>@AceBettor</strong></a>
+                    <p class="tip-text">Swiatek top 4 at French Open - Odds: 2.0</p>
+                </div>
+                <span class="tip-likes"><i class="fas fa-heart"></i> 180</span>
+            </div>
+            <div class="trending-tip">
+                <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.style.display='none'">
+                <div class="tip-details">
+                    <a href="#" class="tip-username"><strong>@GoalMaster</strong></a>
+                    <p class="tip-text">Man Utd to beat Tottenham - Odds: 2.8</p>
+                </div>
+                <span class="tip-likes"><i class="fas fa-heart"></i> 200</span>
+            </div>
+            <div class="trending-tip">
+                <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.style.display='none'">
+                <div class="tip-details">
+                    <a href="#" class="tip-username"><strong>@RaceKing</strong></a>
+                    <p class="tip-text">Horse X to win Grand National - Odds: 8.0</p>
+                </div>
+                <span class="tip-likes"><i class="fas fa-heart"></i> 150</span>
+            </div>
+        </div>
+        <a href="#" class="show-more" data-target="trending-tips">Show more</a>
+    </div>
+    {% endblock %}
 
 {% block extra_styles %}
     <!-- No inline CSS; styles are in styles.css -->
