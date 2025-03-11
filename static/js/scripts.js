@@ -385,6 +385,150 @@ document.addEventListener('DOMContentLoaded', function() {
         console.warn('One or more central feed post elements not found:', { postSubmitBtn, postInput, postAudience });
     }
 
+    // Tip Feed Interaction Logic
+    const tips = document.querySelectorAll('.tip');
+    const commentModal = document.getElementById('comment-modal');
+    const modalTip = commentModal.querySelector('.modal-tip');
+    const commentList = commentModal.querySelector('.comment-list');
+    const commentInput = commentModal.querySelector('.comment-input');
+    const commentSubmit = commentModal.querySelector('.comment-submit');
+    const commentModalClose = commentModal.querySelector('.comment-modal-close');
+
+    tips.forEach(tip => {
+        tip.addEventListener('click', function(e) {
+            const action = e.target.closest('.tip-action');
+            if (action) {
+                e.preventDefault();
+                const tipId = this.getAttribute('data-tip-id');
+                const actionType = action.getAttribute('data-action');
+
+                const formData = new FormData();
+                formData.append('tip_id', tipId);
+
+                if (actionType === 'like') {
+                    fetch('/api/like-tip/', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': getCSRFToken(),
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const likeCount = action.nextElementSibling;
+                            likeCount.textContent = data.like_count;
+                            action.classList.toggle('liked', data.message === 'Tip liked');
+                        } else {
+                            alert('Error: ' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error liking tip:', error);
+                        alert('An error occurred while liking the tip.');
+                    });
+                } else if (actionType === 'share') {
+                    fetch('/api/share-tip/', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': getCSRFToken(),
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const shareCount = action.nextElementSibling;
+                            shareCount.textContent = data.share_count;
+                            action.classList.toggle('shared', data.message === 'Tip shared');
+                        } else {
+                            alert('Error: ' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error sharing tip:', error);
+                        alert('An error occurred while sharing the tip.');
+                    });
+                } else if (actionType === 'comment') {
+                    modalTip.innerHTML = this.innerHTML; // Copy tip content to modal
+                    commentList.innerHTML = ''; // Clear previous comments
+                    tip.comments = tip.comments || []; // Placeholder for comment data
+                    tip.comments.forEach(comment => {
+                        const commentDiv = document.createElement('div');
+                        commentDiv.className = 'comment';
+                        commentDiv.innerHTML = `
+                            <a href="#" class="comment-username"><strong>${comment.username}</strong></a>
+                            <p>${comment.text}</p>
+                            <small>${comment.created_at}</small>
+                        `;
+                        commentList.appendChild(commentDiv);
+                    });
+                    commentModal.style.display = 'block';
+                    commentSubmit.dataset.tipId = tipId; // Store tip ID for submission
+                }
+            }
+        });
+    });
+
+    // Comment Submit Logic
+    commentSubmit.addEventListener('click', function(e) {
+        e.preventDefault();
+        const tipId = this.dataset.tipId;
+        const commentText = commentInput.value.trim();
+
+        if (!commentText) {
+            alert('Please enter a comment.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('tip_id', tipId);
+        formData.append('comment_text', commentText);
+
+        fetch('/api/comment-tip/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': getCSRFToken(),
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const tip = document.querySelector(`.tip[data-tip-id="${tipId}"]`);
+                const commentCount = tip.querySelector('.comment-count');
+                commentCount.textContent = data.comment_count;
+                const newComment = document.createElement('div');
+                newComment.className = 'comment';
+                newComment.innerHTML = `
+                    <a href="#" class="comment-username"><strong>${window.currentUser || 'You'}</strong></a>
+                    <p>${commentText}</p>
+                    <small>${new Date().toLocaleString()}</small>
+                `;
+                commentList.insertBefore(newComment, commentList.firstChild);
+                commentInput.value = '';
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error commenting on tip:', error);
+            alert('An error occurred while commenting.');
+        });
+    });
+
+    // Close Comment Modal
+    commentModalClose.addEventListener('click', function() {
+        commentModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', function(event) {
+        if (event.target === commentModal) {
+            commentModal.style.display = 'none';
+        }
+    });
+
+
     // Toggle User Dropdown Menu
     const navUserContent = document.querySelector('.nav-user-content');
     const navUserDropdown = document.querySelector('.nav-user-dropdown');

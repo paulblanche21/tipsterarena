@@ -24,7 +24,6 @@ class Tip(models.Model):
         return f"{self.user.username} - {self.sport}: {self.text[:20]}"
     
 
-# models.py (relevant snippet)
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
@@ -77,6 +76,15 @@ class Share(models.Model):
 
     def __str__(self):
         return f"{self.user.username} shared {self.tip.user.username}'s tip"
+    
+class Comment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
+    tip = models.ForeignKey(Tip, on_delete=models.CASCADE, related_name='comments')
+    content = models.TextField(max_length=280)  # Twitter-like comment length
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} commented on {self.tip.user.username}'s tip: {self.text[:20]}"
     
 class MessageThread(models.Model):
     participants = models.ManyToManyField(User, related_name='message_threads')

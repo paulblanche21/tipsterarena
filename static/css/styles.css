@@ -133,6 +133,114 @@ carousel-prev, .carousel-next {
     padding: 10px 0;
 }
 
+
+/* Comment Modal Styling */
+.comment-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay like post modal */
+    z-index: 1003; /* Matches your post-modal z-index */
+}
+
+.comment-modal-content {
+    position: relative;
+    margin: 50px auto;
+    width: 650px; /* Matches tip-feed and post-box max-width */
+    max-height: 80vh;
+    background-color: var(--secondary-bg); /* White background */
+    border: 1px solid var(--border-color); /* Light grey border */
+    border-radius: var(--border-radius); /* 12px rounded corners */
+    padding: var(--padding-small); /* Consistent padding */
+    box-shadow: var(--shadow-hover); /* Matches your shadow style */
+    overflow-y: auto; /* Scrollable if content exceeds height */
+    color: var(--primary-bg); /* Dark text */
+}
+
+.comment-modal-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    color: var(--gray-light); /* Matches your modal close buttons */
+    cursor: pointer;
+    border: none;
+    background: none;
+}
+
+.comment-modal-close:hover {
+    color: var(--red-accent); /* Red hover like other close buttons */
+}
+
+
+.comment-list .comment {
+    margin-bottom: 10px;
+}
+
+.comment-username {
+    font-size: var(--font-size-base); /* 14px */
+    color: var(--black); /* Black like tip usernames */
+    text-decoration: none;
+}
+
+.comment-username strong {
+    margin-right: 5px;
+    font-weight: 600; /* Matches tip username */
+}
+
+.comment p {
+    margin: 5px 0;
+    font-size: var(--font-size-base); /* 14px */
+    color: #333; /* Slightly lighter than black for readability */
+}
+
+.comment small {
+    color: var(--gray-light); /* Grey like tip timestamps */
+    font-size: 12px;
+}
+
+.comment-form {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.comment-input {
+    flex-grow: 1;
+    padding: 8px; /* Matches form inputs */
+    border: 1px solid var(--border-color); /* Light grey border */
+    border-radius: 4px; /* Smaller radius for inputs */
+    resize: none;
+    height: 40px;
+    font-size: var(--font-size-base); /* 14px */
+    color: var(--primary-bg); /* Dark text */
+    background-color: #f5f8fa; /* Light grey like post-input */
+}
+
+.comment-input:focus {
+    outline: none;
+    border-color: var(--red-accent); /* Red focus like post-input */
+}
+
+.comment-submit {
+    margin-left: 10px;
+    padding: 8px 16px; /* Matches post-submit */
+    background-color: var(--twitter-blue); /* Blue like action buttons */
+    color: var(--secondary-bg); /* White text */
+    border: none;
+    border-radius: 20px; /* Oval like post-submit */
+    font-weight: bold;
+    font-size: var(--font-size-base); /* 14px */
+    cursor: pointer;
+}
+
+.comment-submit:hover {
+    background-color: #0d8ddb; /* Darker blue on hover */
+}
+
 /* Main Content */
 .content {
     flex: 1;
@@ -592,6 +700,13 @@ form#editProfileForm {
 
 .messages-title {
     margin: 0;
+}
+
+
+.modal-tip {
+    border-bottom: 1px solid var(--border-color); /* Light grey divider */
+    padding-bottom: 10px;
+    margin-bottom: 10px;
 }
 
 /* Navbar (unchanged, already perfect, with reordered elements) */
@@ -1680,7 +1795,7 @@ form#editProfileForm {
     margin-right: 5px;
 }
 
-/* Ensure compatibility with existing tip styles */
+/* Tip Hover Effect (X-like light grey) */
 .tip {
     background-color: var(--secondary-bg);
     border: 1px solid var(--border-color);
@@ -1689,10 +1804,17 @@ form#editProfileForm {
     box-shadow: var(--shadow-light);
     margin-bottom: var(--margin-small);
     color: var(--primary-bg);
-    transition: box-shadow 0.2s;
+    transition: box-shadow 0.2s, background-color 0.2s; /* Added background-color transition */
     display: flex;
     align-items: flex-start;
+    cursor: pointer; /* Indicate clickability */
 }
+
+.tip:hover {
+    background-color: #f5f8fa; /* Light grey like X */
+    box-shadow: var(--shadow-hover);
+}
+
 
 /* Tip Actions Styling */
 .tip-actions {
@@ -1783,6 +1905,14 @@ form#editProfileForm {
 
 .tip-action-spacer-large {
     flex-grow: 1; /* Full space to push bookmark and share to the right */
+}
+
+.tip-action-like.liked i {
+    color: #ff4136; /* Red heart when liked */
+}
+
+.tip-action-share.shared i {
+    color: #1da1f2; /* Twitter-blue when shared */
 }
 
 

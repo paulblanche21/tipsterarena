@@ -36,7 +36,7 @@
     <!-- Tip Feed -->
     <div class="tip-feed">
         {% for tip in tips %}
-        <div class="tip">
+        <div class="tip" data-tip-id="{{ tip.id }}">
             {% if tip.user.userprofile.avatar %}
                 <img src="{{ tip.user.userprofile.avatar.url }}" alt="{{ tip.user.username }} Avatar" class="tip-avatar">
             {% else %}
@@ -55,16 +55,16 @@
                 <small>{{ tip.created_at|date:"F j, Y, g:i a" }}</small>
                 <div class="tip-actions">
                     <div class="tip-action-group">
-                        <a href="#" class="tip-action tip-action-like"><i class="fas fa-heart"></i></a>
-                        <span class="tip-action-count">{{ tip.likes.count|default:"0" }}</span>
+                        <a href="#" class="tip-action tip-action-like" data-action="like"><i class="fas fa-heart"></i></a>
+                        <span class="tip-action-count like-count">{{ tip.likes.count }}</span>
                     </div>
                     <div class="tip-action-group">
-                        <a href="#" class="tip-action tip-action-retweet"><i class="fas fa-retweet"></i></a>
-                        <span class="tip-action-count">{{ tip.retweets.count|default:"0" }}</span>
+                        <a href="#" class="tip-action tip-action-share" data-action="share"><i class="fas fa-retweet"></i></a>
+                        <span class="tip-action-count share-count">{{ tip.shares.count }}</span>
                     </div>
                     <div class="tip-action-group">
-                        <a href="#" class="tip-action tip-action-comment"><i class="fas fa-comment-dots"></i></a>
-                        <span class="tip-action-count">{{ tip.comments.count|default:"0" }}</span>
+                        <a href="#" class="tip-action tip-action-comment" data-action="comment"><i class="fas fa-comment-dots"></i></a>
+                        <span class="tip-action-count comment-count">{{ tip.comments.count }}</span>
                     </div>
                     <div class="tip-action-spacer"></div>
                     <div class="tip-action-group">
@@ -76,7 +76,7 @@
                         <a href="#" class="tip-action tip-action-bookmark"><i class="fas fa-bookmark"></i></a>
                     </div>
                     <div class="tip-action-group">
-                        <a href="#" class="tip-action tip-action-share"><i class="fas fa-arrow-up"></i></a>
+                        <a href="#" class="tip-action tip-action-share-link"><i class="fas fa-arrow-up"></i></a>
                     </div>
                 </div>
             </div>
@@ -84,6 +84,18 @@
         {% empty %}
             <p>No tips yet. Be the first to post!</p>
         {% endfor %}
+    </div>
+     <!-- Comment Modal -->
+     <div class="comment-modal" id="comment-modal">
+        <div class="comment-modal-content">
+            <span class="comment-modal-close">×</span>
+            <div class="modal-tip"></div> <!-- Tip content will be injected here -->
+            <div class="comment-list"></div>
+            <div class="comment-form">
+                <textarea class="comment-input" placeholder="Add a comment..."></textarea>
+                <button class="comment-submit">Comment</button>
+            </div>
+        </div>
     </div>
 {% endblock %}
 

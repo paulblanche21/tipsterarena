@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required 
 from django.contrib.auth.models import User 
 from django.http import JsonResponse 
-from .models import Tip, Like, Follow, Share, UserProfile, MessageThread 
+from .models import Tip, Like, Follow, Share, UserProfile, MessageThread, Comment
 from .forms import UserProfileForm, CustomUserCreationForm 
 from django.contrib.auth.forms import AuthenticationForm 
 from django.conf import settings
@@ -133,6 +133,49 @@ def profile_edit(request, username):
     else:
         form = UserProfileForm(instance=user_profile)
         return render(request, 'core/profile.html', {'form': form, 'user_profile': user_profile})
+    
+
+@login_required
+@require_POST
+def like_tip(request):
+    tip_id = request.POST.get('tip_id')
+    tip = get_object_or_404(Tip, id=tip_id)
+    user = request.user
+
+    like, created = Like.objects.get_or_create(user=user, tip=tip)
+    if created:
+        return JsonResponse({'success': True, 'message': 'Tip liked', 'like_count': tip.likes.count()})
+    else:
+        like.delete()
+        return JsonResponse({'success': True, 'message': 'Like removed', 'like_count': tip.likes.count()})
+
+@login_required
+@require_POST
+def share_tip(request):
+    tip_id = request.POST.get('tip_id')
+    tip = get_object_or_404(Tip, id=tip_id)
+    user = request.user
+
+    share, created = Share.objects.get_or_create(user=user, tip=tip)
+    if created:
+        return JsonResponse({'success': True, 'message': 'Tip shared', 'share_count': tip.shares.count()})
+    else:
+        share.delete()
+        return JsonResponse({'success': True, 'message': 'Share removed', 'share_count': tip.shares.count()})
+
+@login_required
+@require_POST
+def comment_tip(request):
+    tip_id = request.POST.get('tip_id')
+    content = request.POST.get('comment_text')  # Changed variable name
+    tip = get_object_or_404(Tip, id=tip_id)
+    user = request.user
+
+    if not content:
+        return JsonResponse({'success': False, 'error': 'Comment text cannot be empty'}, status=400)
+
+    comment = Comment.objects.create(user=user, tip=tip, content=content)  # Changed field name
+    return JsonResponse({'success': True, 'message': 'Comment added', 'comment_count': tip.comments.count()})
 
 @login_required  # Require users to log in to see bookmarks
 def bookmarks(request):
