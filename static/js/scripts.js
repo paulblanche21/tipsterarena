@@ -103,10 +103,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             switch (target) {
                 case 'upcoming-events':
-                    // Detect current page and display sport-specific or all fixtures
-                    const currentPath = window.location.pathname.toLowerCase(); // Case-insensitive match
+                    const currentPath = window.location.pathname.toLowerCase();
                     if (currentPath === '/' || currentPath === '/home/') {
-                        // Home page: Show all upcoming events
                         content.innerHTML = `
                             <div class="events-popup">
                                 <h2>Upcoming Events</h2>
@@ -157,7 +155,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                         `;
                     } else if (currentPath.includes('/sport/football/')) {
-                        // Football fixtures only
                         content.innerHTML = `
                             <div class="events-popup">
                                 <h2>Upcoming Football Fixtures</h2>
@@ -188,7 +185,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                         `;
                     } else if (currentPath.includes('/sport/golf/')) {
-                        // Golf fixtures only
                         content.innerHTML = `
                             <div class="events-popup">
                                 <h2>Upcoming Golf Events</h2>
@@ -219,7 +215,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                         `;
                     } else if (currentPath.includes('/sport/tennis/')) {
-                        // Tennis fixtures only
                         content.innerHTML = `
                             <div class="events-popup">
                                 <h2>Upcoming Tennis Events</h2>
@@ -241,7 +236,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                         `;
                     } else if (currentPath.includes('/sport/horse_racing/')) {
-                        // Horse Racing fixtures only
                         content.innerHTML = `
                             <div class="events-popup">
                                 <h2>Upcoming Horse Racing Events</h2>
@@ -334,25 +328,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 lessButton.addEventListener('click', function(e) {
                     e.preventDefault();
                     content.innerHTML = '';
-                    window.location.href = previousUrl; // Return to previous state
+                    window.location.href = previousUrl;
                 });
             });
         });
     });
 
-
-    // Post Tip Logic (for home.html)
+    // Post Tip Logic (for central feed)
     const postSubmitBtn = document.querySelector('.post-submit');
     const postInput = document.querySelector('.post-input');
     const postAudience = document.querySelector('.post-audience');
 
-    console.log('Post Submit Btn:', postSubmitBtn); // Debug log
-    console.log('Post Input:', postInput); // Debug log
-    console.log('Post Audience:', postAudience); // Debug log
+    console.log('Post Submit Btn:', postSubmitBtn);
+    console.log('Post Input:', postInput);
+    console.log('Post Audience:', postAudience);
 
     if (postSubmitBtn && postInput && postAudience) {
         postSubmitBtn.addEventListener('click', function() {
-            console.log('Post button clicked'); // Debug log
+            console.log('Central feed post button clicked');
             const text = postInput.value.trim();
             const audience = postAudience.value;
 
@@ -364,7 +357,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const formData = new FormData();
             formData.append('text', text);
             formData.append('audience', audience);
-            formData.append('sport', 'golf'); // Add sport context for golf page (to be adjusted dynamically)
+            formData.append('sport', 'golf');
 
             fetch('/api/post-tip/', {
                 method: 'POST',
@@ -377,8 +370,8 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 if (data.success) {
                     alert('Tip posted successfully!');
-                    postInput.value = ''; // Clear the input
-                    location.reload(); // Refresh the page to show the new tip
+                    postInput.value = '';
+                    location.reload();
                 } else {
                     alert('Error posting tip: ' + data.error);
                 }
@@ -389,7 +382,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     } else {
-        console.warn('One or more post modal elements not found:', { postSubmitBtn, postInput, postAudience });
+        console.warn('One or more central feed post elements not found:', { postSubmitBtn, postInput, postAudience });
     }
 
     // Toggle User Dropdown Menu
@@ -406,7 +399,6 @@ document.addEventListener('DOMContentLoaded', function() {
             navUserDropdown.style.display = isDropdownOpen ? 'block' : 'none';
         });
 
-        // Close dropdown when clicking outside
         document.addEventListener('click', function(e) {
             if (isDropdownOpen && !navUserContent.contains(e.target)) {
                 navUserDropdown.style.display = 'none';
@@ -414,12 +406,40 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Close dropdown when a dropdown item is clicked (e.g., logout)
         const dropdownItems = navUserDropdown.querySelectorAll('.nav-dropdown-item');
         dropdownItems.forEach(item => {
-            item.addEventListener('click', function() {
+            item.addEventListener('click', function(e) {
+                console.log('Dropdown item clicked:', item.textContent);
                 navUserDropdown.style.display = 'none';
                 isDropdownOpen = false;
+            });
+        });
+    }
+
+    // Logout Logic using Global Variables
+    const logoutBtn = document.querySelector('.nav-logout-btn[data-logout]');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Logout button clicked');
+            fetch(window.LOGOUT_URL, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCSRFToken(),
+                },
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log('Logged out successfully');
+                    window.location.href = window.LANDING_URL;
+                } else {
+                    console.error('Logout failed:', response.status);
+                    alert('Error logging out');
+                }
+            })
+            .catch(error => {
+                console.error('Logout error:', error);
+                alert('An error occurred while logging out');
             });
         });
     }
@@ -592,37 +612,97 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Toggle Post Modal
+    // Toggle Post Modal and Bind Posting Logic
     const postTipBtn = document.querySelector('.nav-post-btn[data-toggle="post-modal"]');
     const postModal = document.getElementById('post-modal');
 
-    console.log('Post Tip Button:', postTipBtn); // Debug log
-    console.log('Post Modal:', postModal); // Debug log
+    console.log('Post Tip Button:', postTipBtn);
+    console.log('Post Modal:', postModal);
 
     if (postTipBtn && postModal) {
-        postTipBtn.addEventListener('click', function() {
-            console.log('Toggling post modal'); // Debug log
+        postTipBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Toggling post modal');
             postModal.style.display = postModal.style.display === 'block' ? 'none' : 'block';
+
+            // Bind posting logic to modal's post-submit button
+            const modalSubmitBtn = postModal.querySelector('.post-submit');
+            const modalInput = postModal.querySelector('.post-input');
+            const modalAudience = postModal.querySelector('.post-audience');
+
+            console.log('Modal Submit Btn:', modalSubmitBtn);
+            console.log('Modal Input:', modalInput);
+            console.log('Modal Audience:', modalAudience);
+
+            if (modalSubmitBtn && modalInput && modalAudience) {
+                // Remove existing listener to prevent duplicates
+                modalSubmitBtn.removeEventListener('click', handleModalPostSubmit);
+                modalSubmitBtn.addEventListener('click', handleModalPostSubmit);
+            } else {
+                console.warn('Modal post elements not found:', { modalSubmitBtn, modalInput, modalAudience });
+            }
         });
 
         // Close modal when clicking outside
         window.addEventListener('click', function(event) {
             if (event.target === postModal) {
-                console.log('Closing modal by clicking outside'); // Debug log
+                console.log('Closing modal by clicking outside');
                 postModal.style.display = 'none';
             }
         });
 
         // Ensure the close button works
-        const postModalClose = document.querySelector('.post-modal-close');
-        console.log('Post Modal Close Button:', postModalClose); // Debug log
+        const postModalClose = postModal.querySelector('.post-modal-close');
+        console.log('Post Modal Close Button:', postModalClose);
         if (postModalClose) {
             postModalClose.addEventListener('click', function() {
-                console.log('Closing modal with close button'); // Debug log
+                console.log('Closing modal with close button');
                 postModal.style.display = 'none';
             });
         }
     } else {
         console.warn('Post modal elements not found:', { postTipBtn, postModal });
+    }
+
+    // Shared handler for modal post submit
+    function handleModalPostSubmit() {
+        console.log('Modal post button clicked');
+        const modalInput = this.closest('.post-modal-content').querySelector('.post-input');
+        const modalAudience = this.closest('.post-modal-content').querySelector('.post-audience');
+        const text = modalInput.value.trim();
+        const audience = modalAudience.value;
+
+        if (!text) {
+            alert('Please enter a tip before posting.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('text', text);
+        formData.append('audience', audience);
+        formData.append('sport', 'golf'); // Adjust dynamically if needed
+
+        fetch('/api/post-tip/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': getCSRFToken(),
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Tip posted successfully!');
+                modalInput.value = '';
+                postModal.style.display = 'none';
+                location.reload();
+            } else {
+                alert('Error posting tip: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error posting tip:', error);
+            alert('An error occurred while posting the tip.');
+        });
     }
 });

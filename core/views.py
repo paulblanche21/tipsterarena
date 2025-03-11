@@ -16,6 +16,7 @@ def landing(request):
         return redirect('home')  # Redirect logged-in users to home
     return render(request, 'core/landing.html')  # No forms needed here
 
+# views.py (relevant snippet)
 def signup(request):
     if request.user.is_authenticated:
         return redirect('home')

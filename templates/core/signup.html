@@ -28,6 +28,15 @@
                 {% endif %}
             </div>
 
+            <!-- Handle Field -->
+            <div class="form-group">
+                <label for="{{ form.handle.id_for_label }}">Handle</label>
+                {{ form.handle }}
+                {% if form.handle.errors %}
+                    <span class="error">{{ form.handle.errors }}</span>
+                {% endif %}
+            </div>
+
             <!-- Email Field -->
             <div class="form-group">
                 <label for="{{ form.email.id_for_label }}">Email</label>

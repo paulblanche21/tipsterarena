@@ -24,6 +24,7 @@ class Tip(models.Model):
         return f"{self.user.username} - {self.sport}: {self.text[:20]}"
     
 
+# models.py (relevant snippet)
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
@@ -32,20 +33,11 @@ class UserProfile(models.Model):
     location = models.CharField(max_length=255, blank=True)
     date_of_birth = models.DateField(blank=True, null=True)
     handle = models.CharField(
-        max_length=15,  # X-like handle length limit
-        unique=True,  # Ensure uniqueness
-        blank=True,  # Allow it to be set automatically
+        max_length=15,
+        unique=True,
+        blank=True,
         help_text="Your unique handle starting with @ (e.g., @username)"
     )
-
-    def save(self, *args, **kwargs):
-        # Automatically set handle if not provided
-        if not self.handle:
-            self.handle = f"@{self.user.username}"
-        # Ensure handle starts with @
-        if not self.handle.startswith('@'):
-            self.handle = f"@{self.handle}"
-        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.user.username}'s profile"
