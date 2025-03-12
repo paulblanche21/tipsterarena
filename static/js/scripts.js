@@ -385,6 +385,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.warn('One or more central feed post elements not found:', { postSubmitBtn, postInput, postAudience });
     }
 
+    
     // Tip Feed Interaction Logic
     const tips = document.querySelectorAll('.tip');
     const commentModal = document.getElementById('comment-modal');
@@ -396,6 +397,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     tips.forEach(tip => {
         tip.addEventListener('click', function(e) {
+            // Prevent modal from opening if an action button is clicked
             const action = e.target.closest('.tip-action');
             if (action) {
                 e.preventDefault();
@@ -449,24 +451,46 @@ document.addEventListener('DOMContentLoaded', function() {
                         console.error('Error sharing tip:', error);
                         alert('An error occurred while sharing the tip.');
                     });
-                } else if (actionType === 'comment') {
-                    modalTip.innerHTML = this.innerHTML; // Copy tip content to modal
-                    commentList.innerHTML = ''; // Clear previous comments
-                    tip.comments = tip.comments || []; // Placeholder for comment data
-                    tip.comments.forEach(comment => {
-                        const commentDiv = document.createElement('div');
-                        commentDiv.className = 'comment';
-                        commentDiv.innerHTML = `
-                            <a href="#" class="comment-username"><strong>${comment.username}</strong></a>
-                            <p>${comment.text}</p>
-                            <small>${comment.created_at}</small>
-                        `;
-                        commentList.appendChild(commentDiv);
-                    });
-                    commentModal.style.display = 'block';
-                    commentSubmit.dataset.tipId = tipId; // Store tip ID for submission
                 }
+                return; // Exit if action button is clicked
             }
+
+            // Open modal when clicking anywhere else on the tip
+            const tipId = this.getAttribute('data-tip-id');
+            modalTip.innerHTML = this.querySelector('.tip-content').innerHTML; // Copy tip content
+            commentList.innerHTML = '<p>Loading comments...</p>';
+
+            fetch(`/api/tip/${tipId}/comments/`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    commentList.innerHTML = '';
+                    if (data.comments && data.comments.length > 0) {
+                        data.comments.forEach(comment => {
+                            const commentDiv = document.createElement('div');
+                            commentDiv.className = 'comment';
+                            commentDiv.innerHTML = `
+                                <a href="#" class="comment-username"><strong>${comment.user__username}</strong></a>
+                                <p>${comment.content}</p> <!-- Use 'content' to match the API -->
+                                <small>${new Date(comment.created_at).toLocaleString()}</small>
+                            `;
+                            commentList.appendChild(commentDiv);
+                        });
+                    } else {
+                        commentList.innerHTML = '<p>No comments yet.</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching comments:', error);
+                    commentList.innerHTML = '<p>Error loading comments.</p>';
+                });
+
+            commentModal.style.display = 'block';
+            commentSubmit.dataset.tipId = tipId; // Store tip ID for submission
         });
     });
 
@@ -492,7 +516,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 'X-CSRFToken': getCSRFToken(),
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 const tip = document.querySelector(`.tip[data-tip-id="${tipId}"]`);
@@ -527,7 +556,6 @@ document.addEventListener('DOMContentLoaded', function() {
             commentModal.style.display = 'none';
         }
     });
-
 
     // Toggle User Dropdown Menu
     const navUserContent = document.querySelector('.nav-user-content');

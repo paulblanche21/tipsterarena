@@ -10,6 +10,9 @@ from django.conf import settings
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+import logging
+
+logger = logging.getLogger(__name__)
 
 def landing(request):
     if request.user.is_authenticated:
@@ -167,15 +170,27 @@ def share_tip(request):
 @require_POST
 def comment_tip(request):
     tip_id = request.POST.get('tip_id')
-    content = request.POST.get('comment_text')  # Changed variable name
+    comment_text = request.POST.get('comment_text')
+    logger.info(f"Received comment_tip request: tip_id={tip_id}, comment_text={comment_text}")
+    if not tip_id or not comment_text:
+        logger.error(f"Missing tip_id or comment_text: tip_id={tip_id}, comment_text={comment_text}")
+        return JsonResponse({'success': False, 'error': 'Missing tip_id or comment_text'}, status=400)
+    try:
+        tip = get_object_or_404(Tip, id=tip_id)
+        comment = Comment.objects.create(user=request.user, tip=tip, content=comment_text)  # Use 'content'
+        logger.info(f"Comment created successfully for tip_id: {tip_id}")
+        return JsonResponse({'success': True, 'message': 'Comment added', 'comment_count': tip.comments.count()})
+    except Exception as e:
+        logger.error(f"Error creating comment: {str(e)}")
+        return JsonResponse({'success': False, 'error': 'An error occurred while commenting.'}, status=500)
+
+@login_required
+def get_tip_comments(request, tip_id):
+    logger.info(f"Fetching comments for tip_id: {tip_id}")
     tip = get_object_or_404(Tip, id=tip_id)
-    user = request.user
-
-    if not content:
-        return JsonResponse({'success': False, 'error': 'Comment text cannot be empty'}, status=400)
-
-    comment = Comment.objects.create(user=user, tip=tip, content=content)  # Changed field name
-    return JsonResponse({'success': True, 'message': 'Comment added', 'comment_count': tip.comments.count()})
+    comments = tip.comments.all().order_by('-created_at').values('user__username', 'content', 'created_at')  # Use 'content'
+    logger.info(f"Found {comments.count()} comments")
+    return JsonResponse({'comments': list(comments)})
 
 @login_required  # Require users to log in to see bookmarks
 def bookmarks(request):

@@ -20,6 +20,7 @@ urlpatterns = [
     path('api/like-tip/', views.like_tip, name='like_tip'),
     path('api/share-tip/', views.share_tip, name='share_tip'),
     path('api/comment-tip/', views.comment_tip, name='comment_tip'),
+    path('api/tip/<int:tip_id>/comments/', views.get_tip_comments, name='get_tip_comments'),
     path('login/', views.login_view, name='login'),  # Separate login view
     path('signup/', views.signup, name='signup'),    # Separate signup view
     path('terms-of-service/', views.terms_of_service, name='terms_of_service'),
