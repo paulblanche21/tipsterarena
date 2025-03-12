@@ -87,16 +87,26 @@
             {% endfor %}
         </div>
 
-        <!-- Comment Modal (Moved Inside .content) -->
         <div class="comment-modal" id="comment-modal">
             <div class="comment-modal-content">
                 <span class="comment-modal-close">×</span>
                 <div class="modal-tip"></div>
-                <div class="comment-list"></div>
-                <div class="comment-form">
-                    <textarea class="comment-input" placeholder="Add a comment..."></textarea>
-                    <button class="comment-submit">Comment</button>
+                <!-- Post a Reply Box -->
+                <div class="post-reply-box">
+                    <div class="post-user">
+                        {% if request.user.is_authenticated and request.user.userprofile.avatar %}
+                            <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar">
+                        {% else %}
+                            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.style.display='none'">
+                        {% endif %}
+                        <div class="post-username-container">
+                            <span class="post-username">{{ request.user.username|default:"Guest" }}</span>
+                        </div>
+                    </div>
+                    <textarea placeholder="Post a Reply..." class="post-reply-input"></textarea>
+                    <button class="post-reply-submit">Reply</button>
                 </div>
+                <div class="comment-list"></div>
             </div>
         </div>
     </div>

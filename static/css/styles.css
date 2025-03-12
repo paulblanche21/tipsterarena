@@ -133,6 +133,116 @@ carousel-prev, .carousel-next {
     padding: 10px 0;
 }
 
+/* Comment Cards (Styled Like Tip Feed) */
+.comment-list .comment {
+    background-color: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--padding-small);
+    box-shadow: var(--shadow-light);
+    margin-bottom: var(--margin-small);
+    color: var(--primary-bg);
+    transition: box-shadow 0.2s, background-color 0.2s;
+    display: flex;
+    align-items: flex-start;
+}
+
+.comment-list .comment:hover {
+    background-color: #f5f8fa;
+    box-shadow: var(--shadow-hover);
+}
+
+.comment-list .comment .comment-username {
+    font-size: var(--font-size-base);
+    color: var(--black);
+    text-decoration: none;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.comment-list .comment .comment-content {
+    flex: 1;
+    margin-left: 5px;
+}
+
+.comment-list .comment p {
+    margin: 5px 0;
+    font-size: var(--font-size-base);
+    color: #333;
+}
+
+.comment-list .comment small {
+    color: var(--gray-light);
+    font-size: 12px;
+}
+
+.comment-list .comment .comment-actions {
+    margin-top: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.comment-list .comment .comment-action {
+    color: var(--gray-light);
+    text-decoration: none;
+    font-size: 1.2rem;
+    transition: color 0.2s, background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+.comment-list .comment .comment-action-like:hover {
+    color: #f91880;
+    background-color: rgba(249, 24, 128, 0.1);
+}
+
+.comment-list .comment .comment-action-share:hover {
+    color: #00ba7c;
+    background-color: rgba(0, 186, 124, 0.1);
+}
+
+.comment-list .comment .comment-action-comment:hover {
+    color: var(--twitter-blue);
+    background-color: rgba(29, 161, 242, 0.1);
+}
+
+.comment-list .comment .comment-action i {
+    vertical-align: middle;
+}
+
+.comment-list .comment .comment-action-count {
+    font-size: 0.9rem;
+    color: var(--gray-light);
+    margin-right: 0.75rem;
+}
+
+.comment-list .comment .comment-action-group {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.comment-list .comment .comment-action-spacer {
+    flex-grow: 0.5;
+}
+
+.comment-list .comment .comment-action-spacer-large {
+    flex-grow: 1;
+}
+
+.comment-list .comment .comment-action-like.liked i {
+    color: #ff4136;
+}
+
+.comment-list .comment .comment-action-share.shared i {
+    color: #1da1f2;
+}
+
 
 /* Comment Modal Styling (Positioned in Center Feed) */
 .comment-modal {
@@ -1151,6 +1261,55 @@ form#editProfileForm {
     color: #001f3f;
     margin: 0 auto;
 }
+
+
+/* Post a Reply Box in Comment Modal */
+.post-reply-box {
+    background-color: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--padding-small);
+    margin: 10px 0;
+    box-shadow: var(--shadow-light);
+    color: var(--primary-bg);
+}
+
+.post-reply-input {
+    width: 100%;
+    min-height: 80px; /* Smaller height than main post box */
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: var(--font-size-base);
+    color: var(--primary-bg);
+    resize: vertical;
+    background-color: #f5f8fa;
+    margin-bottom: 8px;
+}
+
+.post-reply-input:focus {
+    outline: none;
+    border-color: var(--red-accent);
+}
+
+.post-reply-submit {
+    background-color: var(--twitter-blue);
+    color: var(--secondary-bg);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: var(--font-size-base);
+    cursor: pointer;
+    margin-top: 8px;
+    display: block;
+    width: fit-content;
+}
+
+.post-reply-submit:hover {
+    background-color: #0d8ddb;
+}
+
 
 .post-submit {
     background-color: #657786;

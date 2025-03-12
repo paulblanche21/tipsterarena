@@ -192,6 +192,56 @@ def get_tip_comments(request, tip_id):
     logger.info(f"Found {comments.count()} comments")
     return JsonResponse({'comments': list(comments)})
 
+@login_required
+@require_POST
+def like_comment(request):
+    comment_id = request.POST.get('comment_id')
+    comment = get_object_or_404(Comment, id=comment_id)
+    user = request.user
+
+    like, created = Like.objects.get_or_create(user=user, comment=comment)
+    if created:
+        return JsonResponse({'success': True, 'message': 'Comment liked', 'like_count': comment.likes.count()})
+    else:
+        like.delete()
+        return JsonResponse({'success': True, 'message': 'Like removed', 'like_count': comment.likes.count()})
+
+@login_required
+@require_POST
+def share_comment(request):
+    comment_id = request.POST.get('comment_id')
+    comment = get_object_or_404(Comment, id=comment_id)
+    user = request.user
+
+    share, created = Share.objects.get_or_create(user=user, comment=comment)
+    if created:
+        return JsonResponse({'success': True, 'message': 'Comment shared', 'share_count': comment.shares.count()})
+    else:
+        share.delete()
+        return JsonResponse({'success': True, 'message': 'Share removed', 'share_count': comment.shares.count()})
+
+@login_required
+@require_POST
+def reply_to_comment(request):
+    comment_id = request.POST.get('comment_id')
+    reply_text = request.POST.get('reply_text')
+    logger.info(f"Received reply_to_comment request: comment_id={comment_id}, reply_text={reply_text}")
+    if not comment_id or not reply_text:
+        logger.error(f"Missing comment_id or reply_text: comment_id={comment_id}, reply_text={reply_text}")
+        return JsonResponse({'success': False, 'error': 'Missing comment_id or reply_text'}, status=400)
+    try:
+        parent_comment = get_object_or_404(Comment, id=comment_id)
+        tip = parent_comment.tip
+        reply = Comment.objects.create(user=request.user, tip=tip, content=reply_text)
+        logger.info(f"Reply created successfully for comment_id: {comment_id}")
+        return JsonResponse({'success': True, 'message': 'Reply added', 'comment_count': tip.comments.count(), 'comment_id': reply.id})
+    except Exception as e:
+        logger.error(f"Error creating reply: {str(e)}")
+        return JsonResponse({'success': False, 'error': 'An error occurred while replying.'}, status=500)
+
+
+
+
 @login_required  # Require users to log in to see bookmarks
 def bookmarks(request):
     # Placeholder view for Bookmarks (can be expanded later to show bookmarked tips)

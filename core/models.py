@@ -22,7 +22,6 @@ class Tip(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.sport}: {self.text[:20]}"
-    
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -41,7 +40,6 @@ class UserProfile(models.Model):
     def __str__(self):
         return f"{self.user.username}'s profile"
 
-
 class Like(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='likes')
     tip = models.ForeignKey(Tip, on_delete=models.CASCADE, related_name='likes')
@@ -52,7 +50,6 @@ class Like(models.Model):
 
     def __str__(self):
         return f"{self.user.username} liked {self.tip.user.username}'s tip"
-
 
 class Follow(models.Model):
     follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following')
@@ -65,7 +62,6 @@ class Follow(models.Model):
     def __str__(self):
         return f"{self.follower.username} follows {self.followed.username}"
 
-
 class Share(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='shares')
     tip = models.ForeignKey(Tip, on_delete=models.CASCADE, related_name='shares')
@@ -76,7 +72,7 @@ class Share(models.Model):
 
     def __str__(self):
         return f"{self.user.username} shared {self.tip.user.username}'s tip"
-    
+
 class Comment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
     tip = models.ForeignKey(Tip, on_delete=models.CASCADE, related_name='comments')
@@ -84,8 +80,8 @@ class Comment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.username} commented on {self.tip.user.username}'s tip: {self.text[:20]}"
-    
+        return f"{self.user.username} commented on {self.tip.user.username}'s tip: {self.content[:20]}"  # Corrected to 'content'
+
 class MessageThread(models.Model):
     participants = models.ManyToManyField(User, related_name='message_threads')
     last_message = models.TextField(blank=True)

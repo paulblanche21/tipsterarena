@@ -386,14 +386,137 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     
+    // Post Tip Logic (for sport-specific feed)
     // Tip Feed Interaction Logic
     const tips = document.querySelectorAll('.tip');
     const commentModal = document.getElementById('comment-modal');
     const modalTip = commentModal.querySelector('.modal-tip');
     const commentList = commentModal.querySelector('.comment-list');
-    const commentInput = commentModal.querySelector('.comment-input');
-    const commentSubmit = commentModal.querySelector('.comment-submit');
+    const commentInput = commentModal.querySelector('.post-reply-input'); // Updated to match new HTML
+    const commentSubmit = commentModal.querySelector('.post-reply-submit'); // Updated to match new HTML
     const commentModalClose = commentModal.querySelector('.comment-modal-close');
+
+    // Function to open the comment modal
+    function openCommentModal(tip, tipId) {
+        modalTip.innerHTML = tip.querySelector('.tip-content').innerHTML; // Copy tip content
+        commentList.innerHTML = '<p>Loading comments...</p>';
+
+        fetch(`/api/tip/${tipId}/comments/`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                commentList.innerHTML = '';
+                if (data.comments && data.comments.length > 0) {
+                    data.comments.forEach(comment => {
+                        const commentDiv = document.createElement('div');
+                        commentDiv.className = 'comment';
+                        commentDiv.setAttribute('data-comment-id', comment.id);
+                        commentDiv.innerHTML = `
+                            <div class="comment-content">
+                                <a href="#" class="comment-username"><strong>${comment.user__username}</strong></a>
+                                <p>${comment.content}</p>
+                                <small>${new Date(comment.created_at).toLocaleString()}</small>
+                                <div class="comment-actions">
+                                    <div class="comment-action-group">
+                                        <a href="#" class="comment-action comment-action-like" data-action="like"><i class="fas fa-heart"></i></a>
+                                        <span class="comment-action-count like-count">0</span>
+                                    </div>
+                                    <div class="comment-action-group">
+                                        <a href="#" class="comment-action comment-action-share" data-action="share"><i class="fas fa-retweet"></i></a>
+                                        <span class="comment-action-count share-count">0</span>
+                                    </div>
+                                    <div class="comment-action-group">
+                                        <a href="#" class="comment-action comment-action-comment" data-action="comment"><i class="fas fa-comment-dots"></i></a>
+                                        <span class="comment-action-count comment-count">0</span>
+                                    </div>
+                                    <div class="comment-action-spacer"></div>
+                                    <div class="comment-action-spacer-large"></div>
+                                </div>
+                            </div>
+                        `;
+                        commentList.appendChild(commentDiv);
+                    });
+                    attachCommentActionListeners();
+                } else {
+                    commentList.innerHTML = '<p>No comments yet.</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching comments:', error);
+                commentList.innerHTML = '<p>Error loading comments.</p>';
+            });
+
+        commentModal.style.display = 'block';
+        commentSubmit.dataset.tipId = tipId; // Store tip ID for submission
+    }
+
+    // Function to attach event listeners to comment actions
+    function attachCommentActionListeners() {
+        const commentActions = commentList.querySelectorAll('.comment-action');
+        commentActions.forEach(action => {
+            action.addEventListener('click', function(e) {
+                e.preventDefault();
+                const commentId = this.closest('.comment').getAttribute('data-comment-id');
+                const actionType = this.getAttribute('data-action');
+
+                const formData = new FormData();
+                formData.append('comment_id', commentId);
+
+                if (actionType === 'like') {
+                    fetch('/api/like-comment/', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': getCSRFToken(),
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const likeCount = this.nextElementSibling;
+                            likeCount.textContent = data.like_count;
+                            this.classList.toggle('liked', data.message === 'Comment liked');
+                        } else {
+                            alert('Error: ' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error liking comment:', error);
+                        alert('An error occurred while liking the comment.');
+                    });
+                } else if (actionType === 'share') {
+                    fetch('/api/share-comment/', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': getCSRFToken(),
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const shareCount = this.nextElementSibling;
+                            shareCount.textContent = data.share_count;
+                            this.classList.toggle('shared', data.message === 'Comment shared');
+                        } else {
+                            alert('Error: ' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error sharing comment:', error);
+                        alert('An error occurred while sharing the comment.');
+                    });
+                } else if (actionType === 'comment') {
+                    // Focus the reply input for now (nested replies could be added later)
+                    commentInput.focus();
+                }
+            });
+        });
+    }
 
     tips.forEach(tip => {
         tip.addEventListener('click', function(e) {
@@ -451,57 +574,27 @@ document.addEventListener('DOMContentLoaded', function() {
                         console.error('Error sharing tip:', error);
                         alert('An error occurred while sharing the tip.');
                     });
+                } else if (actionType === 'comment') {
+                    // Open the comment modal when clicking the comment button
+                    openCommentModal(this, tipId);
                 }
                 return; // Exit if action button is clicked
             }
 
             // Open modal when clicking anywhere else on the tip
             const tipId = this.getAttribute('data-tip-id');
-            modalTip.innerHTML = this.querySelector('.tip-content').innerHTML; // Copy tip content
-            commentList.innerHTML = '<p>Loading comments...</p>';
-
-            fetch(`/api/tip/${tipId}/comments/`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    commentList.innerHTML = '';
-                    if (data.comments && data.comments.length > 0) {
-                        data.comments.forEach(comment => {
-                            const commentDiv = document.createElement('div');
-                            commentDiv.className = 'comment';
-                            commentDiv.innerHTML = `
-                                <a href="#" class="comment-username"><strong>${comment.user__username}</strong></a>
-                                <p>${comment.content}</p> <!-- Use 'content' to match the API -->
-                                <small>${new Date(comment.created_at).toLocaleString()}</small>
-                            `;
-                            commentList.appendChild(commentDiv);
-                        });
-                    } else {
-                        commentList.innerHTML = '<p>No comments yet.</p>';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching comments:', error);
-                    commentList.innerHTML = '<p>Error loading comments.</p>';
-                });
-
-            commentModal.style.display = 'block';
-            commentSubmit.dataset.tipId = tipId; // Store tip ID for submission
+            openCommentModal(this, tipId);
         });
     });
 
-    // Comment Submit Logic
+    // Comment Submit Logic (Post a Reply)
     commentSubmit.addEventListener('click', function(e) {
         e.preventDefault();
         const tipId = this.dataset.tipId;
         const commentText = commentInput.value.trim();
 
         if (!commentText) {
-            alert('Please enter a comment.');
+            alert('Please enter a reply.');
             return;
         }
 
@@ -529,13 +622,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 commentCount.textContent = data.comment_count;
                 const newComment = document.createElement('div');
                 newComment.className = 'comment';
+                newComment.setAttribute('data-comment-id', data.comment_id);
                 newComment.innerHTML = `
-                    <a href="#" class="comment-username"><strong>${window.currentUser || 'You'}</strong></a>
-                    <p>${commentText}</p>
-                    <small>${new Date().toLocaleString()}</small>
+                    <div class="comment-content">
+                        <a href="#" class="comment-username"><strong>${window.currentUser || 'You'}</strong></a>
+                        <p>${commentText}</p>
+                        <small>${new Date().toLocaleString()}</small>
+                        <div class="comment-actions">
+                            <div class="comment-action-group">
+                                <a href="#" class="comment-action comment-action-like" data-action="like"><i class="fas fa-heart"></i></a>
+                                <span class="comment-action-count like-count">0</span>
+                            </div>
+                            <div class="comment-action-group">
+                                <a href="#" class="comment-action comment-action-share" data-action="share"><i class="fas fa-retweet"></i></a>
+                                <span class="comment-action-count share-count">0</span>
+                            </div>
+                            <div class="comment-action-group">
+                                <a href="#" class="comment-action comment-action-comment" data-action="comment"><i class="fas fa-comment-dots"></i></a>
+                                <span class="comment-action-count comment-count">0</span>
+                            </div>
+                            <div class="comment-action-spacer"></div>
+                            <div class="comment-action-spacer-large"></div>
+                        </div>
+                    </div>
                 `;
                 commentList.insertBefore(newComment, commentList.firstChild);
                 commentInput.value = '';
+                attachCommentActionListeners(); // Reattach listeners to new comment
             } else {
                 alert('Error: ' + data.error);
             }
