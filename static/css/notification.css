@@ -1,0 +1,51 @@
+.notification {
+    background-color: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--padding-small);
+    box-shadow: var(--shadow-light);
+    margin-bottom: var(--margin-small);
+    color: var(--primary-bg);
+    transition: box-shadow 0.2s;
+    display: flex;
+    align-items: flex-start;
+}
+
+
+.notification-feed {
+    background-color: #ffffff;
+    border: 1px solid #e1e8ed;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    color: #001f3f;
+    max-width: 700px;
+    margin: 0 0 0 0;
+}
+
+.notification:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.notification p {
+    margin: 5px 0;
+    line-height: 1.4;
+    color: #001f3f;
+}
+
+.notification small {
+    color: #666666;
+    font-size: 12px;
+}
+
+.notification strong {
+    color: #000000;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.notification strong:hover {
+    text-decoration: underline;
+}

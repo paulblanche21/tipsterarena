@@ -1,9 +1,7 @@
 // carousel.js
-document.addEventListener('DOMContentLoaded', function() {
-    // Upcoming Events Carousel Logic
+export function initCarousel() {
     const carouselSlides = document.querySelectorAll('.carousel-slide');
     const dots = document.querySelectorAll('.dot');
-    
     let currentSlide = 0;
 
     function showSlide(index) {
@@ -22,23 +20,21 @@ document.addEventListener('DOMContentLoaded', function() {
         showSlide(currentSlide);
     }
 
-    function initCarousel() {
-        if (carouselSlides.length > 0) {
-            dots.forEach((dot, index) => {
-                dot.addEventListener('click', () => {
-                    currentSlide = index;
-                    showSlide(currentSlide);
-                });
+    if (carouselSlides.length > 0) {
+        dots.forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                currentSlide = index;
+                showSlide(currentSlide);
             });
+        });
 
-            // Auto-slide every 10 seconds (changed from 5 seconds to match your original code)
-            setInterval(nextSlide, 10000);
+        // Auto-slide every 10 seconds
+        setInterval(nextSlide, 10000);
 
-            // Show the first slide initially
-            showSlide(currentSlide);
-        }
+        // Show the first slide initially
+        showSlide(currentSlide);
     }
+}
 
-    // Initialize the carousel
-    initCarousel();
-});
+// If you want to auto-initialize (optional, but we'll move this to main.js)
+document.addEventListener('DOMContentLoaded', initCarousel);

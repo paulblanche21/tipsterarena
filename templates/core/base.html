@@ -63,7 +63,33 @@
         <aside class="sidebar">
             <input type="text" placeholder="Search Tipster Arena..." class="search-input">
             <div class="sidebar-scrollable">
-                {% block upcoming_events %}{% endblock %}
+                {% block upcoming_events %}
+                <!-- Default Upcoming Events Carousel -->
+                <div class="sidebar-card" data-card="upcoming-events">
+                    <h3>Upcoming Events</h3>
+                    <div class="carousel">
+                        <div class="carousel-slide active">
+                            <p><span class="sport-icon">⚽</span> Premier League: Manchester United vs. Tottenham, Mar 12, 2025</p>
+                        </div>
+                        <div class="carousel-slide">
+                            <p><span class="sport-icon">⛳</span> US PGA Tour: The Players Championship, Mar 13-16, 2025</p>
+                        </div>
+                        <div class="carousel-slide">
+                            <p><span class="sport-icon">🎾</span> Australian Open Qualifiers, Mar 10-12, 2025</p>
+                        </div>
+                        <div class="carousel-slide">
+                            <p><span class="sport-icon">🏇</span> Grand National Trials, Mar 14, 2025</p>
+                        </div>
+                    </div>
+                    <div class="carousel-dots">
+                        <span class="dot active"></span>
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+                    </div>
+                    <a href="#" class="show-more" data-target="upcoming-events">Show more</a>
+                </div>
+                {% endblock %}
                 {% block trending_tips %}{% endblock %}
                 <div class="sidebar-card" data-card="who-to-follow">
                     <h3 class="who-to-follow-header">Who to Follow</h3>
@@ -142,15 +168,10 @@
     <!-- CSRF Token -->
     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 
-    <!-- Define URLs for JavaScript -->
-<script>
-    window.LOGOUT_URL = "{% url 'logout' %}";
-    window.LANDING_URL = "{% url 'landing' %}";
-</script>
-
-    <!-- JavaScript -->
+    <!-- Define URLs and Constants for JavaScript -->
     <script>
-        // Define static URLs for fallbacks
+        window.LOGOUT_URL = "{% url 'logout' %}";
+        window.LANDING_URL = "{% url 'landing' %}";
         const DEFAULT_AVATAR_URL = "{% static 'images/default-avatar.png' %}";
         const DEFAULT_BANNER_URL = "{% static 'images/default-banner.png' %}";
         function setDefaultBanner(img) {
@@ -161,9 +182,11 @@
             img.src = DEFAULT_AVATAR_URL;
             img.onerror = null; // Prevent infinite loops
         }
+        // Optionally define current user for tips.js
+        window.currentUser = "{{ request.user.username|default:'Guest' }}";
     </script>
-    <script src="{% static 'js/upcoming-events.js' %}"></script>
-    <script src="{% static 'js/carousel.js' %}"></script>
-    <script src="{% static 'js/scripts.js' %}" defer></script>
+
+    <!-- Load JavaScript Modules -->
+    <script type="module" src="{% static 'js/main.js' %}"></script>
 </body>
 </html>

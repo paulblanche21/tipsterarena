@@ -1,0 +1,41 @@
+/* base.css */
+html {
+    box-sizing: border-box;
+}
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+body, h1, h2, h3, p, ul {
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --navbar-width: 250px;
+    --sidebar-width: 350px;
+    --primary-bg: #001f3f;
+    --secondary-bg: #ffffff;
+    --border-color: #e1e8ed;
+    --twitter-blue: #1DA1F2;
+    --red-accent: #ff4136;
+    --gray-light: #666666;
+    --black: black;
+    --shadow-light: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.15);
+    --padding-small: 12px;
+    --margin-small: 10px;
+    --border-radius: 12px;
+    --font-default: 'Helvetica Neue', Arial, sans-serif;
+    --font-size-base: 14px;
+}
+
+body {
+    font-family: var(--font-default);
+    font-size: var(--font-size-base);
+    background-color: var(--primary-bg);
+    color: #ffffff;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
+}

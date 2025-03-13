@@ -1,0 +1,62 @@
+.carousel-container {
+    position: relative;
+    flex: 1; /* Take up available space within the fixed-height card */
+    overflow: hidden;
+}
+
+
+.carousel-container.expanded {
+    max-height: 400px; /* Adjust based on content */
+}
+
+.carousel-slide {
+    display: none;
+    padding: 5px 0;
+    height: 100%; /* Ensure slide fills the container */
+    overflow: hidden; /* Prevent overflow within slide */
+}
+
+.carousel-slide.active {
+    display: block;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+
+.carousel-slide.active {
+    display: block;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+carousel-prev, .carousel-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.carousel-prev {
+    left: 5px;
+}
+
+.carousel-next {
+    right: 5px;
+}
+
+.carousel-prev:hover, .carousel-next:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.carousel-dots {
+    text-align: center;
+    padding: 10px 0;
+}

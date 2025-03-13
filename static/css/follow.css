@@ -1,0 +1,114 @@
+/* Who to Follow list styling */
+.follow-card {
+    background-color: #ffffff; /* White background for the card */
+    color: #001f3f; /* Dark text for readability */
+    border-radius: 12px; /* Match card style */
+    padding: 12px; /* Add padding for consistency */
+    margin-bottom: 12px; /* Space below the card */
+    display: flex; /* Use flex to stack content vertically */
+    flex-direction: column; /* Stack children vertically */
+}
+
+
+.follow-card .show-less {
+    margin-top: 12px; /* Add space above "Show Less" */
+    color: #ff4136; /* Red text for consistency */
+    text-decoration: none;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0;
+    background: none;
+    border: none;
+    width: fit-content;
+}
+
+.follow-card .show-less:hover {
+    text-decoration: underline; /* Optional hover effect */
+}
+
+.follow-card h2{
+    background-color: transparent; /* Ensure no background color overrides */
+    margin: 0 0 8px 0; /* Reduce margin to eliminate gaps */
+    padding: 0; /* No padding to avoid extra space */
+    font: size 24px;
+    font-weight: bold;
+    color: var(--black);
+
+}
+.follow-card p {
+    background-color: transparent; /* Ensure no background color overrides */
+    margin: 0 0 8px 0; /* Reduce margin to eliminate gaps */
+    padding: 0; /* No padding to avoid extra space */
+    font-size: 16px;
+    color: #001f3f;
+    line-height: 1.5;
+}
+
+.follow-list {
+    margin-bottom: 8px;
+}
+
+.follow-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #e1e8ed; /* Light border between items, like Twitter/X */
+}
+
+.follow-item:last-child {
+    border-bottom: none; /* Remove border from the last item */
+}
+
+.follow-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.follow-details {
+    flex: 1;
+}
+
+.follow-username {
+    color: var(--black); /* Black links instead of Twitter blue */
+    font-weight: 600;
+    font-size: 15px;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.follow-username:hover {
+    text-decoration: underline; /* Optional: Minimal hover effect, like Twitter/X */
+}
+
+.follow-bio {
+    font-size: 14px;
+    color: #666666;
+    margin: 0;
+    line-height: 1.4;
+    max-width: 200px; /* Prevent overflow, like Twitter/X */
+    overflow-wrap: break-word;
+}
+
+/* Follow button styling (Twitter/X black oval) */
+.follow-btn {
+    background-color: #000000; /* Black background, like Twitter/X */
+    color: #ffffff;
+    border: none;
+    border-radius: 20px; /* Oval shape, like Twitter/X */
+    padding: 6px 16px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    min-width: 80px;
+    text-align: center;
+}
+
+.follow-btn:hover {
+    background-color: #333333; /* Darker gray on hover, like Twitter/X */
+}
+

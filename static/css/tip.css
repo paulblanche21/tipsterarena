@@ -1,0 +1,266 @@
+/* Tip Hover Effect (X-like light grey) */
+.tip {
+    background-color: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--padding-small);
+    box-shadow: var(--shadow-light);
+    margin-bottom: var(--margin-small);
+    color: var(--primary-bg);
+    transition: box-shadow 0.2s, background-color 0.2s; /* Added background-color transition */
+    display: flex;
+    align-items: flex-start;
+    cursor: pointer; /* Indicate clickability */
+}
+
+
+.tip:hover {
+    background-color: #f5f8fa; /* Light grey like X */
+    box-shadow: var(--shadow-hover);
+}
+
+
+/* Tip Actions Styling */
+.tip-actions {
+    margin-top: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tip-action {
+    color: var(--gray-light) !important;  /* Default grey color */
+    text-decoration: none;
+    font-size: 1.2rem;
+    transition: color 0.2s, background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%; /* Circular buttons */
+}
+
+/* Unique hover spotlight colors for each icon */
+.tip-action-like:hover {
+    color: #f91880; /* Pink for like */
+    background-color: rgba(249, 24, 128, 0.1); /* Light pink spotlight */
+}
+
+.tip-action-retweet:hover {
+    color: #00ba7c; /* Green for retweet */
+    background-color: rgba(0, 186, 124, 0.1); /* Light green spotlight */
+}
+
+
+.tip-action-comment:hover {
+    color: var(--twitter-blue); /* Blue for comment */
+    background-color: rgba(29, 161, 242, 0.1); /* Light blue spotlight */
+}
+
+.tip-action-engagement:hover {
+    color: #ffad1f; /* Yellow for engagement (users) */
+    background-color: rgba(255, 173, 31, 0.1); /* Light yellow spotlight */
+}
+
+.tip-action-bookmark:hover {
+    color: #1d9bf0; /* Blue for bookmark */
+    background-color: rgba(29, 155, 240, 0.1); /* Light blue spotlight */
+}
+
+.tip-action-share:hover {
+    color: #17bf63; /* Green for share */
+    background-color: rgba(23, 191, 99, 0.1); /* Light green spotlight */
+}
+
+.tip-action i {
+    vertical-align: middle;
+}
+
+/* Count styling */
+.tip-action-count {
+    font-size: 0.9rem;
+    color: var(--gray-light); /* Grey color for counts */
+    margin-right: 0.75rem; /* More space between count and next icon */
+}
+
+.tip-action-counts span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.tip-action-counts i {
+    font-size: 0.9rem;
+    color: var(--gray-light); /* Match text color */
+}
+
+/* Group for each icon and its count */
+.tip-action-group {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem; /* Space between icon and count */
+}
+
+/* Spacer to push bookmark and share to the right */
+.tip-action-spacer {
+    flex-grow: 0.5; /* Takes up remaining space to push bookmark and share to the right */
+}
+
+.tip-action-spacer-large {
+    flex-grow: 1; /* Full space to push bookmark and share to the right */
+}
+
+.tip-action-like.liked i {
+    color: #ff4136; /* Red heart when liked */
+}
+
+.tip-action-share.shared i {
+    color: #1da1f2; /* Twitter-blue when shared */
+}
+
+
+.tip-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.tip-avatar.modal-tip-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    margin-right: 12px;
+    flex-shrink: 0;
+    object-fit: cover;
+    display: block; /* Ensure it’s visible */
+}
+
+.tip-content {
+    flex: 1;
+    margin-left: 5px; /* Space between avatar and content */
+}
+
+/* Tip Details (updated) */
+.tip-details {
+    flex: 1;
+    overflow: hidden;
+    min-width: 0;
+}
+
+.tip-details strong {
+    color: #000000;
+    font-weight: 600;
+    font-size: 16px;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 4px;
+}
+
+/* Ensure .tip-feed matches */
+.tip-feed {
+    max-width: 650px;
+    margin: 0 10px 10px 10px;
+    padding: 0;
+}
+
+
+
+.tip-feed {
+    margin: 0 10px 10px 10px;
+    padding: 0;
+    width: 100%
+}
+
+.tip-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #e1e8ed;
+    width: 100%; /* Ensure it stays within bounds */
+}
+
+.tip-item:last-child {
+    border-bottom: none; /* Remove border from the last item */
+}
+
+.tip:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* Ensure the tip-list and tip-item don't overflow */
+.tip-list {
+    margin-bottom: 15px;
+    width: 100%; /* Full width within container */
+}
+
+.tip p {
+    margin: 5px 0;
+    line-height: 1.4;
+}
+
+.tip small {
+    color: #666666;
+    font-size: 12px;
+}
+
+.tip strong {
+    color: #000000;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.tip strong:hover {
+    text-decoration: underline;
+}
+
+.tip-username {
+    color: var(--black);
+    font-weight: 600;
+    font-size: 15px;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 4px;
+    cursor:pointer;
+}
+
+.tip-header {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Space between username, handle, and date */
+}
+
+.tip-username:hover {
+    text-decoration: underline;
+    color: (var(--black));
+}
+
+/* Tip Text (updated to allow multiple lines) */
+.tip-text {
+    font-size: 13px;
+    margin: 2px 0 0 0;
+    color: #333;
+    /* Removed white-space: nowrap to allow wrapping */
+    overflow: hidden; /* Still hide overflow if exceeds height */
+    /* Removed text-overflow: ellipsis since we want full text */
+    max-width: 100%;
+    line-height: 1.4; /* Improve readability with multiple lines */
+}
+
+/* Tip Likes (updated for alignment) */
+.tip-likes {
+    font-size: 12px;
+    color: #666;
+    display: flex;
+    align-items: flex-end; /* Align to the bottom of the flex container */
+    gap: 3px;
+    flex-shrink: 0;
+    margin-top: auto; /* Push to the bottom of the available space */
+}
+
+.tip-likes i {
+    color: #e0245e; /* Heart color */
+}

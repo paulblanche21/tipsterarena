@@ -1,0 +1,39 @@
+.profile-handle {
+    color: #657786;
+    font-size: 0.9em;
+}
+
+/* Style both buttons consistently in the profile header */
+.profile-actions ,
+.profile-actions .follow-btn {
+    background-color: var(--red-accent); /* #ff4136 to match your Edit Profile */
+    border: none; /* Remove border for a cleaner look */
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 14px;
+    color: var(--secondary-bg); /* #ffffff */
+    text-decoration: none;
+    cursor: pointer;
+    font-weight: bold; /* Match Follow button's weight */
+}
+
+.profile-actions .follow-btn {
+    background-color: #000000; /* Black background, like Twitter/X */
+}
+.profile-actions .follow-btn:hover {
+    background-color: #333333; /* Darker gray on hover, like X */
+}
+
+.profile-actions .follow-btn.followed {
+    background-color: #666666; /* Dimmed when following */
+    cursor: not-allowed;
+}
+
+/* Ensure Edit Profile button keeps its hover effect */
+.profile-actions .profile-edit-btn:hover {
+    background-color: var(--shadow-hover);
+    border-color: #ff4136;
+    color: #ff4136;
+}
+
+

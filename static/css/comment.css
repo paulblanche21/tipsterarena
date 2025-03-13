@@ -1,0 +1,229 @@
+/* Comment Cards with Avatar */
+.comment-list .comment {
+    background-color: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--padding-small);
+    box-shadow: var(--shadow-light);
+    margin-bottom: var(--margin-small);
+    color: var(--primary-bg);
+    transition: box-shadow 0.2s, background-color 0.2s;
+    display: flex;
+    align-items: flex-start;
+}
+
+.comment-list .comment:hover {
+    background-color: #f5f8fa;
+    box-shadow: var(--shadow-hover);
+}
+
+
+.comment-list .comment .comment-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+
+.comment-list .comment .comment-username {
+    font-size: var(--font-size-base);
+    color: var(--black);
+    text-decoration: none;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.comment-list .comment .comment-content {
+    flex: 1;
+}
+
+.comment-list .comment p {
+    margin: 5px 0;
+    font-size: var(--font-size-base);
+    color: #333;
+}
+
+
+.comment-list .comment small {
+    color: var(--gray-light);
+    font-size: 12px;
+}
+
+.comment-list .comment .comment-actions {
+    margin-top: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.comment-list .comment .comment-action {
+    color: var(--gray-light);
+    text-decoration: none;
+    font-size: 1.2rem;
+    transition: color 0.2s, background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+.comment-list .comment .comment-action-like:hover {
+    color: #f91880;
+    background-color: rgba(249, 24, 128, 0.1);
+}
+
+.comment-list .comment .comment-action-share:hover {
+    color: #00ba7c;
+    background-color: rgba(0, 186, 124, 0.1);
+}
+
+.comment-list .comment .comment-action-comment:hover {
+    color: var(--twitter-blue);
+    background-color: rgba(29, 161, 242, 0.1);
+}
+
+.comment-list .comment .comment-action i {
+    vertical-align: middle;
+}
+
+.comment-list .comment .comment-action-count {
+    font-size: 0.9rem;
+    color: var(--gray-light);
+    margin-right: 0.75rem;
+}
+
+.comment-list .comment .comment-action-group {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.comment-list .comment .comment-action-spacer {
+    flex-grow: 0.5;
+}
+
+.comment-list .comment .comment-action-spacer-large {
+    flex-grow: 1;
+}
+
+.comment-list .comment .comment-action-like.liked i {
+    color: #ff4136;
+}
+
+.comment-list .comment .comment-action-share.shared i {
+    color: #1da1f2;
+}
+
+
+/* Comment Modal Styling (Positioned in Center Feed) */
+.comment-modal {
+    display: none;
+    position: fixed; /* Cover entire viewport */
+    top: 0;
+    left: 0;
+    width: 100vw; /* Full viewport width */
+    height: 100vh; /* Full viewport height */
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
+    z-index: 1003; /* Matches post-modal z-index */
+}
+
+.comment-modal-content {
+    position: absolute;
+    top: 50px; /* Position below navbar */
+    left: 260px; /* Navbar (250px) + 10px margin to align with center feed */
+    width: 100%;
+    max-width: 650px; /* Matches tip-feed and events-popup */
+    max-height: 80vh;
+    background-color: var(--secondary-bg); /* White background */
+    border: 1px solid var(--border-color); /* Light grey border */
+    border-radius: var(--border-radius); /* 12px rounded corners */
+    padding: var(--padding-small); /* Consistent padding */
+    box-shadow: var(--shadow-hover); /* Matches your shadow style */
+    overflow-y: auto; /* Scrollable if content exceeds height */
+    color: var(--primary-bg); /* Dark text */
+}
+
+.comment-modal-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    color: var(--gray-light); /* Matches your modal close buttons */
+    cursor: pointer;
+    border: none;
+    background: none;
+}
+
+.comment-modal-close:hover {
+    color: var(--red-accent); /* Red hover like other close buttons */
+}
+
+
+.comment-list .comment {
+    margin-bottom: 10px;
+}
+
+.comment-username {
+    font-size: var(--font-size-base); /* 14px */
+    color: var(--black); /* Black like tip usernames */
+    text-decoration: none;
+}
+
+.comment-username strong {
+    margin-right: 5px;
+    font-weight: 600; /* Matches tip username */
+}
+
+.comment p {
+    margin: 5px 0;
+    font-size: var(--font-size-base); /* 14px */
+    color: #333; /* Slightly lighter than black for readability */
+}
+
+.comment small {
+    color: var(--gray-light); /* Grey like tip timestamps */
+    font-size: 12px;
+}
+
+.comment-form {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.comment-input {
+    flex-grow: 1;
+    padding: 8px; /* Matches form inputs */
+    border: 1px solid var(--border-color); /* Light grey border */
+    border-radius: 4px; /* Smaller radius for inputs */
+    resize: none;
+    height: 40px;
+    font-size: var(--font-size-base); /* 14px */
+    color: var(--primary-bg); /* Dark text */
+    background-color: #f5f8fa; /* Light grey like post-input */
+}
+
+.comment-input:focus {
+    outline: none;
+    border-color: var(--red-accent); /* Red focus like post-input */
+}
+
+.comment-submit {
+    margin-left: 10px;
+    padding: 8px 16px; /* Matches post-submit */
+    background-color: var(--twitter-blue); /* Blue like action buttons */
+    color: var(--secondary-bg); /* White text */
+    border: none;
+    border-radius: 20px; /* Oval like post-submit */
+    font-weight: bold;
+    font-size: var(--font-size-base); /* 14px */
+    cursor: pointer;
+}
+
+.comment-submit:hover {
+    background-color: #0d8ddb; /* Darker blue on hover */
+}

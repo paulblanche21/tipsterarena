@@ -1,0 +1,331 @@
+import { getCSRFToken } from './utils.js';
+
+export function setupTipInteractions() {
+    const tips = document.querySelectorAll('.tip');
+    const commentModal = document.getElementById('comment-modal');
+    const commentSubmit = commentModal.querySelector('.post-reply-submit');
+    const commentModalClose = commentModal.querySelector('.comment-modal-close');
+
+    tips.forEach(tip => {
+        tip.removeEventListener('click', handleTipClick);
+        tip.addEventListener('click', handleTipClick);
+    });
+
+    commentSubmit.addEventListener('click', function(e) {
+        e.preventDefault();
+        const tipId = this.dataset.tipId;
+        const parentId = this.dataset.parentId;
+        const commentInput = commentModal.querySelector('.post-reply-input');
+        const commentText = commentInput.value.trim();
+
+        if (!commentText) {
+            alert('Please enter a reply.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('tip_id', tipId);
+        formData.append('comment_text', commentText);
+        if (parentId) formData.append('parent_id', parentId);
+
+        const endpoint = parentId ? '/api/reply-to-comment/' : '/api/comment-tip/';
+        fetch(endpoint, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': getCSRFToken(),
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const tip = document.querySelector(`.tip[data-tip-id="${tipId}"]`);
+                const commentCount = tip.querySelector('.comment-count');
+                commentCount.textContent = data.comment_count;
+                const commentList = commentModal.querySelector('.comment-list');
+                const avatarUrl = DEFAULT_AVATAR_URL;
+                const newComment = document.createElement('div');
+                newComment.className = 'comment';
+                newComment.setAttribute('data-comment-id', data.comment_id);
+                newComment.innerHTML = `
+                    <img src="${avatarUrl}" alt="${window.currentUser || 'You'} Avatar" class="comment-avatar" onerror="this.src='${DEFAULT_AVATAR_URL}'">
+                    <div class="comment-content">
+                        <a href="#" class="comment-username"><strong>${window.currentUser || 'You'}</strong></a>
+                        <p>${commentText}</p>
+                        <small>${new Date().toLocaleString()}</small>
+                        <div class="comment-actions">
+                            <div class="comment-action-group">
+                                <a href="#" class="comment-action comment-action-like" data-action="like"><i class="fas fa-heart"></i></a>
+                                <span class="comment-action-count like-count">0</span>
+                            </div>
+                            <div class="comment-action-group">
+                                <a href="#" class="comment-action comment-action-share" data-action="share"><i class="fas fa-retweet"></i></a>
+                                <span class="comment-action-count share-count">0</span>
+                            </div>
+                            <div class="comment-action-group">
+                                <a href="#" class="comment-action comment-action-comment" data-action="comment"><i class="fas fa-comment-dots"></i></a>
+                                <span class="comment-action-count comment-count">0</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                commentList.insertBefore(newComment, commentList.firstChild);
+                commentInput.value = '';
+                if (parentId) commentModal.querySelector('.reply-to-header').style.display = 'none';
+                attachCommentActionListeners();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error commenting on tip:', error);
+            alert('An error occurred while commenting.');
+        });
+    });
+
+    commentModalClose.addEventListener('click', function() {
+        commentModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', function(event) {
+        if (event.target === commentModal) {
+            commentModal.style.display = 'none';
+        }
+    });
+}
+
+function handleTipClick(e) {
+    const action = e.target.closest('.tip-action');
+    if (action) {
+        e.preventDefault();
+        const tipId = this.getAttribute('data-tip-id');
+        const actionType = action.getAttribute('data-action');
+
+        const formData = new FormData();
+        formData.append('tip_id', tipId);
+
+        if (actionType === 'like') {
+            fetch('/api/like-tip/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCSRFToken(),
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const likeCount = action.nextElementSibling;
+                    likeCount.textContent = data.like_count;
+                    action.classList.toggle('liked', data.message === 'Tip liked');
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error liking tip:', error);
+                alert('An error occurred while liking the tip.');
+            });
+        } else if (actionType === 'share') {
+            fetch('/api/share-tip/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCSRFToken(),
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const shareCount = action.nextElementSibling;
+                    shareCount.textContent = data.share_count;
+                    action.classList.toggle('shared', data.message === 'Tip shared');
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error sharing tip:', error);
+                alert('An error occurred while sharing the tip.');
+            });
+        } else if (actionType === 'comment') {
+            openCommentModal(this, tipId);
+        }
+        return;
+    }
+
+    const tipId = this.getAttribute('data-tip-id');
+    openCommentModal(this, tipId);
+}
+
+function openCommentModal(tip, tipId, parentId = null) {
+    const commentModal = document.getElementById('comment-modal');
+    const modalTip = commentModal.querySelector('.modal-tip');
+    const modalTipAvatar = modalTip.querySelector('.modal-tip-avatar');
+    const modalTipContent = modalTip.querySelector('.modal-tip-content');
+    const commentList = commentModal.querySelector('.comment-list');
+    const replyToHeader = commentModal.querySelector('.reply-to-header');
+    const replyToUsername = commentModal.querySelector('.reply-to-username');
+    const commentSubmit = commentModal.querySelector('.post-reply-submit');
+
+    const avatarUrl = tip.querySelector('.tip-avatar')?.src || DEFAULT_AVATAR_URL;
+    const tipContent = tip.querySelector('.tip-content');
+    const usernameElement = tipContent.querySelector('.tip-username strong');
+    const handleElement = tipContent.querySelector('.user-handle');
+    const sportEmojiNode = Array.from(tipContent.childNodes).find(node => node.nodeType === 3 && node.textContent.trim().match(/^[⚽⛳🎾🏇]$/));
+    const sportEmoji = sportEmojiNode ? sportEmojiNode.textContent.trim() : '';
+    const text = tipContent.querySelector('p')?.textContent || '';
+    const timestamp = tipContent.querySelector('small').textContent;
+    const likeCount = tipContent.querySelector('.like-count').textContent;
+    const shareCount = tipContent.querySelector('.share-count').textContent;
+    const commentCount = tipContent.querySelector('.comment-count').textContent;
+    const engagementCount = tipContent.querySelector('.tip-action-engagement + .tip-action-count')?.textContent || '0';
+
+    modalTipAvatar.src = avatarUrl;
+    modalTipContent.innerHTML = `
+        <a href="#" class="tip-username">
+            <strong class="modal-tip-username">${usernameElement ? usernameElement.textContent : 'Unknown'}</strong>
+            <span class="user-handle modal-tip-handle">${handleElement ? handleElement.textContent : ''}</span>
+        </a>
+        <span class="modal-tip-sport">${sportEmoji}</span>
+        <p class="modal-tip-text">${text}</p>
+        <small class="modal-tip-timestamp">${timestamp}</small>
+        <div class="tip-actions">
+            <div class="tip-action-group">
+                <a href="#" class="tip-action tip-action-like" data-action="like"><i class="fas fa-heart"></i></a>
+                <span class="tip-action-count like-count">${likeCount}</span>
+            </div>
+            <div class="tip-action-group">
+                <a href="#" class="tip-action tip-action-share" data-action="share"><i class="fas fa-retweet"></i></a>
+                <span class="tip-action-count share-count">${shareCount}</span>
+            </div>
+            <div class="tip-action-group">
+                <a href="#" class="tip-action tip-action-comment" data-action="comment"><i class="fas fa-comment-dots"></i></a>
+                <span class="tip-action-count comment-count">${commentCount}</span>
+            </div>
+            <div class="tip-action-group">
+                <a href="#" class="tip-action tip-action-engagement"><i class="fas fa-users"></i></a>
+                <span class="tip-action-count">${engagementCount}</span>
+            </div>
+        </div>
+    `;
+
+    commentList.innerHTML = '<p>Loading comments...</p>';
+
+    if (parentId) {
+        const parentComment = tip.querySelector(`.comment[data-comment-id="${parentId}"]`);
+        if (parentComment) {
+            replyToHeader.style.display = 'block';
+            replyToUsername.textContent = parentComment.querySelector('.comment-username strong').textContent;
+        }
+    } else {
+        replyToHeader.style.display = 'none';
+    }
+
+    fetch(`/api/tip/${tipId}/comments/`)
+        .then(response => response.json())
+        .then(data => {
+            commentList.innerHTML = '';
+            if (data.comments && data.comments.length > 0) {
+                data.comments.forEach(comment => {
+                    const avatarUrl = comment.user__avatar || DEFAULT_AVATAR_URL;
+                    const commentDiv = document.createElement('div');
+                    commentDiv.className = 'comment';
+                    commentDiv.setAttribute('data-comment-id', comment.id);
+                    commentDiv.innerHTML = `
+                        <img src="${avatarUrl}" alt="${comment.user__username} Avatar" class="comment-avatar" onerror="this.src='${DEFAULT_AVATAR_URL}'">
+                        <div class="comment-content">
+                            <a href="#" class="comment-username"><strong>${comment.user__username}</strong></a>
+                            <p>${comment.content}</p>
+                            <small>${new Date(comment.created_at).toLocaleString()}</small>
+                            <div class="comment-actions">
+                                <div class="comment-action-group">
+                                    <a href="#" class="comment-action comment-action-like" data-action="like"><i class="fas fa-heart"></i></a>
+                                    <span class="comment-action-count like-count">${comment.like_count || 0}</span>
+                                </div>
+                                <div class="comment-action-group">
+                                    <a href="#" class="comment-action comment-action-share" data-action="share"><i class="fas fa-retweet"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    commentList.appendChild(commentDiv);
+                });
+                attachCommentActionListeners();
+            } else {
+                commentList.innerHTML = '<p>No comments yet.</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching comments:', error);
+            commentList.innerHTML = '<p>Error loading comments.</p>';
+        });
+
+    commentModal.style.display = 'block';
+    commentSubmit.dataset.tipId = tipId;
+    if (parentId) commentSubmit.dataset.parentId = parentId;
+}
+
+function attachCommentActionListeners() {
+    const commentList = document.getElementById('comment-modal').querySelector('.comment-list');
+    const commentActions = commentList.querySelectorAll('.comment-action');
+    commentActions.forEach(action => {
+        action.addEventListener('click', function(e) {
+            e.preventDefault();
+            const commentId = this.closest('.comment').getAttribute('data-comment-id');
+            const actionType = this.getAttribute('data-action');
+            const tipId = document.querySelector('.post-reply-submit').dataset.tipId;
+
+            const formData = new FormData();
+            formData.append('comment_id', commentId);
+
+            if (actionType === 'like') {
+                fetch('/api/like-comment/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': getCSRFToken(),
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const likeCount = this.nextElementSibling;
+                        likeCount.textContent = data.like_count;
+                        this.classList.toggle('liked', data.message === 'Comment liked');
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error liking comment:', error);
+                    alert('An error occurred while liking the comment.');
+                });
+            } else if (actionType === 'share') {
+                fetch('/api/share-comment/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': getCSRFToken(),
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const shareCount = this.nextElementSibling;
+                        shareCount.textContent = data.share_count;
+                        this.classList.toggle('shared', data.message === 'Comment shared');
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error sharing comment:', error);
+                    alert('An error occurred while sharing the comment.');
+                });
+            } else if (actionType === 'comment') {
+                openCommentModal(this.closest('.tip'), tipId, commentId);
+            }
+        });
+    });
+}

@@ -1,0 +1,149 @@
+* Show More Button Styling (Tipster Arena blue) */
+
+.show-more {
+    display: block;
+    margin-top: 10px;
+    color: #4a90e2;
+    text-decoration: none;
+    font-size: 0.9em;
+    text-align: center; /* Center the button */
+}
+
+.show-more:hover {
+    text-decoration: underline;
+}
+
+
+
+/* Show less button styling (Tipster Arena red, Twitter/X-like layout) */
+.show-less {
+    display: block;
+    color: var(--red-accent); /* Use your red accent (#ff4136) */
+    text-decoration: none;
+    font-size: 14px;
+    margin-top: 15px;
+    cursor: pointer;
+    padding: 0; /* No padding for minimalism */
+    background: none;
+    border: none;
+    width: fit-content;
+}
+
+.show-less:hover {
+    text-decoration: underline; /* Optional: Minimal hover effect, like Twitter/X */
+    color: var(--red-accent); /* No color change on hover */
+}
+
+/* Sidebar Adjustment */
+.sidebar {
+    width: 350px;
+    max-width: 350px;
+    padding: 10px 0;
+    background-color: #001f3f;
+    color: #001f3f;
+    position: fixed;
+    right: 0;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    z-index: 1001;
+}
+
+
+
+/* Ensure sidebar cards don't interfere */
+.sidebar-card {
+    background-color: var(--secondary-bg);
+    border: 1px solid #e1e8ed;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    min-height: 200px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.sidebar-card h3 {
+    color: #001f3f;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+
+/* Adjust padding or height if needed to accommodate "Show more" */
+.sidebar-card p {
+    color: #666666;
+    font-size: 14px;
+    line-height: 1.4;
+    margin-bottom: 0; /* Remove bottom margin to let flex handle spacing */
+}
+
+/* Ensure Sidebar Card Fits Policy Links */
+.sidebar-card[data-card="policy-links"] {
+    min-height: auto; /* Allow card to shrink to content height */
+    padding: 12px; /* Match other cards */
+}
+
+/* Specific Heights for Who to Follow */
+.sidebar-card[data-card="who-to-follow"] {
+    min-height: 350px; /* Increased height for more content */
+}
+
+
+/* Specific Heights for Trending Tips (updated) */
+.sidebar-card[data-card="trending-tips"] {
+    min-height: 450px; /* Increased from 350px to allow more content */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow-y: auto; /* Add scroll if content exceeds height */
+}
+
+/* Specific Heights for Who to Follow */
+.sidebar-card[data-card="upcoming-events"] {
+    min-height: 350px; /* Increased height for more content */
+}
+
+
+
+.sidebar-message-content {
+    position: fixed;
+    width: 200px;
+    right: 0;
+    top: 0;
+    height: 100vh;
+    padding: 10px;
+    background-color: #f5f5f5;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.sidebar-message-content h3 {
+    color: #001f3f;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.sidebar-message-content p {
+    color: #666666;
+    font-size: 14px;
+    line-height: 1.4;
+    margin-bottom: 12px;
+}
+
+.sidebar-scrollable {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 60px;
+}
+

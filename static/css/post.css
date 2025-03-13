@@ -1,0 +1,288 @@
+.post-actions {
+    margin-top: 8px;
+    display: flex;
+    gap: 8px; /* Slightly larger gap for better spacing */
+    flex-wrap: wrap;
+    align-items: center; /* Vertically center icons */
+}
+
+/* Post Action Button Styling */
+.post-action-btn {
+    background-color: transparent; /* Remove background for a cleaner look */
+    border: none; /* Remove border for a flat design */
+    padding: 6px; /* Adjusted padding for icon size */
+    font-size: 16px; /* Ensure icons are visible */
+    color: #999999; /* Light grey color (adjust to your preference or use a variable like var(--gray-light)) */
+    cursor: pointer;
+    transition: color 0.2s, background-color 0.2s, transform 0.1s; /* Include background-color transition for spotlight */
+    border-radius: 50%; /* Circular buttons like X */
+    width: 32px; /* Fixed width for consistency */
+    height: 32px; /* Fixed height for consistency */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Unique hover spotlight colors for each icon */
+.post-action-btn.image:hover {
+    color: #4a90e2; /* Blue for image */
+    background-color: rgba(74, 144, 226, 0.1); /* Light blue spotlight */
+    transform: scale(1.1); /* Slight scale-up on hover */
+}
+
+.post-action-btn.gif:hover {
+    color: #50e3c2; /* Teal for GIF */
+    background-color: rgba(80, 227, 194, 0.1); /* Light teal spotlight */
+    transform: scale(1.1);
+}
+
+.post-action-btn.poll:hover {
+    color: #f5a623; /* Orange for poll */
+    background-color: rgba(245, 166, 35, 0.1); /* Light orange spotlight */
+    transform: scale(1.1);
+}
+
+.post-action-btn.emoji:hover {
+    color: #9b59b6; /* Purple for emoji */
+    background-color: rgba(155, 89, 182, 0.1); /* Light purple spotlight */
+    transform: scale(1.1);
+}
+
+.post-action-btn.location:hover {
+    color: #2ecc71; /* Green for location */
+    background-color: rgba(46, 204, 113, 0.1); /* Light green spotlight */
+    transform: scale(1.1);
+}
+
+.post-action-btn.schedule:hover {
+    color: #e74c3c; /* Red for scheduled post */
+    background-color: rgba(231, 76, 60, 0.1); /* Light red spotlight */
+    transform: scale(1.1);
+}
+
+.post-action-btn.bold:hover {
+    color: #3498db; /* Blue for bold */
+    background-color: rgba(52, 152, 219, 0.1); /* Light blue spotlight */
+    transform: scale(1.1);
+}
+
+.post-action-btn.italic:hover {
+    color: #8e44ad; /* Purple for italic */
+    background-color: rgba(142, 68, 173, 0.1); /* Light purple spotlight */
+    transform: scale(1.1);
+}
+
+
+.post-action-btn i {
+    margin: 0; /* Remove default margin on icons */
+}
+
+.post-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.post-box {
+    background-color: #ffffff;
+    border: 1px solid #e1e8ed;
+    border-radius: 12px;
+    padding: 12px;
+    margin: 0 10px 10px 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    color: #001f3f;
+    width:100%
+}
+
+
+.post-input {
+    width: 100%;
+    min-height: 150px;
+    padding: 8px 12px;
+    border: 1px solid #e1e8ed;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #001f3f;
+    resize: vertical;
+    background-color: #f5f8fa;
+    margin-bottom: 8px;
+}
+
+.post-input:focus {
+    outline: none;
+    border-color: #ff4136;
+}
+
+.post-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1003;
+    
+}
+
+.post-modal-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    color: #666666;
+    cursor: pointer;
+    border: none;
+    background: none;
+}
+
+.post-modal-close:hover {
+    color: #ff4136;
+}
+
+.post-modal-content {
+    background-color: #ffffff;
+    border: 1px solid #e1e8ed;
+    border-radius: 12px;
+    padding: 12px;
+    width: 800px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+    color: #001f3f;
+    margin: 0 auto;
+}
+
+
+/* Post a Reply Box with Avatar */
+.post-reply-box {
+    background-color: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--padding-small);
+    margin: 10px 0;
+    box-shadow: var(--shadow-light);
+    color: var(--primary-bg);
+    display: flex;
+    align-items: flex-start;
+}
+
+.post-reply-box .post-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.post-reply-input {
+    width: 100%;
+    min-height: 80px;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: var(--font-size-base);
+    color: var(--primary-bg);
+    resize: vertical;
+    background-color: #f5f8fa;
+    margin-bottom: 8px;
+}
+
+.post-reply-box .post-reply-content {
+    flex: 1;
+}
+
+.post-reply-box .post-username-container {
+    margin-bottom: 5px;
+}
+
+.post-reply-box .post-username {
+    font-size: var(--font-size-base);
+    color: var(--black);
+    font-weight: 600;
+}
+
+
+.post-reply-input:focus {
+    outline: none;
+    border-color: var(--red-accent);
+}
+
+
+.post-reply-submit {
+    background-color: var(--twitter-blue);
+    color: var(--secondary-bg);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: var(--font-size-base);
+    cursor: pointer;
+    margin-top: 8px;
+    display: block;
+    width: fit-content;
+}
+
+
+.post-reply-submit:hover {
+    background-color: #0d8ddb;
+}
+
+
+
+.post-submit {
+    background-color: #657786;
+    color: #ffffff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 8px;
+    display: block;
+    width: fit-content;
+}
+
+.post-submit:hover {
+    background-color: #546a7a;
+}
+
+.post-user {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.post-username {
+    color: #000000;
+    font-weight: 600;
+    font-size: 16px;
+    text-decoration: none;
+}
+
+.post-username:hover {
+    text-decoration: underline;
+}
+
+.post-username-container {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.post-audience {
+    background-color: #f5f8fa;
+    border: 1px solid #e1e8ed;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    color: #001f3f;
+    cursor: pointer;
+}
+
+.post-audience:hover {
+    border-color: #ff4136;
+}

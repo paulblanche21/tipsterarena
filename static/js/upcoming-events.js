@@ -120,7 +120,7 @@ const UPCOMING_EVENTS = {
     `
 };
 
-function getEventList(currentPath, target) {
+export function getEventList(currentPath, target) {
     const path = currentPath.toLowerCase();
     let eventList = '';
     let title = '';
@@ -158,10 +158,4 @@ function getEventList(currentPath, target) {
             <a href="#" class="show-less" data-target="${target}">Show less</a>
         </div>
     `;
-}
-
-// Export the function for use in other files (if using modules)
-// If not using modules, this will be available globally
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { getEventList };
 }

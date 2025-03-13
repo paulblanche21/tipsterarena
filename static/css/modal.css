@@ -1,0 +1,54 @@
+.back-arrow-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    z-index: 1002;
+    background-color: #ffffff;
+}
+
+.back-arrow {
+    color: #000000; /* Black, like Twitter/X back arrows */
+    font-size: 18px;
+    text-decoration: none;
+    margin-right: 15px;
+    cursor: pointer;
+    font-weight: bold;
+    position:relative;
+}
+
+.back-arrow:hover {
+    color: #333333; /* Darker gray on hover, like Twitter/X */
+}
+
+.back-arrow i {
+    display: inline-flex; /* Ensure the Font Awesome icon renders correctly */
+    align-items: center;
+}
+
+
+.modal-tip {
+    display: flex;
+    align-items: flex-start;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+
+.modal-tip-content {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Reply to Header */
+.reply-to-header {
+    color: var(--gray-light);
+    font-size: var(--font-size-base);
+    margin-bottom: 5px;
+}
+
+.reply-to-header .reply-to-username {
+    color: var(--twitter-blue);
+    font-weight: 600;
+}
+
+
