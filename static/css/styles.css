@@ -23,11 +23,16 @@
     --font-size-base: 14px;
 }
 
+/* Body Styling */
 body {
     font-family: var(--font-default);
     font-size: var(--font-size-base);
     background-color: var(--primary-bg);
     color: #ffffff;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh; /* Ensure body fills viewport height */
+    overflow-x: hidden; /* Prevent horizontal overflow */
 }
 
 .back-arrow-container {
@@ -363,15 +368,29 @@ carousel-prev, .carousel-next {
     background-color: #0d8ddb; /* Darker blue on hover */
 }
 
-/* Main Content */
+
+/* Main Content - Adjust to fit naturally */
 .content {
-    flex: 1;
-    max-width: calc(100vw - 600px); /* Adjusted to accommodate sidebar */;
-    padding: 0;
-    background-color: var(--primary-bg); /* Changed to white to match Twitter/X */
+    flex: 0 0 auto; /* Fixed width, no growth */
+    max-width: 650px; /* Desired content width */
+    width: 100%; /* Ensure it takes full available space up to max-width */
+    background-color: var(--primary-bg);
     color: #001f3f;
     min-height: 100vh;
-    
+    box-sizing: border-box; /* Include padding in width */
+    margin: 0 auto; /* Center within the container */
+}
+
+
+
+/* Ensure dynamically generated content respects boundaries */
+.content .follow-card,
+.content .events-popup {
+    max-width: 100%;
+    width: 100%;
+    margin: 0;
+    box-sizing: border-box;
+    padding: 20px;
 }
 
 /* Ensure dynamically generated content (like "Who to Follow") has a white background */
@@ -724,10 +743,14 @@ form#editProfileForm {
 /* Main Container and Layout */
 .main-container {
     display: flex;
-    margin-left: 250px;
+    margin-left: 250px; /* Offset for navbar */
     min-height: 100vh;
     background-color: #001f3f;
-    z-index: 1000; /* Lower than 1002 for navbar dropdown */
+    width: auto; /* Remove fixed width to let content dictate */
+    max-width: calc(100vw - 600px); /* Account for navbar (250px) + sidebar (350px) */
+    position: relative;
+    justify-content: center; /* Center the content */
+    overflow: hidden; /* Prevent unexpected overflow */
 }
 
 /* Messages Container */
@@ -752,7 +775,7 @@ form#editProfileForm {
     position: fixed;
     right: 10px;
     bottom: 10px;
-    width: 350px; /* Match sidebar content width (350px - 20px padding) */
+    width: 340px; /* Match sidebar content width (350px - 20px padding) */
     background-color: #ffffff; /* White background like X */
     color: #000000; /* Black text */
     padding: 8px 12px;
@@ -839,7 +862,7 @@ form#editProfileForm {
 }
 
 
-/* Navbar (unchanged, already perfect, with reordered elements) */
+/* Navbar */
 .navbar {
     position: fixed;
     top: 0;
@@ -852,6 +875,7 @@ form#editProfileForm {
     flex-direction: column;
     justify-content: flex-start;
     border-right: 1px solid #e1e8ed;
+    z-index: 1002;
 }
 
 .nav-avatar {
@@ -1876,12 +1900,11 @@ form#editProfileForm {
     color: var(--red-accent); /* No color change on hover */
 }
 
-
-/* Sidebar */
+/* Sidebar Adjustment */
 .sidebar {
     width: 350px;
-    max-width: 350px; /* Prevent it from growing beyond this */
-    padding: 10px 0 10px 0;
+    max-width: 350px;
+    padding: 10px 0;
     background-color: #001f3f;
     color: #001f3f;
     position: fixed;
@@ -1890,13 +1913,12 @@ form#editProfileForm {
     height: 100vh;
     display: flex;
     flex-direction: column;
-    margin-right: 10px;
-    z-index: 1001; /* Lower than 1002 for navbar dropdown */
-    padding-bottom: 60px; /* Extra space at bottom to avoid overlap with fixed messages */
+    z-index: 1001;
 }
 
 
-/* Ensure sidebar cards have enough space for "Show more" */
+
+/* Ensure sidebar cards don't interfere */
 .sidebar-card {
     background-color: var(--secondary-bg);
     border: 1px solid #e1e8ed;
@@ -1905,10 +1927,11 @@ form#editProfileForm {
     margin-bottom: 12px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     min-height: 200px;
-    position: relative; /* For positioning "Show more" */
+    position: relative;
     display: flex;
     flex-direction: column;
-    justify-content: space-between; /* Pushes "Show more" to the bottom */
+    justify-content: space-between;
+    width: 100%;
 }
 
 .sidebar-card h3 {
@@ -2194,7 +2217,8 @@ form#editProfileForm {
     align-items: center;
     gap: 12px;
     padding: 12px 0;
-    border-bottom: 1px solid #e1e8ed; /* Light border between items, like Twitter/X */
+    border-bottom: 1px solid #e1e8ed;
+    width: 100%; /* Ensure it stays within bounds */
 }
 
 .tip-item:last-child {
@@ -2205,8 +2229,10 @@ form#editProfileForm {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
+/* Ensure the tip-list and tip-item don't overflow */
 .tip-list {
     margin-bottom: 15px;
+    width: 100%; /* Full width within container */
 }
 
 .tip p {
@@ -2278,13 +2304,13 @@ form#editProfileForm {
     color: #e0245e; /* Heart color */
 }
 
-/* Trending Tips Card (updated) */
+/* Adjust Trending Tips specific styling */
 .trending-tips-card {
     padding: 15px;
     border-radius: 10px;
     margin-bottom: 20px;
-    width: 100%;
-    max-width: 100%;
+    width: 100%; /* Ensure it respects the parent's max-width */
+    max-width: 650px; /* Match content max-width */
     box-sizing: border-box;
     background-color: white;
 }
