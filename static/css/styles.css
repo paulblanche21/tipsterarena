@@ -133,7 +133,7 @@ carousel-prev, .carousel-next {
     padding: 10px 0;
 }
 
-/* Comment Cards (Styled Like Tip Feed) */
+/* Comment Cards with Avatar */
 .comment-list .comment {
     background-color: var(--secondary-bg);
     border: 1px solid var(--border-color);
@@ -152,6 +152,16 @@ carousel-prev, .carousel-next {
     box-shadow: var(--shadow-hover);
 }
 
+
+.comment-list .comment .comment-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+
 .comment-list .comment .comment-username {
     font-size: var(--font-size-base);
     color: var(--black);
@@ -162,7 +172,6 @@ carousel-prev, .carousel-next {
 
 .comment-list .comment .comment-content {
     flex: 1;
-    margin-left: 5px;
 }
 
 .comment-list .comment p {
@@ -170,6 +179,7 @@ carousel-prev, .carousel-next {
     font-size: var(--font-size-base);
     color: #333;
 }
+
 
 .comment-list .comment small {
     color: var(--gray-light);
@@ -816,10 +826,18 @@ form#editProfileForm {
 
 
 .modal-tip {
-    border-bottom: 1px solid var(--border-color); /* Light grey divider */
+    display: flex;
+    align-items: flex-start;
+    border-bottom: 1px solid var(--border-color);
     padding-bottom: 10px;
     margin-bottom: 10px;
 }
+
+.modal-tip-content {
+    flex: 1;
+    min-width: 0;
+}
+
 
 /* Navbar (unchanged, already perfect, with reordered elements) */
 .navbar {
@@ -1263,7 +1281,7 @@ form#editProfileForm {
 }
 
 
-/* Post a Reply Box in Comment Modal */
+/* Post a Reply Box with Avatar */
 .post-reply-box {
     background-color: var(--secondary-bg);
     border: 1px solid var(--border-color);
@@ -1272,11 +1290,21 @@ form#editProfileForm {
     margin: 10px 0;
     box-shadow: var(--shadow-light);
     color: var(--primary-bg);
+    display: flex;
+    align-items: flex-start;
+}
+
+.post-reply-box .post-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    margin-right: 12px;
+    flex-shrink: 0;
 }
 
 .post-reply-input {
     width: 100%;
-    min-height: 80px; /* Smaller height than main post box */
+    min-height: 80px;
     padding: 8px 12px;
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -1287,10 +1315,26 @@ form#editProfileForm {
     margin-bottom: 8px;
 }
 
+.post-reply-box .post-reply-content {
+    flex: 1;
+}
+
+.post-reply-box .post-username-container {
+    margin-bottom: 5px;
+}
+
+.post-reply-box .post-username {
+    font-size: var(--font-size-base);
+    color: var(--black);
+    font-weight: 600;
+}
+
+
 .post-reply-input:focus {
     outline: none;
     border-color: var(--red-accent);
 }
+
 
 .post-reply-submit {
     background-color: var(--twitter-blue);
@@ -1306,9 +1350,11 @@ form#editProfileForm {
     width: fit-content;
 }
 
+
 .post-reply-submit:hover {
     background-color: #0d8ddb;
 }
+
 
 
 .post-submit {
@@ -1781,6 +1827,18 @@ form#editProfileForm {
     color: #000000;
 }
 
+/* Reply to Header */
+.reply-to-header {
+    color: var(--gray-light);
+    font-size: var(--font-size-base);
+    margin-bottom: 5px;
+}
+
+.reply-to-header .reply-to-username {
+    color: var(--twitter-blue);
+    font-weight: 600;
+}
+
 
 /* Show More Button Styling (Tipster Arena blue) */
 
@@ -2083,6 +2141,16 @@ form#editProfileForm {
     border-radius: 50%;
     margin-right: 12px;
     flex-shrink: 0;
+}
+
+.tip-avatar.modal-tip-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    margin-right: 12px;
+    flex-shrink: 0;
+    object-fit: cover;
+    display: block; /* Ensure it’s visible */
 }
 
 .tip-content {

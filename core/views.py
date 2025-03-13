@@ -2,8 +2,9 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import authenticate, login 
 from django.contrib.auth.decorators import login_required 
 from django.contrib.auth.models import User 
-from django.http import JsonResponse 
-from .models import Tip, Like, Follow, Share, UserProfile, MessageThread, Comment
+from django.http import JsonResponse
+from django.db import models
+from .models import Tip, Like, Follow, Share, UserProfile, Comment, MessageThread
 from .forms import UserProfileForm, CustomUserCreationForm 
 from django.contrib.auth.forms import AuthenticationForm 
 from django.conf import settings
@@ -138,6 +139,7 @@ def profile_edit(request, username):
         return render(request, 'core/profile.html', {'form': form, 'user_profile': user_profile})
     
 
+
 @login_required
 @require_POST
 def like_tip(request):
@@ -171,15 +173,17 @@ def share_tip(request):
 def comment_tip(request):
     tip_id = request.POST.get('tip_id')
     comment_text = request.POST.get('comment_text')
-    logger.info(f"Received comment_tip request: tip_id={tip_id}, comment_text={comment_text}")
+    parent_id = request.POST.get('parent_id')
+    logger.info(f"Received comment_tip request: tip_id={tip_id}, comment_text={comment_text}, parent_id={parent_id}")
     if not tip_id or not comment_text:
         logger.error(f"Missing tip_id or comment_text: tip_id={tip_id}, comment_text={comment_text}")
         return JsonResponse({'success': False, 'error': 'Missing tip_id or comment_text'}, status=400)
     try:
         tip = get_object_or_404(Tip, id=tip_id)
-        comment = Comment.objects.create(user=request.user, tip=tip, content=comment_text)  # Use 'content'
+        parent_comment = get_object_or_404(Comment, id=parent_id) if parent_id else None
+        comment = Comment.objects.create(user=request.user, tip=tip, content=comment_text, parent_comment=parent_comment)
         logger.info(f"Comment created successfully for tip_id: {tip_id}")
-        return JsonResponse({'success': True, 'message': 'Comment added', 'comment_count': tip.comments.count()})
+        return JsonResponse({'success': True, 'message': 'Comment added', 'comment_count': tip.comments.count(), 'comment_id': comment.id})
     except Exception as e:
         logger.error(f"Error creating comment: {str(e)}")
         return JsonResponse({'success': False, 'error': 'An error occurred while commenting.'}, status=500)
@@ -188,8 +192,14 @@ def comment_tip(request):
 def get_tip_comments(request, tip_id):
     logger.info(f"Fetching comments for tip_id: {tip_id}")
     tip = get_object_or_404(Tip, id=tip_id)
-    comments = tip.comments.all().order_by('-created_at').values('user__username', 'content', 'created_at')  # Use 'content'
-    logger.info(f"Found {comments.count()} comments")
+    comments = tip.comments.filter(parent_comment__isnull=True).order_by('-created_at').values(
+        'id', 'user__username', 'content', 'created_at'
+    ).annotate(
+        like_count=models.Count('likes'),
+        share_count=models.Count('shares'),
+        reply_count=models.Count('replies')
+    )
+    logger.info(f"Found {comments.count()} top-level comments")
     return JsonResponse({'comments': list(comments)})
 
 @login_required
@@ -232,15 +242,12 @@ def reply_to_comment(request):
     try:
         parent_comment = get_object_or_404(Comment, id=comment_id)
         tip = parent_comment.tip
-        reply = Comment.objects.create(user=request.user, tip=tip, content=reply_text)
+        reply = Comment.objects.create(user=request.user, tip=tip, content=reply_text, parent_comment=parent_comment)
         logger.info(f"Reply created successfully for comment_id: {comment_id}")
         return JsonResponse({'success': True, 'message': 'Reply added', 'comment_count': tip.comments.count(), 'comment_id': reply.id})
     except Exception as e:
         logger.error(f"Error creating reply: {str(e)}")
         return JsonResponse({'success': False, 'error': 'An error occurred while replying.'}, status=500)
-
-
-
 
 @login_required  # Require users to log in to see bookmarks
 def bookmarks(request):

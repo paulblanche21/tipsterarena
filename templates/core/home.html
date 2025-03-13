@@ -3,6 +3,9 @@
 {% block title %}Home - Tipster Arena{% endblock %}
 
 {% block content %}
+    <script>
+        const DEFAULT_AVATAR_URL = "{% static 'images/default-avatar.png' %}";
+    </script>
     <div class="content">
         <!-- Post Box (Center Feed) -->
         <div class="post-box">
@@ -87,31 +90,80 @@
             {% endfor %}
         </div>
 
+        <!-- Comment Modal (Updated with Post Actions in Reply Box) -->
         <div class="comment-modal" id="comment-modal">
             <div class="comment-modal-content">
                 <span class="comment-modal-close">×</span>
-                <div class="modal-tip"></div>
-                <!-- Post a Reply Box -->
+                <!-- Original Tip with Avatar -->
+                <div class="modal-tip">
+                    <img src="" alt="User Avatar" class="tip-avatar modal-tip-avatar" onerror="this.style.display='none'">
+                    <div class="modal-tip-content">
+                        <a href="#" class="tip-username">
+                            <strong class="modal-tip-username"></strong>
+                            <span class="user-handle modal-tip-handle"></span>
+                        </a>
+                        <span class="modal-tip-sport"></span>
+                        <p class="modal-tip-text"></p>
+                        <small class="modal-tip-timestamp"></small>
+                        <div class="tip-actions">
+                            <div class="tip-action-group">
+                                <a href="#" class="tip-action tip-action-like" data-action="like"><i class="fas fa-heart"></i></a>
+                                <span class="tip-action-count like-count"></span>
+                            </div>
+                            <div class="tip-action-group">
+                                <a href="#" class="tip-action tip-action-share" data-action="share"><i class="fas fa-retweet"></i></a>
+                                <span class="tip-action-count share-count"></span>
+                            </div>
+                            <div class="tip-action-group">
+                                <a href="#" class="tip-action tip-action-comment" data-action="comment"><i class="fas fa-comment-dots"></i></a>
+                                <span class="tip-action-count comment-count"></span>
+                            </div>
+                            <div class="tip-action-spacer"></div>
+                            <div class="tip-action-group">
+                                <a href="#" class="tip-action tip-action-engagement"><i class="fas fa-users"></i></a>
+                                <span class="tip-action-count"></span>
+                            </div>
+                            <div class="tip-action-spacer-large"></div>
+                            <div class="tip-action-group">
+                                <a href="#" class="tip-action tip-action-bookmark"><i class="fas fa-bookmark"></i></a>
+                            </div>
+                            <div class="tip-action-group">
+                                <a href="#" class="tip-action tip-action-share-link"><i class="fas fa-arrow-up"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Replying to Text and Post a Reply Box -->
+                <div class="reply-to-header" style="display: none;">Replying to <span class="reply-to-username"></span></div>
                 <div class="post-reply-box">
-                    <div class="post-user">
-                        {% if request.user.is_authenticated and request.user.userprofile.avatar %}
-                            <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar">
-                        {% else %}
-                            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.style.display='none'">
-                        {% endif %}
+                    {% if request.user.is_authenticated and request.user.userprofile.avatar %}
+                        <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar">
+                    {% else %}
+                        <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.style.display='none'">
+                    {% endif %}
+                    <div class="post-reply-content">
                         <div class="post-username-container">
                             <span class="post-username">{{ request.user.username|default:"Guest" }}</span>
                         </div>
+                        <textarea placeholder="Post a Reply..." class="post-reply-input"></textarea>
+                        <div class="post-actions">
+                            <button class="post-action-btn image"><i class="fas fa-image"></i></button>
+                            <button class="post-action-btn gif"><i class="far fa-file-image"></i></button>
+                            <button class="post-action-btn poll"><i class="fas fa-chart-bar"></i></button>
+                            <button class="post-action-btn emoji"><i class="far fa-smile"></i></button>
+                            <button class="post-action-btn location"><i class="fas fa-map-marker-alt"></i></button>
+                            <button class="post-action-btn schedule"><i class="fas fa-clock"></i></button>
+                            <button class="post-action-btn bold"><i class="fas fa-bold"></i></button>
+                            <button class="post-action-btn italic"><i class="fas fa-italic"></i></button>
+                        </div>
+                        <button class="post-reply-submit">Reply</button>
                     </div>
-                    <textarea placeholder="Post a Reply..." class="post-reply-input"></textarea>
-                    <button class="post-reply-submit">Reply</button>
                 </div>
                 <div class="comment-list"></div>
             </div>
         </div>
     </div>
 {% endblock %}
-
 
 {% block upcoming_events %}
 <div class="sidebar-card upcoming-events-card" data-card="upcoming-events" style="background-color: white;">

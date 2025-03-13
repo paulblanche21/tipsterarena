@@ -1,3 +1,4 @@
+# models.py
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -10,7 +11,7 @@ class Tip(models.Model):
         ('horse_racing', 'Horse Racing'),
     ])
     text = models.TextField()
-    audience = models.CharField(  # New field
+    audience = models.CharField(
         max_length=20,
         choices=[
             ('everyone', 'Everyone'),
@@ -42,14 +43,17 @@ class UserProfile(models.Model):
 
 class Like(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='likes')
-    tip = models.ForeignKey(Tip, on_delete=models.CASCADE, related_name='likes')
+    tip = models.ForeignKey(Tip, on_delete=models.CASCADE, related_name='likes', null=True, blank=True)
+    comment = models.ForeignKey('Comment', on_delete=models.CASCADE, related_name='likes', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'tip')  # Prevent duplicate likes
+        unique_together = ('user', 'tip', 'comment')
 
     def __str__(self):
-        return f"{self.user.username} liked {self.tip.user.username}'s tip"
+        if self.tip:
+            return f"{self.user.username} liked {self.tip.user.username}'s tip"
+        return f"{self.user.username} liked a comment"
 
 class Follow(models.Model):
     follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following')
@@ -57,30 +61,34 @@ class Follow(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('follower', 'followed')  # Prevent duplicate follows
+        unique_together = ('follower', 'followed')
 
     def __str__(self):
         return f"{self.follower.username} follows {self.followed.username}"
 
 class Share(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='shares')
-    tip = models.ForeignKey(Tip, on_delete=models.CASCADE, related_name='shares')
+    tip = models.ForeignKey(Tip, on_delete=models.CASCADE, related_name='shares', null=True, blank=True)
+    comment = models.ForeignKey('Comment', on_delete=models.CASCADE, related_name='shares', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'tip')  # Prevent duplicate shares
+        unique_together = ('user', 'tip', 'comment')
 
     def __str__(self):
-        return f"{self.user.username} shared {self.tip.user.username}'s tip"
+        if self.tip:
+            return f"{self.user.username} shared {self.tip.user.username}'s tip"
+        return f"{self.user.username} shared a comment"
 
 class Comment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
     tip = models.ForeignKey(Tip, on_delete=models.CASCADE, related_name='comments')
-    content = models.TextField(max_length=280)  # Twitter-like comment length
+    parent_comment = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
+    content = models.TextField(max_length=280)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.username} commented on {self.tip.user.username}'s tip: {self.content[:20]}"  # Corrected to 'content'
+        return f"{self.user.username} commented on {self.tip.user.username}'s tip: {self.content[:20]}"
 
 class MessageThread(models.Model):
     participants = models.ManyToManyField(User, related_name='message_threads')
