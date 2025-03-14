@@ -1,4 +1,15 @@
 /* Who to Follow list styling */
+/* Ensure dynamically generated content respects boundaries */
+.content .follow-card,
+.content .events-popup {
+    max-width: 100%;
+    width: 100%;
+    margin: 0;
+    box-sizing: border-box;
+    padding: 20px;
+}
+
+
 .follow-card {
     background-color: #ffffff; /* White background for the card */
     color: #001f3f; /* Dark text for readability */
@@ -111,4 +122,5 @@
 .follow-btn:hover {
     background-color: #333333; /* Darker gray on hover, like Twitter/X */
 }
+
 

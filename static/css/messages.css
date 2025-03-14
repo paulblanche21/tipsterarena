@@ -1,3 +1,17 @@
+.card{
+    background-color: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--padding-small);
+    box-shadow: var(--shadow-light);
+    margin-bottom: var(--margin-small);
+    color: var(--primary-bg);
+    transition: box-shadow 0.2s;
+    display: flex;
+    align-items: flex-start;
+}
+
+
 /* Messages Container */
 .messages-container {
     position: relative;

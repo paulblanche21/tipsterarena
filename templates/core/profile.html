@@ -26,6 +26,11 @@
             {% else %}
                 <img src="{% static 'images/default-avatar.png' %}" alt="{{ user.username }} Avatar" class="profile-avatar">
             {% endif %}
+            <!-- Removed .profile-actions from here -->
+        </div>
+
+        <!-- Username, Handle, and Bio Below Avatar -->
+        <div class="profile-user-info">
             <div class="profile-actions">
                 {% if is_owner %}
                     <button class="profile-edit-btn" id="editProfileBtn">Edit Profile</button>
@@ -35,21 +40,11 @@
                     </button>
                 {% endif %}
             </div>
-        </div>
-
-        <!-- Username, Handle, and Bio Below Avatar -->
-        <div class="profile-user-info">
             <div class="profile-user-details">
                 <h2 class="profile-username">{{ user.username }}</h2>
                 <span class="user-handle">{{ user_profile.handle }}</span>
                 <p class="profile-description">{{ user_profile.description|default:"No description provided." }}</p>
             </div>  
-        </div>
-
-        <div class="profile-details">
-            <span class="profile-detail-item"><i class="fas fa-map-marker-alt"></i> {{ user_profile.location|default:"Not specified" }}</span>
-            <span class="profile-detail-item"><i class="fas fa-birthday-cake"></i> {{ user_profile.date_of_birth|date:"F d, Y"|default:"Not specified" }}</span>
-            <span class="profile-detail-item"><i class="fas fa-calendar-check"></i> {{ user.date_joined|date:"F Y" }}</span>
         </div>
 
         <div class="profile-follow">
@@ -71,7 +66,7 @@
                     {% if tip.user.userprofile.avatar %}
                         <img src="{{ tip.user.userprofile.avatar.url }}" alt="{{ tip.user.username }} Avatar" class="tip-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
                     {% else %}
-                        <img src="{% static 'images/default-avatar.png' %}" alt="{{ tip.user.username }} Avatar" class="tip-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
+                        <img src="{% static 'images/default-avatar.png' %}" alt="{{ tip.user.username }} Avatar" class="tip-avatar">
                     {% endif %}
                     <div class="tip-content">
                         <a href="{% url 'profile' tip.user.username %}" class="tip-username">
@@ -166,7 +161,7 @@
                     {% if request.user.is_authenticated and request.user.userprofile.avatar %}
                         <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
                     {% else %}
-                        <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
+                        <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="post-avatar">
                     {% endif %}
                     <div class="post-reply-content">
                         <div class="post-username-container">

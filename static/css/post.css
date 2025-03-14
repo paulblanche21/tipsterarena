@@ -1,3 +1,9 @@
+/* Move Char Count and Note to Styles.css (Remove Inline Styles) */
+.char-count {
+    color: #666666;
+    font-size: 12px;
+}
+
 .post-actions {
     margin-top: 8px;
     display: flex;

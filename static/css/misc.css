@@ -1,3 +1,9 @@
 .sport-icon {
     margin-right: 5px;
 }
+
+.error {
+    color: red;
+    font-size: 0.9em;
+    margin-top: 10px;
+}

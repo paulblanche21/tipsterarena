@@ -39,3 +39,47 @@ body {
     min-height: 100vh;
     overflow-x: hidden;
 }
+
+/* layout.css */
+.main-container {
+    display: flex;
+    margin-left: var(--navbar-width);
+    min-height: 100vh;
+    background-color: #001f3f;
+    width: auto;
+    max-width: calc(100vw - var(--navbar-width) - var(--sidebar-width));
+    position: relative;
+    justify-content: center;
+    overflow-x: hidden;
+}
+
+.content {
+    flex: 0 0 650px;
+    max-width: 650px;
+    color: #001f3f;
+    min-height: 100vh;
+    box-sizing: border-box;
+    margin: 0 auto;
+}
+
+/* Ensure dynamically generated content respects boundaries */
+.content .follow-card,
+.content .events-popup {
+    max-width: 100%;
+    width: 100%;
+    margin: 0;
+    box-sizing: border-box;
+    padding: 20px;
+}
+
+/* Adjust text colors for lists and links within white sections */
+.content li, 
+.content a {
+    color: #001f3f; /* Dark text for readability on white background */
+}
+
+.content li a:hover,
+.content .follow-username:hover {
+    color: #ff4136; /* Red for hover effects, matching your design */
+    text-decoration: underline;
+}
