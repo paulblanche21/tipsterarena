@@ -160,60 +160,38 @@
 
 {% block upcoming_events %}
 <div class="sidebar-card upcoming-events-card" data-card="upcoming-events" style="background-color: white;">
-    <h3>Upcoming Football Fixtures</h3>
+    <h3>Upcoming Events</h3>
     <div class="carousel-container">
-        <div class="carousel-slide active" data-league="premier-league">
-            <div class="event-list">
-                <p class="event-item"><span class="sport-icon">⚽</span> Premier League: Manchester United vs. Tottenham, Mar 12, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Premier League: Liverpool vs. Manchester City, Mar 21, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Premier League: Arsenal vs. Chelsea, Mar 25, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Premier League: Tottenham vs. Manchester United, Mar 28, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Premier League: Manchester City vs. Liverpool, Apr 1, 2025</p>
+        <div class="carousel-slide active" data-sport="football">
+            <div class="event-list" id="football-events">
+                <!-- Populated dynamically by JavaScript -->
+                <p>Loading football fixtures...</p>
             </div>
         </div>
-        <div class="carousel-slide" data-league="la-liga">
-            <div class="event-list">
-                <p class="event-item"><span class="sport-icon">⚽</span> La Liga: Real Madrid vs. Barcelona, Mar 15, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> La Liga: Atletico Madrid vs. Sevilla, Mar 22, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> La Liga: Barcelona vs. Real Madrid, Mar 26, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> La Liga: Sevilla vs. Atletico Madrid, Apr 2, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> La Liga: Real Madrid vs. Valencia, Apr 5, 2025</p>
+        <div class="carousel-slide" data-sport="football">
+            <div class="event-list" id="football-events">
+                <!-- Populated dynamically by JavaScript -->
+                <p>Loading football fixtures...</p>
             </div>
         </div>
-        <div class="carousel-slide" data-league="serie-a">
-            <div class="event-list">
-                <p class="event-item"><span class="sport-icon">⚽</span> Serie A: Juventus vs. Inter Milan, Mar 18, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Serie A: AC Milan vs. Napoli, Mar 23, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Serie A: Inter Milan vs. Juventus, Mar 29, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Serie A: Napoli vs. AC Milan, Apr 3, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Serie A: Juventus vs. Roma, Apr 6, 2025</p>
+        <div class="carousel-slide" data-sport="football">
+            <div class="event-list" id="football-events">
+                <!-- Populated dynamically by JavaScript -->
+                <p>Loading football fixtures...</p>
             </div>
         </div>
-        <div class="carousel-slide" data-league="bundesliga">
-            <div class="event-list">
-                <p class="event-item"><span class="sport-icon">⚽</span> Bundesliga: Dortmund vs. Leipzig, Mar 19, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Bundesliga: Leipzig vs. Dortmund, Mar 30, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Bundesliga: Bayern Munich vs. Frankfurt, Apr 4, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Bundesliga: Dortmund vs. Bayern Munich, Apr 7, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Bundesliga: Leipzig vs. Wolfsburg, Apr 10, 2025</p>
-            </div>
-        </div>
-        <div class="carousel-slide" data-league="champions-league">
-            <div class="event-list">
-                <p class="event-item"><span class="sport-icon">⚽</span> Champions League: Bayern Munich vs. PSG, Mar 16, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Champions League: PSG vs. Bayern Munich, Mar 27, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Champions League: Manchester City vs. Real Madrid, Apr 8, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Champions League: Real Madrid vs. Manchester City, Apr 11, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Champions League: Barcelona vs. Juventus, Apr 14, 2025</p>
+        <div class="carousel-slide" data-sport="football">
+            <div class="event-list" id="football-events">
+                <!-- Populated dynamically by JavaScript -->
+                <p>Loading football fixtures...</p>
             </div>
         </div>
     </div>
     <div class="carousel-dots">
-        <span class="dot active" data-league="premier-league"></span>
-        <span class="dot" data-league="la-liga"></span>
-        <span class="dot" data-league="serie-a"></span>
-        <span class="dot" data-league="bundesliga"></span>
-        <span class="dot" data-league="champions-league"></span>
+        <span class="dot active" data-sport="football"></span>
+        <span class="dot" data-sport="football"></span>
+        <span class="dot" data-sport="football"></span>
+        <span class="dot" data-sport="football"></span>
     </div>
     <a href="#" class="show-more" data-target="upcoming-events">Show more</a>
 </div>

@@ -167,39 +167,27 @@
     <h3>Upcoming Events</h3>
     <div class="carousel-container">
         <div class="carousel-slide active" data-sport="football">
-            <div class="event-list">
-                <p class="event-item"><span class="sport-icon">⚽</span> Football: Premier League - Manchester United vs. Tottenham, Mar 12, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Football: La Liga - Real Madrid vs. Barcelona, Mar 15, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Football: Champions League - Bayern Munich vs. PSG, Mar 16, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Football: FA Cup - Chelsea vs. Arsenal, Mar 17, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Football: Serie A - Juventus vs. Inter Milan, Mar 18, 2025</p>
+            <div class="event-list" id="football-events">
+                <!-- Populated dynamically by JavaScript -->
+                <p>Loading football fixtures...</p>
             </div>
         </div>
         <div class="carousel-slide" data-sport="golf">
-            <div class="event-list">
-                <p class="event-item"><span class="sport-icon">⛳</span> Golf: PGA Championship, Mar 20-23, 2025</p>
-                <p class="event-item"><span class="sport-icon">⛳</span> Golf: The Masters Preview, Mar 25, 2025</p>
-                <p class="event-item"><span class="sport-icon">⛳</span> Golf: US Open Qualifier, Mar 26, 2025</p>
-                <p class="event-item"><span class="sport-icon">⛳</span> Golf: Open Championship Warm-Up, Mar 27, 2025</p>
-                <p class="event-item"><span class="sport-icon">⛳</span> Golf: Ryder Cup Trials, Mar 28, 2025</p>
+            <div class="event-list" id="golf-events">
+                <!-- Populated dynamically by JavaScript -->
+                <p>Loading golf fixtures...</p>
             </div>
         </div>
         <div class="carousel-slide" data-sport="tennis">
-            <div class="event-list">
-                <p class="event-item"><span class="sport-icon">🎾</span> Tennis: Australian Open Qualifiers, Mar 10-12, 2025</p>
-                <p class="event-item"><span class="sport-icon">🎾</span> Tennis: Wimbledon Warm-Up, Mar 18, 2025</p>
-                <p class="event-item"><span class="sport-icon">🎾</span> Tennis: French Open Trials, Mar 20, 2025</p>
-                <p class="event-item"><span class="sport-icon">🎾</span> Tennis: US Open Prep, Mar 21, 2025</p>
-                <p class="event-item"><span class="sport-icon">🎾</span> Tennis: ATP Finals Qualifier, Mar 22, 2025</p>
+            <div class="event-list" id="tennis-events">
+                <!-- Populated dynamically by JavaScript -->
+                <p>Loading tennis fixtures...</p>
             </div>
         </div>
         <div class="carousel-slide" data-sport="horse_racing">
-            <div class="event-list">
-                <p class="event-item"><span class="sport-icon">🏇</span> Horse Racing: Grand National Trials, Mar 14, 2025</p>
-                <p class="event-item"><span class="sport-icon">🏇</span> Horse Racing: Cheltenham Festival, Mar 19, 2025</p>
-                <p class="event-item"><span class="sport-icon">🏇</span> Horse Racing: Kentucky Derby Prep, Mar 21, 2025</p>
-                <p class="event-item"><span class="sport-icon">🏇</span> Horse Racing: Preakness Stakes Warm-Up, Mar 22, 2025</p>
-                <p class="event-item"><span class="sport-icon">🏇</span> Horse Racing: Belmont Stakes Trials, Mar 23, 2025</p>
+            <div class="event-list" id="horse-racing-events">
+                <!-- Populated dynamically by JavaScript -->
+                <p>Loading horse racing fixtures...</p>
             </div>
         </div>
     </div>
@@ -252,4 +240,8 @@
     </div>
     <a href="#" class="show-more" data-target="trending-tips">Show more</a>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/upcoming-events.js' %}" type="module"></script>
 {% endblock %}

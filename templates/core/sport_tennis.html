@@ -164,60 +164,38 @@
 
 {% block upcoming_events %}
 <div class="sidebar-card upcoming-events-card" data-card="upcoming-events" style="background-color: white;">
-    <h3>Upcoming Tennis Tournaments</h3>
+    <h3>Upcoming Events</h3>
     <div class="carousel-container">
-        <div class="carousel-slide active" data-tour="atp">
-            <div class="event-list">
-                <p class="event-item"><span class="sport-icon">🎾</span> ATP: Brisbane International, Jan 6-12, 2025</p>
-                <p class="event-item"><span class="sport-icon">🎾</span> ATP: Indian Wells Masters, Mar 5-16, 2025</p>
-                <p class="event-item"><span class="sport-icon">🎾</span> ATP: Miami Open, Mar 19-30, 2025</p>
-                <p class="event-item"><span class="sport-icon">🎾</span> ATP: Monte-Carlo Masters, Apr 5-13, 2025</p>
-                <p class="event-item"><span class="sport-icon">🎾</span> ATP: Madrid Open, Apr 28-May 4, 2025</p>
+        <div class="carousel-slide active" data-sport="tennis">
+            <div class="event-list" id="tennis-events">
+                <!-- Populated dynamically by JavaScript -->
+                <p>Loading tennis fixtures...</p>
             </div>
         </div>
-        <div class="carousel-slide" data-tour="wta">
-            <div class="event-list">
-                <p class="event-item"><span class="sport-icon">🎾</span> WTA: Adelaide临洳Adelaide International, Jan 6-12, 2025</p>
-                <p class="event-item"><span class="sport-icon">🎾</span> WTA: Indian Wells Masters, Mar 5-16, 2025</p>
-                <p class="event-item"><span class="sport-icon">🎾</span> WTA: Miami Open, Mar 19-30, 2025</p>
-                <p class="event-item"><span class="sport-icon">🎾</span> WTA: Charleston Open, Apr 7-13, 2025</p>
-                <p class="event-item"><span class="sport-icon">🎾</span> WTA: Madrid Open, Apr 28-May 4, 2025</p>
+        <div class="carousel-slide" data-sport="tennis">
+            <div class="event-list" id="tennis-events">
+                <!-- Populated dynamically by JavaScript -->
+                <p>Loading tennis fixtures...</p>
             </div>
         </div>
-        <div class="carousel-slide" data-tour="grand-slams">
-            <div class="event-list">
-                <p class="event-item"><span class="sport-icon">🎾</span> Australian Open, Jan 12-26, 2025</p>
-                <p class="event-item"><span class="sport-icon">🎾</span> French Open Qualifiers, May 19-24, 2025</p>
-                <p class="event-item"><span class="sport-icon">🎾</span> French Open, May 25-Jun 8, 2025</p>
-                <p class="event-item"><span class="sport-icon">🎾</span> Wimbledon, Jun 30-Jul 13, 2025</p>
-                <p class="event-item"><span class="sport-icon">🎾</span> US Open, Aug 25-Sep 7, 2025</p>
+        <div class="carousel-slide" data-sport="tennis">
+            <div class="event-list" id="tennis-events">
+                <!-- Populated dynamically by JavaScript -->
+                <p>Loading tennis fixtures...</p>
             </div>
         </div>
-        <div class="carousel-slide" data-tour="atp-challenger">
-            <div class="event-list">
-                <p class="event-item"><span class="sport-icon">🎾</span> ATP Challenger: Canberra International, Jan 6-12, 2025</p>
-                <p class="event-item"><span class="sport-icon">🎾</span> ATP Challenger: Dallas Open, Feb 3-9, 2025</p>
-                <p class="event-item"><span class="sport-icon">🎾</span> ATP Challenger: Nottingham Challenger, Jun 9-15, 2025</p>
-                <p class="event-item"><span class="sport-icon">🎾</span> ATP Challenger: Monterey Challenger, Oct 6-12, 2025</p>
-                <p class="event-item"><span class="sport-icon">🎾</span> ATP Challenger: Lisbon Challenger, Oct 20-26, 2025</p>
-            </div>
-        </div>
-        <div class="carousel-slide" data-tour="itf-womens">
-            <div class="event-list">
-                <p class="event-item"><span class="sport-icon">🎾</span> ITF W100: Tokyo, Apr 7-13, 2025</p>
-                <p class="event-item"><span class="sport-icon">🎾</span> ITF W80: Palm Harbor, Mar 17-23, 2025</p>
-                <p class="event-item"><span class="sport-icon">🎾</span> ITF W60: Canberra, Jan 13-19, 2025</p>
-                <p class="event-item"><span class="sport-icon">🎾</span> ITF W50: Nottingham, Jun 16-22, 2025</p>
-                <p class="event-item"><span class="sport-icon">🎾</span> ITF W35: Santa Margherita, Apr 21-27, 2025</p>
+        <div class="carousel-slide" data-sport="tennis">
+            <div class="event-list" id="tennis-events">
+                <!-- Populated dynamically by JavaScript -->
+                <p>Loading tennisfixtures...</p>
             </div>
         </div>
     </div>
     <div class="carousel-dots">
-        <span class="dot active" data-tour="atp"></span>
-        <span class="dot" data-tour="wta"></span>
-        <span class="dot" data-tour="grand-slams"></span>
-        <span class="dot" data-tour="atp-challenger"></span>
-        <span class="dot" data-tour="itf-womens"></span>
+        <span class="dot active" data-sport="tennis"></span>
+        <span class="dot" data-sport="tennis"></span>
+        <span class="dot" data-sport="tennis"></span>
+        <span class="dot" data-sport="tennis"></span>
     </div>
     <a href="#" class="show-more" data-target="upcoming-events">Show more</a>
 </div>

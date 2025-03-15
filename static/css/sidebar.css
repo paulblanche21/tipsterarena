@@ -70,6 +70,11 @@ carousel-prev, .carousel-next {
     border-top: 1px solid #e1e8ed; /* Light border to visually separate */
 }
 
+.event-item {
+    margin-left: 20px; /* Indent fixtures under the league header */
+  }
+
+
 .dot {
     height: 10px;
     width: 10px;
@@ -87,6 +92,16 @@ carousel-prev, .carousel-next {
 .dot:hover {
     background-color: #999;
 }
+
+.league-group {
+    margin-bottom: 10px;
+  }
+  
+  .league-header {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
 
 /* Fixed Search Input (at the top) */
 .search-input {

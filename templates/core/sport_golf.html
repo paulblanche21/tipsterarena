@@ -164,50 +164,38 @@
 
 {% block upcoming_events %}
 <div class="sidebar-card upcoming-events-card" data-card="upcoming-events" style="background-color: white;">
-    <h3>Upcoming Golf Events</h3>
+    <h3>Upcoming Events</h3>
     <div class="carousel-container">
-        <div class="carousel-slide active" data-tour="us-pga-tour">
-            <div class="event-list">
-                <p class="event-item"><span class="sport-icon">⛳</span> US PGA Tour: The Players Championship, Mar 13-16, 2025</p>
-                <p class="event-item"><span class="sport-icon">⛳</span> US PGA Tour: Valspar Championship, Mar 20-23, 2025</p>
-                <p class="event-item"><span class="sport-icon">⛳</span> US PGA Tour: WGC-Dell Technologies Match Play, Mar 26-30, 2025</p>
-                <p class="event-item"><span class="sport-icon">⛳</span> US PGA Tour: Houston Open, Apr 3-6, 2025</p>
-                <p class="event-item"><span class="sport-icon">⛳</span> US PGA Tour: Masters Tournament, Apr 10-13, 2025</p>
+        <div class="carousel-slide active" data-sport="golf">
+            <div class="event-list" id="golf-events">
+                <!-- Populated dynamically by JavaScript -->
+                <p>Loading golf tournaments...</p>
             </div>
         </div>
-        <div class="carousel-slide" data-tour="dp-world-tour">
-            <div class="event-list">
-                <p class="event-item"><span class="sport-icon">⛳</span> DP World Tour: Magical Kenya Open, Mar 13-16, 2025</p>
-                <p class="event-item"><span class="sport-icon">⛳</span> DP World Tour: Qatar Masters, Mar 20-23, 2025</p>
-                <p class="event-item"><span class="sport-icon">⛳</span> DP World Tour: Hero Indian Open, Mar 27-30, 2025</p>
-                <p class="event-item"><span class="sport-icon">⛳</span> DP World Tour: Volvo China Open, Apr 3-6, 2025</p>
-                <p class="event-item"><span class="sport-icon">⛳</span> DP World Tour: Open de Espana, Apr 10-13, 2025</p>
+        <div class="carousel-slide" data-sport="golf">
+            <div class="event-list" id="golf-events">
+                <!-- Populated dynamically by JavaScript -->
+                <p>Loading golf fixtures...</p>
             </div>
         </div>
-        <div class="carousel-slide" data-tour="liv-golf-tour">
-            <div class="event-list">
-                <p class="event-item"><span class="sport-icon">⛳</span> LIV Golf Tour: Jeddah, Mar 14-16, 2025</p>
-                <p class="event-item"><span class="sport-icon">⛳</span> LIV Golf Tour: Hong Kong, Mar 21-23, 2025</p>
-                <p class="event-item"><span class="sport-icon">⛳</span> LIV Golf Tour: Tucson, Mar 28-30, 2025</p>
-                <p class="event-item"><span class="sport-icon">⛳</span> LIV Golf Tour: Miami, Apr 4-6, 2025</p>
-                <p class="event-item"><span class="sport-icon">⛳</span> LIV Golf Tour: Adelaide, Apr 11-13, 2025</p>
+        <div class="carousel-slide" data-sport="golf">
+            <div class="event-list" id="golf-events">
+                <!-- Populated dynamically by JavaScript -->
+                <p>Loading golf tournaments ...</p>
             </div>
         </div>
-        <div class="carousel-slide" data-tour="lpga">
-            <div class="event-list">
-                <p class="event-item"><span class="sport-icon">⛳</span> LPGA: Honda LPGA Thailand, Feb 20-23, 2025</p>
-                <p class="event-item"><span class="sport-icon">⛳</span> LPGA: HSBC Women’s World Championship, Mar 6-9, 2025</p>
-                <p class="event-item"><span class="sport-icon">⛳</span> LPGA: Blue Bay LPGA, Mar 13-16, 2025</p>
-                <p class="event-item"><span class="sport-icon">⛳</span> LPGA: Kia Classic, Mar 20-23, 2025</p>
-                <p class="event-item"><span class="sport-icon">⛳</span> LPGA: ANA Inspiration, Apr 3-6, 2025</p>
+        <div class="carousel-slide" data-sport="golf">
+            <div class="event-list" id="golf-events">
+                <!-- Populated dynamically by JavaScript -->
+                <p>Loading golf tournaments ...</p>
             </div>
         </div>
     </div>
     <div class="carousel-dots">
-        <span class="dot active" data-tour="us-pga-tour"></span>
-        <span class="dot" data-tour="dp-world-tour"></span>
-        <span class="dot" data-tour="liv-golf-tour"></span>
-        <span class="dot" data-tour="lpga"></span>
+        <span class="dot active" data-sport="golf"></span>
+        <span class="dot" data-sport="golf"></span>
+        <span class="dot" data-sport="golf"></span>
+        <span class="dot" data-sport="golf"></span>
     </div>
     <a href="#" class="show-more" data-target="upcoming-events">Show more</a>
 </div>
