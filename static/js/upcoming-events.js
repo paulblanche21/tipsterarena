@@ -129,3 +129,6 @@ export async function getEventList(currentPath, target) {
     </div>
   `;
 }
+
+// Add this export statement to make format functions available
+export { formatFootballList, formatGolfList, formatTennisList, formatHorseRacingList };

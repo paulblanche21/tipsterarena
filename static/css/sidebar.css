@@ -1,6 +1,8 @@
 .carousel-container {
     position: relative;
     flex: 1; /* Take up available space within the fixed-height card */
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
 }
 
@@ -67,6 +69,7 @@ carousel-prev, .carousel-next {
     margin: 0;
     padding: 0;
     height: 100%;
+    max-height: 280px;
     overflow-y: auto; /* Allow scrolling if content exceeds height */
     max-width: 100%; /* Ensure list respects card width */
 }
@@ -150,9 +153,10 @@ carousel-prev, .carousel-next {
 
 /* Events Popup Styling (specific to center feed popup) */
 .events-popup {
-    max-width: 650px; /* Match your tip-feed width */
-    margin: 0 auto;
-    padding: 20px;
+    max-width: 700px; /* Match the updated .content max-width */
+    width: calc(100% - 20px); /* Match post-box and tip-feed: 700px - 20px margins */
+    margin: 0 10px; /* Match the 10px margins of post-box and tip-feed */
+    padding: 12px; /* Match the padding of post-box for consistency */
     background-color: #fff;
     border: 1px solid #e1e8ed;
     border-radius: 12px;
@@ -160,6 +164,7 @@ carousel-prev, .carousel-next {
     position: relative;
     z-index: 1000;
     overflow: hidden; /* Contain inner scrolling */
+    box-sizing: border-box;
 }
 
 .events-popup h2 {
@@ -178,11 +183,12 @@ carousel-prev, .carousel-next {
 .events-popup .event-list {
     max-height: 70vh; /* Scrollable height, adjust as needed */
     overflow-y: auto; /* Enable vertical scrolling */
-    padding-right: 10px; /* Space for scrollbar */
+    padding-right: 10px; /* Space for scrollbar, unchanged */
+    margin: 0; /* Ensure no extra margins */
 }
 
 .events-popup .event-item {
-    padding: 10px 0;
+    padding: 12px 0; /* Match the padding style of tip-feed items */
     border-bottom: 1px solid #e1e8ed;
     flex-wrap: nowrap; /* Prevent wrapping in popup for cleaner look */
 }
@@ -245,8 +251,6 @@ carousel-prev, .carousel-next {
     margin: 10px 0 5px;
 }
 
-
-
 .dot {
     height: 10px;
     width: 10px;
@@ -295,16 +299,17 @@ carousel-prev, .carousel-next {
     border-color: #ff4136;
 }
 
-
-
-
+/* Show more button styling (Tipster Arena blue) */
 .show-more {
     display: block;
     margin-top: 10px;
+    padding-bottom: 5px;
     color: #4a90e2;
     text-decoration: none;
     font-size: 0.9em;
     text-align: center; /* Center the button */
+    flex-shrink: 0; /* Prevent button from shrinking */
+
 }
 
 .show-more:hover {
