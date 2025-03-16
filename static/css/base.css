@@ -42,34 +42,19 @@ body {
 
 /* layout.css */
 .main-container {
-    display: flex;
-    margin-left: var(--navbar-width);
+    padding-left: var(--navbar-width);    /* 250px to account for the fixed navbar */
+    padding-right: var(--sidebar-width);  /* 350px to account for the fixed sidebar */
     min-height: 100vh;
     background-color: #001f3f;
-    width: auto;
-    max-width: calc(100vw - var(--navbar-width) - var(--sidebar-width));
-    position: relative;
-    justify-content: center;
-    overflow-x: hidden;
+    box-sizing: border-box;
 }
 
 .content {
-    flex: 0 0 650px;
-    max-width: 650px;
+    max-width: 700px;  /* Increased from 650px to 700px */
+    margin: 0 auto;    /* Keeps the content centered */
     color: #001f3f;
     min-height: 100vh;
     box-sizing: border-box;
-    margin: 0 auto;
-}
-
-/* Ensure dynamically generated content respects boundaries */
-.content .follow-card,
-.content .events-popup {
-    max-width: 100%;
-    width: 100%;
-    margin: 0;
-    box-sizing: border-box;
-    padding: 20px;
 }
 
 /* Adjust text colors for lists and links within white sections */

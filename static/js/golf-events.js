@@ -1,28 +1,26 @@
 // golf-events.js
 export async function fetchEvents(data, config) {
     const events = (data.events || []).map(event => ({
-      id: event.id, // Add event ID for leaderboard fetching
+      id: event.id,
       name: event.shortName || event.name,
       date: event.date,
       displayDate: new Date(event.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-      time: new Date(event.date).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "GMT" }),
       state: event.status && event.status.type ? event.status.type.state : "unknown",
       competitors: (event.competitions && event.competitions[0]?.competitors) || [],
       venue: (event.competitions && event.competitions[0]?.venue) || { fullName: "Location TBD", address: { city: "Unknown", state: "Unknown" } },
       league: config.name,
       icon: config.icon,
-      leaderboard: event.competitions && event.competitions[0]?.competitors && event.state === "in"
+      leaderboard: event.competitions && event.competitions[0]?.competitors && event.status?.type?.state === "in"
         ? event.competitions[0].competitors.map(comp => ({
             playerName: comp.athlete ? comp.athlete.displayName : "Unknown",
-            score: comp.score || "N/A",
-            position: comp.position || "N/A"
+            score: comp.score?.value || comp.score || "N/A",
+            position: comp.position?.tie ? `${comp.position.id}T` : comp.position?.id || "N/A"
           }))
-        : [] // Only include leaderboard for in-progress events
+        : []
     }));
     return events;
   }
   
-  // Function to fetch updated leaderboard data for a specific event
   export async function fetchLeaderboard(eventId, sport, league) {
     const url = `https://site.api.espn.com/apis/site/v2/sports/${sport}/${league}/scoreboard/${eventId}`;
     console.log(`Fetching leaderboard for event ${eventId}: ${url}`);
@@ -35,8 +33,8 @@ export async function fetchEvents(data, config) {
       const leaderboard = data.competitions && data.competitions[0]?.competitors
         ? data.competitions[0].competitors.map(comp => ({
             playerName: comp.athlete ? comp.athlete.displayName : "Unknown",
-            score: comp.score || "N/A",
-            position: comp.position || "N/A"
+            score: comp.score?.value || comp.score || "N/A",
+            position: comp.position?.tie ? `${comp.position.id}T` : comp.position?.id || "N/A"
           }))
         : [];
       console.log(`Leaderboard for event ${eventId}:`, leaderboard);
@@ -51,11 +49,11 @@ export async function fetchEvents(data, config) {
     if (!events || !events.length) {
       return `<p>No upcoming or in-progress ${sportKey} events available.</p>`;
     }
-    const currentTime = new Date(); // March 16, 2025, 12:57 AM GMT
+    const currentTime = new Date();
     const upcomingEvents = events.filter(event => {
       const eventTime = new Date(event.date);
       const isUpcoming = eventTime > currentTime && event.state !== "in";
-      console.log(`Event for ${event.league} (${event.name}): ${event.displayDate}, ${event.time} - State: ${event.state}, Is Upcoming: ${isUpcoming}`);
+      console.log(`Event for ${event.league} (${event.name}): ${event.displayDate} - State: ${event.state}, Is Upcoming: ${isUpcoming}`);
       return isUpcoming;
     });
     const inProgressEvents = events.filter(event => event.state === "in" && new Date(event.date) <= currentTime);
@@ -66,60 +64,64 @@ export async function fetchEvents(data, config) {
   
     let eventItems = '';
   
-    // Format in-progress events with leaderboards
-    if (inProgressEvents.length > 0) {
-      const inProgressItems = inProgressEvents.map(event => {
-        const leaderboardHtml = event.leaderboard && event.leaderboard.length > 0
-          ? `
-            <div class="leaderboard" data-event-id="${event.id}">
-              <h4>Leaderboard (Updated)</h4>
-              <ul>
-                ${event.leaderboard.slice(0, 5).map(player => `
-                  <li>${player.position}. ${player.playerName}: ${player.score}</li>
-                `).join("")}
-              </ul>
-            </div>
-          `
-          : "<p>No leaderboard data available.</p>";
-        return `
-          <div class="in-progress-event">
-            <p class="event-item" style="display: flex; justify-content: ${showLocation ? 'space-between' : 'flex-start'}; align-items: center;">
-              <span>${event.name} (In Progress)</span>
-              ${showLocation ? `<span class="event-location">${event.venue.fullName}</span>` : ""}
-            </p>
-            ${leaderboardHtml}
-          </div>
-        `;
-      }).join("");
-      eventItems += `<div class="in-progress-section"><h3>In-Progress Events</h3>${inProgressItems}</div>`;
-    }
+    // Simplified output for carousel (no in-progress section or leaderboard)
+    if (sportKey !== "all") {
+      const allEvents = [...inProgressEvents, ...upcomingEvents].sort((a, b) => new Date(a.date) - new Date(b.date));
+      if (allEvents.length > 0) {
+        const eventsByLeague = allEvents.reduce((acc, event) => {
+          const league = event.league || "Other";
+          if (!acc[league]) {
+            acc[league] = [];
+          }
+          acc[league].push(event);
+          return acc;
+        }, {});
   
-    // Format upcoming events
-    if (upcomingEvents.length > 0) {
-      const eventsByLeague = upcomingEvents.reduce((acc, event) => {
-        const league = event.league || "Other";
-        if (!acc[league]) {
-          acc[league] = [];
+        for (const league in eventsByLeague) {
+          const leagueEvents = eventsByLeague[league]
+            .slice(0, 5) // Limit to 5 events in carousel
+            .map(event => {
+              const venue = event.venue.fullName || `${event.venue.address.city}, ${event.venue.address.state}`;
+              const status = event.state === "in" ? "(In Progress)" : "";
+              return `
+                <p class="event-item" style="display: flex; justify-content: ${showLocation ? 'space-between' : 'flex-start'}; align-items: center;">
+                  <span>${event.name} ${status} - ${event.displayDate}</span>
+                  ${showLocation ? `<span class="event-location">${venue}</span>` : ""}
+                </p>
+              `;
+            })
+            .join("");
+          const icon = allEvents.find(event => event.league === league)?.icon || "🏟️";
+          eventItems += `<div class="league-group"><p class="league-header"><span class="sport-icon">${icon}</span> <strong>${league}</strong></p>${leagueEvents}</div>`;
         }
-        acc[league].push(event);
-        return acc;
-      }, {});
-  
-      for (const league in eventsByLeague) {
-        const leagueEvents = eventsByLeague[league]
-          .slice(0, sportKey === "all" ? 20 : 5)
-          .map(event => {
-            const venue = event.venue.fullName || `${event.venue.address.city}, ${event.venue.address.state}`;
-            return `
-              <p class="event-item" style="display: flex; justify-content: ${showLocation ? 'space-between' : 'flex-start'}; align-items: center;">
-                <span>${event.name} ${event.time}</span>
-                ${showLocation ? `<span class="event-location">${venue}</span>` : ""}
-              </p>
-            `;
-          })
-          .join("");
-        const icon = upcomingEvents.find(event => event.league === league)?.icon || "🏟️";
-        eventItems += `<div class="league-group"><p class="league-header"><span class="sport-icon">${icon}</span> <strong>${league}</strong></p>${leagueEvents}</div>`;
+      }
+    } else {
+      // Output for center feed modal: only in-progress events with name, location, and leaderboard
+      if (inProgressEvents.length > 0) {
+        inProgressEvents.forEach(event => {
+          const venue = event.venue.fullName || `${event.venue.address.city}, ${event.venue.address.state}`;
+          const leaderboardHtml = event.leaderboard && event.leaderboard.length > 0
+            ? `
+              <div class="leaderboard" data-event-id="${event.id}">
+                <h4>Leaderboard</h4>
+                <ul>
+                  ${event.leaderboard.slice(0, 5).map(player => `
+                    <li>${player.position}. ${player.playerName}: ${player.score}</li>
+                  `).join("")}
+                </ul>
+              </div>
+            `
+            : "<p>No leaderboard data available.</p>";
+          eventItems += `
+            <div class="in-progress-event">
+              <h2>${event.name}</h2>
+              <p class="event-location">${venue}</p>
+              ${leaderboardHtml}
+            </div>
+          `;
+        });
+      } else {
+        eventItems = `<p>No in-progress ${sportKey} events available.</p>`;
       }
     }
   
@@ -127,13 +129,12 @@ export async function fetchEvents(data, config) {
     return eventItems || `<p>No upcoming or in-progress ${sportKey} events available.</p>`;
   }
   
-  // Function to set up periodic leaderboard updates
   export function setupLeaderboardUpdates(sport, league) {
     const interval = 15 * 60 * 1000; // 15 minutes in milliseconds
     setInterval(async () => {
       const inProgressEvents = document.querySelectorAll(".in-progress-event");
       for (const eventElement of inProgressEvents) {
-        const eventId = eventElement.querySelector(".leaderboard").getAttribute("data-event-id");
+        const eventId = eventElement.querySelector(".leaderboard")?.getAttribute("data-event-id");
         if (eventId) {
           const leaderboard = await fetchLeaderboard(eventId, sport, league);
           const leaderboardContainer = eventElement.querySelector(".leaderboard");

@@ -159,19 +159,11 @@
     margin-bottom: 4px;
 }
 
-/* Ensure .tip-feed matches */
 .tip-feed {
-    max-width: 650px;
+    width: calc(100% - 20px);             /* 650px - 20px = 630px */
     margin: 0 10px 10px 10px;
     padding: 0;
-}
-
-
-
-.tip-feed {
-    margin: 0 10px 10px 10px;
-    padding: 0;
-    width: 100%
+    box-sizing: border-box;
 }
 
 .tip-item {

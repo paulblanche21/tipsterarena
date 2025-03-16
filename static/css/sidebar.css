@@ -110,6 +110,11 @@ carousel-prev, .carousel-next {
     color: #001f3f;
 }
 
+/* Hide carousel dots when there's only one slide */
+.carousel-dots:has(.dot:nth-child(1):last-child) {
+    display: none;
+}
+
 /* Copyright Notice */
 .copyright-notice {
     color: #666666; /* Gray, like X */

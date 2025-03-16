@@ -91,14 +91,15 @@
 }
 
 .post-box {
+    width: calc(100% - 20px);             /* 650px - 20px = 630px */
+    margin: 0 10px 10px 10px;
     background-color: #ffffff;
     border: 1px solid #e1e8ed;
     border-radius: 12px;
     padding: 12px;
-    margin: 0 10px 10px 10px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     color: #001f3f;
-    width:100%
+    box-sizing: border-box;
 }
 
 

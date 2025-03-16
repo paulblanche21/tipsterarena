@@ -10,7 +10,7 @@
                 {% if request.user.is_authenticated and request.user.userprofile.avatar %}
                     <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar">
                 {% else %}
-                    <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
+                    <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.onerror=null; this.src='/static/images/default-avatar.png';">
                 {% endif %}
                 <div class="post-username-container">
                     <span class="post-username">{{ request.user.username|default:"Guest" }}</span>
@@ -41,7 +41,7 @@
                 {% if tip.user.userprofile.avatar %}
                     <img src="{{ tip.user.userprofile.avatar.url }}" alt="{{ tip.user.username }} Avatar" class="tip-avatar">
                 {% else %}
-                    <img src="{% static 'images/default-avatar.png' %}" alt="{{ tip.user.username }} Avatar" class="tip-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
+                    <img src="{% static 'images/default-avatar.png' %}" alt="{{ tip.user.username }} Avatar" class="tip-avatar" onerror="this.onerror=null; this.src='/static/images/default-avatar.png';">
                 {% endif %}
                 <div class="tip-content">
                     <a href="{% url 'profile' tip.user.username %}" class="tip-username">
@@ -93,7 +93,7 @@
                 <span class="comment-modal-close">×</span>
                 <!-- Original Tip with Avatar -->
                 <div class="modal-tip">
-                    <img src="" alt="User Avatar" class="tip-avatar modal-tip-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
+                    <img src="" alt="User Avatar" class="tip-avatar modal-tip-avatar" onerror="this.onerror=null; this.src='/static/images/default-avatar.png';">
                     <div class="modal-tip-content">
                         <a href="#" class="tip-username">
                             <strong class="modal-tip-username"></strong>
@@ -136,7 +136,7 @@
                     {% if request.user.is_authenticated and request.user.userprofile.avatar %}
                         <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar">
                     {% else %}
-                        <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
+                        <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.onerror=null; this.src='/static/images/default-avatar.png';">
                     {% endif %}
                     <div class="post-reply-content">
                         <div class="post-username-container">
@@ -206,7 +206,7 @@
     <h3>Trending Tips</h3>
     <div class="trending-tips-list">
         <div class="trending-tip">
-            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
+            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.onerror=null; this.src='/static/images/default-avatar.png';">
             <div class="tip-details">
                 <a href="#" class="tip-username"><strong>@TennisGuru</strong></a>
                 <p class="tip-text">Djokovic to win Australian Open - Odds: 3.5</p>
@@ -214,7 +214,7 @@
             <span class="tip-likes"><i class="fas fa-heart"></i> 250</span>
         </div>
         <div class="trending-tip">
-            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
+            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.onerror=null; this.src='/static/images/default-avatar.png';">
             <div class="tip-details">
                 <a href="#" class="tip-username"><strong>@AceBettor</strong></a>
                 <p class="tip-text">Swiatek top 4 at French Open - Odds: 2.0</p>
@@ -222,7 +222,7 @@
             <span class="tip-likes"><i class="fas fa-heart"></i> 180</span>
         </div>
         <div class="trending-tip">
-            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
+            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.onerror=null; this.src='/static/images/default-avatar.png';">
             <div class="tip-details">
                 <a href="#" class="tip-username"><strong>@GoalMaster</strong></a>
                 <p class="tip-text">Man Utd to beat Tottenham - Odds: 2.8</p>
@@ -230,7 +230,7 @@
             <span class="tip-likes"><i class="fas fa-heart"></i> 200</span>
         </div>
         <div class="trending-tip">
-            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
+            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.onerror=null; this.src='/static/images/default-avatar.png';">
             <div class="tip-details">
                 <a href="#" class="tip-username"><strong>@RaceKing</strong></a>
                 <p class="tip-text">Horse X to win Grand National - Odds: 8.0</p>
