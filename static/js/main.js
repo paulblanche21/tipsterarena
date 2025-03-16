@@ -6,6 +6,7 @@ import { setupTipInteractions } from './tips.js';
 import { setupNavigation } from './nav.js';
 import { setupProfileEditing } from './profile.js';
 import { initCarousel } from './carousel.js';
+import { getDynamicEvents, getEventList} from './upcoming-events.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM fully loaded');
@@ -18,5 +19,5 @@ document.addEventListener('DOMContentLoaded', function() {
     setupTipInteractions();
     setupNavigation();
     setupProfileEditing();
-    initCarousel(); // Initialize the carousel for the right sidebar
+    initCarousel(); // This will now handle the upcoming events carousel
 });

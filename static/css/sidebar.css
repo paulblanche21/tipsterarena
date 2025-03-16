@@ -5,6 +5,7 @@
 }
 
 
+
 .carousel-container.expanded {
     max-height: 400px; /* Adjust based on content */
 }
@@ -61,6 +62,54 @@ carousel-prev, .carousel-next {
     padding: 10px 0;
 }
 
+/* Adjustments for event items within carousel */
+.carousel-slide .event-list {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow-y: auto; /* Allow scrolling if content exceeds height */
+    max-width: 100%; /* Ensure list respects card width */
+}
+
+.carousel-slide .event-item {
+    margin: 3px 0; /* Reduced from 20px margin-left to fit more content */
+    padding: 5px 10px; /* Adjusted padding for compactness */
+    display: flex;
+    align-items: flex-start; /* Align content at the top */
+    flex-wrap: wrap; /* Allow wrapping for long content */
+    max-width: 100%; /* Ensure items don't overflow */
+    overflow: hidden;
+}
+
+.carousel-slide .event-item p {
+    margin: 0;
+    font-size: 13px; /* Slightly smaller font to fit more info */
+    color: #333;
+    display: flex;
+    flex-wrap: wrap; /* Allow wrapping for long content */
+    align-items: center;
+    width: 100%;
+    word-break: break-word; /* Ensure words break if needed */
+}
+
+.carousel-slide .team-crest {
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+    flex-shrink: 0; /* Prevent crest from shrinking */
+}
+
+.carousel-slide .league-group {
+    margin-bottom: 8px;
+}
+
+.carousel-slide .league-header {
+    font-weight: bold;
+    margin: 5px 10px;
+    font-size: 14px;
+    color: #001f3f;
+}
+
 /* Copyright Notice */
 .copyright-notice {
     color: #666666; /* Gray, like X */
@@ -70,9 +119,127 @@ carousel-prev, .carousel-next {
     border-top: 1px solid #e1e8ed; /* Light border to visually separate */
 }
 
+  /* Event List Styling */
+.event-list {
+    margin: 0;
+    padding: 0;
+    height:100%;
+}
+
 .event-item {
-    margin-left: 20px; /* Indent fixtures under the league header */
-  }
+    margin: 3px 0;
+    padding: 8px 0; /* Increased padding for better spacing */
+    display: flex;
+    align-items: center; /* Align items vertically */
+    flex-wrap: wrap; /* Allow wrapping for long content */
+}
+
+.event-item.hidden {
+    display: none;
+}
+
+.event-item.hidden.visible {
+    display: flex;
+}
+
+
+/* Events Popup Styling (specific to center feed popup) */
+.events-popup {
+    max-width: 650px; /* Match your tip-feed width */
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #e1e8ed;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 1000;
+    overflow: hidden; /* Contain inner scrolling */
+}
+
+.events-popup h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #001f3f;
+    margin-bottom: 10px;
+}
+
+.events-popup p {
+    font-size: 14px;
+    color: #666666;
+    margin-bottom: 15px;
+}
+
+.events-popup .event-list {
+    max-height: 70vh; /* Scrollable height, adjust as needed */
+    overflow-y: auto; /* Enable vertical scrolling */
+    padding-right: 10px; /* Space for scrollbar */
+}
+
+.events-popup .event-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #e1e8ed;
+    flex-wrap: nowrap; /* Prevent wrapping in popup for cleaner look */
+}
+
+.events-popup .event-item:last-child {
+    border-bottom: none;
+    
+}
+
+.events-popup .event-item p {
+    margin: 0;
+    font-size: 14px;
+    color: #333;
+    display: flex;
+    justify-content: space-between; /* Space out match info and venue */
+    align-items: center;
+    width: 100%;
+}
+
+.events-popup .event-item .sport-icon {
+    margin-right: 5px;
+}
+
+.events-popup .team-crest {
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+.events-popup .event-location {
+    font-size: 12px;
+    color: #666;
+    margin-left: 10px;
+    white-space: nowrap; /* Keep venue on one line */
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+
+.events-popup .show-less {
+    display: inline-block;
+    margin-top: 15px;
+    color: #ff4136;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.events-popup .show-less:hover {
+    text-decoration: underline;
+}
+
+.league-group {
+    margin-bottom: 15px;
+}
+
+.league-header {
+    font-size: 16px;
+    font-weight: 600;
+    color: #001f3f;
+    margin: 10px 0 5px;
+}
+
 
 
 .dot {
@@ -333,17 +500,20 @@ carousel-prev, .carousel-next {
     overflow: hidden;
 }
 
-/* Upcoming Events Carousel Styling */
+/* Upcoming Events Card Styling */
 .upcoming-events-card {
     padding: 10px;
     background-color: var(--secondary-bg);
     border-radius: var(--border-radius);
     margin-bottom: 15px;
     height: 350px; /* Fixed height to prevent resizing */
-    display:flex;
+    display: flex;
     flex-direction: column;
     position: relative;
     overflow: hidden;
+    max-width: 350px; /* Slightly reduced to account for padding and borders, aligning with sidebar */
+    width: 100%; /* Ensure it respects the container */
+    box-sizing: border-box; /* Include padding and border in width calculation */
 }
 
 /* Who to Follow Header */
