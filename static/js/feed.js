@@ -5,7 +5,7 @@ import { getEventList } from './upcoming-events.js';
 export function setupShowMoreButtons() {
   const showMoreButtons = document.querySelectorAll('.show-more');
   showMoreButtons.forEach(button => {
-    button.addEventListener('click', async function(e) { // Add async
+    button.addEventListener('click', async function(e) {
       e.preventDefault();
       const target = this.getAttribute('data-target');
       const content = document.querySelector('.content');
@@ -15,7 +15,11 @@ export function setupShowMoreButtons() {
 
       switch (target) {
         case 'upcoming-events':
-          content.innerHTML = await getEventList(window.location.pathname, target); // Await async call
+          // Get the active sport from the carousel
+          const activeSlide = document.querySelector('.carousel-slide.active');
+          const activeSport = activeSlide ? activeSlide.getAttribute('data-sport') : 'football';
+          // Pass the active sport to getEventList
+          content.innerHTML = await getEventList(window.location.pathname, target, activeSport);
           break;
         case 'trending-tips':
           content.innerHTML = `
@@ -98,7 +102,6 @@ export function setupShowMoreButtons() {
   });
 }
 
-// Run setup on load if needed
 document.addEventListener("DOMContentLoaded", () => {
   setupShowMoreButtons();
 });

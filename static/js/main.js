@@ -9,7 +9,6 @@ import { initCarousel, populateEvents } from './carousel.js';
 import { getDynamicEvents, getEventList } from './upcoming-events.js';
 import { formatFootballList, formatGolfList, formatTennisList, formatHorseRacingList } from './upcoming-events.js';
 
-// Add 'async' to the function to allow 'await' inside
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('DOM fully loaded');
 
@@ -21,13 +20,24 @@ document.addEventListener('DOMContentLoaded', async function() {
     setupTipInteractions();
     setupNavigation();
     setupProfileEditing();
-    initCarousel(); // This will now handle the upcoming events carousel
+    initCarousel(); // Handles the upcoming events carousel on home.html
 
-    // Populate football events for the sidebar if on the football page
-    if (document.getElementById('football-events')) {
-        const dynamicEvents = await getDynamicEvents();
-        const footballEvents = dynamicEvents.football || [];
-        const eventList = document.getElementById('football-events');
-        eventList.innerHTML = formatFootballList(footballEvents, 'football', false) || '<p>No upcoming events available.</p>';
+    // Populate events for each sport
+    const footballEventsElement = document.getElementById('football-events');
+    if (footballEventsElement && !footballEventsElement.closest('.carousel-container')) {
+      const dynamicEvents = await getDynamicEvents();
+      const footballEvents = dynamicEvents.football || [];
+      footballEventsElement.innerHTML = await formatFootballList(footballEvents, 'football', false) || '<p>No upcoming events available.</p>';
     }
+
+   
+    // Populate golf events
+    const golfEventsElement = document.getElementById('golf-events');
+    if (golfEventsElement && !golfEventsElement.closest('.carousel-container')) {
+      const dynamicEvents = await getDynamicEvents();
+      const golfEvents = dynamicEvents.golf || [];
+      golfEventsElement.innerHTML = await formatGolfList(golfEvents, 'golf', false) || '<p>No upcoming events available.</p>';
+    }
+  
 });
+   

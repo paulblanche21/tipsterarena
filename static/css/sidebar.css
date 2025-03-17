@@ -151,19 +151,19 @@ carousel-prev, .carousel-next {
 }
 
 
-/* Events Popup Styling (specific to center feed popup) */
+/* Refine Existing Events Popup Styles */
 .events-popup {
-    max-width: 700px; /* Match the updated .content max-width */
-    width: calc(100% - 20px); /* Match post-box and tip-feed: 700px - 20px margins */
-    margin: 0 10px; /* Match the 10px margins of post-box and tip-feed */
-    padding: 12px; /* Match the padding of post-box for consistency */
-    background-color: #fff;
+    max-width: 700px;
+    width: calc(100% - 20px);
+    margin: 0 10px;
+    padding: 12px;
+    background-color: #ffffff; /* White background */
     border: 1px solid #e1e8ed;
     border-radius: 12px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     position: relative;
     z-index: 1000;
-    overflow: hidden; /* Contain inner scrolling */
+    overflow: hidden;
     box-sizing: border-box;
 }
 
@@ -228,16 +228,60 @@ carousel-prev, .carousel-next {
 }
 
 
+
+/* Style the Show Less Button */
 .events-popup .show-less {
     display: inline-block;
     margin-top: 15px;
-    color: #ff4136;
+    color: #ff4136; /* Red */
     text-decoration: none;
     font-size: 14px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
 }
 
 .events-popup .show-less:hover {
     text-decoration: underline;
+    color: #ff4136; /* Maintain red on hover */
+}
+
+/* Table Styling for Football Events in the Center Feed */
+.events-popup table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+    font-size: 14px; /* Match existing event-item text size */
+}
+
+/* Table Headers */
+.events-popup th {
+    background-color: #001f3f; /* Navy */
+    color: #ffffff; /* White */
+    font-weight: 600;
+    padding: 12px 10px;
+    text-align: left;
+    border-bottom: 2px solid #e1e8ed; /* Slightly thicker border for header */
+}
+
+/* Table Cells */
+.events-popup td {
+    padding: 12px 10px;
+    text-align: left;
+    border-bottom: 1px solid #e1e8ed; /* Light gray border */
+    color: #333; /* Dark gray for readability */
+}
+
+/* Alternating Row Colors */
+.events-popup tr:nth-child(even) {
+    background-color: #f9f9f9; /* Light gray for even rows */
+}
+
+/* Hover Effect */
+.events-popup tr:hover {
+    background-color: #e1e8ed; /* Light gray-blue on hover */
+    transition: background-color 0.2s ease-in-out; /* Smooth transition */
 }
 
 .league-group {
@@ -249,6 +293,35 @@ carousel-prev, .carousel-next {
     font-weight: 600;
     color: #001f3f;
     margin: 10px 0 5px;
+}
+
+
+.leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.leaderboard-table th,
+.leaderboard-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.leaderboard-table th {
+    background-color: #001f3f; /* Navy */
+    color: #ffffff; /* White */
+    font-weight: 600;
+}
+
+.leaderboard-table tr:nth-child(even) {
+    background-color: #f9f9f9; /* Light gray for even rows */
+}
+
+.leaderboard-table tr:hover {
+    background-color: #e1e8ed; /* Hover effect */
 }
 
 .dot {
@@ -316,6 +389,10 @@ carousel-prev, .carousel-next {
     text-decoration: underline;
 }
 
+.sidebar-card .event-list {
+    max-height: 200px; /* Adjust this value to fit your design */
+    overflow-y: auto;
+}
 
 
 /* Show less button styling (Tipster Arena red, Twitter/X-like layout) */

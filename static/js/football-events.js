@@ -104,3 +104,52 @@ export function formatEventList(events, sportKey, showLocation = false) {
 
   return eventItems || `<p>No upcoming ${sportKey} fixtures available.</p>`;
 }
+
+export function formatEventTable(events) {
+  // Check if events exist
+  if (!events || !events.length) {
+    return `<p>No upcoming football fixtures available.</p>`;
+  }
+
+  // Group events by league
+  const eventsByLeague = events.reduce((acc, event) => {
+    const league = event.league || "Other"; // Default to "Other" if league is missing
+    if (!acc[league]) acc[league] = [];
+    acc[league].push(event);
+    return acc;
+  }, {});
+
+  // Start building the table
+  let tableHtml = '<table>';
+  tableHtml += '<tr><th>Event</th><th>Date</th><th>Time</th><th>Location</th></tr>';
+
+  // Loop through each league and its events
+  for (const league in eventsByLeague) {
+    const leagueEvents = eventsByLeague[league];
+
+    // Add league header row
+    tableHtml += `
+      <tr>
+        <td colspan="4" style="font-weight: bold; background-color: #f2f2f2;">${league}</td>
+      </tr>
+    `;
+
+    // Add event rows for this league
+    leagueEvents.forEach(event => {
+      const homeTeam = event.competitors.find(c => c?.homeAway?.toLowerCase() === "home")?.team?.displayName || "TBD";
+      const awayTeam = event.competitors.find(c => c?.homeAway?.toLowerCase() === "away")?.team?.displayName || "TBD";
+      const venue = event.venue.fullName || `${event.venue.address.city}, ${event.venue.address.state}`;
+      tableHtml += `
+        <tr>
+          <td>${homeTeam} vs ${awayTeam}</td>
+          <td>${event.displayDate}</td>
+          <td>${event.time}</td>
+          <td>${venue}</td>
+        </tr>
+      `;
+    });
+  }
+
+  tableHtml += '</table>';
+  return tableHtml;
+}

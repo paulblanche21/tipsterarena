@@ -1,6 +1,6 @@
 // carousel.js
 console.log("Initializing carousel");
-
+// Initialize the carousel
 export async function initCarousel() {
   console.log("Initializing carousel");
   const carouselContainers = document.querySelectorAll('.carousel-container');
@@ -14,6 +14,27 @@ export async function initCarousel() {
   });
 }
 
+async function populateCarousel(container) {
+  console.log("Populating carousel");
+  const dynamicEvents = await getDynamicEvents(); // Assuming this is also async
+  console.log("All events for carousel:", dynamicEvents);
+
+  const slides = container.querySelectorAll('.carousel-slide');
+  for (const slide of slides) {
+      const sport = slide.getAttribute('data-sport');
+      if (sport) {
+          const eventList = slide.querySelector('.event-list');
+          if (eventList) {
+              const events = dynamicEvents[sport] || dynamicEvents.all || [];
+              // Use await to get the resolved HTML string
+              eventList.innerHTML = await formatEventList(events, sport, false) || '<p>No upcoming events available.</p>';
+              console.log(`${sport} carousel updated with:`, eventList.innerHTML);
+          } else {
+              console.warn(`Event list container not found for ${sport}`);
+          }
+      }
+  }
+}
 
 export async function populateEvents(sport, elementId) {
   console.log(`Populating events for ${sport}`);
@@ -22,7 +43,7 @@ export async function populateEvents(sport, elementId) {
   const eventList = document.getElementById(elementId);
   if (eventList) {
     const events = dynamicEvents[sport] || [];
-    const formattedEvents = formatEventList(events, sport, false); // showLocation=false for sidebar
+    const formattedEvents = await formatEventList(events, sport, false); // Add await
     eventList.innerHTML = formattedEvents || '<p>No upcoming events available.</p>';
     console.log(`${sport} events updated with:`, eventList.innerHTML);
   } else {
@@ -30,29 +51,7 @@ export async function populateEvents(sport, elementId) {
   }
 }
 
-
-async function populateCarousel(container) {
-  console.log("Populating carousel");
-  const dynamicEvents = await getDynamicEvents();
-  console.log("All events for carousel:", dynamicEvents);
-
-  const slides = container.querySelectorAll('.carousel-slide');
-  slides.forEach(slide => {
-    const sport = slide.getAttribute('data-sport');
-    if (sport) {
-      const eventList = slide.querySelector('.event-list');
-      if (eventList) {
-        const events = dynamicEvents[sport] || dynamicEvents.all || [];
-        const formattedEvents = formatEventList(events, sport, true); // showLocation=true for carousel
-        eventList.innerHTML = formattedEvents || '<p>No upcoming events available.</p>';
-        console.log(`${sport} carousel updated with:`, eventList.innerHTML);
-      } else {
-        console.warn(`Event list container not found for ${sport}`);
-      }
-    }
-  });
-}
-
+// carousel.js
 function setupSlideNavigation(container) {
   const prevButton = container.querySelector('.carousel-prev');
   const nextButton = container.querySelector('.carousel-next');

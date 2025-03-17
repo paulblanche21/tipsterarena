@@ -1,7 +1,7 @@
 // upcoming-events.js
 console.log("Upcoming-events.js loaded successfully");
 
-import { fetchEvents as fetchFootballEvents, formatEventList as formatFootballList } from './football-events.js';
+import { fetchEvents as fetchFootballEvents, formatEventList as formatFootballList, formatEventTable } from './football-events.js';
 import { fetchEvents as fetchTennisEvents, formatEventList as formatTennisList } from './tennis-events.js';
 import { fetchEvents as fetchGolfEvents, formatEventList as formatGolfList, setupLeaderboardUpdates } from './golf-events.js';
 import { fetchEvents as fetchHorseRacingEvents, formatEventList as formatHorseRacingList } from './horse-racing-events.js';
@@ -88,38 +88,49 @@ export async function getDynamicEvents() {
   return events;
 }
 
-export async function getEventList(currentPath, target) {
+export async function getEventList(currentPath, target, activeSport = 'football') {
   const path = currentPath.toLowerCase();
   let title = "";
   let description = "";
   let eventList = "";
   const dynamicEvents = await getDynamicEvents();
-  console.log("Dynamic events for rendering:", dynamicEvents);
+
   if (target === "upcoming-events") {
     if (path === "/" || path === "/home/") {
-      title = "Upcoming Events";
-      description = "Here are the latest upcoming events in Tipster Arena:";
-      eventList = `<div class="event-list">${formatFootballList(dynamicEvents.football, "football", true)}</div>`;
+      const formatFunc = {
+        'football': formatFootballList,
+        'golf': formatGolfList,
+        'tennis': formatTennisList,
+        'horse_racing': formatHorseRacingList
+      }[activeSport] || formatFootballList;
+      title = `Upcoming ${activeSport.charAt(0).toUpperCase() + activeSport.slice(1)} Events`;
+      description = `Here are the latest upcoming ${activeSport} events in Tipster Arena:`;
+      const events = dynamicEvents[activeSport] || [];
+      if (activeSport === 'football') {
+        eventList = `<div class="event-table">${formatEventTable(events)}</div>`; // Assuming formatEventTable is synchronous or needs its own await
+      } else {
+        eventList = `<div class="event-list">${await formatFunc(events, "all", true)}</div>`;
+      }
     } else if (path.includes("/sport/football/")) {
       title = "Upcoming Football Fixtures";
       description = "Here are the latest football fixtures in Tipster Arena:";
-      eventList = `<div class="event-list">${formatFootballList(dynamicEvents.football, "all", true)}</div>`;
+      const events = dynamicEvents.football || [];
+      eventList = `<div class="event-table">${formatEventTable(events)}</div>`;
     } else if (path.includes("/sport/golf/")) {
       title = "Upcoming Golf Events";
       description = "Here are the latest golf events in Tipster Arena:";
-      eventList = `<div class="event-list">${formatGolfList(dynamicEvents.golf, "golf", true)}</div>`;
-      setTimeout(() => setupLeaderboardUpdates("golf", "pga"), 0);
+      eventList = `<div class="event-list">${await formatGolfList(dynamicEvents.golf, "all", true)}</div>`;
     } else if (path.includes("/sport/tennis/")) {
       title = "Upcoming Tennis Events";
       description = "Here are the latest tennis events in Tipster Arena:";
-      eventList = `<div class="event-list">${formatTennisList(dynamicEvents.tennis, "tennis", true)}</div>`;
+      eventList = `<div class="event-list">${await formatTennisList(dynamicEvents.tennis, "all", true)}</div>`;
     } else if (path.includes("/sport/horse_racing/")) {
       title = "Upcoming Horse Racing Events";
       description = "Here are the latest horse racing events in Tipster Arena:";
-      eventList = `<div class="event-list">${formatHorseRacingList(dynamicEvents.horse_racing, "horse_racing", true)}</div>`;
+      eventList = `<div class="event-list">${await formatHorseRacingList(dynamicEvents.horse_racing, "all", true)}</div>`;
     }
   }
-  console.log(`Generated event list for ${target}:`, eventList);
+
   return `
     <div class="events-popup">
       <h2>${title}</h2>
@@ -130,5 +141,5 @@ export async function getEventList(currentPath, target) {
   `;
 }
 
-// Add this export statement to make format functions available
-export { formatFootballList, formatGolfList, formatTennisList, formatHorseRacingList };
+// Update exports to include formatEventTable
+export { formatFootballList, formatGolfList, formatTennisList, formatHorseRacingList, formatEventTable };
