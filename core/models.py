@@ -11,6 +11,12 @@ class Tip(models.Model):
         ('horse_racing', 'Horse Racing'),
     ])
     text = models.TextField()
+    image = models.ImageField(upload_to='tips/', blank=True, null=True)
+    gif = models.FileField(upload_to='gifs/', blank=True, null=True)
+    poll = models.TextField(blank=True, null=True, default='{}')  # Store JSON as string
+    emojis = models.TextField(blank=True, null=True, default='{}')  # Store JSON as string
+    location = models.CharField(max_length=255, blank=True, null=True)
+    scheduled_at = models.DateTimeField(blank=True, null=True)
     audience = models.CharField(
         max_length=20,
         choices=[

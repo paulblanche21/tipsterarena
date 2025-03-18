@@ -20,18 +20,23 @@
                     </select>
                 </div>
             </div>
-            <textarea placeholder="Post a Tip..." class="post-input"></textarea>
-            <div class="post-actions">
-                <button class="post-action-btn image"><i class="fas fa-image"></i></button>
-                <button class="post-action-btn gif"><i class="far fa-file-image"></i></button>
-                <button class="post-action-btn poll"><i class="fas fa-chart-bar"></i></button>
-                <button class="post-action-btn emoji"><i class="far fa-smile"></i></button>
-                <button class="post-action-btn location"><i class="fas fa-map-marker-alt"></i></button>
-                <button class="post-action-btn schedule"><i class="fas fa-clock"></i></button>
-                <button class="post-action-btn bold"><i class="fas fa-bold"></i></button>
-                <button class="post-action-btn italic"><i class="fas fa-italic"></i></button>
+            <textarea placeholder="Post a Tip..." class="post-input" maxlength="280"></textarea>
+            <div class="post-footer">
+                <div class="post-actions">
+                    <button class="post-action-btn image"><i class="fas fa-image"></i></button>
+                    <button class="post-action-btn gif"><i class="far fa-file-image"></i></button>
+                    <button class="post-action-btn poll"><i class="fas fa-chart-bar"></i></button>
+                    <button class="post-action-btn emoji"><i class="far fa-smile"></i></button>
+                    <button class="post-action-btn location"><i class="fas fa-map-marker-alt"></i></button>
+                    <button class="post-action-btn schedule"><i class="fas fa-clock"></i></button>
+                    <button class="post-action-btn bold"><i class="fas fa-bold"></i></button>
+                    <button class="post-action-btn italic"><i class="fas fa-italic"></i></button>
+                </div>
+                <div class="post-meta">
+                    <span class="char-count">0/280</span>
+                    <button class="post-submit" disabled>Post</button>
+                </div>
             </div>
-            <button class="post-submit">Post</button>
         </div>
 
         <!-- Tip Feed -->
@@ -52,7 +57,7 @@
                     {% if tip.sport == 'golf' %}⛳{% endif %}
                     {% if tip.sport == 'tennis' %}🎾{% endif %}
                     {% if tip.sport == 'horse_racing' %}🏇{% endif %}
-                    <p>{{ tip.text }}</p>
+                    <p>{{ tip.text|safe }}</p> <!-- Use |safe to render HTML -->
                     <small>{{ tip.created_at|date:"F j, Y, g:i a" }}</small>
                     <div class="tip-actions">
                         <div class="tip-action-group">
@@ -100,7 +105,7 @@
                             <span class="user-handle modal-tip-handle"></span>
                         </a>
                         <span class="modal-tip-sport"></span>
-                        <p class="modal-tip-text"></p>
+                        <p class="modal-tip-text"></p> <!-- Use |safe here if needed -->
                         <small class="modal-tip-timestamp"></small>
                         <div class="tip-actions">
                             <div class="tip-action-group">
@@ -157,6 +162,13 @@
                     </div>
                 </div>
                 <div class="comment-list"></div>
+            </div>
+        </div>
+        <!-- Success Popup -->
+        <div id="success-popup" class="success-popup">
+            <div class="success-popup-content">
+                <span class="success-popup-close">×</span>
+                <p>Tip posted successfully!</p>
             </div>
         </div>
     </div>
