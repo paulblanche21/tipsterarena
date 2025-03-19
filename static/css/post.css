@@ -387,3 +387,14 @@ i {
 .success-popup-close:hover {
     color: var(--red-accent); /* #ff4136 on hover */
 }
+
+.tip-image, .tip-gif {
+    display: block;
+    margin-top: 10px;
+}
+.tip-location {
+    display: block;
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 5px;
+}

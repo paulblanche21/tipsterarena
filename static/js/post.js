@@ -54,17 +54,17 @@ function applyFormatting(textarea, tag) {
 }
 
 export function setupCentralFeedPost() {
-    const postSubmitBtn = document.querySelector('.post-submit');
-    const postInput = document.querySelector('.post-input');
-    const postAudience = document.querySelector('.post-audience');
-    const emojiBtn = document.querySelector('.post-action-btn.emoji');
-    const gifBtn = document.querySelector('.post-action-btn.gif');
-    const imageBtn = document.querySelector('.post-action-btn.image');
-    const locationBtn = document.querySelector('.post-action-btn.location');
-    const boldBtn = document.querySelector('.post-action-btn.bold');
-    const italicBtn = document.querySelector('.post-action-btn.italic');
-    const pollBtn = document.querySelector('.post-action-btn.poll');
-    const scheduleBtn = document.querySelector('.post-action-btn.schedule');
+    const postSubmitBtn = document.querySelector('.post-box .post-submit');
+    const postInput = document.querySelector('.post-box .post-input');
+    const postAudience = document.querySelector('.post-box .post-audience');
+    const emojiBtn = document.querySelector('.post-box .post-action-btn.emoji');
+    const gifBtn = document.querySelector('.post-box .post-action-btn.gif');
+    const imageBtn = document.querySelector('.post-box .post-action-btn.image');
+    const locationBtn = document.querySelector('.post-box .post-action-btn.location');
+    const boldBtn = document.querySelector('.post-box .post-action-btn.bold');
+    const italicBtn = document.querySelector('.post-box .post-action-btn.italic');
+    const pollBtn = document.querySelector('.post-box .post-action-btn.poll');
+    const scheduleBtn = document.querySelector('.post-box .post-action-btn.schedule');
 
     if (!postSubmitBtn || !postInput || !postAudience || !emojiBtn || !gifBtn || !imageBtn || !locationBtn || !boldBtn || !italicBtn || !pollBtn || !scheduleBtn) {
         console.warn('setupCentralFeedPost: One or more required DOM elements are missing.');
@@ -83,6 +83,15 @@ export function setupCentralFeedPost() {
         });
         return;
     }
+
+    // Enable/disable button and update character count based on input
+    postInput.addEventListener('input', function() {
+        postSubmitBtn.disabled = !postInput.value.trim();
+        const charCount = document.querySelector('.post-box .char-count');
+        if (charCount) {
+            charCount.textContent = `${postInput.value.length}/280`;
+        }
+    });
 
     // Track location separately for form submission
     let locationData = '';

@@ -12,6 +12,7 @@ from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import logging
+import bleach
 
 logger = logging.getLogger(__name__)
 
@@ -285,16 +286,16 @@ def notifications(request):
     })
 
 def terms_of_service(request):
-    return render(request, 'terms_of_service.html')
+    return render(request, 'core/terms_of_service.html')
 
 def privacy_policy(request):
-    return render(request, 'privacy_policy.html')
+    return render(request, 'core/privacy_policy.html')
 
 def cookie_policy(request):
-    return render(request, 'cookie_policy.html')
+    return render(request, 'core/cookie_policy.html')
 
 def accessibility(request):
-    return render(request, 'accessibility.html')
+    return render(request, 'core/accessibility.html')
 
 
 @login_required
@@ -333,19 +334,38 @@ def suggested_users_api(request):
 def post_tip(request):
     if request.method == 'POST':
         try:
+            # Get data from request
             text = request.POST.get('text')
-            audience = request.POST.get('audience', 'everyone')  # Default to everyone
+            audience = request.POST.get('audience', 'everyone')
+            sport = request.POST.get('sport', 'golf')  # Default to 'golf' or set based on your logic
+            image = request.FILES.get('image')
+            gif = request.FILES.get('gif')
+            location = request.POST.get('location')
+            poll = request.POST.get('poll', '{}')
+            emojis = request.POST.get('emojis', '{}')
 
+            # Validate required fields
             if not text:
                 return JsonResponse({'success': False, 'error': 'Tip text cannot be empty.'}, status=400)
+
+            # Sanitize text to allow only <b> and <i> tags
+            allowed_tags = ['b', 'i']
+            sanitized_text = bleach.clean(text, tags=allowed_tags, strip=True)
 
             # Create the tip
             tip = Tip.objects.create(
                 user=request.user,
-                text=text,
+                text=sanitized_text,
                 audience=audience,
-                # Sport field can be added later if implemented
+                sport=sport,
+                image=image,
+                gif=gif,
+                location=location,
+                poll=poll,
+                emojis=emojis
             )
+            tip.save()  # Explicit save is optional since create() saves automatically
+
             return JsonResponse({'success': True, 'message': 'Tip posted successfully!'})
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=500)

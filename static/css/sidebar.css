@@ -350,7 +350,132 @@ carousel-prev, .carousel-next {
     font-weight: bold;
     margin-bottom: 5px;
   }
-  
+
+  /* Policy Page Styles */
+/* Policy Page Styles */
+.policy-body {
+    background-color: #ffffff; /* White background */
+    color: #1a2526; /* Navy text */
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    font-family: 'Roboto', sans-serif;
+}
+
+.policy-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: #ffffff; /* White content background */
+    border: 1px solid #1a2526; /* Navy border */
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.policy-close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: #e63946; /* Red close button */
+    font-size: 28px;
+    text-decoration: none;
+    background-color: #ffffff;
+    border: 2px solid #e63946;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.policy-close-btn:hover {
+    background-color: #e63946;
+    color: #ffffff;
+}
+
+.policy-content h1 {
+    font-size: 2.5em;
+    color: #1a2526; /* Navy heading */
+    margin-bottom: 20px;
+    border-bottom: 3px solid #e63946; /* Red underline */
+    padding-bottom: 10px;
+}
+
+.policy-content h2 {
+    font-size: 1.8em;
+    color: #1a2526; /* Navy subheading */
+    margin-top: 40px;
+    margin-bottom: 15px;
+}
+
+.policy-content h3 {
+    font-size: 1.4em;
+    color: #1a2526; /* Navy sub-subheading */
+    margin-top: 30px;
+    margin-bottom: 10px;
+}
+
+.policy-content p {
+    margin-bottom: 20px;
+    font-size: 1.1em;
+}
+
+.policy-content ul {
+    margin-bottom: 20px;
+    padding-left: 25px;
+}
+
+.policy-content ul li {
+    margin-bottom: 12px;
+    font-size: 1.1em;
+}
+
+.policy-content a {
+    color: #e63946; /* Red links */
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.policy-content a:hover {
+    text-decoration: underline;
+    color: #b32d39; /* Darker red on hover */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .policy-container {
+        margin: 20px;
+        padding: 20px;
+    }
+
+    .policy-content h1 {
+        font-size: 2em;
+    }
+
+    .policy-content h2 {
+        font-size: 1.5em;
+    }
+
+    .policy-content h3 {
+        font-size: 1.2em;
+    }
+
+    .policy-content p,
+    .policy-content ul li {
+        font-size: 1em;
+    }
+
+    .policy-close-btn {
+        top: 15px;
+        right: 15px;
+        font-size: 24px;
+        width: 36px;
+        height: 36px;
+    }
+}
 
 /* Fixed Search Input (at the top) */
 .search-input {
