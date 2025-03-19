@@ -51,9 +51,9 @@ export async function getDynamicEvents() {
     if (module && sportConfigs.length > 0) {
       let allEvents = [];
       if (sportKey === "horse_racing") {
-        allEvents = await module.fetch();  // Fetch from Django endpoint
+        allEvents = await module.fetch();
+        console.log(`Horse Racing: Fetched ${allEvents.length} events`);
       } else {
-        // ESPN API for football, golf, tennis
         const today = new Date();
         const endDate = new Date();
         endDate.setDate(today.getDate() + 90);
@@ -67,6 +67,7 @@ export async function getDynamicEvents() {
             const data = await response.json();
             const leagueEvents = await module.fetch(data, config);
             allEvents = allEvents.concat(leagueEvents);
+            console.log(`${config.name}: Fetched ${leagueEvents.length} events`);
           } catch (error) {
             console.error(`Error fetching ${config.name} from ESPN:`, error);
           }
@@ -82,6 +83,7 @@ export async function getDynamicEvents() {
     ...(events.tennis || []),
     ...(events.horse_racing || [])
   ].sort((a, b) => new Date(a.date) - new Date(b.date));
+  console.log("All events fetched:", Object.keys(events).map(key => `${key}: ${events[key].length}`));
   return events;
 }
 
@@ -112,45 +114,84 @@ export async function getEventList(currentPath, target, activeSport = 'football'
       title = "Upcoming Football Fixtures";
       description = "Here are the latest football fixtures in Tipster Arena:";
       const events = dynamicEvents.football || [];
-      eventList = `<div class="event-table">${formatEventTable(events)}</div>`;
+      const eventsByLeague = events.reduce((acc, event) => {
+        const league = event.league || "Other";
+        if (!acc[league]) acc[league] = [];
+        acc[league].push(event);
+        return acc;
+      }, {});
+      const leagueList = Object.keys(eventsByLeague).map(league => {
+        const leagueEvents = eventsByLeague[league];
+        const eventItems = leagueEvents.map(event => {
+          const home = event.competitors.find(c => c?.homeAway?.toLowerCase() === "home")?.team?.displayName || "TBD";
+          const away = event.competitors.find(c => c?.homeAway?.toLowerCase() === "away")?.team?.displayName || "TBD";
+          const venue = event.venue.fullName || "TBD";
+          return `
+            <p class="event-item" style="display: flex; justify-content: space-between; align-items: center;">
+              <span>${home} vs ${away} - ${event.displayDate} ${event.time}</span>
+              <span class="event-location">${venue}</span>
+            </p>
+          `;
+        }).join("");
+        return `<div class="league-group"><p class="league-header"><span class="sport-icon">⚽</span> <strong>${league}</strong></p>${eventItems}</div>`;
+      }).join("");
+      eventList = events.length ? `<div class="event-list">${leagueList}</div>` : `<p>No upcoming football fixtures available.</p>`;
     } else if (path.includes("/sport/golf/")) {
       title = "Upcoming Golf Events";
       description = "Here are the latest golf events in Tipster Arena:";
-      eventList = `<div class="event-list">${await formatGolfList(dynamicEvents.golf, "golf", true)}</div>`;
+      const golfEvents = dynamicEvents.golf || [];
+      const eventsByDate = golfEvents.reduce((acc, event) => {
+        const dateKey = event.date.split('T')[0];
+        if (!acc[dateKey]) acc[dateKey] = [];
+        acc[dateKey].push(event);
+        return acc;
+      }, {});
+      const sortedDates = Object.keys(eventsByDate).sort((a, b) => new Date(a) - new Date(b));
+      eventList = sortedDates.map(date => {
+        const dateEvents = eventsByDate[date];
+        const dateHeader = `<h4>${dateEvents[0].displayDate}</h4>`;
+        const eventItems = dateEvents.map(event => `
+          <p class="event-item" style="display: flex; justify-content: space-between; align-items: center;">
+            <span>${event.name}</span>
+            <span class="event-location">${event.venue.fullName || "TBD"}</span>
+          </p>
+        `).join("");
+        return `${dateHeader}<div class="event-list">${eventItems}</div>`;
+      }).join("");
+      eventList = golfEvents.length ? `<div class="event-list">${eventList}</div>` : `<p>No upcoming golf events available.</p>`;
     } else if (path.includes("/sport/tennis/")) {
       title = "Upcoming ATP Tournament Matches";
-      description = "Here are the latest matches for the current ATP tournament:";
+      description = "Here are the latest matches for upcoming ATP tournaments:";
       const tennisEvents = dynamicEvents.tennis || [];
-      const currentTournament = tennisEvents.find(event => new Date(event.date) > new Date()) || tennisEvents[0];
-      if (currentTournament) {
-        const matches = await fetchTournamentMatches(currentTournament.id);
-        eventList = matches.length
-          ? matches
-              .map(match => `
-                <p class="event-item">
-                  ${match.player1} vs ${match.player2} - ${match.displayDate} ${match.time} (${match.round})
-                </p>
-              `)
-              .join("")
-          : `<p>No matches available for ${currentTournament.name}.</p>`;
-      } else {
-        eventList = `<p>No current ATP tournament found.</p>`;
-      }
-      eventList = `<div class="event-list">${eventList}</div>`;
+      const eventsByDate = tennisEvents.reduce((acc, event) => {
+        const dateKey = event.date.split('T')[0];
+        if (!acc[dateKey]) acc[dateKey] = [];
+        acc[dateKey].push(event);
+        return acc;
+      }, {});
+      const sortedDates = Object.keys(eventsByDate).sort((a, b) => new Date(a) - new Date(b));
+      eventList = sortedDates.map(date => {
+        const dateEvents = eventsByDate[date];
+        const dateHeader = `<h4>${dateEvents[0].displayDate}</h4>`;
+        const eventItems = dateEvents.map(event => `
+          <p class="event-item" style="display: flex; justify-content: space-between; align-items: center;">
+            <span>${event.name}</span>
+            <span class="event-location">${event.venue || "TBD"}</span>
+          </p>
+        `).join("");
+        return `${dateHeader}<div class="event-list">${eventItems}</div>`;
+      }).join("");
+      eventList = tennisEvents.length ? `<div class="event-list">${eventList}</div>` : `<p>No upcoming tennis events available.</p>`;
     } else if (path.includes("/sport/horse_racing/")) {
       title = "Upcoming Horse Racing Meetings";
       description = "Here are the race meetings for the next 7 days:";
       const horseRacingEvents = dynamicEvents.horse_racing || [];
-      
-      // Group events by date
       const eventsByDate = horseRacingEvents.reduce((acc, event) => {
         const dateKey = event.date;
         if (!acc[dateKey]) acc[dateKey] = [];
         acc[dateKey].push(event);
         return acc;
       }, {});
-
-      // Sort dates and build HTML
       const sortedDates = Object.keys(eventsByDate).sort((a, b) => new Date(a) - new Date(b));
       eventList = sortedDates.map(date => {
         const dateEvents = eventsByDate[date];
@@ -163,10 +204,7 @@ export async function getEventList(currentPath, target, activeSport = 'football'
         `).join("");
         return `${dateHeader}<div class="event-list">${eventItems}</div>`;
       }).join("");
-      
-      eventList = horseRacingEvents.length
-        ? `<div class="event-list">${eventList}</div>`
-        : `<p>No upcoming horse racing meetings available.</p>`;
+      eventList = horseRacingEvents.length ? `<div class="event-list">${eventList}</div>` : `<p>No upcoming horse racing meetings available.</p>`;
     }
   }
 
@@ -180,22 +218,4 @@ export async function getEventList(currentPath, target, activeSport = 'football'
   `;
 }
 
-// Sidebar population
-document.addEventListener("DOMContentLoaded", async () => {
-  const tennisEventsElement = document.getElementById('tennis-events');
-  if (tennisEventsElement) {
-    const dynamicEvents = await getDynamicEvents();
-    const tennisEvents = dynamicEvents.tennis || [];
-    tennisEventsElement.innerHTML = await formatTennisList(tennisEvents, 'tennis', false) || '<p>No upcoming tournaments available.</p>';
-  }
-
-  const horseRacingEventsElement = document.getElementById('horse-racing-events');
-  if (horseRacingEventsElement) {
-    const dynamicEvents = await getDynamicEvents();
-    const horseRacingEvents = dynamicEvents.horse_racing || [];
-    horseRacingEventsElement.innerHTML = await formatHorseRacingList(horseRacingEvents, 'horse_racing', false) || '<p>No upcoming races available.</p>';
-  }
-});
-
-// Export all necessary functions
 export { formatFootballList, formatGolfList, formatTennisList, formatHorseRacingList, formatEventTable };

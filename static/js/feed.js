@@ -11,7 +11,7 @@ export function setupShowMoreButtons() {
       const content = document.querySelector('.content');
       let previousUrl = window.location.pathname;
 
-      content.innerHTML = '';
+      content.innerHTML = await getEventList(window.location.pathname, target);
 
       switch (target) {
         case 'upcoming-events':
