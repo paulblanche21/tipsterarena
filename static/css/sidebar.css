@@ -32,28 +32,22 @@
 
 .carousel-slide.active {
     display: block;
-    animation: fadeIn 0.5s ease-in-out;
-}
-
-carousel-prev, .carousel-next {
+  }
+  
+.carousel-prev, .carousel-next {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background-color: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.5);
     color: white;
     border: none;
     padding: 10px;
     cursor: pointer;
     z-index: 10;
-}
-
-.carousel-prev {
-    left: 5px;
-}
-
-.carousel-next {
-    right: 5px;
-}
+  }
+  
+  .carousel-prev { left: 0; }
+  .carousel-next { right: 0; }
 
 .carousel-prev:hover, .carousel-next:hover {
     background-color: rgba(0, 0, 0, 0.8);

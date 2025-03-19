@@ -59,7 +59,15 @@ def login_view(request):
 @login_required  # Require users to log in to see the home page
 def home(request):
     tips = Tip.objects.all().order_by('-created_at')[:20]  # Latest 20 tips
-    # Suggest tipsters: Users who have posted tips, excluding the current user
+    # Fetch suggested tipsters (example)
+    suggested_tipsters = [
+        {'username': 'Tipster1', 'avatar': '/static/images/default-avatar.png', 'bio': 'Expert in football betting'},
+        {'username': 'Tipster2', 'avatar': '/static/images/default-avatar.png', 'bio': 'Golf enthusiast'},
+    ]
+    context = {
+        'tips': [],  # Your tips data
+        'suggested_tipsters': suggested_tipsters,
+    }
     context = {'tips': tips}  # No suggested_tipsters
     # Annotate with UserProfile data if available
     

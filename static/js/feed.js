@@ -11,7 +11,9 @@ export function setupShowMoreButtons() {
       const content = document.querySelector('.content');
       let previousUrl = window.location.pathname;
 
-      content.innerHTML = await getEventList(window.location.pathname, target);
+      const activeSlide = document.querySelector('.carousel-slide.active');
+      const activeSport = activeSlide ? activeSlide.getAttribute('data-sport') : 'football';
+      content.innerHTML = await getEventList(window.location.pathname, target, activeSport);
 
       switch (target) {
         case 'upcoming-events':
@@ -105,3 +107,4 @@ export function setupShowMoreButtons() {
 document.addEventListener("DOMContentLoaded", () => {
   setupShowMoreButtons();
 });
+

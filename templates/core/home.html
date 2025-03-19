@@ -3,8 +3,8 @@
 {% block title %}Home - Tipster Arena{% endblock %}
 
 {% block content %}
+    <!-- Unchanged content -->
     <div class="content">
-        <!-- Post Box (Center Feed) -->
         <div class="post-box">
             <div class="post-user">
                 {% if request.user.is_authenticated and request.user.userprofile.avatar %}
@@ -39,7 +39,6 @@
             </div>
         </div>
 
-        <!-- Tip Feed -->
         <div class="tip-feed">
             {% for tip in tips %}
             <div class="tip" data-tip-id="{{ tip.id }}">
@@ -57,7 +56,7 @@
                     {% if tip.sport == 'golf' %}⛳{% endif %}
                     {% if tip.sport == 'tennis' %}🎾{% endif %}
                     {% if tip.sport == 'horse_racing' %}🏇{% endif %}
-                    <p>{{ tip.text|safe }}</p> <!-- Use |safe to render HTML -->
+                    <p>{{ tip.text|safe }}</p>
                     <small>{{ tip.created_at|date:"F j, Y, g:i a" }}</small>
                     <div class="tip-actions">
                         <div class="tip-action-group">
@@ -92,11 +91,9 @@
             {% endfor %}
         </div>
 
-        <!-- Comment Modal -->
         <div class="comment-modal" id="comment-modal">
             <div class="comment-modal-content">
                 <span class="comment-modal-close">×</span>
-                <!-- Original Tip with Avatar -->
                 <div class="modal-tip">
                     <img src="" alt="User Avatar" class="tip-avatar modal-tip-avatar" onerror="this.onerror=null; this.src='/static/images/default-avatar.png';">
                     <div class="modal-tip-content">
@@ -105,7 +102,7 @@
                             <span class="user-handle modal-tip-handle"></span>
                         </a>
                         <span class="modal-tip-sport"></span>
-                        <p class="modal-tip-text"></p> <!-- Use |safe here if needed -->
+                        <p class="modal-tip-text"></p>
                         <small class="modal-tip-timestamp"></small>
                         <div class="tip-actions">
                             <div class="tip-action-group">
@@ -135,7 +132,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- Replying to Text and Post a Reply Box -->
                 <div class="reply-to-header" style="display: none;">Replying to <span class="reply-to-username"></span></div>
                 <div class="post-reply-box">
                     {% if request.user.is_authenticated and request.user.userprofile.avatar %}
@@ -164,7 +160,6 @@
                 <div class="comment-list"></div>
             </div>
         </div>
-        <!-- Success Popup -->
         <div id="success-popup" class="success-popup">
             <div class="success-popup-content">
                 <span class="success-popup-close">×</span>
@@ -180,25 +175,21 @@
     <div class="carousel-container">
         <div class="carousel-slide active" data-sport="football">
             <div class="event-list" id="football-events">
-                <!-- Populated dynamically by JavaScript -->
                 <p>Loading football fixtures...</p>
             </div>
         </div>
         <div class="carousel-slide" data-sport="golf">
             <div class="event-list" id="golf-events">
-                <!-- Populated dynamically by JavaScript -->
                 <p>Loading golf fixtures...</p>
             </div>
         </div>
         <div class="carousel-slide" data-sport="tennis">
             <div class="event-list" id="tennis-events">
-                <!-- Populated dynamically by JavaScript -->
                 <p>Loading tennis fixtures...</p>
             </div>
         </div>
         <div class="carousel-slide" data-sport="horse_racing">
-            <div class="event-list" id="horse-racing-events">
-                <!-- Populated dynamically by JavaScript -->
+            <div class="event-list" id="horse_racing-events">
                 <p>Loading horse racing fixtures...</p>
             </div>
         </div>
