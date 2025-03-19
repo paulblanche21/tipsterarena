@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import UserProfile, Tip, Like, Follow, Share
+from .models import UserProfile, Tip, Like, Follow, Share, Comment, RaceMeeting, RaceResult
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
@@ -17,3 +17,6 @@ class TipAdmin(admin.ModelAdmin):
 admin.site.register(Like)
 admin.site.register(Follow)
 admin.site.register(Share)
+admin.site.register(Comment)
+admin.site.register(RaceMeeting)
+admin.site.register(RaceResult)

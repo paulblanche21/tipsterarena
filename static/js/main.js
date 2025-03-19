@@ -51,6 +51,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     const horseRacingEventsElement = document.getElementById('horse-racing-events');
     if (horseRacingEventsElement && !horseRacingEventsElement.closest('.carousel-container')) {
         const horseRacingEvents = dynamicEvents.horse_racing || [];
-        horseRacingEventsElement.innerHTML = await formatHorseRacingList(horseRacingEvents, 'horse_racing', false) || '<p>No upcoming events available.</p>';
+        horseRacingEventsElement.innerHTML = await formatHorseRacingList(horseRacingEvents, 'horse_racing', false) || '<p>No upcoming races available.</p>';
     }
 });

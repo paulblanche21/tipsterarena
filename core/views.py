@@ -4,13 +4,18 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User 
 from django.http import JsonResponse
 from django.db import models
-from .models import Tip, Like, Follow, Share, UserProfile, Comment, MessageThread
+from .models import Tip, Like, Follow, Share, UserProfile, Comment, MessageThread, RaceMeeting, RaceResult
 from .forms import UserProfileForm, CustomUserCreationForm 
 from django.contrib.auth.forms import AuthenticationForm 
 from django.conf import settings
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework import generics
+from rest_framework.serializers import ModelSerializer
+from datetime import datetime
+
+
 import logging
 import bleach
 
@@ -370,3 +375,32 @@ def post_tip(request):
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
     return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
+
+# Serializer for RaceMeeting
+class RaceMeetingSerializer(ModelSerializer):
+    class Meta:
+        model = RaceMeeting
+        fields = ['date', 'venue', 'url']
+
+# List view for RaceMeeting
+class RaceMeetingList(generics.ListAPIView):
+    queryset = RaceMeeting.objects.all()
+    serializer_class = RaceMeetingSerializer
+
+def horse_racing_fixtures(request):
+    # Get all meetings within the next 7 days
+    today = datetime.now().date()
+    meetings = RaceMeeting.objects.filter(date__gte=today).order_by('date')
+    
+    # Format data for JSON
+    fixtures = [
+        {
+            'venue': meeting.venue,
+            'date': meeting.date.isoformat(),
+            'displayDate': meeting.date.strftime('%b %d, %Y'),  # e.g., "Mar 19, 2025"
+            'url': meeting.url
+        }
+        for meeting in meetings
+    ]
+    
+    return JsonResponse({'fixtures': fixtures})

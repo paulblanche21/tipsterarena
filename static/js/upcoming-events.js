@@ -30,8 +30,7 @@ const SPORT_CONFIG = {
     { sport: "tennis", league: "atp", icon: "🎾", name: "ATP Tour" }
   ],
   horse_racing: [
-    { sport: "horse_racing", league: "uk_irish", icon: "🏇", name: "UK & Irish Racing", url: "https://www.attheraces.com/ajax/fast-results/lhs" }, // Today’s results
-    { sport: "horse_racing", league: "tomorrow", icon: "🏇", name: "Tomorrow’s Racing", url: "https://www.attheraces.com/ajax/racecards/tomorrow" } // Hypothetical tomorrow endpoint
+    { sport: "horse_racing", league: "uk_irish", icon: "🏇", name: "UK & Irish Racing" }
   ]
 };
 
@@ -42,37 +41,22 @@ const SPORT_MODULES = {
   horse_racing: { fetch: fetchHorseRacingEvents, format: formatHorseRacingList }
 };
 
-let globalEvents = {}; // Store events globally
+let globalEvents = {};
 
 export async function getDynamicEvents() {
   const events = {};
-  const now = new Date();
   for (const sportKey of Object.keys(SPORT_CONFIG)) {
     const sportConfigs = SPORT_CONFIG[sportKey];
     const module = SPORT_MODULES[sportKey];
     if (module && sportConfigs.length > 0) {
       let allEvents = [];
       if (sportKey === "horse_racing") {
-        // Handle At The Races API for horse racing
-        for (const config of sportConfigs) {
-          try {
-            const response = await fetch(config.url, {
-              method: 'GET',
-              headers: { 'Accept': 'application/json' }
-            });
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status} for ${config.name}`);
-            const data = await response.json();
-            const leagueEvents = await module.fetch(data, config); // Pass raw data to horse-racing-events.js
-            allEvents = allEvents.concat(leagueEvents);
-          } catch (error) {
-            console.error(`Error fetching ${config.name} from At The Races:`, error);
-          }
-        }
+        allEvents = await module.fetch();  // Fetch from Django endpoint
       } else {
         // ESPN API for football, golf, tennis
         const today = new Date();
         const endDate = new Date();
-        endDate.setDate(today.getDate() + 90); // Look ahead 3 months
+        endDate.setDate(today.getDate() + 90);
         const todayStr = today.toISOString().split('T')[0].replace(/-/g, '');
         const endDateStr = endDate.toISOString().split('T')[0].replace(/-/g, '');
         for (const config of sportConfigs) {
@@ -154,10 +138,35 @@ export async function getEventList(currentPath, target, activeSport = 'football'
       }
       eventList = `<div class="event-list">${eventList}</div>`;
     } else if (path.includes("/sport/horse_racing/")) {
-      title = "Today’s Results & Tomorrow’s Horse Racing";
-      description = "Here are today’s completed races and tomorrow’s scheduled races:";
+      title = "Upcoming Horse Racing Meetings";
+      description = "Here are the race meetings for the next 7 days:";
       const horseRacingEvents = dynamicEvents.horse_racing || [];
-      eventList = `<div class="event-list">${await formatHorseRacingList(horseRacingEvents, "horse_racing", true)}</div>`;
+      
+      // Group events by date
+      const eventsByDate = horseRacingEvents.reduce((acc, event) => {
+        const dateKey = event.date;
+        if (!acc[dateKey]) acc[dateKey] = [];
+        acc[dateKey].push(event);
+        return acc;
+      }, {});
+
+      // Sort dates and build HTML
+      const sortedDates = Object.keys(eventsByDate).sort((a, b) => new Date(a) - new Date(b));
+      eventList = sortedDates.map(date => {
+        const dateEvents = eventsByDate[date];
+        const dateHeader = `<h4>${dateEvents[0].displayDate}</h4>`;
+        const eventItems = dateEvents.map(event => `
+          <p class="event-item" style="display: flex; justify-content: space-between; align-items: center;">
+            <span>${event.name}</span>
+            <span class="event-location">${event.venue}</span>
+          </p>
+        `).join("");
+        return `${dateHeader}<div class="event-list">${eventItems}</div>`;
+      }).join("");
+      
+      eventList = horseRacingEvents.length
+        ? `<div class="event-list">${eventList}</div>`
+        : `<p>No upcoming horse racing meetings available.</p>`;
     }
   }
 
@@ -171,7 +180,7 @@ export async function getEventList(currentPath, target, activeSport = 'football'
   `;
 }
 
-// Populate tennis events in sidebar on page load (unchanged for tennis)
+// Sidebar population
 document.addEventListener("DOMContentLoaded", async () => {
   const tennisEventsElement = document.getElementById('tennis-events');
   if (tennisEventsElement) {
@@ -179,7 +188,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const tennisEvents = dynamicEvents.tennis || [];
     tennisEventsElement.innerHTML = await formatTennisList(tennisEvents, 'tennis', false) || '<p>No upcoming tournaments available.</p>';
   }
-  // Optionally populate horse racing sidebar if you have an element for it
+
   const horseRacingEventsElement = document.getElementById('horse-racing-events');
   if (horseRacingEventsElement) {
     const dynamicEvents = await getDynamicEvents();

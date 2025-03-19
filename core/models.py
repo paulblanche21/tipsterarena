@@ -112,3 +112,26 @@ class Message(models.Model):
 
     def __str__(self):
         return f"{self.sender.username} in {self.thread}: {self.content[:20]}"
+    
+
+class RaceMeeting(models.Model):
+    date = models.DateField()
+    venue = models.CharField(max_length=100)
+    url = models.URLField(unique=True)  # Unique to avoid duplicates
+
+    def __str__(self):
+        return f"{self.venue} - {self.date}"
+
+    class Meta:
+        unique_together = ('date', 'venue')  # Prevent duplicate meetings
+
+class RaceResult(models.Model):
+    meeting = models.ForeignKey(RaceMeeting, on_delete=models.CASCADE, related_name='results')
+    time = models.CharField(max_length=10)  # e.g., "14:30"
+    name = models.CharField(max_length=200)
+    position = models.CharField(max_length=10)
+    horse = models.CharField(max_length=100)
+    jockey = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.name} - {self.horse} (Position: {self.position})"

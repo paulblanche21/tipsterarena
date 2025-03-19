@@ -30,6 +30,8 @@ urlpatterns = [
     path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
     path('cookie-policy/', views.cookie_policy, name='cookie_policy'),
     path('accessibility/', views.accessibility, name='accessibility'),
+    path('api/horse-racing-fixtures/', views.horse_racing_fixtures, name='horse_racing_fixtures'),
+    path('api/race-meetings/', views.RaceMeetingList.as_view(), name='race-meetings'),
     path('logout/', auth_views.LogoutView.as_view(next_page='landing'), name='logout'),
 ]
 
