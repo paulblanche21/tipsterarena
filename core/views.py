@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User 
 from django.http import JsonResponse
 from django.db import models
+from django.db.models import Count, F
 from .models import Tip, Like, Follow, Share, UserProfile, Comment, MessageThread, RaceMeeting, RaceResult
 from .forms import UserProfileForm, CustomUserCreationForm 
 from django.contrib.auth.forms import AuthenticationForm 
@@ -14,6 +15,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import generics
 from rest_framework.serializers import ModelSerializer
 from datetime import datetime
+
 
 
 import logging
@@ -56,22 +58,63 @@ def login_view(request):
         form = AuthenticationForm()
     return render(request, 'core/login.html', {'form': form})
 
-@login_required  # Require users to log in to see the home page
+
+@login_required
 def home(request):
+    # Fetch tips for the main feed
     tips = Tip.objects.all().order_by('-created_at')[:20]  # Latest 20 tips
-    # Fetch suggested tipsters (example)
-    suggested_tipsters = [
-        {'username': 'Tipster1', 'avatar': '/static/images/default-avatar.png', 'bio': 'Expert in football betting'},
-        {'username': 'Tipster2', 'avatar': '/static/images/default-avatar.png', 'bio': 'Golf enthusiast'},
-    ]
+
+    # Ensure UserProfile exists for all users in tips
+    for tip in tips:
+        if not hasattr(tip.user, 'userprofile'):
+            UserProfile.objects.get_or_create(user=tip.user)
+
+    # Fetch trending tips based on likes and shares
+    trending_tips = Tip.objects.annotate(
+        total_likes=Count('likes'),
+        total_shares=Count('shares')
+    ).annotate(
+        total_engagement=F('total_likes') + F('total_shares')
+    ).order_by('-total_engagement')[:4]  # Get top 4 trending tips
+
+    # Ensure UserProfile exists for all users in trending tips
+    for tip in trending_tips:
+        if not hasattr(tip.user, 'userprofile'):
+            UserProfile.objects.get_or_create(user=tip.user)
+
+    # Fetch suggested tipsters dynamically
+    current_user = request.user
+    followed_users = Follow.objects.filter(follower=current_user).values_list('followed_id', flat=True)
+    suggested_users = User.objects.filter(
+        tip__isnull=False
+    ).exclude(
+        id__in=followed_users
+    ).exclude(
+        id=current_user.id
+    ).distinct()[:2]  # Limit to 2 for the sidebar
+
+    suggested_tipsters = []
+    for user in suggested_users:
+        try:
+            profile = user.userprofile
+            avatar_url = profile.avatar.url if profile.avatar else settings.STATIC_URL + 'images/default-avatar.png'
+            bio = profile.description or "No bio available"
+        except UserProfile.DoesNotExist:
+            avatar_url = settings.STATIC_URL + 'images/default-avatar.png'
+            bio = "No bio available"
+        suggested_tipsters.append({
+            'username': user.username,
+            'avatar': avatar_url,
+            'bio': bio,
+        })
+
     context = {
-        'tips': [],  # Your tips data
+        'tips': tips,
+        'trending_tips': trending_tips,
         'suggested_tipsters': suggested_tipsters,
     }
-    context = {'tips': tips}  # No suggested_tipsters
-    # Annotate with UserProfile data if available
-    
     return render(request, 'core/home.html', context)
+
 
 def sport_view(request, sport):
     tips = Tip.objects.filter(sport=sport).order_by('-created_at')[:20]
@@ -202,19 +245,31 @@ def comment_tip(request):
         logger.error(f"Error creating comment: {str(e)}")
         return JsonResponse({'success': False, 'error': 'An error occurred while commenting.'}, status=500)
 
+
 @login_required
 def get_tip_comments(request, tip_id):
     logger.info(f"Fetching comments for tip_id: {tip_id}")
     tip = get_object_or_404(Tip, id=tip_id)
-    comments = tip.comments.filter(parent_comment__isnull=True).order_by('-created_at').values(
-        'id', 'user__username', 'content', 'created_at'
-    ).annotate(
-        like_count=models.Count('likes'),
-        share_count=models.Count('shares'),
-        reply_count=models.Count('replies')
-    )
-    logger.info(f"Found {comments.count()} top-level comments")
-    return JsonResponse({'comments': list(comments)})
+    comments = tip.comments.filter(parent_comment__isnull=True).order_by('-created_at')
+    comments_data = []
+    for comment in comments:
+        try:
+            profile = comment.user.userprofile
+            avatar_url = profile.avatar.url if profile.avatar else settings.STATIC_URL + 'images/default-avatar.png'
+        except UserProfile.DoesNotExist:
+            avatar_url = settings.STATIC_URL + 'images/default-avatar.png'
+        comments_data.append({
+            'id': comment.id,
+            'user__username': comment.user.username,
+            'content': comment.content,
+            'created_at': comment.created_at.isoformat(),
+            'like_count': comment.likes.count(),
+            'share_count': comment.shares.count(),
+            'reply_count': comment.replies.count(),
+            'avatar_url': avatar_url
+        })
+    logger.info(f"Found {len(comments_data)} top-level comments")
+    return JsonResponse({'comments': comments_data})
 
 @login_required
 @require_POST
@@ -412,3 +467,51 @@ def horse_racing_fixtures(request):
     ]
     
     return JsonResponse({'fixtures': fixtures})
+
+@login_required
+def trending_tips_api(request):
+    trending_tips = Tip.objects.annotate(
+        total_likes=Count('likes'),
+        total_shares=Count('shares')
+    ).annotate(
+        total_engagement=F('total_likes') + F('total_shares')
+    ).order_by('-total_engagement')[:4]
+
+    tips_data = []
+    for tip in trending_tips:
+        try:
+            profile = tip.user.userprofile
+            avatar_url = profile.avatar.url if profile.avatar else settings.STATIC_URL + 'images/default-avatar.png'
+            # Strip the @ from the handle if it exists
+            handle = profile.handle.lstrip('@') if profile.handle else tip.user.username
+        except UserProfile.DoesNotExist:
+            avatar_url = settings.STATIC_URL + 'images/default-avatar.png'
+            handle = tip.user.username
+        tips_data.append({
+            'username': tip.user.username,
+            'handle': handle,
+            'avatar_url': avatar_url,
+            'text': tip.text[:50],
+            'likes': tip.total_likes,
+            'profile_url': f"/profile/{tip.user.username}/",
+        })
+
+    return JsonResponse({'trending_tips': tips_data})
+
+@login_required
+def current_user_api(request):
+    user = request.user
+    try:
+        profile = user.userprofile
+        avatar_url = profile.avatar.url if profile.avatar else settings.STATIC_URL + 'images/default-avatar.png'
+        handle = profile.handle or user.username
+    except UserProfile.DoesNotExist:
+        avatar_url = settings.STATIC_URL + 'images/default-avatar.png'
+        handle = user.username
+
+    return JsonResponse({
+        'success': True,
+        'avatar_url': avatar_url,
+        'handle': handle,
+        'username': user.username
+    })

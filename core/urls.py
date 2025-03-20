@@ -32,6 +32,8 @@ urlpatterns = [
     path('accessibility/', views.accessibility, name='accessibility'),
     path('api/horse-racing-fixtures/', views.horse_racing_fixtures, name='horse_racing_fixtures'),
     path('api/race-meetings/', views.RaceMeetingList.as_view(), name='race-meetings'),
+    path('api/trending-tips/', views.trending_tips_api, name='trending_tips_api'),
+    path('api/current-user/', views.current_user_api, name='current_user_api'),
     path('logout/', auth_views.LogoutView.as_view(next_page='landing'), name='logout'),
 ]
 

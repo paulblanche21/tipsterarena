@@ -676,31 +676,28 @@
     color: #ff4136; /* Red on hover, matching your theme */
 }
 
-/* Adjust Trending Tips specific styling */
+/* Trending Tips Card */
 .trending-tips-card {
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    width: 100%; /* Ensure it respects the parent's max-width */
-    max-width: 650px; /* Match content max-width */
-    box-sizing: border-box;
     background-color: white;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
 }
 
 
-/* Trending Tips List (updated) */
+/* Trending Tips List */
 .trending-tips-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 15px;
     width: 100%;
     overflow: hidden;
 }
 
-/* Trending Tip Row (updated) */
+/* Trending Tip Row */
 .trending-tip {
     display: flex;
-    align-items: flex-start; /* Keep flex-start for multi-line text */
+    align-items: flex-start;
     gap: 10px;
     width: 100%;
     overflow: hidden;

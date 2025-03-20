@@ -20,29 +20,52 @@ export function setupShowMoreButtons() {
 
         switch (target) {
           case 'trending-tips':
+            // Fetch trending tips dynamically
             content.innerHTML = `
               <div class="follow-card">
                 <h2>Trending Tips</h2>
                 <p>Hot tips for today’s big tournaments in Tipster Arena:</p>
-                <div class="tip-list">
-                  <div class="tip-item">
-                    <img src="${DEFAULT_AVATAR_URL}" alt="User Avatar" class="tip-avatar">
-                    <div class="tip-details">
-                      <strong>User 1</strong> - Rory McIlroy to win The Players Championship (Odds: 10.0) - Likes: 150
-                    </div>
-                  </div>
-                  <div class="tip-item">
-                    <img src="${DEFAULT_AVATAR_URL}" alt="User Avatar" class="tip-avatar">
-                    <div class="tip-details">
-                      <strong>User 2</strong> - Scottie Scheffler top 10 at Masters (Odds: 2.5) - Likes: 120
-                    </div>
-                  </div>
+                <div class="tip-list" id="trending-tips-list">
+                  <p>Loading trending tips...</p>
                 </div>
                 <a href="#" class="show-less" data-target="${target}">Show less</a>
               </div>
             `;
+            fetch('/api/trending-tips/', {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            })
+            .then(response => response.json())
+            .then(data => {
+              const trendingTipsList = document.getElementById('trending-tips-list');
+              trendingTipsList.innerHTML = '';
+              if (data.trending_tips && data.trending_tips.length > 0) {
+                data.trending_tips.forEach(tip => {
+                  trendingTipsList.innerHTML += `
+                    <div class="tip-item">
+                      <img src="${tip.avatar_url}" alt="${tip.username} Avatar" class="tip-avatar">
+                      <div class="tip-details">
+                        <a href="${tip.profile_url}" class="tip-username">@${tip.handle}</a>
+                        <p>${tip.text}</p>
+                        <span class="tip-likes"><i class="fas fa-heart"></i> ${tip.likes}</span>
+                      </div>
+                    </div>
+                  `;
+                });
+              } else {
+                trendingTipsList.innerHTML = '<p>No trending tips available.</p>';
+              }
+            })
+            .catch(error => {
+              console.error('Error fetching trending tips:', error);
+              document.getElementById('trending-tips-list').innerHTML = '<p>Error loading trending tips.</p>';
+            });
             break;
+
           case 'who-to-follow':
+            // Fetch suggested users dynamically (already implemented, but let's refine it)
             content.innerHTML = `
               <div class="follow-card">
                 <h2>Who to Follow</h2>

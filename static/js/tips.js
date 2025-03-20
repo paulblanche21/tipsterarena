@@ -1,3 +1,4 @@
+// tips.js
 import { getCSRFToken } from './utils.js';
 
 export function setupTipInteractions() {
@@ -9,6 +10,27 @@ export function setupTipInteractions() {
     tips.forEach(tip => {
         tip.removeEventListener('click', handleTipClick);
         tip.addEventListener('click', handleTipClick);
+    });
+
+    // Fetch current user data (avatar and handle) on page load
+    let currentUserData = { avatarUrl: DEFAULT_AVATAR_URL, handle: window.currentUser || 'You' };
+    fetch('/api/current-user/', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            currentUserData = {
+                avatarUrl: data.avatar_url || DEFAULT_AVATAR_URL,
+                handle: data.handle || window.currentUser || 'You'
+            };
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching current user data:', error);
     });
 
     commentSubmit.addEventListener('click', function(e) {
@@ -43,14 +65,13 @@ export function setupTipInteractions() {
                 const commentCount = tip.querySelector('.comment-count');
                 commentCount.textContent = data.comment_count;
                 const commentList = commentModal.querySelector('.comment-list');
-                const avatarUrl = DEFAULT_AVATAR_URL;
                 const newComment = document.createElement('div');
                 newComment.className = 'comment';
                 newComment.setAttribute('data-comment-id', data.comment_id);
                 newComment.innerHTML = `
-                    <img src="${avatarUrl}" alt="${window.currentUser || 'You'} Avatar" class="comment-avatar" onerror="this.src='${DEFAULT_AVATAR_URL}'">
+                    <img src="${currentUserData.avatarUrl}" alt="${currentUserData.handle} Avatar" class="comment-avatar" onerror="this.src='${DEFAULT_AVATAR_URL}'">
                     <div class="comment-content">
-                        <a href="#" class="comment-username"><strong>${window.currentUser || 'You'}</strong></a>
+                        <a href="/profile/${window.currentUser}/" class="comment-username"><strong>${currentUserData.handle}</strong></a>
                         <p>${commentText}</p>
                         <small>${new Date().toLocaleString()}</small>
                         <div class="comment-actions">
@@ -213,7 +234,7 @@ function openCommentModal(tip, tipId, parentId = null) {
     commentList.innerHTML = '<p>Loading comments...</p>';
 
     if (parentId) {
-        const parentComment = tip.querySelector(`.comment[data-comment-id="${parentId}"]`);
+        const parentComment = commentList.querySelector(`.comment[data-comment-id="${parentId}"]`);
         if (parentComment) {
             replyToHeader.style.display = 'block';
             replyToUsername.textContent = parentComment.querySelector('.comment-username strong').textContent;
@@ -221,45 +242,84 @@ function openCommentModal(tip, tipId, parentId = null) {
     } else {
         replyToHeader.style.display = 'none';
     }
+    // Fetch comments for the tip
+    const fetchComments = () => {
+        fetch(`/api/tip/${tipId}/comments/`)
+            .then(response => response.json())
+            .then(data => {
+                // Get current comment IDs
+                const currentCommentIds = Array.from(commentList.querySelectorAll('.comment')).map(comment => comment.getAttribute('data-comment-id'));
+                const newCommentIds = data.comments ? data.comments.map(comment => comment.id.toString()) : [];
+    
+                // Only update if there are new or changed comments
+                if (JSON.stringify(currentCommentIds) !== JSON.stringify(newCommentIds)) {
+                    commentList.innerHTML = '';
+                    if (data.comments && data.comments.length > 0) {
+                        data.comments.forEach(comment => {
+                            const avatarUrl = comment.avatar_url || DEFAULT_AVATAR_URL;
+                            const commentDiv = document.createElement('div');
+                            commentDiv.className = 'comment';
+                            commentDiv.setAttribute('data-comment-id', comment.id);
+                            commentDiv.innerHTML = `
+                                <img src="${avatarUrl}" alt="${comment.user__username} Avatar" class="comment-avatar" onerror="this.src='${DEFAULT_AVATAR_URL}'">
+                                <div class="comment-content">
+                                    <a href="/profile/${comment.user__username}/" class="comment-username"><strong>${comment.user__username}</strong></a>
+                                    <p>${comment.content}</p>
+                                    <small>${new Date(comment.created_at).toLocaleString()}</small>
+                                    <div class="comment-actions">
+                                        <div class="comment-action-group">
+                                            <a href="#" class="comment-action comment-action-like" data-action="like"><i class="fas fa-heart"></i></a>
+                                            <span class="comment-action-count like-count">${comment.like_count || 0}</span>
+                                        </div>
+                                        <div class="comment-action-group">
+                                            <a href="#" class="comment-action comment-action-share" data-action="share"><i class="fas fa-retweet"></i></a>
+                                            <span class="comment-action-count share-count">${comment.share_count || 0}</span>
+                                        </div>
+                                        <div class="comment-action-group">
+                                            <a href="#" class="comment-action comment-action-comment" data-action="comment"><i class="fas fa-comment-dots"></i></a>
+                                            <span class="comment-action-count comment-count">${comment.reply_count || 0}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            commentList.appendChild(commentDiv);
+                        });
+                        attachCommentActionListeners();
+                    } else {
+                        commentList.innerHTML = '<p>No comments yet.</p>';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching comments:', error);
+                commentList.innerHTML = '<p>Error loading comments.</p>';
+            });
+    };
 
-    fetch(`/api/tip/${tipId}/comments/`)
-        .then(response => response.json())
-        .then(data => {
-            commentList.innerHTML = '';
-            if (data.comments && data.comments.length > 0) {
-                data.comments.forEach(comment => {
-                    const avatarUrl = comment.user__avatar || DEFAULT_AVATAR_URL;
-                    const commentDiv = document.createElement('div');
-                    commentDiv.className = 'comment';
-                    commentDiv.setAttribute('data-comment-id', comment.id);
-                    commentDiv.innerHTML = `
-                        <img src="${avatarUrl}" alt="${comment.user__username} Avatar" class="comment-avatar" onerror="this.src='${DEFAULT_AVATAR_URL}'">
-                        <div class="comment-content">
-                            <a href="#" class="comment-username"><strong>${comment.user__username}</strong></a>
-                            <p>${comment.content}</p>
-                            <small>${new Date(comment.created_at).toLocaleString()}</small>
-                            <div class="comment-actions">
-                                <div class="comment-action-group">
-                                    <a href="#" class="comment-action comment-action-like" data-action="like"><i class="fas fa-heart"></i></a>
-                                    <span class="comment-action-count like-count">${comment.like_count || 0}</span>
-                                </div>
-                                <div class="comment-action-group">
-                                    <a href="#" class="comment-action comment-action-share" data-action="share"><i class="fas fa-retweet"></i></a>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    commentList.appendChild(commentDiv);
-                });
-                attachCommentActionListeners();
-            } else {
-                commentList.innerHTML = '<p>No comments yet.</p>';
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching comments:', error);
-            commentList.innerHTML = '<p>Error loading comments.</p>';
-        });
+    // Initial fetch
+    fetchComments();
+
+    // Set up real-time comment fetching (every 30 seconds)
+    const commentInterval = setInterval(fetchComments, 30000);
+
+    // Stop polling when the modal is closed
+    const stopPolling = () => {
+        clearInterval(commentInterval);
+    };
+
+    // Attach stopPolling to modal close events
+    const commentModalClose = document.querySelector('.comment-modal-close');
+    commentModalClose.addEventListener('click', function() {
+        stopPolling();
+        commentModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', function(event) {
+        if (event.target === commentModal) {
+            stopPolling();
+            commentModal.style.display = 'none';
+        }
+    });
 
     commentModal.style.display = 'block';
     commentSubmit.dataset.tipId = tipId;
@@ -324,7 +384,8 @@ function attachCommentActionListeners() {
                     alert('An error occurred while sharing the comment.');
                 });
             } else if (actionType === 'comment') {
-                openCommentModal(this.closest('.tip'), tipId, commentId);
+                const tipElement = document.querySelector(`.tip[data-tip-id="${tipId}"]`);
+                openCommentModal(tipElement, tipId, commentId);
             }
         });
     });
