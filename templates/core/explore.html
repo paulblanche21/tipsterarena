@@ -4,160 +4,177 @@
 
 {% block content %}
     <!-- Post Box (Central Feed) -->
-    <div class="post-box">
-        <div class="post-user">
-            {% if request.user.is_authenticated and request.user.userprofile.avatar %}
-                <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar">
-            {% else %}
-                <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
-            {% endif %}
-            <div class="post-username-container">
-                <span class="post-username">{{ request.user.username|default:"Guest" }}</span>
-                <select class="post-audience">
-                    <option value="everyone">Everyone</option>
-                    <option value="followers">Followers</option>
-                </select>
-            </div>
-        </div>
-        <textarea placeholder="Post a Tip..." class="post-input"></textarea>
-        <div class="post-actions">
-            <button class="post-action-btn image"><i class="fas fa-image"></i></button>
-            <button class="post-action-btn gif"><i class="far fa-file-image"></i></button>
-            <button class="post-action-btn poll"><i class="fas fa-chart-bar"></i></button>
-            <button class="post-action-btn emoji"><i class="far fa-smile"></i></button>
-            <button class="post-action-btn location"><i class="fas fa-map-marker-alt"></i></button>
-            <button class="post-action-btn schedule"><i class="fas fa-clock"></i></button>
-            <button class="post-action-btn bold"><i class="fas fa-bold"></i></button>
-            <button class="post-action-btn italic"><i class="fas fa-italic"></i></button>
-        </div>
-        <button class="post-submit">Post</button>
-    </div>
-
-    <!-- Tip Feed for Explore (all tips) -->
-    <div class="tip-feed">
-        {% for tip in tips %}
-            <div class="tip" data-tip-id="{{ tip.id }}">
-                {% if tip.user.userprofile.avatar %}
-                    <img src="{{ tip.user.userprofile.avatar.url }}" alt="{{ tip.user.username }} Avatar" class="tip-avatar">
-                {% else %}
-                    <img src="{% static 'images/default-avatar.png' %}" alt="{{ tip.user.username }} Avatar" class="tip-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
-                {% endif %}
-                <div class="tip-content">
-                    <a href="{% url 'profile' tip.user.username %}" class="tip-username">
-                        <strong>{{ tip.user.username }}</strong>
-                        <span class="user-handle">{{ tip.user.userprofile.handle }}</span>
-                    </a>
-                    {% if tip.sport == 'football' %}⚽{% endif %}
-                    {% if tip.sport == 'golf' %}⛳{% endif %}
-                    {% if tip.sport == 'tennis' %}🎾{% endif %}
-                    {% if tip.sport == 'horse_racing' %}🏇{% endif %}
-                    <p>{{ tip.text }}</p>
-                    <small>{{ tip.created_at|date:"F j, Y, g:i a" }}</small>
-                    <div class="tip-actions">
-                        <div class="tip-action-group">
-                            <a href="#" class="tip-action tip-action-like" data-action="like"><i class="fas fa-heart"></i></a>
-                            <span class="tip-action-count like-count">{{ tip.likes.count|default:"0" }}</span>
-                        </div>
-                        <div class="tip-action-group">
-                            <a href="#" class="tip-action tip-action-share" data-action="share"><i class="fas fa-retweet"></i></a>
-                            <span class="tip-action-count share-count">{{ tip.shares.count|default:"0" }}</span>
-                        </div>
-                        <div class="tip-action-group">
-                            <a href="#" class="tip-action tip-action-comment" data-action="comment"><i class="fas fa-comment-dots"></i></a>
-                            <span class="tip-action-count comment-count">{{ tip.comments.count|default:"0" }}</span>
-                        </div>
-                        <div class="tip-action-spacer"></div>
-                        <div class="tip-action-group">
-                            <a href="#" class="tip-action tip-action-engagement"><i class="fas fa-users"></i></a>
-                            <span class="tip-action-count">{{ tip.engagement|default:"0" }}</span>
-                        </div>
-                        <div class="tip-action-spacer-large"></div>
-                        <div class="tip-action-group">
-                            <a href="#" class="tip-action tip-action-bookmark"><i class="fas fa-bookmark"></i></a>
-                        </div>
-                        <div class="tip-action-group">
-                            <a href="#" class="tip-action tip-action-share-link"><i class="fas fa-arrow-up"></i></a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        {% empty %}
-            <p>No tips yet. Explore and post your own!</p>
-        {% endfor %}
-    </div>
-
-    <!-- Comment Modal (Same as home.html) -->
-    <div class="comment-modal" id="comment-modal">
-        <div class="comment-modal-content">
-            <span class="comment-modal-close">×</span>
-            <!-- Original Tip with Avatar -->
-            <div class="modal-tip">
-                <img src="" alt="User Avatar" class="tip-avatar modal-tip-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
-                <div class="modal-tip-content">
-                    <a href="#" class="tip-username">
-                        <strong class="modal-tip-username"></strong>
-                        <span class="user-handle modal-tip-handle"></span>
-                    </a>
-                    <span class="modal-tip-sport"></span>
-                    <p class="modal-tip-text"></p>
-                    <small class="modal-tip-timestamp"></small>
-                    <div class="tip-actions">
-                        <div class="tip-action-group">
-                            <a href="#" class="tip-action tip-action-like" data-action="like"><i class="fas fa-heart"></i></a>
-                            <span class="tip-action-count like-count"></span>
-                        </div>
-                        <div class="tip-action-group">
-                            <a href="#" class="tip-action tip-action-share" data-action="share"><i class="fas fa-retweet"></i></a>
-                            <span class="tip-action-count share-count"></span>
-                        </div>
-                        <div class="tip-action-group">
-                            <a href="#" class="tip-action tip-action-comment" data-action="comment"><i class="fas fa-comment-dots"></i></a>
-                            <span class="tip-action-count comment-count"></span>
-                        </div>
-                        <div class="tip-action-spacer"></div>
-                        <div class="tip-action-group">
-                            <a href="#" class="tip-action tip-action-engagement"><i class="fas fa-users"></i></a>
-                            <span class="tip-action-count"></span>
-                        </div>
-                        <div class="tip-action-spacer-large"></div>
-                        <div class="tip-action-group">
-                            <a href="#" class="tip-action tip-action-bookmark"><i class="fas fa-bookmark"></i></a>
-                        </div>
-                        <div class="tip-action-group">
-                            <a href="#" class="tip-action tip-action-share-link"><i class="fas fa-arrow-up"></i></a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Replying to Text and Post a Reply Box -->
-            <div class="reply-to-header" style="display: none;">Replying to <span class="reply-to-username"></span></div>
-            <div class="post-reply-box">
+    <div class="content">
+        <div class="post-box">
+            <div class="post-user">
                 {% if request.user.is_authenticated and request.user.userprofile.avatar %}
                     <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar">
                 {% else %}
-                    <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
+                    <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.onerror=null; this.src='/static/images/default-avatar.png';">
                 {% endif %}
-                <div class="post-reply-content">
-                    <div class="post-username-container">
-                        <span class="post-username">{{ request.user.username|default:"Guest" }}</span>
-                    </div>
-                    <textarea placeholder="Post a Reply..." class="post-reply-input"></textarea>
-                    <div class="post-actions">
-                        <button class="post-action-btn image"><i class="fas fa-image"></i></button>
-                        <button class="post-action-btn gif"><i class="far fa-file-image"></i></button>
-                        <button class="post-action-btn poll"><i class="fas fa-chart-bar"></i></button>
-                        <button class="post-action-btn emoji"><i class="far fa-smile"></i></button>
-                        <button class="post-action-btn location"><i class="fas fa-map-marker-alt"></i></button>
-                        <button class="post-action-btn schedule"><i class="fas fa-clock"></i></button>
-                        <button class="post-action-btn bold"><i class="fas fa-bold"></i></button>
-                        <button class="post-action-btn italic"><i class="fas fa-italic"></i></button>
-                    </div>
-                    <button class="post-reply-submit">Reply</button>
+                <div class="post-username-container">
+                    <span class="post-username">{{ request.user.username|default:"Guest" }}</span>
+                    <select class="post-audience">
+                        <option value="everyone">Everyone</option>
+                        <option value="followers">Followers</option>
+                    </select>
                 </div>
             </div>
-            <div class="comment-list"></div>
+            <textarea placeholder="Post a Tip..." class="post-input" maxlength="280"></textarea>
+            <div class="post-footer">
+                <div class="post-actions">
+                    <button class="post-action-btn image"><i class="fas fa-image"></i></button>
+                    <button class="post-action-btn gif"><i class="far fa-file-image"></i></button>
+                    <button class="post-action-btn poll"><i class="fas fa-chart-bar"></i></button>
+                    <button class="post-action-btn emoji"><i class="far fa-smile"></i></button>
+                    <button class="post-action-btn location"><i class="fas fa-map-marker-alt"></i></button>
+                    <button class="post-action-btn schedule"><i class="fas fa-clock"></i></button>
+                    <button class="post-action-btn bold"><i class="fas fa-bold"></i></button>
+                    <button class="post-action-btn italic"><i class="fas fa-italic"></i></button>
+                </div>
+                <div class="post-meta">
+                    <span class="char-count">0/280</span>
+                    <button class="post-submit" disabled>Post</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tip Feed for Explore (all tips) -->
+        <div class="tip-feed">
+            {% for tip in tips %}
+                <div class="tip" data-tip-id="{{ tip.id }}">
+                    {% if tip.user.userprofile.avatar %}
+                        <img src="{{ tip.user.userprofile.avatar.url }}" alt="{{ tip.user.username }} Avatar" class="tip-avatar">
+                    {% else %}
+                        <img src="{% static 'images/default-avatar.png' %}" alt="{{ tip.user.username }} Avatar" class="tip-avatar" onerror="this.onerror=null; this.src='/static/images/default-avatar.png';">
+                    {% endif %}
+                    <div class="tip-content">
+                        <a href="{% url 'profile' tip.user.username %}" class="tip-username">
+                            <strong>{{ tip.user.username }}</strong>
+                            <span class="user-handle">{{ tip.user.userprofile.handle }}</span>
+                        </a>
+                        {% if tip.sport == 'football' %}⚽{% endif %}
+                        {% if tip.sport == 'golf' %}⛳{% endif %}
+                        {% if tip.sport == 'tennis' %}🎾{% endif %}
+                        {% if tip.sport == 'horse_racing' %}🏇{% endif %}
+                        <p>{{ tip.text|safe }}</p>
+                        <small>{{ tip.created_at|date:"F j, Y, g:i a" }}</small>
+                        <div class="tip-actions">
+                            <div class="tip-action-group">
+                                <a href="#" class="tip-action tip-action-like" data-action="like"><i class="fas fa-heart"></i></a>
+                                <span class="tip-action-count like-count">{{ tip.likes.count|default:"0" }}</span>
+                            </div>
+                            <div class="tip-action-group">
+                                <a href="#" class="tip-action tip-action-share" data-action="share"><i class="fas fa-retweet"></i></a>
+                                <span class="tip-action-count share-count">{{ tip.shares.count|default:"0" }}</span>
+                            </div>
+                            <div class="tip-action-group">
+                                <a href="#" class="tip-action tip-action-comment" data-action="comment"><i class="fas fa-comment-dots"></i></a>
+                                <span class="tip-action-count comment-count">{{ tip.comments.count|default:"0" }}</span>
+                            </div>
+                            <div class="tip-action-spacer"></div>
+                            <div class="tip-action-group">
+                                <a href="#" class="tip-action tip-action-engagement"><i class="fas fa-users"></i></a>
+                                <span class="tip-action-count">{{ tip.engagement|default:"0" }}</span>
+                            </div>
+                            <div class="tip-action-spacer-large"></div>
+                            <div class="tip-action-group">
+                                <a href="#" class="tip-action tip-action-bookmark"><i class="fas fa-bookmark"></i></a>
+                            </div>
+                            <div class="tip-action-group">
+                                <a href="#" class="tip-action tip-action-share-link"><i class="fas fa-arrow-up"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <p>No tips yet. Explore and post your own!</p>
+            {% endfor %}
+        </div>
+
+        <!-- Comment Modal (Same as home.html) -->
+        <div class="comment-modal" id="comment-modal">
+            <div class="comment-modal-content">
+                <span class="comment-modal-close">×</span>
+                <!-- Original Tip with Avatar -->
+                <div class="modal-tip">
+                    <img src="" alt="User Avatar" class="tip-avatar modal-tip-avatar" onerror="this.onerror=null; this.src='/static/images/default-avatar.png';">
+                    <div class="modal-tip-content">
+                        <a href="#" class="tip-username">
+                            <strong class="modal-tip-username"></strong>
+                            <span class="user-handle modal-tip-handle"></span>
+                        </a>
+                        <span class="modal-tip-sport"></span>
+                        <p class="modal-tip-text"></p>
+                        <small class="modal-tip-timestamp"></small>
+                        <div class="tip-actions">
+                            <div class="tip-action-group">
+                                <a href="#" class="tip-action tip-action-like" data-action="like"><i class="fas fa-heart"></i></a>
+                                <span class="tip-action-count like-count"></span>
+                            </div>
+                            <div class="tip-action-group">
+                                <a href="#" class="tip-action tip-action-share" data-action="share"><i class="fas fa-retweet"></i></a>
+                                <span class="tip-action-count share-count"></span>
+                            </div>
+                            <div class="tip-action-group">
+                                <a href="#" class="tip-action tip-action-comment" data-action="comment"><i class="fas fa-comment-dots"></i></a>
+                                <span class="tip-action-count comment-count"></span>
+                            </div>
+                            <div class="tip-action-spacer"></div>
+                            <div class="tip-action-group">
+                                <a href="#" class="tip-action tip-action-engagement"><i class="fas fa-users"></i></a>
+                                <span class="tip-action-count"></span>
+                            </div>
+                            <div class="tip-action-spacer-large"></div>
+                            <div class="tip-action-group">
+                                <a href="#" class="tip-action tip-action-bookmark"><i class="fas fa-bookmark"></i></a>
+                            </div>
+                            <div class="tip-action-group">
+                                <a href="#" class="tip-action tip-action-share-link"><i class="fas fa-arrow-up"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Replying to Text and Post a Reply Box -->
+                <div class="reply-to-header" style="display: none;">Replying to <span class="reply-to-username"></span></div>
+                <div class="post-reply-box">
+                    {% if request.user.is_authenticated and request.user.userprofile.avatar %}
+                        <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar">
+                    {% else %}
+                        <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.onerror=null; this.src='/static/images/default-avatar.png';">
+                    {% endif %}
+                    <div class="post-reply-content">
+                        <div class="post-username-container">
+                            <span class="post-username">{{ request.user.username|default:"Guest" }}</span>
+                        </div>
+                        <textarea placeholder="Post a Reply..." class="post-reply-input"></textarea>
+                        <div class="post-actions">
+                            <button class="post-action-btn image"><i class="fas fa-image"></i></button>
+                            <button class="post-action-btn gif"><i class="far fa-file-image"></i></button>
+                            <button class="post-action-btn poll"><i class="fas fa-chart-bar"></i></button>
+                            <button class="post-action-btn emoji"><i class="far fa-smile"></i></button>
+                            <button class="post-action-btn location"><i class="fas fa-map-marker-alt"></i></button>
+                            <button class="post-action-btn schedule"><i class="fas fa-clock"></i></button>
+                            <button class="post-action-btn bold"><i class="fas fa-bold"></i></button>
+                            <button class="post-action-btn italic"><i class="fas fa-italic"></i></button>
+                        </div>
+                        <button class="post-reply-submit">Reply</button>
+                    </div>
+                </div>
+                <div class="comment-list"></div>
+            </div>
+        </div>
+        <div id="success-popup" class="success-popup">
+            <div class="success-popup-content">
+                <span class="success-popup-close">×</span>
+                <p>Tip posted successfully!</p>
+            </div>
         </div>
     </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/upcoming-events.js' %}" type="module"></script>
 {% endblock %}
 
 {% block upcoming_events %}
@@ -165,39 +182,23 @@
     <h3>Upcoming Events</h3>
     <div class="carousel-container">
         <div class="carousel-slide active" data-sport="football">
-            <div class="event-list">
-                <p class="event-item"><span class="sport-icon">⚽</span> Football: Premier League - Manchester United vs. Tottenham, Mar 12, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Football: La Liga - Real Madrid vs. Barcelona, Mar 15, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Football: Champions League - Bayern Munich vs. PSG, Mar 16, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Football: FA Cup - Chelsea vs. Arsenal, Mar 17, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Football: Serie A - Juventus vs. Inter Milan, Mar 18, 2025</p>
+            <div class="event-list" id="football-events">
+                <p>Loading football fixtures...</p>
             </div>
         </div>
         <div class="carousel-slide" data-sport="golf">
-            <div class="event-list">
-                <p class="event-item"><span class="sport-icon">⛳</span> Golf: PGA Championship, Mar 20-23, 2025</p>
-                <p class="event-item"><span class="sport-icon">⛳</span> Golf: The Masters Preview, Mar 25, 2025</p>
-                <p class="event-item"><span class="sport-icon">⛳</span> Golf: US Open Qualifier, Mar 26, 2025</p>
-                <p class="event-item"><span class="sport-icon">⛳</span> Golf: Open Championship Warm-Up, Mar 27, 2025</p>
-                <p class="event-item"><span class="sport-icon">⛳</span> Golf: Ryder Cup Trials, Mar 28, 2025</p>
+            <div class="event-list" id="golf-events">
+                <p>Loading golf fixtures...</p>
             </div>
         </div>
         <div class="carousel-slide" data-sport="tennis">
-            <div class="event-list">
-                <p class="event-item"><span class="sport-icon">🎾</span> Tennis: Australian Open Qualifiers, Mar 10-12, 2025</p>
-                <p class="event-item"><span class="sport-icon">🎾</span> Tennis: Wimbledon Warm-Up, Mar 18, 2025</p>
-                <p class="event-item"><span class="sport-icon">🎾</span> Tennis: French Open Trials, Mar 20, 2025</p>
-                <p class="event-item"><span class="sport-icon">🎾</span> Tennis: US Open Prep, Mar 21, 2025</p>
-                <p class="event-item"><span class="sport-icon">🎾</span> Tennis: ATP Finals Qualifier, Mar 22, 2025</p>
+            <div class="event-list" id="tennis-events">
+                <p>Loading tennis fixtures...</p>
             </div>
         </div>
         <div class="carousel-slide" data-sport="horse_racing">
-            <div class="event-list">
-                <p class="event-item"><span class="sport-icon">🏇</span> Horse Racing: Grand National Trials, Mar 14, 2025</p>
-                <p class="event-item"><span class="sport-icon">🏇</span> Horse Racing: Cheltenham Festival, Mar 19, 2025</p>
-                <p class="event-item"><span class="sport-icon">🏇</span> Horse Racing: Kentucky Derby Prep, Mar 21, 2025</p>
-                <p class="event-item"><span class="sport-icon">🏇</span> Horse Racing: Preakness Stakes Warm-Up, Mar 22, 2025</p>
-                <p class="event-item"><span class="sport-icon">🏇</span> Horse Racing: Belmont Stakes Trials, Mar 23, 2025</p>
+            <div class="event-list" id="horse-racing-events">
+                <p>Loading horse racing fixtures...</p>
             </div>
         </div>
     </div>
@@ -216,7 +217,7 @@
     <h3>Trending Tips</h3>
     <div class="trending-tips-list">
         <div class="trending-tip">
-            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
+            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.onerror=null; this.src='/static/images/default-avatar.png';">
             <div class="tip-details">
                 <a href="#" class="tip-username"><strong>@TennisGuru</strong></a>
                 <p class="tip-text">Djokovic to win Australian Open - Odds: 3.5</p>
@@ -224,7 +225,7 @@
             <span class="tip-likes"><i class="fas fa-heart"></i> 250</span>
         </div>
         <div class="trending-tip">
-            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
+            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.onerror=null; this.src='/static/images/default-avatar.png';">
             <div class="tip-details">
                 <a href="#" class="tip-username"><strong>@AceBettor</strong></a>
                 <p class="tip-text">Swiatek top 4 at French Open - Odds: 2.0</p>
@@ -232,7 +233,7 @@
             <span class="tip-likes"><i class="fas fa-heart"></i> 180</span>
         </div>
         <div class="trending-tip">
-            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
+            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.onerror=null; this.src='/static/images/default-avatar.png';">
             <div class="tip-details">
                 <a href="#" class="tip-username"><strong>@GoalMaster</strong></a>
                 <p class="tip-text">Man Utd to beat Tottenham - Odds: 2.8</p>
@@ -240,7 +241,7 @@
             <span class="tip-likes"><i class="fas fa-heart"></i> 200</span>
         </div>
         <div class="trending-tip">
-            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
+            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.onerror=null; this.src='/static/images/default-avatar.png';">
             <div class="tip-details">
                 <a href="#" class="tip-username"><strong>@RaceKing</strong></a>
                 <p class="tip-text">Horse X to win Grand National - Odds: 8.0</p>

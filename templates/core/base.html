@@ -66,29 +66,10 @@
             <input type="text" placeholder="Search Tipster Arena..." class="search-input">
             <div class="sidebar-scrollable">
                 {% block upcoming_events %}
-                <!-- Default Upcoming Events Carousel -->
+                <!-- Default Upcoming Events (No Carousel) -->
                 <div class="sidebar-card" data-card="upcoming-events">
                     <h3>Upcoming Events</h3>
-                    <div class="carousel">
-                        <div class="carousel-slide active">
-                            <p><span class="sport-icon">⚽</span> </p>
-                        </div>
-                        <div class="carousel-slide">
-                            <p><span class="sport-icon">⛳</span> </p>
-                        </div>
-                        <div class="carousel-slide">
-                            <p><span class="sport-icon">🎾</span> </p>
-                        </div>
-                        <div class="carousel-slide">
-                            <p><span class="sport-icon">🏇</span> </p>
-                        </div>
-                    </div>
-                    <div class="carousel-dots">
-                        <span class="dot active"></span>
-                        <span class="dot"></span>
-                        <span class="dot"></span>
-                        <span class="dot"></span>
-                    </div>
+                    <p>Events will be displayed here.</p>
                     <a href="#" class="show-more" data-target="upcoming-events">Show more</a>
                 </div>
                 {% endblock %}

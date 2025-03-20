@@ -19,6 +19,11 @@ document.addEventListener('DOMContentLoaded', async function() {
   setupProfileEditing();
   initCarousel();
 
+   // Only initialize carousel if the container exists
+   if (document.querySelector('.carousel-container')) {
+    initCarousel();
+  }
+
   const dynamicEvents = await getDynamicEvents();
 
   // Sidebar population
