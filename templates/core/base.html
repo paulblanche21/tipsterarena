@@ -130,6 +130,14 @@
                         <option value="everyone">Everyone</option>
                         <option value="followers">Followers</option>
                     </select>
+                    {% if not sport %}
+                        <select class="post-sport">
+                            <option value="football">Football</option>
+                            <option value="golf">Golf</option>
+                            <option value="tennis">Tennis</option>
+                            <option value="horse_racing">Horse Racing</option>
+                        </select>
+                    {% endif %}
                 </div>
             </div>
             <textarea placeholder="Post a Tip..." class="post-input"></textarea>

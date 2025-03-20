@@ -115,13 +115,24 @@ def home(request):
     }
     return render(request, 'core/home.html', context)
 
-
 def sport_view(request, sport):
+    # Validate the sport parameter
+    valid_sports = ['football', 'golf', 'tennis', 'horse_racing']
+    if sport not in valid_sports:
+        return render(request, 'core/404.html', status=404)
+
+    # Fetch tips for the specific sport
     tips = Tip.objects.filter(sport=sport).order_by('-created_at')[:20]
     print(f"Sport: {sport}, Tip count: {tips.count()}")
     for tip in tips:
         print(f" - {tip.sport}: {tip.text}")
-    return render(request, f'core/sport_{sport}.html', {'tips': tips, 'sport': sport})
+
+    # Pass the sport to the template to pre-select and disable the dropdown
+    return render(request, f'core/sport_{sport}.html', {
+        'tips': tips,
+        'sport': sport,  # Pass the sport to pre-select and disable the dropdown
+    })
+
 
 def explore(request):
     tips = Tip.objects.all().order_by('-created_at')[:20]  # Latest 20 tips from all users, X-like Explore

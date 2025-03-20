@@ -189,41 +189,15 @@
 
 {% block trending_tips %}
 <div class="sidebar-card trending-tips-card" data-card="trending-tips" style="background-color: white;">
-    <h3>Trending Tennis Tips</h3>
+    <h3>Trending Tips</h3>
     <div class="trending-tips-list">
-        <div class="trending-tip">
-            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
-            <div class="tip-details">
-                <a href="#" class="tip-username"><strong>@TennisGuru</strong></a>
-                <p class="tip-text">Djokovic to win Australian Open - Odds: 3.5</p>
-            </div>
-            <span class="tip-likes"><i class="fas fa-heart"></i> 250</span>
-        </div>
-        <div class="trending-tip">
-            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
-            <div class="tip-details">
-                <a href="#" class="tip-username"><strong>@AceBettor</strong></a>
-                <p class="tip-text">Swiatek top 4 at French Open - Odds: 2.0</p>
-            </div>
-            <span class="tip-likes"><i class="fas fa-heart"></i> 180</span>
-        </div>
-        <div class="trending-tip">
-            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
-            <div class="tip-details">
-                <a href="#" class="tip-username"><strong>@RacketMaster</strong></a>
-                <p class="tip-text">Nadal to win Monte-Carlo - Odds: 4.0</p>
-            </div>
-            <span class="tip-likes"><i class="fas fa-heart"></i> 150</span>
-        </div>
-        <div class="trending-tip">
-            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
-            <div class="tip-details">
-                <a href="#" class="tip-username"><strong>@ServeQueen</strong></a>
-                <p class="tip-text">Sabalenka top 8 at Wimbledon - Odds: 3.0</p>
-            </div>
-            <span class="tip-likes"><i class="fas fa-heart"></i> 120</span>
-        </div>
+        <p>Loading trending tips...</p>
     </div>
     <a href="#" class="show-more" data-target="trending-tips">Show more</a>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/upcoming-events.js' %}" type="module"></script>
+<script src="{% static 'js/trending-tips.js' %}" type="module"></script>
 {% endblock %}

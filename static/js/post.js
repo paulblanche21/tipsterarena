@@ -131,6 +131,7 @@ export function setupCentralFeedPost() {
     const postSubmitBtn = document.querySelector('.post-box .post-submit');
     const postInput = document.querySelector('.post-box .post-input');
     const postAudience = document.querySelector('.post-box .post-audience');
+    const postSport = document.querySelector('.post-box .post-sport'); // New sport dropdown
     const emojiBtn = document.querySelector('.post-box .post-action-btn.emoji');
     const gifBtn = document.querySelector('.post-box .post-action-btn.gif');
     const imageBtn = document.querySelector('.post-box .post-action-btn.image');
@@ -141,12 +142,13 @@ export function setupCentralFeedPost() {
     const scheduleBtn = document.querySelector('.post-box .post-action-btn.schedule');
     const previewDiv = document.querySelector('.post-box .post-preview');
 
-    if (!postSubmitBtn || !postInput || !postAudience || !emojiBtn || !gifBtn || !imageBtn || !locationBtn || !boldBtn || !italicBtn || !pollBtn || !scheduleBtn || !previewDiv) {
+    if (!postSubmitBtn || !postInput || !postAudience || !postSport || !emojiBtn || !gifBtn || !imageBtn || !locationBtn || !boldBtn || !italicBtn || !pollBtn || !scheduleBtn || !previewDiv) {
         console.warn('setupCentralFeedPost: One or more required DOM elements are missing.');
         console.log({
             postSubmitBtn: !!postSubmitBtn,
             postInput: !!postInput,
             postAudience: !!postAudience,
+            postSport: !!postSport,
             emojiBtn: !!emojiBtn,
             gifBtn: !!gifBtn,
             imageBtn: !!imageBtn,
@@ -223,7 +225,7 @@ export function setupCentralFeedPost() {
                 const previewImg = previewDiv.querySelector('.preview-media');
                 previewImg.src = event.target.result;
                 previewDiv.style.display = 'block';
-                postInput.dataset.imageFile = 'true'; // Flag to indicate an image file is selected
+                postInput.dataset.imageFile = 'true';
             };
             reader.readAsDataURL(file);
         }
@@ -260,6 +262,7 @@ export function setupCentralFeedPost() {
     postSubmitBtn.addEventListener('click', function() {
         const text = postInput.value.trim();
         const audience = postAudience.value;
+        const sport = postSport.value; // Get the selected sport
 
         if (!text) {
             alert('Please enter a tip before posting.');
@@ -269,7 +272,7 @@ export function setupCentralFeedPost() {
         const formData = new FormData();
         formData.append('text', text);
         formData.append('audience', audience);
-        formData.append('sport', 'golf');
+        formData.append('sport', sport); // Use the selected sport
 
         // Append optional fields if they exist
         if (postInput.dataset.imageFile && imageInput.files[0]) {
@@ -311,14 +314,19 @@ export function setupCentralFeedPost() {
                 newTip.innerHTML = `
                     <img src="${data.tip.avatar}" alt="${data.tip.username} Avatar" class="tip-avatar">
                     <div class="tip-content">
-                        <a href="/profile/${data.tip.username}/" class="tip-username">
-                            <strong>${data.tip.username}</strong>
-                            <span class="user-handle">${data.tip.handle}</span>
-                        </a>
-                        <p>${data.tip.text}</p>
-                        ${data.tip.image ? `<img src="${data.tip.image}" alt="Tip Image" class="tip-image">` : ''}
-                        ${data.tip.gif ? `<img src="${data.tip.gif}" alt="Tip GIF" class="tip-image">` : ''}
-                        <small>${new Date(data.tip.created_at).toLocaleString()}</small>
+                        <div class="tip-header">
+                            <a href="/profile/${data.tip.username}/" class="tip-username">
+                                <strong>${data.tip.username}</strong>
+                                <span class="user-handle">${data.tip.handle}</span>
+                            </a>
+                            ${data.tip.sport === 'football' ? '⚽' : data.tip.sport === 'golf' ? '⛳' : data.tip.sport === 'tennis' ? '🎾' : data.tip.sport === 'horse_racing' ? '🏇' : ''}
+                        </div>
+                        <div class="tip-body">
+                            <p>${data.tip.text}</p>
+                            ${data.tip.image ? `<img src="${data.tip.image}" alt="Tip Image" class="tip-image">` : ''}
+                            ${data.tip.gif ? `<img src="${data.tip.gif}" alt="Tip GIF" class="tip-image">` : ''}
+                        </div>
+                        <small class="tip-timestamp">${new Date(data.tip.created_at).toLocaleString()}</small>
                     </div>
                 `;
                 tipFeed.insertBefore(newTip, tipFeed.firstChild);
@@ -345,6 +353,7 @@ export function setupPostModal() {
             const modalSubmitBtn = postModal.querySelector('.post-submit');
             const modalInput = postModal.querySelector('.post-input');
             const modalAudience = postModal.querySelector('.post-audience');
+            const modalSport = postModal.querySelector('.post-sport'); // New sport dropdown
             const modalBoldBtn = postModal.querySelector('.post-action-btn.bold');
             const modalItalicBtn = postModal.querySelector('.post-action-btn.italic');
             const modalImageBtn = postModal.querySelector('.post-action-btn.image');
@@ -352,7 +361,7 @@ export function setupPostModal() {
             const modalLocationBtn = postModal.querySelector('.post-action-btn.location');
             const modalPreviewDiv = postModal.querySelector('.post-preview');
 
-            if (modalSubmitBtn && modalInput && modalAudience && modalBoldBtn && modalItalicBtn && modalImageBtn && modalGifBtn && modalLocationBtn && modalPreviewDiv) {
+            if (modalSubmitBtn && modalInput && modalAudience && modalSport && modalBoldBtn && modalItalicBtn && modalImageBtn && modalGifBtn && modalLocationBtn && modalPreviewDiv) {
                 // Bold button functionality for modal
                 modalBoldBtn.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -449,9 +458,11 @@ export function setupPostModal() {
 function handleModalPostSubmit() {
     const modalInput = this.closest('.post-modal-content').querySelector('.post-input');
     const modalAudience = this.closest('.post-modal-content').querySelector('.post-audience');
+    const modalSport = this.closest('.post-modal-content').querySelector('.post-sport'); // New sport dropdown
     const modalPreviewDiv = this.closest('.post-modal-content').querySelector('.post-preview');
     const text = modalInput.value.trim();
     const audience = modalAudience.value;
+    const sport = modalSport.value; // Get the selected sport
 
     if (!text) {
         alert('Please enter a tip before posting.');
@@ -461,7 +472,7 @@ function handleModalPostSubmit() {
     const formData = new FormData();
     formData.append('text', text);
     formData.append('audience', audience);
-    formData.append('sport', 'golf');
+    formData.append('sport', sport); // Use the selected sport
 
     // Append optional fields if they exist
     const modalImageInput = document.querySelectorAll('input[type="file"]')[1];

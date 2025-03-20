@@ -1,132 +1,39 @@
 /* Tip Hover Effect (X-like light grey) */
 .tip {
-    background-color: var(--secondary-bg);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    padding: var(--padding-small);
-    box-shadow: var(--shadow-light);
-    margin-bottom: var(--margin-small);
-    color: var(--primary-bg);
-    transition: box-shadow 0.2s, background-color 0.2s; /* Added background-color transition */
+    background-color: var(--secondary-bg); /* #ffffff */
+    border: 1px solid var(--border-color); /* #e1e8ed */
+    border-radius: var(--border-radius); /* 12px */
+    padding: var(--padding-small); /* 12px */
+    margin-bottom: var(--margin-small); /* 10px */
+    color: var(--primary-bg); /* #001f3f */
+    transition: box-shadow 0.2s, background-color 0.2s;
     display: flex;
     align-items: flex-start;
-    cursor: pointer; /* Indicate clickability */
+    cursor: pointer;
 }
-
 
 .tip:hover {
     background-color: #f5f8fa; /* Light grey like X */
-    box-shadow: var(--shadow-hover);
+    box-shadow: var(--shadow-hover); /* 0 2px 4px rgba(0, 0, 0, 0.15) */
 }
 
-
-/* Tip Actions Styling */
-.tip-actions {
-    margin-top: 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+/* Tip Feed */
+.tip-feed {
+    width: calc(100% - 20px); /* 650px - 20px = 630px */
+    margin: 0 10px 10px 10px;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-.tip-action {
-    color: var(--gray-light) !important;  /* Default grey color */
-    text-decoration: none;
-    font-size: 1.2rem;
-    transition: color 0.2s, background-color 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%; /* Circular buttons */
-}
-
-/* Unique hover spotlight colors for each icon */
-.tip-action-like:hover {
-    color: #f91880; /* Pink for like */
-    background-color: rgba(249, 24, 128, 0.1); /* Light pink spotlight */
-}
-
-.tip-action-retweet:hover {
-    color: #00ba7c; /* Green for retweet */
-    background-color: rgba(0, 186, 124, 0.1); /* Light green spotlight */
-}
-
-
-.tip-action-comment:hover {
-    color: var(--twitter-blue); /* Blue for comment */
-    background-color: rgba(29, 161, 242, 0.1); /* Light blue spotlight */
-}
-
-.tip-action-engagement:hover {
-    color: #ffad1f; /* Yellow for engagement (users) */
-    background-color: rgba(255, 173, 31, 0.1); /* Light yellow spotlight */
-}
-
-.tip-action-bookmark:hover {
-    color: #1d9bf0; /* Blue for bookmark */
-    background-color: rgba(29, 155, 240, 0.1); /* Light blue spotlight */
-}
-
-.tip-action-share:hover {
-    color: #17bf63; /* Green for share */
-    background-color: rgba(23, 191, 99, 0.1); /* Light green spotlight */
-}
-
-.tip-action i {
-    vertical-align: middle;
-}
-
-/* Count styling */
-.tip-action-count {
-    font-size: 0.9rem;
-    color: var(--gray-light); /* Grey color for counts */
-    margin-right: 0.75rem; /* More space between count and next icon */
-}
-
-.tip-action-counts span {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-.tip-action-counts i {
-    font-size: 0.9rem;
-    color: var(--gray-light); /* Match text color */
-}
-
-/* Group for each icon and its count */
-.tip-action-group {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem; /* Space between icon and count */
-}
-
-/* Spacer to push bookmark and share to the right */
-.tip-action-spacer {
-    flex-grow: 0.5; /* Takes up remaining space to push bookmark and share to the right */
-}
-
-.tip-action-spacer-large {
-    flex-grow: 1; /* Full space to push bookmark and share to the right */
-}
-
-.tip-action-like.liked i {
-    color: #ff4136; /* Red heart when liked */
-}
-
-.tip-action-share.shared i {
-    color: #1da1f2; /* Twitter-blue when shared */
-}
-
-
-/* Tip Avatar (Circular for now, can be football-shaped with an image mask) */
+/* Tip Avatar */
 .tip-avatar {
     width: 40px;
     height: 40px;
     border-radius: 50%;
     object-fit: cover;
     background-color: #f0f0f0; /* Fallback background */
+    margin-right: 12px;
+    flex-shrink: 0;
 }
 
 .tip-avatar.modal-tip-avatar {
@@ -136,15 +43,164 @@
     margin-right: 12px;
     flex-shrink: 0;
     object-fit: cover;
-    display: block; /* Ensure it’s visible */
+    display: block;
 }
 
+/* Tip Content */
 .tip-content {
     flex: 1;
-    margin-left: 5px; /* Space between avatar and content */
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
 }
 
-/* Tip Details */
+/* Tip Header */
+.tip-header {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.tip-username {
+    color: var(--primary-bg); /* #001f3f */
+    font-weight: 600;
+    font-size: 16px;
+    text-decoration: none;
+}
+
+.tip-username:hover {
+    color: var(--red-accent); /* #ff4136 */
+    text-decoration: underline;
+}
+
+.user-handle {
+    color: var(--gray-light); /* #666666 */
+    font-size: 14px;
+    margin-left: 5px;
+}
+
+/* Tip Body */
+.tip-body {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.tip-body p {
+    margin: 0;
+    font-size: var(--font-size-base); /* 14px */
+    color: var(--primary-bg); /* #001f3f */
+    line-height: 1.4;
+}
+
+/* Tip Timestamp */
+.tip-timestamp {
+    display: block;
+    font-size: 12px;
+    color: var(--gray-light); /* #666666 */
+    margin-top: 5px;
+}
+
+/* Tip Image */
+.tip-image {
+    border-radius: 8px;
+    max-height: 300px;
+    object-fit: contain;
+    margin-top: var(--margin-small); /* 10px */
+}
+
+/* Tip Actions */
+.tip-actions {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Adjusted for better spacing */
+}
+
+.tip-action {
+    color: var(--gray-light) !important; /* #666666 */
+    text-decoration: none;
+    font-size: 1.2rem;
+    transition: color 0.2s, background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+.tip-action:hover {
+    color: var(--red-accent); /* #ff4136 */
+}
+
+/* Unique hover spotlight colors for each icon */
+.tip-action-like:hover {
+    color: #f91880 !important; /* Pink for like */
+    background-color: rgba(249, 24, 128, 0.1);
+}
+
+.tip-action-retweet:hover {
+    color: #00ba7c !important; /* Green for retweet */
+    background-color: rgba(0, 186, 124, 0.1);
+}
+
+.tip-action-comment:hover {
+    color: var(--twitter-blue) !important; /* Blue for comment */
+    background-color: rgba(29, 161, 242, 0.1);
+}
+
+.tip-action-engagement:hover {
+    color: #ffad1f !important; /* Yellow for engagement */
+    background-color: rgba(255, 173, 31, 0.1);
+}
+
+.tip-action-bookmark:hover {
+    color: #1d9bf0 !important; /* Blue for bookmark */
+    background-color: rgba(29, 155, 240, 0.1);
+}
+
+.tip-action-share:hover {
+    color: #17bf63 !important; /* Green for share */
+    background-color: rgba(23, 191, 99, 0.1);
+}
+
+.tip-action i {
+    vertical-align: middle;
+}
+
+.tip-action-like.liked i {
+    color: #ff4136 !important; /* Red heart when liked */
+}
+
+.tip-action-share.shared i {
+    color: #1da1f2 !important; /* Twitter-blue when shared */
+}
+
+/* Tip Action Counts */
+.tip-action-count {
+    font-size: 0.9rem;
+    color: var(--gray-light); /* #666666 */
+    margin-right: 0.75rem;
+}
+
+/* Tip Action Group */
+.tip-action-group {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* Spacers */
+.tip-action-spacer {
+    flex-grow: 0.5;
+}
+
+.tip-action-spacer-large {
+    flex-grow: 1;
+}
+
+/* Tip Details (for other contexts like trending tips) */
 .tip-details {
     flex: 1;
     display: flex;
@@ -161,19 +217,7 @@
     margin-bottom: 4px;
 }
 
-.tip-feed {
-    width: calc(100% - 20px);             /* 650px - 20px = 630px */
-    margin: 0 10px 10px 10px;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-.tip-image {
-    border-radius: 8px;
-    max-height: 300px;
-    object-fit: cover;
-}
-
+/* Tip Item (for lists like trending tips) */
 .tip-item {
     display: flex;
     align-items: flex-start;
@@ -214,11 +258,7 @@
 }
 
 .tip-item:last-child {
-    border-bottom: none; /* Remove border from the last item */
-}
-
-.tip:hover {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    border-bottom: none;
 }
 
 /* Tip List (for expanded view) */
@@ -229,44 +269,7 @@
     margin-top: 10px;
 }
 
-
-.tip p {
-    margin: 5px 0;
-    line-height: 1.4;
-}
-
-.tip small {
-    color: #666666;
-    font-size: 12px;
-}
-
-.tip strong {
-    color: #000000;
-    font-weight: 600;
-    text-decoration: none;
-}
-
-.tip strong:hover {
-    text-decoration: underline;
-}
-
-.tip-username {
-    color: #000;
-    font-weight: bold;
-    text-decoration: none;
-}
-
-.tip-header {
-    display: flex;
-    align-items: center;
-    gap: 8px; /* Space between username, handle, and date */
-}
-
-.tip-username:hover {
-    text-decoration: underline;
-    color: (var(--black));
-}
-
+/* Tip Text */
 .tip-text {
     margin: 0;
     font-size: 14px;
@@ -283,5 +286,5 @@
 }
 
 .tip-likes i {
-    color: #ff4d4f; /* Red heart color to match screenshot */
+    color: #ff4d4f; /* Red heart */
 }
