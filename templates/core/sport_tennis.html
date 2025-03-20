@@ -8,9 +8,9 @@
         <div class="post-box">
             <div class="post-user">
                 {% if request.user.is_authenticated and request.user.userprofile.avatar %}
-                    <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
+                    <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar">
                 {% else %}
-                    <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
+                    <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.onerror=null; this.src='/static/images/default-avatar.png';">
                 {% endif %}
                 <div class="post-username-container">
                     <span class="post-username">{{ request.user.username|default:"Guest" }}</span>
@@ -20,18 +20,23 @@
                     </select>
                 </div>
             </div>
-            <textarea placeholder="Post a Tennis Tip..." class="post-input"></textarea>
-            <div class="post-actions">
-                <button class="post-action-btn image"><i class="fas fa-image"></i></button>
-                <button class="post-action-btn gif"><i class="far fa-file-image"></i></button>
-                <button class="post-action-btn poll"><i class="fas fa-chart-bar"></i></button>
-                <button class="post-action-btn emoji"><i class="far fa-smile"></i></button>
-                <button class="post-action-btn location"><i class="fas fa-map-marker-alt"></i></button>
-                <button class="post-action-btn schedule"><i class="fas fa-clock"></i></button>
-                <button class="post-action-btn bold"><i class="fas fa-bold"></i></button>
-                <button class="post-action-btn italic"><i class="fas fa-italic"></i></button>
+            <textarea placeholder="Post a Tip..." class="post-input" maxlength="280"></textarea>
+            <div class="post-footer">
+                <div class="post-actions">
+                    <button class="post-action-btn image"><i class="fas fa-image"></i></button>
+                    <button class="post-action-btn gif"><i class="far fa-file-image"></i></button>
+                    <button class="post-action-btn poll"><i class="fas fa-chart-bar"></i></button>
+                    <button class="post-action-btn emoji"><i class="far fa-smile"></i></button>
+                    <button class="post-action-btn location"><i class="fas fa-map-marker-alt"></i></button>
+                    <button class="post-action-btn schedule"><i class="fas fa-clock"></i></button>
+                    <button class="post-action-btn bold"><i class="fas fa-bold"></i></button>
+                    <button class="post-action-btn italic"><i class="fas fa-italic"></i></button>
+                </div>
+                <div class="post-meta">
+                    <span class="char-count">0/280</span>
+                    <button class="post-submit" disabled>Post</button>
+                </div>
             </div>
-            <button class="post-submit">Post</button>
         </div>
 
         <!-- Tip Feed for Tennis -->

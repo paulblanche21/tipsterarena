@@ -9,9 +9,6 @@ i {
     font-style: italic;
 }
 
-
-
-
 .char-count {
     color: #666666;
     font-size: 12px;
@@ -41,7 +38,6 @@ i {
     margin-top: 8px;
     display: flex;
     gap: 8px; /* Slightly larger gap for better spacing */
-    flex-wrap: wrap;
     align-items: center; /* Vertically center icons */
     position:relative
 }
@@ -212,11 +208,14 @@ i {
     justify-content: space-between;
     align-items: center;
     margin-top: 10px;
+    flex-wrap: nowrap; /* Prevent wrapping */
 }
+
 .post-meta {
     display: flex;
     align-items: center;
     gap: 10px;
+    flex-shrink: 0; /* Prevent shrinking to ensure it stays on the same line */
 }
 
 .post-submit:disabled {
@@ -336,8 +335,6 @@ i {
 .post-audience:hover {
     border-color: #ff4136;
 }
-
-
 
 .success-popup {
     display: none;
