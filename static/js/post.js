@@ -128,10 +128,12 @@ function showGifModal(textarea, previewDiv) {
 }
 
 export function setupCentralFeedPost() {
+    console.log('setupCentralFeedPost called');
+    const postBox = document.querySelector('.post-box');
     const postSubmitBtn = document.querySelector('.post-box .post-submit');
     const postInput = document.querySelector('.post-box .post-input');
     const postAudience = document.querySelector('.post-box .post-audience');
-    const postSport = document.querySelector('.post-box .post-sport'); // New sport dropdown
+    const postSport = document.querySelector('.post-box .post-sport'); // May be null on sport pages
     const emojiBtn = document.querySelector('.post-box .post-action-btn.emoji');
     const gifBtn = document.querySelector('.post-box .post-action-btn.gif');
     const imageBtn = document.querySelector('.post-box .post-action-btn.image');
@@ -142,9 +144,11 @@ export function setupCentralFeedPost() {
     const scheduleBtn = document.querySelector('.post-box .post-action-btn.schedule');
     const previewDiv = document.querySelector('.post-box .post-preview');
 
-    if (!postSubmitBtn || !postInput || !postAudience || !postSport || !emojiBtn || !gifBtn || !imageBtn || !locationBtn || !boldBtn || !italicBtn || !pollBtn || !scheduleBtn || !previewDiv) {
+    // Remove the requirement for postSport in the check
+    if (!postBox || !postSubmitBtn || !postInput || !postAudience || !emojiBtn || !gifBtn || !imageBtn || !locationBtn || !boldBtn || !italicBtn || !pollBtn || !scheduleBtn || !previewDiv) {
         console.warn('setupCentralFeedPost: One or more required DOM elements are missing.');
         console.log({
+            postBox: !!postBox,
             postSubmitBtn: !!postSubmitBtn,
             postInput: !!postInput,
             postAudience: !!postAudience,
@@ -262,17 +266,24 @@ export function setupCentralFeedPost() {
     postSubmitBtn.addEventListener('click', function() {
         const text = postInput.value.trim();
         const audience = postAudience.value;
-        const sport = postSport.value; // Get the selected sport
+        // Use the dropdown if present (Home/Explore), otherwise use data-sport (sport pages)
+        const sport = postSport ? postSport.value : postBox.dataset.sport;
+        console.log('Sport for posting:', sport); // Debug log
 
         if (!text) {
             alert('Please enter a tip before posting.');
             return;
         }
 
+        if (!sport) {
+            alert('Sport is not defined. Please select a sport or ensure the page is configured correctly.');
+            return;
+        }
+
         const formData = new FormData();
         formData.append('text', text);
         formData.append('audience', audience);
-        formData.append('sport', sport); // Use the selected sport
+        formData.append('sport', sport); // Use the determined sport
 
         // Append optional fields if they exist
         if (postInput.dataset.imageFile && imageInput.files[0]) {
@@ -353,7 +364,7 @@ export function setupPostModal() {
             const modalSubmitBtn = postModal.querySelector('.post-submit');
             const modalInput = postModal.querySelector('.post-input');
             const modalAudience = postModal.querySelector('.post-audience');
-            const modalSport = postModal.querySelector('.post-sport'); // New sport dropdown
+            const modalSport = postModal.querySelector('.post-sport'); // May be null on sport pages
             const modalBoldBtn = postModal.querySelector('.post-action-btn.bold');
             const modalItalicBtn = postModal.querySelector('.post-action-btn.italic');
             const modalImageBtn = postModal.querySelector('.post-action-btn.image');
@@ -361,83 +372,99 @@ export function setupPostModal() {
             const modalLocationBtn = postModal.querySelector('.post-action-btn.location');
             const modalPreviewDiv = postModal.querySelector('.post-preview');
 
-            if (modalSubmitBtn && modalInput && modalAudience && modalSport && modalBoldBtn && modalItalicBtn && modalImageBtn && modalGifBtn && modalLocationBtn && modalPreviewDiv) {
-                // Bold button functionality for modal
-                modalBoldBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    applyFormatting(modalInput, 'b');
+            // Remove the requirement for modalSport in the check
+            if (!modalSubmitBtn || !modalInput || !modalAudience || !modalBoldBtn || !modalItalicBtn || !modalImageBtn || !modalGifBtn || !modalLocationBtn || !modalPreviewDiv) {
+                console.warn('setupPostModal: One or more required DOM elements are missing.');
+                console.log({
+                    modalSubmitBtn: !!modalSubmitBtn,
+                    modalInput: !!modalInput,
+                    modalAudience: !!modalAudience,
+                    modalSport: !!modalSport,
+                    modalBoldBtn: !!modalBoldBtn,
+                    modalItalicBtn: !!modalItalicBtn,
+                    modalImageBtn: !!modalImageBtn,
+                    modalGifBtn: !!modalGifBtn,
+                    modalLocationBtn: !!modalLocationBtn,
+                    modalPreviewDiv: !!modalPreviewDiv
                 });
-
-                // Italic button functionality for modal
-                modalItalicBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    applyFormatting(modalInput, 'i');
-                });
-
-                // Image functionality for modal
-                const modalImageInput = document.createElement('input');
-                modalImageInput.type = 'file';
-                modalImageInput.accept = 'image/*';
-                modalImageInput.style.display = 'none';
-                document.body.appendChild(modalImageInput);
-
-                modalImageBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    modalImageInput.click();
-                });
-
-                modalImageInput.addEventListener('change', (e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = (event) => {
-                            const previewImg = modalPreviewDiv.querySelector('.preview-media');
-                            previewImg.src = event.target.result;
-                            modalPreviewDiv.style.display = 'block';
-                            modalInput.dataset.imageFile = 'true';
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                });
-
-                // GIF functionality for modal
-                modalGifBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    showGifModal(modalInput, modalPreviewDiv);
-                });
-
-                // Remove preview functionality for modal
-                const modalRemovePreviewBtn = modalPreviewDiv.querySelector('.remove-preview');
-                modalRemovePreviewBtn.addEventListener('click', () => {
-                    modalPreviewDiv.style.display = 'none';
-                    modalInput.dataset.gifUrl = '';
-                    modalInput.dataset.imageFile = '';
-                    modalImageInput.value = '';
-                });
-
-                // Location functionality for modal
-                let modalLocationData = '';
-                modalLocationBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    if (navigator.geolocation) {
-                        navigator.geolocation.getCurrentPosition(
-                            (position) => {
-                                const { latitude, longitude } = position.coords;
-                                modalLocationData = `${latitude.toFixed(2)},${longitude.toFixed(2)}`;
-                                modalInput.value += ` [Location: ${modalLocationData}]`;
-                            },
-                            (error) => {
-                                alert('Unable to retrieve location: ' + error.message);
-                            }
-                        );
-                    } else {
-                        alert('Geolocation is not supported by your browser.');
-                    }
-                });
-
-                modalSubmitBtn.removeEventListener('click', handleModalPostSubmit);
-                modalSubmitBtn.addEventListener('click', handleModalPostSubmit);
+                return;
             }
+
+            // Bold button functionality for modal
+            modalBoldBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                applyFormatting(modalInput, 'b');
+            });
+
+            // Italic button functionality for modal
+            modalItalicBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                applyFormatting(modalInput, 'i');
+            });
+
+            // Image functionality for modal
+            const modalImageInput = document.createElement('input');
+            modalImageInput.type = 'file';
+            modalImageInput.accept = 'image/*';
+            modalImageInput.style.display = 'none';
+            document.body.appendChild(modalImageInput);
+
+            modalImageBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                modalImageInput.click();
+            });
+
+            modalImageInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const previewImg = modalPreviewDiv.querySelector('.preview-media');
+                        previewImg.src = event.target.result;
+                        modalPreviewDiv.style.display = 'block';
+                        modalInput.dataset.imageFile = 'true';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // GIF functionality for modal
+            modalGifBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                showGifModal(modalInput, modalPreviewDiv);
+            });
+
+            // Remove preview functionality for modal
+            const modalRemovePreviewBtn = modalPreviewDiv.querySelector('.remove-preview');
+            modalRemovePreviewBtn.addEventListener('click', () => {
+                modalPreviewDiv.style.display = 'none';
+                modalInput.dataset.gifUrl = '';
+                modalInput.dataset.imageFile = '';
+                modalImageInput.value = '';
+            });
+
+            // Location functionality for modal
+            let modalLocationData = '';
+            modalLocationBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const { latitude, longitude } = position.coords;
+                            modalLocationData = `${latitude.toFixed(2)},${longitude.toFixed(2)}`;
+                            modalInput.value += ` [Location: ${modalLocationData}]`;
+                        },
+                        (error) => {
+                            alert('Unable to retrieve location: ' + error.message);
+                        }
+                    );
+                } else {
+                    alert('Geolocation is not supported by your browser.');
+                }
+            });
+
+            modalSubmitBtn.removeEventListener('click', handleModalPostSubmit);
+            modalSubmitBtn.addEventListener('click', handleModalPostSubmit);
         });
 
         window.addEventListener('click', function(event) {
@@ -456,23 +483,31 @@ export function setupPostModal() {
 }
 
 function handleModalPostSubmit() {
+    const modal = this.closest('.post-modal');
     const modalInput = this.closest('.post-modal-content').querySelector('.post-input');
     const modalAudience = this.closest('.post-modal-content').querySelector('.post-audience');
-    const modalSport = this.closest('.post-modal-content').querySelector('.post-sport'); // New sport dropdown
+    const modalSport = this.closest('.post-modal-content').querySelector('.post-sport'); // May be null on sport pages
     const modalPreviewDiv = this.closest('.post-modal-content').querySelector('.post-preview');
     const text = modalInput.value.trim();
     const audience = modalAudience.value;
-    const sport = modalSport.value; // Get the selected sport
+    // Use the dropdown if present (Home/Explore), otherwise use data-sport (sport pages)
+    const sport = modalSport ? modalSport.value : modal.dataset.sport;
+    console.log('Modal sport for posting:', sport); // Debug log
 
     if (!text) {
         alert('Please enter a tip before posting.');
         return;
     }
 
+    if (!sport) {
+        alert('Sport is not defined. Please select a sport or ensure the page is configured correctly.');
+        return;
+    }
+
     const formData = new FormData();
     formData.append('text', text);
     formData.append('audience', audience);
-    formData.append('sport', sport); // Use the selected sport
+    formData.append('sport', sport); // Use the determined sport
 
     // Append optional fields if they exist
     const modalImageInput = document.querySelectorAll('input[type="file"]')[1];

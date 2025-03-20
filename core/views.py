@@ -128,7 +128,7 @@ def sport_view(request, sport):
         print(f" - {tip.sport}: {tip.text}")
 
     # Pass the sport to the template to pre-select and disable the dropdown
-    return render(request, f'core/sport_{sport}.html', {
+    return render(request, 'core/sport.html', {
         'tips': tips,
         'sport': sport,  # Pass the sport to pre-select and disable the dropdown
     })
@@ -136,7 +136,18 @@ def sport_view(request, sport):
 
 def explore(request):
     tips = Tip.objects.all().order_by('-created_at')[:20]  # Latest 20 tips from all users, X-like Explore
-    return render(request, 'core/explore.html', {'tips': tips})
+
+    # Ensure UserProfile exists for all users in tips
+    for tip in tips:
+        if not hasattr(tip.user, 'userprofile'):
+            UserProfile.objects.get_or_create(user=tip.user)
+
+    context = {
+        'tips': tips,
+        # No 'sport' variable passed, so dropdown is editable
+    }
+    return render(request, 'core/explore.html', context)
+
 
 @login_required
 @require_POST
@@ -159,7 +170,6 @@ def follow_user(request):
         return JsonResponse({'success': True, 'message': f'Now following {followed_username}'})
     else:
         return JsonResponse({'success': True, 'message': f'Already following {followed_username}'})
-
 
 
 @login_required
@@ -207,7 +217,6 @@ def profile_edit(request, username):
         return render(request, 'core/profile.html', {'form': form, 'user_profile': user_profile})
     
 
-
 @login_required
 @require_POST
 def like_tip(request):
@@ -222,6 +231,7 @@ def like_tip(request):
         like.delete()
         return JsonResponse({'success': True, 'message': 'Like removed', 'like_count': tip.likes.count()})
 
+
 @login_required
 @require_POST
 def share_tip(request):
@@ -235,6 +245,7 @@ def share_tip(request):
     else:
         share.delete()
         return JsonResponse({'success': True, 'message': 'Share removed', 'share_count': tip.shares.count()})
+
 
 @login_required
 @require_POST
@@ -375,7 +386,6 @@ def cookie_policy(request):
 
 def accessibility(request):
     return render(request, 'core/accessibility.html')
-
 
 @login_required
 def suggested_users_api(request):
