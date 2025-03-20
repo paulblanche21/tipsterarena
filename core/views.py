@@ -402,42 +402,52 @@ def suggested_users_api(request):
 def post_tip(request):
     if request.method == 'POST':
         try:
-            # Get data from request
             text = request.POST.get('text')
             audience = request.POST.get('audience', 'everyone')
-            sport = request.POST.get('sport', 'golf')  # Default to 'golf' or set based on your logic
+            sport = request.POST.get('sport', 'golf')
             image = request.FILES.get('image')
-            gif = request.FILES.get('gif')
+            gif_url = request.POST.get('gif')  # Expecting a URL
             location = request.POST.get('location')
             poll = request.POST.get('poll', '{}')
             emojis = request.POST.get('emojis', '{}')
 
-            # Validate required fields
             if not text:
                 return JsonResponse({'success': False, 'error': 'Tip text cannot be empty.'}, status=400)
 
-            # Sanitize text to allow only <b> and <i> tags
             allowed_tags = ['b', 'i']
             sanitized_text = bleach.clean(text, tags=allowed_tags, strip=True)
 
-            # Create the tip
             tip = Tip.objects.create(
                 user=request.user,
                 text=sanitized_text,
                 audience=audience,
                 sport=sport,
                 image=image,
-                gif=gif,
+                gif_url=gif_url,  # Save the URL
                 location=location,
                 poll=poll,
                 emojis=emojis
             )
-            tip.save()  # Explicit save is optional since create() saves automatically
 
-            return JsonResponse({'success': True, 'message': 'Tip posted successfully!'})
+            response_data = {
+                'success': True,
+                'message': 'Tip posted successfully!',
+                'tip': {
+                    'id': tip.id,
+                    'text': tip.text,
+                    'image': tip.image.url if tip.image else None,
+                    'gif': tip.gif_url if tip.gif_url else None,
+                    'created_at': tip.created_at.isoformat(),
+                    'username': tip.user.username,
+                    'handle': tip.user.userprofile.handle or f"@{tip.user.username}",
+                    'avatar': tip.user.userprofile.avatar.url if tip.user.userprofile.avatar else settings.STATIC_URL + 'images/default-avatar.png',
+                }
+            }
+            return JsonResponse(response_data)
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
     return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
+
 
 # Serializer for RaceMeeting
 class RaceMeetingSerializer(ModelSerializer):

@@ -21,6 +21,10 @@
                 </div>
             </div>
             <textarea placeholder="Post a Tip..." class="post-input" maxlength="280"></textarea>
+            <div class="post-preview" style="display: none;">
+                <img src="" alt="Preview" class="preview-media">
+                <button class="remove-preview">×</button>
+            </div>
             <div class="post-footer">
                 <div class="post-actions">
                     <button class="post-action-btn image"><i class="fas fa-image"></i></button>
@@ -58,6 +62,12 @@
                         {% if tip.sport == 'tennis' %}🎾{% endif %}
                         {% if tip.sport == 'horse_racing' %}🏇{% endif %}
                         <p>{{ tip.text|safe }}</p>
+                        {% if tip.image %}
+                            <img src="{{ tip.image.url }}" alt="Tip Image" class="tip-image" style="max-width: 100%; margin-top: 10px;">
+                        {% endif %}
+                        {% if tip.gif_url %}
+                            <img src="{{ tip.gif_url }}" alt="Tip GIF" class="tip-image">
+                        {% endif %}
                         <small>{{ tip.created_at|date:"F j, Y, g:i a" }}</small>
                         <div class="tip-actions">
                             <div class="tip-action-group">

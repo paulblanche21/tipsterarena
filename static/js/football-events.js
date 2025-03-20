@@ -9,7 +9,8 @@ export async function fetchEvents(data, config) {
       competitors: (event.competitions && event.competitions[0]?.competitors) || [],
       venue: (event.competitions && event.competitions[0]?.venue) || { fullName: "Location TBD", address: { city: "Unknown", state: "Unknown" } },
       league: config.name,
-      icon: config.icon
+      icon: config.icon,
+      priority: config.priority || 999  // Add priority from SPORT_CONFIG
   }));
   return events;
 }
@@ -21,7 +22,14 @@ export function formatEventList(events, sportKey, showLocation = false) {
   const currentTime = new Date();
   const upcomingEvents = events
       .filter(event => new Date(event.date) > currentTime)
-      .sort((a, b) => new Date(a.date) - new Date(b.date)); // Sort by date ascending
+      .sort((a, b) => {
+        // Sort by priority first, then by date
+        if (a.priority !== b.priority) {
+          return a.priority - b.priority;
+        }
+        return new Date(a.date) - new Date(b.date);
+      });
+
   if (!upcomingEvents.length) {
       return `<p>No upcoming ${sportKey} fixtures available.</p>`;
   }
@@ -110,6 +118,14 @@ export function formatEventTable(events) {
   if (!events || !events.length) {
     return `<p>No upcoming football fixtures available.</p>`;
   }
+
+  // Sort events by priority and then by date
+  const sortedEvents = events.sort((a, b) => {
+    if (a.priority !== b.priority) {
+      return a.priority - b.priority;
+    }
+    return new Date(a.date) - new Date(b.date);
+  });
 
   // Group events by league
   const eventsByLeague = events.reduce((acc, event) => {

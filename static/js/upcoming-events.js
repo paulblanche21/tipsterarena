@@ -8,19 +8,19 @@ import { fetchEvents as fetchHorseRacingEvents, formatEventList as formatHorseRa
 
 const SPORT_CONFIG = {
   football: [
-    { sport: "soccer", league: "eng.1", icon: "⚽", name: "Premier League" },
-    { sport: "soccer", league: "esp.1", icon: "⚽", name: "La Liga" },
-    { sport: "soccer", league: "ita.1", icon: "⚽", name: "Serie A" },
-    { sport: "soccer", league: "fra.1", icon: "⚽", name: "Ligue 1" },
-    { sport: "soccer", league: "uefa.champions", icon: "⚽", name: "Champions League" },
-    { sport: "soccer", league: "uefa.europa", icon: "⚽", name: "Europa League" },
-    { sport: "soccer", league: "eng.fa", icon: "⚽", name: "FA Cup" },
-    { sport: "soccer", league: "eng.2", icon: "⚽", name: "EFL Championship" },
-    { sport: "soccer", league: "por.1", icon: "⚽", name: "Primeira Liga" },
-    { sport: "soccer", league: "ned.1", icon: "⚽", name: "Eredivisie" },
-    { sport: "soccer", league: "nir.1", icon: "⚽", name: "Irish League" },
-    { sport: "soccer", league: "usa.1", icon: "⚽", name: "MLS" },
-    { sport: "soccer", league: "sco.1", icon: "⚽", name: "Scottish Premiership" }
+    { sport: "soccer", league: "eng.1", icon: "⚽", name: "Premier League", priority: 1 },
+    { sport: "soccer", league: "esp.1", icon: "⚽", name: "La Liga", priority: 2 },
+    { sport: "soccer", league: "ita.1", icon: "⚽", name: "Serie A", priority: 3 },
+    { sport: "soccer", league: "fra.1", icon: "⚽", name: "Ligue 1", priority: 4 },
+    { sport: "soccer", league: "uefa.champions", icon: "⚽", name: "Champions League", priority: 5 },
+    { sport: "soccer", league: "uefa.europa", icon: "⚽", name: "Europa League", priority: 6 },
+    { sport: "soccer", league: "eng.fa", icon: "⚽", name: "FA Cup", priority: 7 },
+    { sport: "soccer", league: "eng.2", icon: "⚽", name: "EFL Championship", priority: 8 },
+    { sport: "soccer", league: "por.1", icon: "⚽", name: "Primeira Liga", priority: 9 },
+    { sport: "soccer", league: "ned.1", icon: "⚽", name: "Eredivisie", priority: 10 },
+    { sport: "soccer", league: "nir.1", icon: "⚽", name: "Irish League", priority: 11 },
+    { sport: "soccer", league: "usa.1", icon: "⚽", name: "MLS", priority: 12 },
+    { sport: "soccer", league: "sco.1", icon: "⚽", name: "Scottish Premiership", priority: 13 }
   ],
   golf: [
     { sport: "golf", league: "pga", icon: "⛳", name: "PGA Tour" },
@@ -33,6 +33,7 @@ const SPORT_CONFIG = {
     { sport: "horse_racing", league: "uk_irish", icon: "🏇", name: "UK & Irish Racing" }
   ]
 };
+
 
 const SPORT_MODULES = {
   football: { fetch: fetchFootballEvents, format: formatFootballList },
@@ -74,6 +75,10 @@ export async function getDynamicEvents() {
             console.error(`Error fetching ${config.name} from ESPN:`, error);
           }
         }
+      }
+      // Sort other sports by date (football sorting is handled in football-events.js)
+      if (sportKey !== "football") {
+        allEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
       }
       events[sportKey] = allEvents;
     }

@@ -1,5 +1,8 @@
 import { getCSRFToken } from './utils.js';
 
+// Giphy API Key
+const GIPHY_API_KEY = 'Lpfo7GvcccncunU2gvf0Cy9N3NCzrg35';
+
 // Function to show the success popup
 function showSuccessPopup() {
     const popup = document.getElementById('success-popup');
@@ -36,21 +39,92 @@ function applyFormatting(textarea, tag) {
     let newText, newSelectionStart, newSelectionEnd;
 
     if (selectedText.length > 0) {
-        // If text is selected, wrap it with the tag
         newText = `${beforeText}<${tag}>${selectedText}</${tag}>${afterText}`;
         newSelectionStart = start;
-        newSelectionEnd = end + tag.length * 2 + 5; // Adjust for the length of the tags
+        newSelectionEnd = end + tag.length * 2 + 5;
     } else {
-        // If no text is selected, insert the tag with a placeholder
         const placeholder = tag === 'b' ? 'bold text' : 'italic text';
         newText = `${beforeText}<${tag}>${placeholder}</${tag}>${afterText}`;
-        newSelectionStart = start + tag.length + 2; // Position cursor after the opening tag
-        newSelectionEnd = newSelectionStart + placeholder.length; // Select the placeholder text
+        newSelectionStart = start + tag.length + 2;
+        newSelectionEnd = newSelectionStart + placeholder.length;
     }
 
     textarea.value = newText;
     textarea.setSelectionRange(newSelectionStart, newSelectionEnd);
     textarea.focus();
+}
+
+// Debounce function to limit API calls
+function debounce(func, wait) {
+    let timeout;
+    return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+
+// Function to show the GIF search modal
+function showGifModal(textarea, previewDiv) {
+    let gifModal = document.getElementById('gif-modal');
+    if (!gifModal) {
+        gifModal = document.createElement('div');
+        gifModal.id = 'gif-modal';
+        gifModal.className = 'gif-modal';
+        gifModal.innerHTML = `
+            <div class="gif-modal-content">
+                <span class="gif-modal-close">×</span>
+                <input type="text" class="gif-search-input" placeholder="Search GIFs...">
+                <div class="gif-results"></div>
+            </div>
+        `;
+        document.body.appendChild(gifModal);
+    }
+
+    gifModal.style.display = 'block';
+
+    const closeBtn = gifModal.querySelector('.gif-modal-close');
+    const searchInput = gifModal.querySelector('.gif-search-input');
+    const resultsDiv = gifModal.querySelector('.gif-results');
+
+    closeBtn.onclick = () => gifModal.style.display = 'none';
+    window.onclick = (event) => {
+        if (event.target === gifModal) gifModal.style.display = 'none';
+    };
+
+    searchInput.oninput = debounce((e) => {
+        const query = e.target.value.trim();
+        if (query) {
+            fetch(`https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_API_KEY}&q=${encodeURIComponent(query)}&limit=10`)
+                .then(response => response.json())
+                .then(data => {
+                    resultsDiv.innerHTML = '';
+                    if (data.data.length === 0) {
+                        resultsDiv.innerHTML = '<p>No GIFs found.</p>';
+                        return;
+                    }
+                    data.data.forEach(gif => {
+                        const img = document.createElement('img');
+                        img.src = gif.images.fixed_height.url;
+                        img.alt = gif.title;
+                        img.className = 'gif-result';
+                        img.onclick = () => {
+                            textarea.dataset.gifUrl = gif.images.original.url;
+                            const previewImg = previewDiv.querySelector('.preview-media');
+                            previewImg.src = gif.images.original.url;
+                            previewDiv.style.display = 'block';
+                            gifModal.style.display = 'none';
+                        };
+                        resultsDiv.appendChild(img);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching GIFs:', error);
+                    resultsDiv.innerHTML = '<p>Error fetching GIFs. Please try again.</p>';
+                });
+        } else {
+            resultsDiv.innerHTML = '';
+        }
+    }, 300);
 }
 
 export function setupCentralFeedPost() {
@@ -65,8 +139,9 @@ export function setupCentralFeedPost() {
     const italicBtn = document.querySelector('.post-box .post-action-btn.italic');
     const pollBtn = document.querySelector('.post-box .post-action-btn.poll');
     const scheduleBtn = document.querySelector('.post-box .post-action-btn.schedule');
+    const previewDiv = document.querySelector('.post-box .post-preview');
 
-    if (!postSubmitBtn || !postInput || !postAudience || !emojiBtn || !gifBtn || !imageBtn || !locationBtn || !boldBtn || !italicBtn || !pollBtn || !scheduleBtn) {
+    if (!postSubmitBtn || !postInput || !postAudience || !emojiBtn || !gifBtn || !imageBtn || !locationBtn || !boldBtn || !italicBtn || !pollBtn || !scheduleBtn || !previewDiv) {
         console.warn('setupCentralFeedPost: One or more required DOM elements are missing.');
         console.log({
             postSubmitBtn: !!postSubmitBtn,
@@ -79,7 +154,8 @@ export function setupCentralFeedPost() {
             boldBtn: !!boldBtn,
             italicBtn: !!italicBtn,
             pollBtn: !!pollBtn,
-            scheduleBtn: !!scheduleBtn
+            scheduleBtn: !!scheduleBtn,
+            previewDiv: !!previewDiv
         });
         return;
     }
@@ -142,41 +218,42 @@ export function setupCentralFeedPost() {
     imageInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
-            console.log('Image selected:', file.name);
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const previewImg = previewDiv.querySelector('.preview-media');
+                previewImg.src = event.target.result;
+                previewDiv.style.display = 'block';
+                postInput.dataset.imageFile = 'true'; // Flag to indicate an image file is selected
+            };
+            reader.readAsDataURL(file);
         }
     });
 
     // GIF functionality
-    const gifInput = document.createElement('input');
-    gifInput.type = 'file';
-    gifInput.accept = 'image/gif';
-    gifInput.style.display = 'none';
-    document.body.appendChild(gifInput);
-
     gifBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        gifInput.click();
+        showGifModal(postInput, previewDiv);
     });
 
-    gifInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            console.log('GIF selected:', file.name);
-        }
+    // Remove preview functionality
+    const removePreviewBtn = previewDiv.querySelector('.remove-preview');
+    removePreviewBtn.addEventListener('click', () => {
+        previewDiv.style.display = 'none';
+        postInput.dataset.gifUrl = '';
+        postInput.dataset.imageFile = '';
+        imageInput.value = '';
     });
 
     // Poll functionality (placeholder for now)
     pollBtn.addEventListener('click', (e) => {
         e.preventDefault();
         alert('Poll functionality coming soon!');
-        // Future: Show a modal to input poll options
     });
 
     // Schedule functionality (placeholder for now)
     scheduleBtn.addEventListener('click', (e) => {
         e.preventDefault();
         alert('Schedule functionality coming soon!');
-        // Future: Show a date/time picker
     });
 
     // Submit logic
@@ -195,17 +272,17 @@ export function setupCentralFeedPost() {
         formData.append('sport', 'golf');
 
         // Append optional fields if they exist
-        if (imageInput.files[0]) {
+        if (postInput.dataset.imageFile && imageInput.files[0]) {
             formData.append('image', imageInput.files[0]);
         }
-        if (gifInput.files[0]) {
-            formData.append('gif', gifInput.files[0]);
+        if (postInput.dataset.gifUrl) {
+            formData.append('gif', postInput.dataset.gifUrl);
         }
         if (locationData) {
             formData.append('location', locationData);
         }
-        formData.append('poll', '{}'); // Default empty JSON string
-        formData.append('emojis', '{}'); // Default empty JSON string
+        formData.append('poll', '{}');
+        formData.append('emojis', '{}');
 
         fetch('/api/post-tip/', {
             method: 'POST',
@@ -219,10 +296,32 @@ export function setupCentralFeedPost() {
             if (data.success) {
                 showSuccessPopup();
                 postInput.value = '';
+                postInput.dataset.gifUrl = '';
+                postInput.dataset.imageFile = '';
                 imageInput.value = '';
-                gifInput.value = '';
                 locationData = '';
+                previewDiv.style.display = 'none';
                 location.reload();
+                
+                // Dynamically add the new tip to the feed
+                const tipFeed = document.querySelector('.tip-feed');
+                const newTip = document.createElement('div');
+                newTip.className = 'tip';
+                newTip.dataset.tipId = data.tip.id;
+                newTip.innerHTML = `
+                    <img src="${data.tip.avatar}" alt="${data.tip.username} Avatar" class="tip-avatar">
+                    <div class="tip-content">
+                        <a href="/profile/${data.tip.username}/" class="tip-username">
+                            <strong>${data.tip.username}</strong>
+                            <span class="user-handle">${data.tip.handle}</span>
+                        </a>
+                        <p>${data.tip.text}</p>
+                        ${data.tip.image ? `<img src="${data.tip.image}" alt="Tip Image" class="tip-image">` : ''}
+                        ${data.tip.gif ? `<img src="${data.tip.gif}" alt="Tip GIF" class="tip-image">` : ''}
+                        <small>${new Date(data.tip.created_at).toLocaleString()}</small>
+                    </div>
+                `;
+                tipFeed.insertBefore(newTip, tipFeed.firstChild);
             } else {
                 alert('Error posting tip: ' + data.error);
             }
@@ -251,8 +350,9 @@ export function setupPostModal() {
             const modalImageBtn = postModal.querySelector('.post-action-btn.image');
             const modalGifBtn = postModal.querySelector('.post-action-btn.gif');
             const modalLocationBtn = postModal.querySelector('.post-action-btn.location');
+            const modalPreviewDiv = postModal.querySelector('.post-preview');
 
-            if (modalSubmitBtn && modalInput && modalAudience && modalBoldBtn && modalItalicBtn && modalImageBtn && modalGifBtn && modalLocationBtn) {
+            if (modalSubmitBtn && modalInput && modalAudience && modalBoldBtn && modalItalicBtn && modalImageBtn && modalGifBtn && modalLocationBtn && modalPreviewDiv) {
                 // Bold button functionality for modal
                 modalBoldBtn.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -280,27 +380,30 @@ export function setupPostModal() {
                 modalImageInput.addEventListener('change', (e) => {
                     const file = e.target.files[0];
                     if (file) {
-                        console.log('Modal Image selected:', file.name);
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            const previewImg = modalPreviewDiv.querySelector('.preview-media');
+                            previewImg.src = event.target.result;
+                            modalPreviewDiv.style.display = 'block';
+                            modalInput.dataset.imageFile = 'true';
+                        };
+                        reader.readAsDataURL(file);
                     }
                 });
 
                 // GIF functionality for modal
-                const modalGifInput = document.createElement('input');
-                modalGifInput.type = 'file';
-                modalGifInput.accept = 'image/gif';
-                modalGifInput.style.display = 'none';
-                document.body.appendChild(modalGifInput);
-
                 modalGifBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    modalGifInput.click();
+                    showGifModal(modalInput, modalPreviewDiv);
                 });
 
-                modalGifInput.addEventListener('change', (e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                        console.log('Modal GIF selected:', file.name);
-                    }
+                // Remove preview functionality for modal
+                const modalRemovePreviewBtn = modalPreviewDiv.querySelector('.remove-preview');
+                modalRemovePreviewBtn.addEventListener('click', () => {
+                    modalPreviewDiv.style.display = 'none';
+                    modalInput.dataset.gifUrl = '';
+                    modalInput.dataset.imageFile = '';
+                    modalImageInput.value = '';
                 });
 
                 // Location functionality for modal
@@ -346,6 +449,7 @@ export function setupPostModal() {
 function handleModalPostSubmit() {
     const modalInput = this.closest('.post-modal-content').querySelector('.post-input');
     const modalAudience = this.closest('.post-modal-content').querySelector('.post-audience');
+    const modalPreviewDiv = this.closest('.post-modal-content').querySelector('.post-preview');
     const text = modalInput.value.trim();
     const audience = modalAudience.value;
 
@@ -360,13 +464,12 @@ function handleModalPostSubmit() {
     formData.append('sport', 'golf');
 
     // Append optional fields if they exist
-    const modalImageInput = document.querySelectorAll('input[type="file"]')[1]; // Assuming second file input is modal's
-    const modalGifInput = document.querySelectorAll('input[type="file"]')[2];   // Assuming third file input is modal's
-    if (modalImageInput && modalImageInput.files[0]) {
+    const modalImageInput = document.querySelectorAll('input[type="file"]')[1];
+    if (modalInput.dataset.imageFile && modalImageInput && modalImageInput.files[0]) {
         formData.append('image', modalImageInput.files[0]);
     }
-    if (modalGifInput && modalGifInput.files[0]) {
-        formData.append('gif', modalGifInput.files[0]);
+    if (modalInput.dataset.gifUrl) {
+        formData.append('gif', modalInput.dataset.gifUrl);
     }
     const modalLocationBtn = document.querySelector('.post-modal .post-action-btn.location');
     let modalLocationData = '';
@@ -376,8 +479,8 @@ function handleModalPostSubmit() {
     if (modalLocationData) {
         formData.append('location', modalLocationData);
     }
-    formData.append('poll', '{}'); // Default empty JSON string
-    formData.append('emojis', '{}'); // Default empty JSON string
+    formData.append('poll', '{}');
+    formData.append('emojis', '{}');
 
     fetch('/api/post-tip/', {
         method: 'POST',
@@ -391,9 +494,11 @@ function handleModalPostSubmit() {
         if (data.success) {
             showSuccessPopup();
             modalInput.value = '';
+            modalInput.dataset.gifUrl = '';
+            modalInput.dataset.imageFile = '';
             if (modalImageInput) modalImageInput.value = '';
-            if (modalGifInput) modalGifInput.value = '';
             modalLocationData = '';
+            modalPreviewDiv.style.display = 'none';
             document.getElementById('post-modal').style.display = 'none';
             location.reload();
         } else {

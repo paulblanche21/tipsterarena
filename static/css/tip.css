@@ -168,6 +168,12 @@
     box-sizing: border-box;
 }
 
+.tip-image {
+    border-radius: 8px;
+    max-height: 300px;
+    object-fit: cover;
+}
+
 .tip-item {
     display: flex;
     align-items: flex-start;
@@ -179,6 +185,32 @@
     height: 40px;
     border-radius: 50%;
     object-fit: cover;
+}
+
+.tip-item .tip-details {
+    flex: 1;
+}
+
+.tip-item .tip-username {
+    color: #000;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.tip-item .tip-username:hover {
+    text-decoration: underline;
+}
+
+.tip-item .tip-likes {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    color: #555;
+}
+
+.tip-item .tip-likes i {
+    color: #ff4d4f; /* Red heart */
 }
 
 .tip-item:last-child {

@@ -8,9 +8,9 @@
         <div class="post-box">
             <div class="post-user">
                 {% if request.user.is_authenticated and request.user.userprofile.avatar %}
-                    <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
+                    <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar">
                 {% else %}
-                    <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
+                    <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.onerror=null; this.src='/static/images/default-avatar.png';">
                 {% endif %}
                 <div class="post-username-container">
                     <span class="post-username">{{ request.user.username|default:"Guest" }}</span>
@@ -20,20 +20,26 @@
                     </select>
                 </div>
             </div>
-            <textarea placeholder="Post a Football Tip..." class="post-input"></textarea>
-            <div class="post-actions">
-                <button class="post-action-btn image"><i class="fas fa-image"></i></button>
-                <button class="post-action-btn gif"><i class="far fa-file-image"></i></button>
-                <button class="post-action-btn poll"><i class="fas fa-chart-bar"></i></button>
-                <button class="post-action-btn emoji"><i class="far fa-smile"></i></button>
-                <button class="post-action-btn location"><i class="fas fa-map-marker-alt"></i></button>
-                <button class="post-action-btn schedule"><i class="fas fa-clock"></i></button>
-                <button class="post-action-btn bold"><i class="fas fa-bold"></i></button>
-                <button class="post-action-btn italic"><i class="fas fa-italic"></i></button>
+            <textarea placeholder="Post a Tip..." class="post-input" maxlength="280"></textarea>
+            <div class="post-preview" style="display: none;">
+                <img src="" alt="Preview" class="preview-media">
+                <button class="remove-preview">×</button>
             </div>
-            <div class="post-meta">
-                <span class="char-count">0/280</span>
-                <button class="post-submit" disabled>Post</button>
+            <div class="post-footer">
+                <div class="post-actions">
+                    <button class="post-action-btn image"><i class="fas fa-image"></i></button>
+                    <button class="post-action-btn gif"><i class="far fa-file-image"></i></button>
+                    <button class="post-action-btn poll"><i class="fas fa-chart-bar"></i></button>
+                    <button class="post-action-btn emoji"><i class="far fa-smile"></i></button>
+                    <button class="post-action-btn location"><i class="fas fa-map-marker-alt"></i></button>
+                    <button class="post-action-btn schedule"><i class="fas fa-clock"></i></button>
+                    <button class="post-action-btn bold"><i class="fas fa-bold"></i></button>
+                    <button class="post-action-btn italic"><i class="fas fa-italic"></i></button>
+                </div>
+                <div class="post-meta">
+                    <span class="char-count">0/280</span>
+                    <button class="post-submit" disabled>Post</button>
+                </div>
             </div>
         </div>
 
@@ -55,6 +61,12 @@
                         {% if tip.sport == 'tennis' %}🎾{% endif %}
                         {% if tip.sport == 'horse_racing' %}🏇{% endif %}
                         <p>{{ tip.text }}</p>
+                        {% if tip.image %}
+                            <img src="{{ tip.image.url }}" alt="Tip Image" class="tip-image" style="max-width: 100%; margin-top: 10px;">
+                        {% endif %}
+                        {% if tip.gif_url %}
+                            <img src="{{ tip.gif_url }}" alt="Tip GIF" class="tip-image">
+                        {% endif %}
                         <small>{{ tip.created_at|date:"F j, Y, g:i a" }}</small>
                         <div class="tip-actions">
                             <div class="tip-action-group">
