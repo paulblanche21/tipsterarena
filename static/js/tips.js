@@ -1,7 +1,8 @@
 // tips.js
 import { getCSRFToken } from './utils.js';
+import { applyFormatting, showGifModal } from './post.js'; // Import utilities from post.js
 
-export function setupTipInteractions() {
+function setupTipInteractions() {
     const tips = document.querySelectorAll('.tip');
     const commentModal = document.getElementById('comment-modal');
     const commentSubmit = commentModal.querySelector('.post-reply-submit');
@@ -33,6 +34,9 @@ export function setupTipInteractions() {
         console.error('Error fetching current user data:', error);
     });
 
+    // Initialize the reply modal's post action buttons
+    setupReplyModal();
+
     commentSubmit.addEventListener('click', function(e) {
         e.preventDefault();
         const tipId = this.dataset.tipId;
@@ -49,6 +53,21 @@ export function setupTipInteractions() {
         formData.append('tip_id', tipId);
         formData.append('comment_text', commentText);
         if (parentId) formData.append('parent_id', parentId);
+
+        // Append optional fields (image, GIF, location, etc.)
+        const imageInput = commentModal.querySelector('.post-reply-image-input');
+        if (commentInput.dataset.imageFile && imageInput && imageInput.files[0]) {
+            formData.append('image', imageInput.files[0]);
+        }
+        if (commentInput.dataset.gifUrl) {
+            formData.append('gif', commentInput.dataset.gifUrl);
+        }
+        const locationData = commentInput.dataset.locationData || '';
+        if (locationData) {
+            formData.append('location', locationData);
+        }
+        formData.append('poll', '{}');
+        formData.append('emojis', '{}');
 
         const endpoint = parentId ? '/api/reply-to-comment/' : '/api/comment-tip/';
         fetch(endpoint, {
@@ -73,6 +92,8 @@ export function setupTipInteractions() {
                     <div class="comment-content">
                         <a href="/profile/${window.currentUser}/" class="comment-username"><strong>${currentUserData.handle}</strong></a>
                         <p>${commentText}</p>
+                        ${data.image ? `<img src="${data.image}" alt="Comment Image" class="comment-image">` : ''}
+                        ${data.gif ? `<img src="${data.gif}" alt="Comment GIF" class="comment-image">` : ''}
                         <small>${new Date().toLocaleString()}</small>
                         <div class="comment-actions">
                             <div class="comment-action-group">
@@ -92,6 +113,11 @@ export function setupTipInteractions() {
                 `;
                 commentList.insertBefore(newComment, commentList.firstChild);
                 commentInput.value = '';
+                commentInput.dataset.imageFile = '';
+                commentInput.dataset.gifUrl = '';
+                commentInput.dataset.locationData = '';
+                const previewDiv = commentModal.querySelector('.post-reply-preview');
+                if (previewDiv) previewDiv.style.display = 'none';
                 if (parentId) commentModal.querySelector('.reply-to-header').style.display = 'none';
                 attachCommentActionListeners();
             } else {
@@ -112,6 +138,116 @@ export function setupTipInteractions() {
         if (event.target === commentModal) {
             commentModal.style.display = 'none';
         }
+    });
+}
+
+function setupReplyModal() {
+    const commentModal = document.getElementById('comment-modal');
+    const replyInput = commentModal.querySelector('.post-reply-input');
+    const boldBtn = commentModal.querySelector('.post-reply-box .post-action-btn.bold');
+    const italicBtn = commentModal.querySelector('.post-reply-box .post-action-btn.italic');
+    const imageBtn = commentModal.querySelector('.post-reply-box .post-action-btn.image');
+    const gifBtn = commentModal.querySelector('.post-reply-box .post-action-btn.gif');
+    const locationBtn = commentModal.querySelector('.post-reply-box .post-action-btn.location');
+    const pollBtn = commentModal.querySelector('.post-reply-box .post-action-btn.poll');
+    const scheduleBtn = commentModal.querySelector('.post-reply-box .post-action-btn.schedule');
+    const previewDiv = commentModal.querySelector('.post-reply-box .post-reply-preview') || document.createElement('div');
+
+    // Create preview div if it doesn't exist
+    if (!previewDiv.className) {
+        previewDiv.className = 'post-reply-preview';
+        previewDiv.style.display = 'none';
+        previewDiv.innerHTML = `
+            <img src="" alt="Preview" class="preview-media">
+            <button class="remove-preview">×</button>
+        `;
+        replyInput.parentNode.insertBefore(previewDiv, replyInput.nextSibling);
+    }
+
+    // Image functionality
+    const imageInput = document.createElement('input');
+    imageInput.type = 'file';
+    imageInput.accept = 'image/*';
+    imageInput.style.display = 'none';
+    imageInput.className = 'post-reply-image-input';
+    document.body.appendChild(imageInput);
+
+    imageBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        imageInput.click();
+    });
+
+    imageInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const previewImg = previewDiv.querySelector('.preview-media');
+                previewImg.src = event.target.result;
+                previewDiv.style.display = 'block';
+                replyInput.dataset.imageFile = 'true';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // GIF functionality
+    gifBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        showGifModal(replyInput, previewDiv);
+    });
+
+    // Remove preview functionality
+    const removePreviewBtn = previewDiv.querySelector('.remove-preview');
+    removePreviewBtn.addEventListener('click', () => {
+        previewDiv.style.display = 'none';
+        replyInput.dataset.gifUrl = '';
+        replyInput.dataset.imageFile = '';
+        imageInput.value = '';
+    });
+
+    // Bold button functionality
+    boldBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        applyFormatting(replyInput, 'b');
+    });
+
+    // Italic button functionality
+    italicBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        applyFormatting(replyInput, 'i');
+    });
+
+    // Location functionality
+    locationBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    const locationData = `${latitude.toFixed(2)},${longitude.toFixed(2)}`;
+                    replyInput.dataset.locationData = locationData;
+                    replyInput.value += ` [Location: ${locationData}]`;
+                },
+                (error) => {
+                    alert('Unable to retrieve location: ' + error.message);
+                }
+            );
+        } else {
+            alert('Geolocation is not supported by your browser.');
+        }
+    });
+
+    // Poll functionality (placeholder for now)
+    pollBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        alert('Poll functionality coming soon!');
+    });
+
+    // Schedule functionality (placeholder for now)
+    scheduleBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        alert('Schedule functionality coming soon!');
     });
 }
 
@@ -242,6 +378,7 @@ function openCommentModal(tip, tipId, parentId = null) {
     } else {
         replyToHeader.style.display = 'none';
     }
+
     // Fetch comments for the tip
     const fetchComments = () => {
         fetch(`/api/tip/${tipId}/comments/`)
@@ -250,7 +387,7 @@ function openCommentModal(tip, tipId, parentId = null) {
                 // Get current comment IDs
                 const currentCommentIds = Array.from(commentList.querySelectorAll('.comment')).map(comment => comment.getAttribute('data-comment-id'));
                 const newCommentIds = data.comments ? data.comments.map(comment => comment.id.toString()) : [];
-    
+
                 // Only update if there are new or changed comments
                 if (JSON.stringify(currentCommentIds) !== JSON.stringify(newCommentIds)) {
                     commentList.innerHTML = '';
@@ -259,12 +396,19 @@ function openCommentModal(tip, tipId, parentId = null) {
                             const avatarUrl = comment.avatar_url || DEFAULT_AVATAR_URL;
                             const commentDiv = document.createElement('div');
                             commentDiv.className = 'comment';
+                            if (comment.parent_id) {
+                                commentDiv.classList.add('reply-comment'); // Add a class for styling replies
+                            }
                             commentDiv.setAttribute('data-comment-id', comment.id);
+                            commentDiv.setAttribute('data-parent-id', comment.parent_id || '');
                             commentDiv.innerHTML = `
                                 <img src="${avatarUrl}" alt="${comment.user__username} Avatar" class="comment-avatar" onerror="this.src='${DEFAULT_AVATAR_URL}'">
                                 <div class="comment-content">
                                     <a href="/profile/${comment.user__username}/" class="comment-username"><strong>${comment.user__username}</strong></a>
+                                    ${comment.parent_id ? `<span class="reply-to">Replying to <a href="#" class="reply-to-username">@${comment.parent_username}</a></span>` : ''}
                                     <p>${comment.content}</p>
+                                    ${comment.image ? `<img src="${comment.image}" alt="Comment Image" class="comment-image">` : ''}
+                                    ${comment.gif ? `<img src="${comment.gif}" alt="Comment GIF" class="comment-image">` : ''}
                                     <small>${new Date(comment.created_at).toLocaleString()}</small>
                                     <div class="comment-actions">
                                         <div class="comment-action-group">
@@ -333,6 +477,7 @@ function attachCommentActionListeners() {
         action.addEventListener('click', function(e) {
             e.preventDefault();
             const commentId = this.closest('.comment').getAttribute('data-comment-id');
+            const parentId = this.closest('.comment').getAttribute('data-parent-id');
             const actionType = this.getAttribute('data-action');
             const tipId = document.querySelector('.post-reply-submit').dataset.tipId;
 
@@ -390,3 +535,6 @@ function attachCommentActionListeners() {
         });
     });
 }
+
+// Export the functions required by main.js
+export { setupTipInteractions, setupReplyModal };

@@ -1,3 +1,4 @@
+// post.js
 import { getCSRFToken } from './utils.js';
 
 // Giphy API Key
@@ -127,7 +128,7 @@ function showGifModal(textarea, previewDiv) {
     }, 300);
 }
 
-export function setupCentralFeedPost() {
+function setupCentralFeedPost() {
     console.log('setupCentralFeedPost called');
     const postBox = document.querySelector('.post-box');
     const postSubmitBtn = document.querySelector('.post-box .post-submit');
@@ -144,7 +145,6 @@ export function setupCentralFeedPost() {
     const scheduleBtn = document.querySelector('.post-box .post-action-btn.schedule');
     const previewDiv = document.querySelector('.post-box .post-preview');
 
-    // Remove the requirement for postSport in the check
     if (!postBox || !postSubmitBtn || !postInput || !postAudience || !emojiBtn || !gifBtn || !imageBtn || !locationBtn || !boldBtn || !italicBtn || !pollBtn || !scheduleBtn || !previewDiv) {
         console.warn('setupCentralFeedPost: One or more required DOM elements are missing.');
         console.log({
@@ -262,13 +262,18 @@ export function setupCentralFeedPost() {
         alert('Schedule functionality coming soon!');
     });
 
+    // Emoji button functionality (to be added later)
+    emojiBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        alert('Emoji picker coming soon!');
+    });
+
     // Submit logic
     postSubmitBtn.addEventListener('click', function() {
         const text = postInput.value.trim();
         const audience = postAudience.value;
-        // Use the dropdown if present (Home/Explore), otherwise use data-sport (sport pages)
         const sport = postSport ? postSport.value : postBox.dataset.sport;
-        console.log('Sport for posting:', sport); // Debug log
+        console.log('Sport for posting:', sport);
 
         if (!text) {
             alert('Please enter a tip before posting.');
@@ -283,9 +288,8 @@ export function setupCentralFeedPost() {
         const formData = new FormData();
         formData.append('text', text);
         formData.append('audience', audience);
-        formData.append('sport', sport); // Use the determined sport
+        formData.append('sport', sport);
 
-        // Append optional fields if they exist
         if (postInput.dataset.imageFile && imageInput.files[0]) {
             formData.append('image', imageInput.files[0]);
         }
@@ -317,7 +321,6 @@ export function setupCentralFeedPost() {
                 previewDiv.style.display = 'none';
                 location.reload();
                 
-                // Dynamically add the new tip to the feed
                 const tipFeed = document.querySelector('.tip-feed');
                 const newTip = document.createElement('div');
                 newTip.className = 'tip';
@@ -352,7 +355,7 @@ export function setupCentralFeedPost() {
     });
 }
 
-export function setupPostModal() {
+function setupPostModal() {
     const postTipBtn = document.querySelector('.nav-post-btn[data-toggle="post-modal"]');
     const postModal = document.getElementById('post-modal');
 
@@ -364,7 +367,7 @@ export function setupPostModal() {
             const modalSubmitBtn = postModal.querySelector('.post-submit');
             const modalInput = postModal.querySelector('.post-input');
             const modalAudience = postModal.querySelector('.post-audience');
-            const modalSport = postModal.querySelector('.post-sport'); // May be null on sport pages
+            const modalSport = postModal.querySelector('.post-sport');
             const modalBoldBtn = postModal.querySelector('.post-action-btn.bold');
             const modalItalicBtn = postModal.querySelector('.post-action-btn.italic');
             const modalImageBtn = postModal.querySelector('.post-action-btn.image');
@@ -372,7 +375,6 @@ export function setupPostModal() {
             const modalLocationBtn = postModal.querySelector('.post-action-btn.location');
             const modalPreviewDiv = postModal.querySelector('.post-preview');
 
-            // Remove the requirement for modalSport in the check
             if (!modalSubmitBtn || !modalInput || !modalAudience || !modalBoldBtn || !modalItalicBtn || !modalImageBtn || !modalGifBtn || !modalLocationBtn || !modalPreviewDiv) {
                 console.warn('setupPostModal: One or more required DOM elements are missing.');
                 console.log({
@@ -390,19 +392,16 @@ export function setupPostModal() {
                 return;
             }
 
-            // Bold button functionality for modal
             modalBoldBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 applyFormatting(modalInput, 'b');
             });
 
-            // Italic button functionality for modal
             modalItalicBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 applyFormatting(modalInput, 'i');
             });
 
-            // Image functionality for modal
             const modalImageInput = document.createElement('input');
             modalImageInput.type = 'file';
             modalImageInput.accept = 'image/*';
@@ -428,13 +427,11 @@ export function setupPostModal() {
                 }
             });
 
-            // GIF functionality for modal
             modalGifBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 showGifModal(modalInput, modalPreviewDiv);
             });
 
-            // Remove preview functionality for modal
             const modalRemovePreviewBtn = modalPreviewDiv.querySelector('.remove-preview');
             modalRemovePreviewBtn.addEventListener('click', () => {
                 modalPreviewDiv.style.display = 'none';
@@ -443,7 +440,6 @@ export function setupPostModal() {
                 modalImageInput.value = '';
             });
 
-            // Location functionality for modal
             let modalLocationData = '';
             modalLocationBtn.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -486,13 +482,12 @@ function handleModalPostSubmit() {
     const modal = this.closest('.post-modal');
     const modalInput = this.closest('.post-modal-content').querySelector('.post-input');
     const modalAudience = this.closest('.post-modal-content').querySelector('.post-audience');
-    const modalSport = this.closest('.post-modal-content').querySelector('.post-sport'); // May be null on sport pages
+    const modalSport = this.closest('.post-modal-content').querySelector('.post-sport');
     const modalPreviewDiv = this.closest('.post-modal-content').querySelector('.post-preview');
     const text = modalInput.value.trim();
     const audience = modalAudience.value;
-    // Use the dropdown if present (Home/Explore), otherwise use data-sport (sport pages)
     const sport = modalSport ? modalSport.value : modal.dataset.sport;
-    console.log('Modal sport for posting:', sport); // Debug log
+    console.log('Modal sport for posting:', sport);
 
     if (!text) {
         alert('Please enter a tip before posting.');
@@ -507,9 +502,8 @@ function handleModalPostSubmit() {
     const formData = new FormData();
     formData.append('text', text);
     formData.append('audience', audience);
-    formData.append('sport', sport); // Use the determined sport
+    formData.append('sport', sport);
 
-    // Append optional fields if they exist
     const modalImageInput = document.querySelectorAll('input[type="file"]')[1];
     if (modalInput.dataset.imageFile && modalImageInput && modalImageInput.files[0]) {
         formData.append('image', modalImageInput.files[0]);
@@ -556,3 +550,11 @@ function handleModalPostSubmit() {
         alert('An error occurred while posting the tip.');
     });
 }
+
+// Export all necessary functions
+export { 
+    applyFormatting, 
+    showGifModal, 
+    setupCentralFeedPost, 
+    setupPostModal 
+};

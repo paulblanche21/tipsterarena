@@ -2,7 +2,7 @@
 import { attachFollowButtonListeners } from './follow.js';
 import { setupShowMoreButtons } from './feed.js';
 import { setupCentralFeedPost, setupPostModal } from './post.js';
-import { setupTipInteractions } from './tips.js';
+import { setupTipInteractions, setupReplyModal } from './tips.js'; // Kept setupReplyModal import for flexibility
 import { setupNavigation } from './nav.js';
 import { setupProfileEditing } from './profile.js';
 import { initCarousel } from './carousel.js';
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   setupShowMoreButtons();
   setupCentralFeedPost();
   setupPostModal();
-  setupTipInteractions();
+  setupTipInteractions(); // This now handles setupReplyModal internally
   setupNavigation();
   setupProfileEditing();
   initCarousel();

@@ -11,26 +11,29 @@ const FORMATTERS = {
 };
 
 export async function initCarousel() {
-  console.log("Initializing carousel");
+  console.log("Starting carousel initialization");
   const carouselContainers = document.querySelectorAll('.carousel-container');
-  carouselContainers.forEach(async container => {
+  
+  for (const container of carouselContainers) {
     const slides = container.querySelectorAll('.carousel-slide');
     if (slides.length > 0) {
+      console.log(`Found ${slides.length} slides in container`);
       await populateCarousel(container);
       setupDotNavigation(container);
       startAutoRotation(container);
     } else {
-      console.warn("No slides found in carousel container");
+      console.warn("No slides found in carousel container:", container);
     }
-  });
+  }
 }
 
 async function populateCarousel(container) {
-  console.log("Populating carousel");
+  console.log("Populating carousel for container:", container);
   const dynamicEvents = await getDynamicEvents();
   console.log("All events for carousel:", Object.keys(dynamicEvents).map(key => `${key}: ${dynamicEvents[key].length}`));
 
   const slides = container.querySelectorAll('.carousel-slide');
+  console.log(`Populating ${slides.length} slides`);
   for (const slide of slides) {
     const sport = slide.getAttribute('data-sport');
     if (sport && FORMATTERS[sport]) {
@@ -40,17 +43,21 @@ async function populateCarousel(container) {
         eventList.innerHTML = await FORMATTERS[sport](events, sport, false) || `<p>No upcoming ${sport} events available.</p>`;
         console.log(`${sport} carousel updated with:`, eventList.innerHTML);
       } else {
-        console.warn(`Event list container not found for ${sport}`);
+        console.warn(`Event list container not found for ${sport} in slide:`, slide);
       }
     } else {
-      console.warn(`No formatter found for sport: ${sport}`);
+      console.warn(`No formatter found for sport: ${sport} in slide:`, slide);
     }
   }
 }
 
 function setupDotNavigation(container) {
-  const dots = container.querySelectorAll('.dot');
+  // Adjust query to find dots outside the container, as siblings
+  const dotsContainer = container.parentElement.querySelector('.carousel-dots');
+  const dots = dotsContainer ? dotsContainer.querySelectorAll('.dot') : [];
   const slides = container.querySelectorAll('.carousel-slide');
+
+  console.log(`Setting up navigation: ${slides.length} slides, ${dots.length} dots`);
 
   if (slides.length <= 1) {
     console.log("Only one slide, dot navigation disabled");
@@ -58,7 +65,9 @@ function setupDotNavigation(container) {
   }
 
   if (dots.length !== slides.length) {
-    console.warn("Mismatch between number of dots and slides");
+    console.warn(`Mismatch detected: ${slides.length} slides vs ${dots.length} dots`);
+    console.log("Slides:", Array.from(slides).map(s => s.getAttribute('data-sport')));
+    console.log("Dots:", Array.from(dots).map(d => d.getAttribute('data-sport')));
   }
 
   dots.forEach((dot, index) => {
@@ -79,19 +88,31 @@ function startAutoRotation(container) {
   let currentSlide = Array.from(slides).findIndex(slide => slide.classList.contains('active'));
   if (currentSlide === -1) currentSlide = 0;
 
-  const interval = setInterval(() => {
+  let interval;
+  const rotate = () => {
     currentSlide = (currentSlide < slides.length - 1) ? currentSlide + 1 : 0;
     showSlide(container, currentSlide);
-  }, 5000); // 5 seconds
+  };
+  
+  interval = setInterval(rotate, 5000);
 
-  container.addEventListener('mouseenter', () => clearInterval(interval));
-  container.addEventListener('mouseleave', () => startAutoRotation(container));
+  container.removeEventListener('mouseenter', clearIntervalHandler);
+  container.removeEventListener('mouseleave', restartRotationHandler);
+  
+  function clearIntervalHandler() { clearInterval(interval); }
+  function restartRotationHandler() { interval = setInterval(rotate, 5000); }
+  
+  container.addEventListener('mouseenter', clearIntervalHandler);
+  container.addEventListener('mouseleave', restartRotationHandler);
 }
 
 function showSlide(container, index) {
   const slides = container.querySelectorAll('.carousel-slide');
-  const dots = container.querySelectorAll('.dot');
+  const dotsContainer = container.parentElement.querySelector('.carousel-dots');
+  const dots = dotsContainer ? dotsContainer.querySelectorAll('.dot') : [];
 
+  console.log(`Showing slide ${index + 1} of ${slides.length}`);
+  
   slides.forEach((slide, i) => {
     slide.classList.toggle('active', i === index);
   });
