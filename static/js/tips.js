@@ -1,6 +1,6 @@
 // tips.js
 import { getCSRFToken } from './utils.js';
-import { applyFormatting, showGifModal } from './post.js'; // Import utilities from post.js
+import { applyFormatting, showGifModal, showEmojiPicker } from './post.js'; // Import utilities from post.js
 
 function setupTipInteractions() {
     const tips = document.querySelectorAll('.tip');
@@ -151,6 +151,7 @@ function setupReplyModal() {
     const locationBtn = commentModal.querySelector('.post-reply-box .post-action-btn.location');
     const pollBtn = commentModal.querySelector('.post-reply-box .post-action-btn.poll');
     const scheduleBtn = commentModal.querySelector('.post-reply-box .post-action-btn.schedule');
+    const emojiBtn = commentModal.querySelector('.post-reply-box .post-action-btn.emoji'); // Added emoji button
     const previewDiv = commentModal.querySelector('.post-reply-box .post-reply-preview') || document.createElement('div');
 
     // Create preview div if it doesn't exist
@@ -195,6 +196,13 @@ function setupReplyModal() {
     gifBtn.addEventListener('click', (e) => {
         e.preventDefault();
         showGifModal(replyInput, previewDiv);
+    });
+
+    // Emoji functionality
+    // Emoji functionality
+    emojiBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        showEmojiPicker(replyInput, emojiBtn);
     });
 
     // Remove preview functionality
