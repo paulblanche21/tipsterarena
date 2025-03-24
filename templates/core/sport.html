@@ -123,28 +123,28 @@
                         <small class="modal-tip-timestamp"></small>
                         <div class="tip-actions">
                             <div class="tip-action-group">
-                                <a href="#" class="tip-action tip-action-like" data-action="like"><i class="fas fa-heart"></i></a>
-                                <span class="tip-action-count like-count"></span>
+                                <a href="#" class="tip-action tip-action-like" data-action="like" aria-label="Like this tip"><i class="fas fa-heart"></i></a>
+                                <span class="tip-action-count like-count">{{ tip.likes.count }}</span>
                             </div>
                             <div class="tip-action-group">
-                                <a href="#" class="tip-action tip-action-share" data-action="share"><i class="fas fa-retweet"></i></a>
-                                <span class="tip-action-count share-count"></span>
+                                <a href="#" class="tip-action tip-action-share" data-action="share" aria-label="Share this tip"><i class="fas fa-retweet"></i></a>
+                                <span class="tip-action-count share-count">{{ tip.shares.count }}</span>
                             </div>
                             <div class="tip-action-group">
-                                <a href="#" class="tip-action tip-action-comment" data-action="comment"><i class="fas fa-comment-dots"></i></a>
-                                <span class="tip-action-count comment-count"></span>
+                                <a href="#" class="tip-action tip-action-comment" data-action="comment" aria-label="Comment on this tip"><i class="fas fa-comment-dots"></i></a>
+                                <span class="tip-action-count comment-count">{{ tip.comments.count }}</span>
                             </div>
                             <div class="tip-action-spacer"></div>
                             <div class="tip-action-group">
-                                <a href="#" class="tip-action tip-action-engagement"><i class="fas fa-users"></i></a>
-                                <span class="tip-action-count"></span>
+                                <a href="#" class="tip-action tip-action-engagement" aria-label="View engagement"><i class="fas fa-users"></i></a>
+                                <span class="tip-action-count">{{ tip.engagement|default:"0" }}</span>
                             </div>
                             <div class="tip-action-spacer-large"></div>
                             <div class="tip-action-group">
-                                <a href="#" class="tip-action tip-action-bookmark"><i class="fas fa-bookmark"></i></a>
+                                <a href="#" class="tip-action tip-action-bookmark" aria-label="Bookmark this tip"><i class="fas fa-bookmark"></i></a>
                             </div>
                             <div class="tip-action-group">
-                                <a href="#" class="tip-action tip-action-share-link"><i class="fas fa-arrow-up"></i></a>
+                                <a href="#" class="tip-action tip-action-share-link" aria-label="Share link to this tip"><i class="fas fa-arrow-up"></i></a>
                             </div>
                         </div>
                     </div>
@@ -162,14 +162,14 @@
                         </div>
                         <textarea placeholder="Post a Reply..." class="post-reply-input"></textarea>
                         <div class="post-actions">
-                            <button class="post-action-btn image"><i class="fas fa-image"></i></button>
-                            <button class="post-action-btn gif"><i class="far fa-file-image"></i></button>
-                            <button class="post-action-btn poll"><i class="fas fa-chart-bar"></i></button>
-                            <button class="post-action-btn emoji"><i class="far fa-smile"></i></button>
-                            <button class="post-action-btn location"><i class="fas fa-map-marker-alt"></i></button>
-                            <button class="post-action-btn schedule"><i class="fas fa-clock"></i></button>
-                            <button class="post-action-btn bold"><i class="fas fa-bold"></i></button>
-                            <button class="post-action-btn italic"><i class="fas fa-italic"></i></button>
+                            <button class="post-action-btn image" aria-label="Add image"><i class="fas fa-image"></i></button>
+                            <button class="post-action-btn gif" aria-label="Add GIF"><i class="far fa-file-image"></i></button>
+                            <button class="post-action-btn poll" aria-label="Create poll"><i class="fas fa-chart-bar"></i></button>
+                            <button class="post-action-btn emoji" aria-label="Add emoji"><i class="far fa-smile"></i></button>
+                            <button class="post-action-btn location" aria-label="Add location"><i class="fas fa-map-marker-alt"></i></button>
+                            <button class="post-action-btn schedule" aria-label="Schedule post"><i class="fas fa-clock"></i></button>
+                            <button class="post-action-btn bold" aria-label="Bold text"><i class="fas fa-bold"></i></button>
+                            <button class="post-action-btn italic" aria-label="Italicize text"><i class="fas fa-italic"></i></button>
                         </div>
                         <button class="post-reply-submit">Reply</button>
                     </div>

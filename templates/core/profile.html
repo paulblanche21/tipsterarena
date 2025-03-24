@@ -129,28 +129,28 @@
                         <small class="modal-tip-timestamp"></small>
                         <div class="tip-actions">
                             <div class="tip-action-group">
-                                <a href="#" class="tip-action tip-action-like" data-action="like"><i class="fas fa-heart"></i></a>
-                                <span class="tip-action-count like-count"></span>
+                                <a href="#" class="tip-action tip-action-like" data-action="like" aria-label="Like this tip"><i class="fas fa-heart"></i></a>
+                                <span class="tip-action-count like-count">{{ tip.likes.count }}</span>
                             </div>
                             <div class="tip-action-group">
-                                <a href="#" class="tip-action tip-action-share" data-action="share"><i class="fas fa-retweet"></i></a>
-                                <span class="tip-action-count share-count"></span>
+                                <a href="#" class="tip-action tip-action-share" data-action="share" aria-label="Share this tip"><i class="fas fa-retweet"></i></a>
+                                <span class="tip-action-count share-count">{{ tip.shares.count }}</span>
                             </div>
                             <div class="tip-action-group">
-                                <a href="#" class="tip-action tip-action-comment" data-action="comment"><i class="fas fa-comment-dots"></i></a>
-                                <span class="tip-action-count comment-count"></span>
+                                <a href="#" class="tip-action tip-action-comment" data-action="comment" aria-label="Comment on this tip"><i class="fas fa-comment-dots"></i></a>
+                                <span class="tip-action-count comment-count">{{ tip.comments.count }}</span>
                             </div>
                             <div class="tip-action-spacer"></div>
                             <div class="tip-action-group">
-                                <a href="#" class="tip-action tip-action-engagement"><i class="fas fa-users"></i></a>
-                                <span class="tip-action-count"></span>
+                                <a href="#" class="tip-action tip-action-engagement" aria-label="View engagement"><i class="fas fa-users"></i></a>
+                                <span class="tip-action-count">{{ tip.engagement|default:"0" }}</span>
                             </div>
                             <div class="tip-action-spacer-large"></div>
                             <div class="tip-action-group">
-                                <a href="#" class="tip-action tip-action-bookmark"><i class="fas fa-bookmark"></i></a>
+                                <a href="#" class="tip-action tip-action-bookmark" aria-label="Bookmark this tip"><i class="fas fa-bookmark"></i></a>
                             </div>
                             <div class="tip-action-group">
-                                <a href="#" class="tip-action tip-action-share-link"><i class="fas fa-arrow-up"></i></a>
+                                <a href="#" class="tip-action tip-action-share-link" aria-label="Share link to this tip"><i class="fas fa-arrow-up"></i></a>
                             </div>
                         </div>
                     </div>
@@ -169,14 +169,14 @@
                         </div>
                         <textarea placeholder="Post a Reply..." class="post-reply-input"></textarea>
                         <div class="post-actions">
-                            <button class="post-action-btn image"><i class="fas fa-image"></i></button>
-                            <button class="post-action-btn gif"><i class="far fa-file-image"></i></button>
-                            <button class="post-action-btn poll"><i class="fas fa-chart-bar"></i></button>
-                            <button class="post-action-btn emoji"><i class="far fa-smile"></i></button>
-                            <button class="post-action-btn location"><i class="fas fa-map-marker-alt"></i></button>
-                            <button class="post-action-btn schedule"><i class="fas fa-clock"></i></button>
-                            <button class="post-action-btn bold"><i class="fas fa-bold"></i></button>
-                            <button class="post-action-btn italic"><i class="fas fa-italic"></i></button>
+                            <button class="post-action-btn image" aria-label="Add image"><i class="fas fa-image"></i></button>
+                            <button class="post-action-btn gif" aria-label="Add GIF"><i class="far fa-file-image"></i></button>
+                            <button class="post-action-btn poll" aria-label="Create poll"><i class="fas fa-chart-bar"></i></button>
+                            <button class="post-action-btn emoji" aria-label="Add emoji"><i class="far fa-smile"></i></button>
+                            <button class="post-action-btn location" aria-label="Add location"><i class="fas fa-map-marker-alt"></i></button>
+                            <button class="post-action-btn schedule" aria-label="Schedule post"><i class="fas fa-clock"></i></button>
+                            <button class="post-action-btn bold" aria-label="Bold text"><i class="fas fa-bold"></i></button>
+                            <button class="post-action-btn italic" aria-label="Italicize text"><i class="fas fa-italic"></i></button>
                         </div>
                         <button class="post-reply-submit">Reply</button>
                     </div>
@@ -247,60 +247,34 @@
 
 {% block upcoming_events %}
 <div class="sidebar-card upcoming-events-card" data-card="upcoming-events" style="background-color: white;">
-    <h3>Upcoming Fixtures</h3>
+    <h3>Upcoming Events</h3>
     <div class="carousel-container">
-        <div class="carousel-slide active" data-league="premier-league">
-            <div class="event-list">
-                <p class="event-item"><span class="sport-icon">⚽</span> Premier League: Manchester United vs. Tottenham, Mar 12, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Premier League: Liverpool vs. Manchester City, Mar 21, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Premier League: Arsenal vs. Chelsea, Mar 25, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Premier League: Tottenham vs. Manchester United, Mar 28, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Premier League: Manchester City vs. Liverpool, Apr 1, 2025</p>
+        <div class="carousel-slide active" data-sport="football">
+            <div class="event-list" id="football-events">
+                <p>Loading football fixtures...</p>
             </div>
         </div>
-        <div class="carousel-slide" data-league="la-liga">
-            <div class="event-list">
-                <p class="event-item"><span class="sport-icon">⚽</span> La Liga: Real Madrid vs. Barcelona, Mar 15, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> La Liga: Atletico Madrid vs. Sevilla, Mar 22, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> La Liga: Barcelona vs. Real Madrid, Mar 26, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> La Liga: Sevilla vs. Atletico Madrid, Apr 2, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> La Liga: Real Madrid vs. Valencia, Apr 5, 2025</p>
+        <div class="carousel-slide" data-sport="golf">
+            <div class="event-list" id="golf-events">
+                <p>Loading golf fixtures...</p>
             </div>
         </div>
-        <div class="carousel-slide" data-league="serie-a">
-            <div class="event-list">
-                <p class="event-item"><span class="sport-icon">⚽</span> Serie A: Juventus vs. Inter Milan, Mar 18, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Serie A: AC Milan vs. Napoli, Mar 23, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Serie A: Inter Milan vs. Juventus, Mar 29, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Serie A: Napoli vs. AC Milan, Apr 3, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Serie A: Juventus vs. Roma, Apr 6, 2025</p>
+        <div class="carousel-slide" data-sport="tennis">
+            <div class="event-list" id="tennis-events">
+                <p>Loading tennis fixtures...</p>
             </div>
         </div>
-        <div class="carousel-slide" data-league="bundesliga">
-            <div class="event-list">
-                <p class="event-item"><span class="sport-icon">⚽</span> Bundesliga: Dortmund vs. Leipzig, Mar 19, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Bundesliga: Leipzig vs. Dortmund, Mar 30, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Bundesliga: Bayern Munich vs. Frankfurt, Apr 4, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Bundesliga: Dortmund vs. Bayern Munich, Apr 7, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Bundesliga: Leipzig vs. Wolfsburg, Apr 10, 2025</p>
-            </div>
-        </div>
-        <div class="carousel-slide" data-league="champions-league">
-            <div class="event-list">
-                <p class="event-item"><span class="sport-icon">⚽</span> Champions League: Bayern Munich vs. PSG, Mar 16, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Champions League: PSG vs. Bayern Munich, Mar 27, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Champions League: Manchester City vs. Real Madrid, Apr 8, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Champions League: Real Madrid vs. Manchester City, Apr 11, 2025</p>
-                <p class="event-item"><span class="sport-icon">⚽</span> Champions League: Barcelona vs. Juventus, Apr 14, 2025</p>
+        <div class="carousel-slide" data-sport="horse_racing">
+            <div class="event-list" id="horse_racing-events">
+                <p>Loading horse racing fixtures...</p>
             </div>
         </div>
     </div>
     <div class="carousel-dots">
-        <span class="dot active" data-league="premier-league"></span>
-        <span class="dot" data-league="la-liga"></span>
-        <span class="dot" data-league="serie-a"></span>
-        <span class="dot" data-league="bundesliga"></span>
-        <span class="dot" data-league="champions-league"></span>
+        <span class="dot active" data-sport="football"></span>
+        <span class="dot" data-sport="golf"></span>
+        <span class="dot" data-sport="tennis"></span>
+        <span class="dot" data-sport="horse_racing"></span>
     </div>
     <a href="#" class="show-more" data-target="upcoming-events">Show more</a>
 </div>
@@ -310,38 +284,7 @@
 <div class="sidebar-card trending-tips-card" data-card="trending-tips" style="background-color: white;">
     <h3>Trending Tips</h3>
     <div class="trending-tips-list">
-        <div class="trending-tip">
-            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
-            <div class="tip-details">
-                <a href="#" class="tip-username"><strong>@TennisGuru</strong></a>
-                <p class="tip-text">Djokovic to win Australian Open - Odds: 3.5</p>
-            </div>
-            <span class="tip-likes"><i class="fas fa-heart"></i> 250</span>
-        </div>
-        <div class="trending-tip">
-            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
-            <div class="tip-details">
-                <a href="#" class="tip-username"><strong>@AceBettor</strong></a>
-                <p class="tip-text">Swiatek top 4 at French Open - Odds: 2.0</p>
-            </div>
-            <span class="tip-likes"><i class="fas fa-heart"></i> 180</span>
-        </div>
-        <div class="trending-tip">
-            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
-            <div class="tip-details">
-                <a href="#" class="tip-username"><strong>@GoalMaster</strong></a>
-                <p class="tip-text">Man Utd to beat Tottenham - Odds: 2.8</p>
-            </div>
-            <span class="tip-likes"><i class="fas fa-heart"></i> 200</span>
-        </div>
-        <div class="trending-tip">
-            <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
-            <div class="tip-details">
-                <a href="#" class="tip-username"><strong>@RaceKing</strong></a>
-                <p class="tip-text">Horse X to win Grand National - Odds: 8.0</p>
-            </div>
-            <span class="tip-likes"><i class="fas fa-heart"></i> 150</span>
-        </div>
+        <p>Loading trending tips...</p>
     </div>
     <a href="#" class="show-more" data-target="trending-tips">Show more</a>
 </div>
