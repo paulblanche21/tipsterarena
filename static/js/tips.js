@@ -14,7 +14,7 @@ function setupTipInteractions() {
     });
 
     // Fetch current user data (avatar and handle) on page load
-    let currentUserData = { avatarUrl: DEFAULT_AVATAR_URL, handle: window.currentUser || 'You' };
+    let currentUserData = { avatarUrl: window.default_avatar_url, handle: window.currentUser || 'You' };
     fetch('/api/current-user/', {
         method: 'GET',
         headers: {
@@ -25,7 +25,7 @@ function setupTipInteractions() {
     .then(data => {
         if (data.success) {
             currentUserData = {
-                avatarUrl: data.avatar_url || DEFAULT_AVATAR_URL,
+                avatarUrl: data.avatar_url || window.default_avatar_url,
                 handle: data.handle || window.currentUser || 'You'
             };
         }
@@ -88,8 +88,7 @@ function setupTipInteractions() {
                 newComment.className = 'comment';
                 newComment.setAttribute('data-comment-id', data.comment_id);
                 newComment.innerHTML = `
-                    <img src="${currentUserData.avatarUrl}" alt="${currentUserData.handle} Avatar" class="comment-avatar" onerror="this.src='${DEFAULT_AVATAR_URL}'">
-                    <div class="comment-content">
+                    <img src="${currentUserData.avatarUrl}" alt="${currentUserData.handle} Avatar" class="comment-avatar" onerror="this.src='${window.default_avatar_url}<div class="comment-content">
                         <a href="/profile/${window.currentUser}/" class="comment-username"><strong>${currentUserData.handle}</strong></a>
                         <p>${commentText}</p>
                         ${data.image ? `<img src="${data.image}" alt="Comment Image" class="comment-image">` : ''}
@@ -333,7 +332,7 @@ function openCommentModal(tip, tipId, parentId = null) {
     const replyToUsername = commentModal.querySelector('.reply-to-username');
     const commentSubmit = commentModal.querySelector('.post-reply-submit');
 
-    const avatarUrl = tip.querySelector('.tip-avatar')?.src || DEFAULT_AVATAR_URL;
+    const avatarUrl = tip.querySelector('.tip-avatar')?.src || window.default_avatar_url;
     const tipContent = tip.querySelector('.tip-content');
     const usernameElement = tipContent.querySelector('.tip-username strong');
     const handleElement = tipContent.querySelector('.user-handle');
@@ -401,7 +400,7 @@ function openCommentModal(tip, tipId, parentId = null) {
                     commentList.innerHTML = '';
                     if (data.comments && data.comments.length > 0) {
                         data.comments.forEach(comment => {
-                            const avatarUrl = comment.avatar_url || DEFAULT_AVATAR_URL;
+                            const avatarUrl = comment.avatar_url || window.default_avatar_url;
                             const commentDiv = document.createElement('div');
                             commentDiv.className = 'comment';
                             if (comment.parent_id) {
@@ -410,7 +409,7 @@ function openCommentModal(tip, tipId, parentId = null) {
                             commentDiv.setAttribute('data-comment-id', comment.id);
                             commentDiv.setAttribute('data-parent-id', comment.parent_id || '');
                             commentDiv.innerHTML = `
-                                <img src="${avatarUrl}" alt="${comment.user__username} Avatar" class="comment-avatar" onerror="this.src='${DEFAULT_AVATAR_URL}'">
+                                <img src="${avatarUrl}" alt="${comment.user__username} Avatar" class="comment-avatar" onerror="this.src='${window.default_avatar_url}}'">
                                 <div class="comment-content">
                                     <a href="/profile/${comment.user__username}/" class="comment-username"><strong>${comment.user__username}</strong></a>
                                     ${comment.parent_id ? `<span class="reply-to">Replying to <a href="#" class="reply-to-username">@${comment.parent_username}</a></span>` : ''}

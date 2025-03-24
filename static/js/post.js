@@ -343,7 +343,6 @@ async function showEmojiPicker(textarea, triggerButton) {
 }
 
 function setupCentralFeedPost() {
-    console.log('setupCentralFeedPost called');
     const postBox = document.querySelector('.post-box');
     const postSubmitBtn = document.querySelector('.post-box .post-submit');
     const postInput = document.querySelector('.post-box .post-input');

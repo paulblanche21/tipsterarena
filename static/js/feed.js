@@ -4,11 +4,9 @@ import { getEventList } from './upcoming-events.js';
 
 export function setupShowMoreButtons() {
   const showMoreButtons = document.querySelectorAll('.show-more');
-  console.log('Found show-more buttons:', showMoreButtons.length); // Debug log
   showMoreButtons.forEach(button => {
     button.addEventListener('click', async function(e) {
       e.preventDefault();
-      console.log('Show more button clicked:', this.getAttribute('data-target')); // Debug log
       const target = this.getAttribute('data-target');
       const content = document.querySelector('.content');
       let previousUrl = window.location.pathname;

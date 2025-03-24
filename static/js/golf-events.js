@@ -76,7 +76,6 @@ export async function formatEventList(events, sportKey, showLocation = false) {
   const upcomingEvents = pgaEvents.filter(event => {
     const eventTime = new Date(event.date);
     const isUpcoming = eventTime > currentTime && event.state !== "in";
-    console.log(`Event for ${event.league} (${event.name}): ${event.displayDate} - State: ${event.state}, Is Upcoming: ${isUpcoming}`);
     return isUpcoming;
   });
   const inProgressEvents = pgaEvents.filter(event => event.state === "in" && new Date(event.date) <= currentTime);
@@ -155,7 +154,6 @@ export async function formatEventList(events, sportKey, showLocation = false) {
     }
   }
 
-  console.log(`Formatted ${sportKey} events:`, eventItems);
   return eventItems || `<p>No upcoming or in-progress PGA Tour events available.</p>`;
 }
 

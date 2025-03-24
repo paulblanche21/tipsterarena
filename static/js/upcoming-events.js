@@ -1,6 +1,4 @@
 // upcoming-events.js
-console.log("Upcoming-events.js loaded successfully");
-
 import { fetchEvents as fetchFootballEvents, formatEventList as formatFootballList, formatEventTable } from './football-events.js';
 import { fetchEvents as fetchTennisEvents, formatEventList as formatTennisList, fetchTournamentMatches } from './tennis-events.js';
 import { fetchEvents as fetchGolfEvents, formatEventList as formatGolfList, fetchLeaderboard } from './golf-events.js';
@@ -70,7 +68,6 @@ export async function getDynamicEvents() {
             const data = await response.json();
             const leagueEvents = await module.fetch(data, config);
             allEvents = allEvents.concat(leagueEvents);
-            console.log(`${config.name}: Fetched ${leagueEvents.length} events`);
           } catch (error) {
             console.error(`Error fetching ${config.name} from ESPN:`, error);
           }
@@ -90,7 +87,6 @@ export async function getDynamicEvents() {
     ...(events.tennis || []),
     ...(events.horse_racing || [])
   ].sort((a, b) => new Date(a.date) - new Date(b.date));
-  console.log("All events fetched:", Object.keys(events).map(key => `${key}: ${events[key].length}`));
   return events;
 }
 
