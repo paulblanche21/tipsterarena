@@ -252,18 +252,58 @@ def share_tip(request):
 @require_POST
 def comment_tip(request):
     tip_id = request.POST.get('tip_id')
-    comment_text = request.POST.get('comment_text')
+    comment_text = request.POST.get('comment_text', '')  # Allow empty text
     parent_id = request.POST.get('parent_id')
+    gif_url = request.POST.get('gif', '')  # Store GIF URL
     logger.info(f"Received comment_tip request: tip_id={tip_id}, comment_text={comment_text}, parent_id={parent_id}")
-    if not tip_id or not comment_text:
-        logger.error(f"Missing tip_id or comment_text: tip_id={tip_id}, comment_text={comment_text}")
-        return JsonResponse({'success': False, 'error': 'Missing tip_id or comment_text'}, status=400)
+    
+    if not tip_id:
+        logger.error(f"Missing tip_id: tip_id={tip_id}")
+        return JsonResponse({'success': False, 'error': 'Missing tip_id'}, status=400)
+    
     try:
-        tip = get_object_or_404(Tip, id=tip_id)
-        parent_comment = get_object_or_404(Comment, id=parent_id) if parent_id else None
-        comment = Comment.objects.create(user=request.user, tip=tip, content=comment_text, parent_comment=parent_comment)
-        logger.info(f"Comment created successfully for tip_id: {tip_id}")
-        return JsonResponse({'success': True, 'message': 'Comment added', 'comment_count': tip.comments.count(), 'comment_id': comment.id})
+        tip = Tip.objects.get(id=tip_id)
+        parent_comment = Comment.objects.get(id=parent_id) if parent_id else None
+        comment = Comment.objects.create(
+            user=request.user,
+            tip=tip,
+            content=comment_text,
+            parent_comment=parent_comment,
+            image=request.FILES.get('image'),
+            gif_url=request.POST.get('gif', '')  # Store GIF URL
+        )
+        logger.info(f"Comment created successfully for tip_id: {tip_id}, comment_id: {comment.id}")
+        
+        avatar_url = (request.user.userprofile.avatar.url 
+                     if hasattr(request.user, 'userprofile') and request.user.userprofile.avatar 
+                     else settings.STATIC_URL + 'images/default-avatar.png')
+        comment_data = {
+            'id': comment.id,
+            'user__username': request.user.username,
+            'content': comment.content,
+            'created_at': comment.created_at.isoformat(),
+            'avatar_url': avatar_url,
+            'parent_id': parent_id,
+            'parent_username': parent_comment.user.username if parent_comment else None,
+            'like_count': 0,
+            'share_count': 0,
+            'reply_count': 0,
+            'image': comment.image.url if comment.image else None,
+            'gif_url': comment.gif_url if comment.gif_url else None  
+        }
+        return JsonResponse({
+            'success': True,
+            'message': 'Comment added',
+            'comment_count': tip.comments.count(),
+            'comment_id': comment.id,
+            'data': comment_data
+        })
+    except Tip.DoesNotExist:
+        logger.error(f"Tip not found: tip_id={tip_id}")
+        return JsonResponse({'success': False, 'error': 'Tip not found'}, status=404)
+    except Comment.DoesNotExist:
+        logger.error(f"Parent comment not found: parent_id={parent_id}")
+        return JsonResponse({'success': False, 'error': 'Parent comment not found'}, status=404)
     except Exception as e:
         logger.error(f"Error creating comment: {str(e)}")
         return JsonResponse({'success': False, 'error': 'An error occurred while commenting.'}, status=500)
@@ -272,27 +312,35 @@ def comment_tip(request):
 @login_required
 def get_tip_comments(request, tip_id):
     logger.info(f"Fetching comments for tip_id: {tip_id}")
-    tip = get_object_or_404(Tip, id=tip_id)
-    comments = tip.comments.filter(parent_comment__isnull=True).order_by('-created_at')
-    comments_data = []
-    for comment in comments:
-        try:
-            profile = comment.user.userprofile
-            avatar_url = profile.avatar.url if profile.avatar else settings.STATIC_URL + 'images/default-avatar.png'
-        except UserProfile.DoesNotExist:
-            avatar_url = settings.STATIC_URL + 'images/default-avatar.png'
-        comments_data.append({
-            'id': comment.id,
-            'user__username': comment.user.username,
-            'content': comment.content,
-            'created_at': comment.created_at.isoformat(),
-            'like_count': comment.likes.count(),
-            'share_count': comment.shares.count(),
-            'reply_count': comment.replies.count(),
-            'avatar_url': avatar_url
-        })
-    logger.info(f"Found {len(comments_data)} top-level comments")
-    return JsonResponse({'comments': comments_data})
+    try:
+        tip = Tip.objects.get(id=tip_id)
+        comments = tip.comments.all().order_by('-created_at')
+        comments_data = []
+        for comment in comments:
+            try:
+                profile = comment.user.userprofile
+                avatar_url = profile.avatar.url if profile.avatar else settings.STATIC_URL + 'images/default-avatar.png'
+            except UserProfile.DoesNotExist:
+                avatar_url = settings.STATIC_URL + 'images/default-avatar.png'
+            comments_data.append({
+                'id': comment.id,
+                'user__username': comment.user.username,
+                'content': comment.content,
+                'created_at': comment.created_at.isoformat(),
+                'like_count': comment.likes.count(),
+                'share_count': comment.shares.count(),
+                'reply_count': comment.replies.count(),
+                'avatar_url': avatar_url,
+                'parent_id': comment.parent_comment.id if comment.parent_comment else None,
+                'parent_username': comment.parent_comment.user.username if comment.parent_comment else None,
+                'image': comment.image.url if comment.image else None,
+                'gif_url': comment.gif_url if comment.gif_url else None  # Ensure gif_url is included
+            })
+        logger.info(f"Found {len(comments_data)} comments (including replies)")
+        return JsonResponse({'success': True, 'comments': comments_data})
+    except Tip.DoesNotExist:
+        logger.error(f"Tip not found: tip_id={tip_id}")
+        return JsonResponse({'success': False, 'error': 'Tip not found'}, status=404)
 
 @login_required
 @require_POST
@@ -322,24 +370,6 @@ def share_comment(request):
         share.delete()
         return JsonResponse({'success': True, 'message': 'Share removed', 'share_count': comment.shares.count()})
 
-@login_required
-@require_POST
-def reply_to_comment(request):
-    comment_id = request.POST.get('comment_id')
-    reply_text = request.POST.get('reply_text')
-    logger.info(f"Received reply_to_comment request: comment_id={comment_id}, reply_text={reply_text}")
-    if not comment_id or not reply_text:
-        logger.error(f"Missing comment_id or reply_text: comment_id={comment_id}, reply_text={reply_text}")
-        return JsonResponse({'success': False, 'error': 'Missing comment_id or reply_text'}, status=400)
-    try:
-        parent_comment = get_object_or_404(Comment, id=comment_id)
-        tip = parent_comment.tip
-        reply = Comment.objects.create(user=request.user, tip=tip, content=reply_text, parent_comment=parent_comment)
-        logger.info(f"Reply created successfully for comment_id: {comment_id}")
-        return JsonResponse({'success': True, 'message': 'Reply added', 'comment_count': tip.comments.count(), 'comment_id': reply.id})
-    except Exception as e:
-        logger.error(f"Error creating reply: {str(e)}")
-        return JsonResponse({'success': False, 'error': 'An error occurred while replying.'}, status=500)
 
 @login_required  # Require users to log in to see bookmarks
 def bookmarks(request):

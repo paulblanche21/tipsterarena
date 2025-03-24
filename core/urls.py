@@ -23,7 +23,6 @@ urlpatterns = [
     path('api/tip/<int:tip_id>/comments/', views.get_tip_comments, name='get_tip_comments'),
     path('api/like-comment/', views.like_comment, name='like_comment'),
     path('api/share-comment/', views.share_comment, name='share_comment'),
-    path('api/reply-to-comment/', views.reply_to_comment, name='reply_to_comment'),
     path('login/', views.login_view, name='login'),  # Separate login view
     path('signup/', views.signup, name='signup'),    # Separate signup view
     path('terms-of-service/', views.terms_of_service, name='terms_of_service'),
