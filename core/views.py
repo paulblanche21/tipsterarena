@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import authenticate, login 
 from django.contrib.auth.decorators import login_required 
 from django.contrib.auth.models import User 
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.db import models
 from django.db.models import Count, F
 from .models import Tip, Like, Follow, Share, UserProfile, Comment, MessageThread, RaceMeeting, RaceResult
@@ -15,6 +15,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import generics
 from rest_framework.serializers import ModelSerializer
 from datetime import datetime
+import json
 
 
 
@@ -546,3 +547,11 @@ def current_user_api(request):
         'handle': handle,
         'username': user.username
     })
+
+@csrf_exempt
+def csp_report(request):
+    if request.method == "POST":
+        report = json.loads(request.body.decode("utf-8"))
+        print("CSP Violation:", report)  # Log the violation for debugging
+        return HttpResponse(status=204)
+    return HttpResponse(status=400)

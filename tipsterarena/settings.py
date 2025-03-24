@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     'core.apps.CoreConfig',
     'rest_framework',  # Add this line
+    "csp",  # Add this line
 ]
 
 MIDDLEWARE = [
@@ -51,6 +52,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    
 ]
 
 ROOT_URLCONF = "tipsterarena.urls"
@@ -142,3 +144,31 @@ DEBUG = True  # Ensure this is True for development to serve media files
 LOGIN_REDIRECT_URL = '/home/'  # After login
 LOGOUT_REDIRECT_URL = '/'      # After logout
 LOGIN_URL = '/'                # Redirect to landing if not authenticated
+
+
+# CSP Settings
+CSP_DEFAULT_SRC = ("'self'",)  # Only allow resources from the same origin by default
+CSP_SCRIPT_SRC = (
+    "'unsafe-inline'",  # Allow inline scripts (temporary, we'll address this later)
+)
+CSP_STYLE_SRC = (
+    "'self'",  # Allow styles from your domain
+    "https://cdnjs.cloudflare.com",  # Font Awesome
+    "https://fonts.googleapis.com",  # Google Fonts
+    "'unsafe-inline'",  # Allow inline styles (if any)
+)
+CSP_FONT_SRC = (
+    "'self'",
+    "https://fonts.googleapis.com",
+    "https://fonts.gstatic.com",  # Google Fonts often loads font files from here
+)
+CSP_IMG_SRC = (
+    "'self'",
+    "data:",  # Allow data URIs (e.g., for small inline images)
+)
+CSP_CONNECT_SRC = ("'self'",)  # For APIs, WebSockets, etc.
+CSP_FRAME_SRC = ("'none'",)  # Disallow iframes
+CSP_OBJECT_SRC = ("'none'",)  # Disallow <object>, <embed>, etc.
+
+CSP_REPORT_ONLY = True
+CSP_REPORT_URI = "/csp-report/"  # Endpoint to receive violation reports

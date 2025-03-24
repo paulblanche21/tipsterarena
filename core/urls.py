@@ -35,6 +35,7 @@ urlpatterns = [
     path('api/trending-tips/', views.trending_tips_api, name='trending_tips_api'),
     path('api/current-user/', views.current_user_api, name='current_user_api'),
     path('logout/', auth_views.LogoutView.as_view(next_page='landing'), name='logout'),
+    path('csp-report/', views.csp_report, name='csp_report'),
 ]
 
 if settings.DEBUG:
