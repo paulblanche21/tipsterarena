@@ -13,6 +13,8 @@ class Tip(models.Model):
     text = models.TextField()
     image = models.ImageField(upload_to='tips/', blank=True, null=True)
     gif_url = models.URLField(blank=True, null=True)  # New field for GIF URLs
+    gif_width = models.PositiveIntegerField(null=True, blank=True)
+    gif_height = models.PositiveIntegerField(null=True, blank=True)
     poll = models.TextField(blank=True, null=True, default='{}')  # Store JSON as string
     emojis = models.TextField(blank=True, null=True, default='{}')  # Store JSON as string
     location = models.CharField(max_length=255, blank=True, null=True)

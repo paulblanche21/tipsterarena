@@ -71,7 +71,8 @@
                     <div class="tip-body">
                         <p>{{ tip.text|safe }}</p>
                         {% if tip.image %}
-                            <img src="{{ tip.image.url }}" alt="Tip Image" class="tip-image" width="582" height="300">
+                            <img src="{{ tip.image.url }}" alt="Tip Image" class="tip-image"
+                            width="{{ tip.gif_width|default:582 }}" height="{{tip.gif_height|default:300 }}">
                         {% endif %}
                         {% if tip.gif_url %}
                             <img src="{{ tip.gif_url }}" alt="Tip GIF" class="tip-image" width="582" height="300">
