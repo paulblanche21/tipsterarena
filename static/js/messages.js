@@ -1,5 +1,5 @@
 // static/js/messages.js
-document.addEventListener('DOMContentLoaded', () => {
+function init() {
     // Modal Event Listeners
     const newMessageBtn = document.getElementById('newMessageBtn');
     const newMessageSidebarBtn = document.getElementById('newMessageSidebarBtn');
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (messagesList) {
         messagesList.scrollTop = messagesList.scrollHeight;
     }
-});
+}
 
 // Modal Functions
 function openNewMessageModal() {
@@ -189,3 +189,9 @@ function getCsrfToken() {
     const tokenElement = document.querySelector('[name=csrfmiddlewaretoken]');
     return tokenElement ? tokenElement.value : '';
 }
+
+// Export the init function for dynamic import in main.js
+export { init };
+
+// Run init when DOM is loaded
+document.addEventListener('DOMContentLoaded', init);

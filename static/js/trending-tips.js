@@ -1,4 +1,9 @@
 // trending-tips.js
+
+export function init() {
+    console.log("trending-tips.js initialized");
+}
+
 function fetchTrendingTips() {
     fetch('/api/trending-tips/')
         .then(response => response.json())

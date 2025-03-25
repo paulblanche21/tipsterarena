@@ -17,12 +17,12 @@
         <!-- Banner and Avatar -->
         <div class="profile-header">
             {% if user_profile.banner %}
-                <img src="{{ user_profile.banner.url }}" alt="Banner Image" class="profile-banner" onerror="this.onerror=null; this.src=DEFAULT_BANNER_URL;">
+                <img src="{{ user_profile.banner.url }}" alt="Banner Image" class="profile-banner" onerror="this.style.display='none'; this.src=window.default_banner_url;">
             {% else %}
                 <img src="{% static 'images/default-banner.png' %}" alt="Default Banner Image" class="profile-banner">
             {% endif %}
             {% if user_profile.avatar %}
-                <img src="{{ user_profile.avatar.url }}" alt="{{ user.username }} Avatar" class="profile-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
+                <img src="{{ user_profile.avatar.url }}" alt="{{ user.username }} Avatar" class="profile-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
             {% else %}
                 <img src="{% static 'images/default-avatar.png' %}" alt="{{ user.username }} Avatar" class="profile-avatar">
             {% endif %}
@@ -64,7 +64,7 @@
             {% for tip in user_tips %}
                 <div class="tip" data-tip-id="{{ tip.id }}">
                     {% if tip.user.userprofile.avatar %}
-                        <img src="{{ tip.user.userprofile.avatar.url }}" alt="{{ tip.user.username }} Avatar" class="tip-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
+                        <img src="{{ tip.user.userprofile.avatar.url }}" alt="{{ tip.user.username }} Avatar" class="tip-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
                     {% else %}
                         <img src="{% static 'images/default-avatar.png' %}" alt="{{ tip.user.username }} Avatar" class="tip-avatar">
                     {% endif %}
@@ -118,7 +118,7 @@
                 <span class="comment-modal-close">×</span>
                 <!-- Original Tip with Avatar -->
                 <div class="modal-tip">
-                    <img src="" alt="User Avatar" class="tip-avatar modal-tip-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
+                    <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="tip-avatar modal-tip-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
                     <div class="modal-tip-content">
                         <a href="#" class="tip-username">
                             <strong class="modal-tip-username"></strong>
@@ -159,7 +159,7 @@
                 <div class="reply-to-header" style="display: none;">Replying to <span class="reply-to-username"></span></div>
                 <div class="post-reply-box">
                     {% if request.user.is_authenticated and request.user.userprofile.avatar %}
-                        <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
+                        <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
                     {% else %}
                         <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="post-avatar">
                     {% endif %}
@@ -194,7 +194,7 @@
             <div class="edit-profile-header">
                 <div class="profile-edit-banner">
                     {% if user_profile.banner %}
-                        <img src="{{ user_profile.banner.url }}" alt="Banner Image" class="profile-edit-banner-img" onerror="this.onerror=null; this.src=DEFAULT_BANNER_URL;">
+                        <img src="{{ user_profile.banner.url }}" alt="Banner Image" class="profile-edit-banner-img" onerror="this.style.display='none'; this.src=window.default_banner_url;">
                     {% else %}
                         <img src="{% static 'images/default-banner.png' %}" alt="Default Banner Image" class="profile-edit-banner-img">
                     {% endif %}
@@ -204,7 +204,7 @@
                     </div>
                     <div class="profile-edit-avatar">
                         {% if user_profile.avatar %}
-                            <img src="{{ user_profile.avatar.url }}" alt="Avatar" class="profile-edit-avatar-img" onerror="this.onerror=null; this.src=DEFAULT_AVATAR_URL;">
+                            <img src="{{ user_profile.avatar.url }}" alt="Avatar" class="profile-edit-avatar-img" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
                         {% else %}
                             <img src="{% static 'images/default-avatar.png' %}" alt="Avatar" class="profile-edit-avatar-img">
                         {% endif %}

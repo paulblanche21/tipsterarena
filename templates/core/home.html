@@ -237,7 +237,6 @@
 {% endblock %}
 
 
-{% block scripts %}
-<script src="{% static 'js/upcoming-events.js' %}" type="module"></script>
-<script src="{% static 'js/trending-tips.js' %}" type="module"></script>
+{% block extra_js %}
+    <!-- No additional scripts needed, as main.js dynamically imports comment.js, like.js, share.js, post.js, gif.js, poll.js, emoji.js, modal.js, trendingTips.js, eventPopup.js -->
 {% endblock %}

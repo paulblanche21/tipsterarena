@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'core.apps.CoreConfig',
     'rest_framework',  # Add this line
     "csp",  # Add this line
+    "django_vite",  # Add this line
 ]
 
 MIDDLEWARE = [
@@ -123,7 +124,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']  
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+    BASE_DIR / "static/dist",  # Add this line if not already present
+] 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Default primary key field type
@@ -172,3 +176,12 @@ CSP_OBJECT_SRC = ("'none'",)  # Disallow <object>, <embed>, etc.
 
 CSP_REPORT_ONLY = True
 CSP_REPORT_URI = "/csp-report/"  # Endpoint to receive violation reports
+
+# Vite settings
+DJANGO_VITE = {
+    "default": {
+        "dev_mode": True,  # Set to False in production
+        "dev_server_port": 3000,  # Port for Vite's dev server
+        "manifest_path": "static/dist/manifest.json",  # Path to Vite's manifest file
+    }
+}

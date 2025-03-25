@@ -73,7 +73,7 @@
                         <p>{{ tip.text|safe }}</p>
                         {% if tip.image %}
                             <img src="{{ tip.image.url }}" alt="Tip Image" class="tip-image" 
-                             width="{{ tip.gif_width|default:582 }}" height="{{tip.gif_height|default:300 }}">
+                                width="{{ tip.gif_width|default:582 }}" height="{{tip.gif_height|default:300 }}">
                         {% endif %}
                         {% if tip.gif_url %}
                             <img src="{{ tip.gif_url }}" alt="Tip GIF" class="tip-image" width="582" height="300">
@@ -238,7 +238,6 @@
 {% endblock %}
 
 
-{% block scripts %}
-<script src="{% static 'js/upcoming-events.js' %}" type="module"></script>
-<script src="{% static 'js/trending-tips.js' %}" type="module"></script>
+{% block extra_js %}
+    <!-- No additional scripts needed, as main.js dynamically imports comment.js, like.js, share.js, post.js, gif.js, poll.js, emoji.js, modal.js, trendingTips.js, eventPopup.js -->
 {% endblock %}
