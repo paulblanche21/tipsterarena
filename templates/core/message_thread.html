@@ -1,0 +1,20 @@
+<!-- core/message_thread.html -->
+<div class="message-thread">
+    <div class="thread-header">
+        <h3>{{ other_participant.username }}</h3>
+    </div>
+    <div class="messages-list" id="messagesList">
+        {% for message in messages %}
+            <div class="message {% if message.sender == request.user %}sent{% else %}received{% endif %}">
+                <p>{{ message.content }}</p>
+                <small>{{ message.created_at|date:"M d, Y, g:i A" }}</small>
+            </div>
+        {% empty %}
+            <p>No messages yet. Say hello!</p>
+        {% endfor %}
+    </div>
+    <div class="message-input">
+        <textarea id="messageInput" placeholder="Type a message..."></textarea>
+        <button id="sendMessageBtn" data-thread-id="{{ thread.id }}">Send</button>
+    </div>
+</div>

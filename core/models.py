@@ -1,6 +1,7 @@
 # models.py
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models import Max
 
 class Tip(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -109,6 +110,18 @@ class MessageThread(models.Model):
     def __str__(self):
         return f"Thread with {', '.join(p.username for p in self.participants.all()[:2])}"
 
+    def get_other_participant(self, current_user):
+        """Get the other participant in the thread besides the current user."""
+        return self.participants.exclude(id=current_user.id).first()
+
+    def update_last_message(self):
+        """Update the last_message field with the latest message content."""
+        latest_message = self.messages.order_by('-created_at').first()
+        if latest_message:
+            self.last_message = latest_message.content[:30]  # Truncate for display
+            self.updated_at = latest_message.created_at
+            self.save()
+
 class Message(models.Model):
     thread = models.ForeignKey(MessageThread, on_delete=models.CASCADE, related_name='messages')
     sender = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -117,7 +130,12 @@ class Message(models.Model):
 
     def __str__(self):
         return f"{self.sender.username} in {self.thread}: {self.content[:20]}"
-    
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Update the thread's last_message and updated_at fields
+        self.thread.update_last_message()
+
 
 class RaceMeeting(models.Model):
     date = models.DateField()

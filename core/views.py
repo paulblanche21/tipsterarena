@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse, HttpResponse
 from django.db import models
 from django.db.models import Count, F
-from .models import Tip, Like, Follow, Share, UserProfile, Comment, MessageThread, RaceMeeting, RaceResult
+from .models import Tip, Like, Follow, Share, UserProfile, Comment, MessageThread, RaceMeeting, RaceResult, Message, User 
 from .forms import UserProfileForm, CustomUserCreationForm 
 from django.contrib.auth.forms import AuthenticationForm 
 from django.conf import settings
@@ -376,7 +376,7 @@ def bookmarks(request):
     # Placeholder view for Bookmarks (can be expanded later to show bookmarked tips)
     return render(request, 'core/bookmarks.html')
 
-@login_required  # Require users to log in to see messages
+@login_required
 def messages(request):
     user = request.user
     message_threads = (MessageThread.objects.filter(participants=user)
@@ -385,6 +385,80 @@ def messages(request):
     return render(request, 'core/messages.html', {
         'message_threads': message_threads,
     })
+
+@login_required
+def message_thread(request, thread_id):
+    """View a specific message thread and its messages."""
+    thread = get_object_or_404(MessageThread, id=thread_id, participants=request.user)
+    messages = thread.messages.all().order_by('created_at')
+    other_participant = thread.get_other_participant(request.user)
+
+    return render(request, 'core/message_thread.html', {
+        'thread': thread,
+        'messages': messages,
+        'other_participant': other_participant,
+    })
+
+@login_required
+@require_POST
+@csrf_exempt
+def send_message(request):
+    """Send a new message in a thread or create a new thread."""
+    thread_id = request.POST.get('thread_id')
+    recipient_username = request.POST.get('recipient_username')
+    content = request.POST.get('content')
+
+    if not content:
+        return JsonResponse({'success': False, 'error': 'Message content cannot be empty'}, status=400)
+
+    # If thread_id is provided, send a message in that thread
+    if thread_id:
+        thread = get_object_or_404(MessageThread, id=thread_id, participants=request.user)
+    else:
+        # Otherwise, create a new thread with the recipient
+        if not recipient_username:
+            return JsonResponse({'success': False, 'error': 'Recipient username required'}, status=400)
+        recipient = get_object_or_404(User, username=recipient_username)
+        if recipient == request.user:
+            return JsonResponse({'success': False, 'error': 'Cannot message yourself'}, status=400)
+
+        # Check if a thread already exists between these users
+        thread = MessageThread.objects.filter(participants=request.user).filter(participants=recipient).first()
+        if not thread:
+            thread = MessageThread.objects.create()
+            thread.participants.add(request.user, recipient)
+
+    # Create the message
+    message = Message.objects.create(
+        thread=thread,
+        sender=request.user,
+        content=content
+    )
+
+    return JsonResponse({
+        'success': True,
+        'message_id': message.id,
+        'content': message.content,
+        'created_at': message.created_at.isoformat(),
+        'sender': message.sender.username,
+        'thread_id': thread.id,
+    })
+
+@login_required
+def get_thread_messages(request, thread_id):
+    """Fetch messages for a specific thread via API."""
+    thread = get_object_or_404(MessageThread, id=thread_id, participants=request.user)
+    messages = thread.messages.all().order_by('created_at')
+    messages_data = [
+        {
+            'id': msg.id,
+            'content': msg.content,
+            'sender': msg.sender.username,
+            'created_at': msg.created_at.isoformat(),
+        }
+        for msg in messages
+    ]
+    return JsonResponse({'success': True, 'messages': messages_data})
 
 @login_required  # Require users to log in to see notifications
 def notifications(request):

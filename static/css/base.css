@@ -47,6 +47,7 @@ body {
     min-height: 100vh;
     background-color: #001f3f;
     box-sizing: border-box;
+    flex-wrap: nowrap;
 }
 
 .content {
@@ -67,4 +68,23 @@ body {
 .content .follow-username:hover {
     color: #ff4136; /* Red for hover effects, matching your design */
     text-decoration: underline;
+}
+
+    /* Override for Messages Page */
+.messages-page .main-container {
+    padding-right: 0; /* Remove right padding to allow .sidebar-messages to expand */
+    align-items: flex-start; /* Align items to the top */
+}
+
+.messages-page .content {
+    max-width: none; /* Remove max-width constraint */
+    width: 388px; /* Match the .messages-feed width */
+    margin: 0; /* Remove centering */
+    padding: 10px 0; /* Add some padding for spacing */
+}
+
+.messages-page .sidebar-messages {
+    position: static; /* Remove fixed positioning */
+    flex: 1; /* Take up remaining space */
+    max-width: 599px; /* Ensure it doesn't exceed 599px */
 }

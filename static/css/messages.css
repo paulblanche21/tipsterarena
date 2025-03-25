@@ -1,88 +1,82 @@
-.card{
-    background-color: var(--secondary-bg);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    padding: var(--padding-small);
-    box-shadow: var(--shadow-light);
-    margin-bottom: var(--margin-small);
-    color: var(--primary-bg);
-    transition: box-shadow 0.2s;
-    display: flex;
-    align-items: flex-start;
-}
+/* messages.css */
 
-
-/* Messages Container */
-.messages-container {
-    position: relative;
-    width: 350px; /* Match sidebar width */
-    margin-right: 10px; /* Align with sidebar's margin */
-}
-
-/* Messages Feed (narrow center column, like X’s Messages sidebar)*/
-.messages-feed {
-    max-width: 650px;
-    margin: 0 10px 10px 10px;
-    padding: 0;
-    width: 100%;
-    box-sizing: border-box;
-    background-color: #ffffff;
-} 
-
-/* Messages Card */
-.messages-card {
+/* Modal Styles */
+.modal {
+    display: none;
     position: fixed;
-    right: 10px;
-    bottom: 10px;
-    width: 340px; /* Match sidebar content width (350px - 20px padding) */
-    background-color: #ffffff; /* White background like X */
-    color: #000000; /* Black text */
-    padding: 8px 12px;
-    border: 1px solid #e1e8ed; /* Light border like X cards */
-    border-radius: 12px; /* Rounded corners like X cards */
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-    z-index: 1001; /* Above sidebar */
-    display: flex;
-    align-items: center;
-    justify-content: space-between; /* Space between text, icon, and caret */
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
     text-decoration: none;
-    font-size: 14px;
-    font-weight: 600; /* Bold text like X */
-    transition: background-color 0.2s; /* Smooth hover transition */
+    cursor: pointer;
 }
 
-/* Messages Text */
-.messages-text {
-    flex-grow: 1; /* Allow text to take available space */
-    color: #000000;
+.suggestion {
+    padding: 10px;
+    cursor: pointer;
 }
 
-/* Messages Icon */
-.messages-icon {
-    margin-left: 8px; /* Space between text and icon */
-    color: #1da1f2; /* Blue icon, matching X */
+.suggestion:hover {
+    background-color: #f0f0f0;
 }
 
-/* Messages Caret */
-.messages-caret {
-    margin-left: 8px; /* Space between icon and caret */
-    color: #666666; /* Gray caret, matching X */
-    font-size: 12px; /* Slightly smaller caret */
+.avatar-small {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
 }
 
-.messages-carrot:hover {
-    background-color: #d9362e;
+/* Center Feed (Messages List) */
+.messages-feed {
+    position: absolute;
+    left: 260px; /* Account for the navbar width */
+    top: 20px; /* Space from the top */
+    width: 388px;
+    height: calc(100vh - 40px) ;
+    border: 1px solid #ddd;
+    overflow-y: auto;
+    background-color: #fff;
+    border-radius: 8px;
+    z-index: 1;
 }
 
 .messages-header {
-    font-size: 24px;
-    font-weight: bold;
-    color: #000000;
-    padding: 12px;
-    border-bottom: 1px solid #e1e8ed;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    background-color: #f8f9fa;
+}
+
+.messages-title {
+    font-size: 20px;
+    font-weight: bold;
 }
 
 .messages-icons {
@@ -90,18 +84,211 @@
     gap: 10px;
 }
 
-.messages-new,
-.messages-settings {
-    font-size: 20px;
+.messages-settings,
+.messages-new {
     cursor: pointer;
-    color: #666666;
 }
 
-.messages-new:hover,
-.messages-settings:hover {
-    color: #1da1f2;
+.card {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #e6ecf0;
+    cursor: pointer;
+    transition: background-color 0.2s;
 }
 
-.messages-title {
+.card:hover {
+    background-color: #f5f8fa;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-content p {
     margin: 0;
+    font-size: 14px;
+    color: #14171a;
+}
+
+.card-content p strong {
+    font-weight: bold;
+}
+
+.card-content .user-handle {
+    color: #657786;
+    margin-left: 5px;
+}
+
+.card-content .message-date {
+    color: #657786;
+    margin-left: 5px;
+}
+
+/* Right-Hand Feed (Message Content) */
+.messages-page .sidebar-messages {
+    display: block !important;
+    position: absolute;
+    left: 658px; /* 250px (navbar) + 388px (center feed) + 20px (gap) */
+    top: 20px; /* Match the top position of .messages-feed */
+    width: 599px;
+    height: calc(100vh - 40px) ;
+    margin-right: 1px;
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-sizing: border-box;
+    z-index: 1;
+}
+
+.sidebar-message-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+}
+
+.sidebar-message-content h3 {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.sidebar-message-content p {
+    font-size: 16px;
+    color: #657786;
+    margin-bottom: 20px;
+}
+
+.new-message-btn {
+    padding: 10px 20px;
+    background-color: #1da1f2;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.new-message-btn:hover {
+    background-color: #1a91da;
+}
+
+/* Message Thread Styles */
+.message-thread {
+    padding: 20px;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.thread-header {
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.thread-header h3 {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.messages-list {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+}
+
+.message {
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 10px;
+    max-width: 70%;
+}
+
+.message.sent {
+    background-color: #1da1f2;
+    color: white;
+    margin-left: auto;
+    text-align: right;
+}
+
+.message.received {
+    background-color: #f0f0f0;
+    margin-right: auto;
+}
+
+.message p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.message small {
+    font-size: 12px;
+    color: #657786;
+    display: block;
+    margin-top: 5px;
+}
+
+.message-input {
+    display: flex;
+    gap: 10px;
+}
+
+.message-input textarea {
+    flex: 1;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    resize: none;
+}
+
+.message-input button {
+    padding: 10px 20px;
+    background-color: #1da1f2;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.message-input button:hover {
+    background-color: #1a91da;
+}
+
+/* Hide default sidebar elements only on the messages page */
+.messages-page .sidebar,
+.messages-page .sidebar-card,
+.messages-page .search-input,
+.messages-page .messages-carrot {
+    display: none !important;
+}
+
+/* Responsive Design */
+@media (max-width: 1000px) {
+    .messages-feed {
+        position: static;
+        width: 100%;
+        max-width: 388px;
+        margin: 0 auto;
+    }
+    .messages-page .sidebar-messages {
+        position: static;
+        width: 100%;
+        max-width: 599px;
+        margin: 20px auto 0;
+    }
 }
