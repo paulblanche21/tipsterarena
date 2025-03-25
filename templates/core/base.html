@@ -1,24 +1,23 @@
 <!-- templates/core/base.html -->
+{% load django_vite static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Tipster Arena{% endblock %}</title>
-    {% load static %}
-    <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+    <link rel="icon" type="image/x-icon" href="{% static 'img/favicon.ico' %}">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap">
-    {% block extra_css %}
-    {% endblock %}
+    {% block extra_css %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
     <!-- Navbar -->
     <nav class="navbar">
         <div class="nav-brand">
-            <img src="{% static 'images/tipster-arena-logo.png' %}" 
-                 srcset="{% static 'images/tipster-arena-logo.png' %} 1x, {% static 'images/tipster-arena-logo@2x.png' %} 2x" 
+            <img src="{% static 'img/tipster-arena-logo.png' %}" 
+                 srcset="{% static 'img/tipster-arena-logo.png' %} 1x, {% static 'img/tipster-arena-logo@2x.png' %} 2x" 
                  alt="Tipster Arena Logo" 
                  class="nav-brand-logo"
                  width="209" 
@@ -44,7 +43,7 @@
                 {% if request.user.is_authenticated and request.user.userprofile.avatar %}
                     <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="nav-avatar">
                 {% else %}
-                    <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="nav-avatar" onerror="this.style.display='none'">
+                    <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="nav-avatar" onerror="this.style.display='none'">
                 {% endif %}
                 <div class="user-info">
                     <span class="user-display-name">{{ request.user.username|default:"Guest" }}</span>
@@ -63,9 +62,7 @@
     <div class="main-container">
         <!-- Main Content -->
         <main class="content">
-            {% block content %}
-            <!-- Child templates will fill this -->
-            {% endblock %}
+            {% block content %}{% endblock %}
         </main>
 
         <!-- Right Sidebar -->
@@ -74,7 +71,6 @@
             <input type="text" placeholder="Search Tipster Arena..." class="search-input">
             <div class="sidebar-scrollable">
                 {% block upcoming_events %}
-                <!-- Default Upcoming Events (No Carousel) -->
                 <div class="sidebar-card" data-card="upcoming-events">
                     <h3>Upcoming Events</h3>
                     <p>Events will be displayed here.</p>
@@ -124,14 +120,14 @@
         {% endblock %}
     </div>
 
-    <!-- Post Modal (Restored for Navbar Button) -->
+    <!-- Post Modal -->
     <div class="post-modal" id="post-modal">
         <div class="post-modal-content">
             <div class="post-user">
                 {% if request.user.is_authenticated and request.user.userprofile.avatar %}
                     <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
                 {% else %}
-                    <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
+                    <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
                 {% endif %}
                 <div class="post-username-container">
                     <span class="post-username">{{ request.user.username|default:"Guest" }}</span>
@@ -169,22 +165,23 @@
         </div>
     </div>
 
-    <!-- CSRF Token -->
+    <!-- CSRF Token and Constants -->
     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-
-    <!-- Define URLs and Constants for JavaScript -->
     <script>
         window.logout_url = "{% url 'logout' %}";
         window.landing_url = "{% url 'landing' %}";
-        window.default_avatar_url = "{% static 'images/default-avatar.png' %}";
-        window.default_banner_url = "{% static 'images/default-banner.png' %}";
+        window.default_avatar_url = "{% static 'img/default-avatar.png' %}";
+        window.default_banner_url = "{% static 'img/default-banner.png' %}";
     </script>
 
-    <!-- Load Vite-Bundled JavaScript Modules with django-vite -->
-    {% load django_vite %}
-    {% vite_asset 'js/main.js' %}
-    {% vite_asset 'js/config.js' %}
-    {% block extra_js %}
-    {% endblock %}
+    <!-- Load Vite-Bundled JavaScript -->
+    {% if debug %}
+        <script type="module" src="http://localhost:3000/static/js/main.js"></script>
+    {% else %}
+        {% load django_vite %}
+        {% vite_asset 'static/js/main.js' %}
+    {% endif %}
+
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

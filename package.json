@@ -8,13 +8,13 @@
   "main": "index.js",
   "devDependencies": {
     "@vitejs/plugin-legacy": "^5.4.3",
-    "vite": "^5.4.3"
+    "django-vite-plugin": "^4.0.5",
+    "vite": "^5.4.15"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "vite",
     "build": "vite build",
-    "dev": "vite --port 3000",
-    "watch": "vite build --watch"
+    "preview": "vite preview"
   },
   "keywords": [],
   "author": "",

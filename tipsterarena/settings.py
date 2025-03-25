@@ -40,9 +40,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     'core.apps.CoreConfig',
-    'rest_framework',  # Add this line
-    "csp",  # Add this line
-    "django_vite",  # Add this line
+    'rest_framework',  
+    "csp",  
+    "django_vite",  
 ]
 
 MIDDLEWARE = [
@@ -123,12 +123,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
+# settings.py
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    BASE_DIR / 'static',
-    BASE_DIR / "static/dist",  # Add this line if not already present
-] 
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -177,11 +175,12 @@ CSP_OBJECT_SRC = ("'none'",)  # Disallow <object>, <embed>, etc.
 CSP_REPORT_ONLY = True
 CSP_REPORT_URI = "/csp-report/"  # Endpoint to receive violation reports
 
-# Vite settings
+# Django Vite settings
 DJANGO_VITE = {
-    "default": {
-        "dev_mode": True,  # Set to False in production
-        "dev_server_port": 3000,  # Port for Vite's dev server
-        "manifest_path": "static/dist/manifest.json",  # Path to Vite's manifest file
+    'default': {
+        'dev_mode': DEBUG,                      # Use Vite dev server in DEBUG mode
+        'dev_server_port': 3000,               # Matches vite.config.js
+        'static_url_prefix': 'dist',           # Serve from /static/dist/
+        'manifest_path': BASE_DIR / 'static/dist/manifest.json',
     }
 }

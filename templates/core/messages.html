@@ -23,7 +23,7 @@
                         {% if other_participant.userprofile.avatar %}
                             <img src="{{ other_participant.userprofile.avatar.url }}" alt="User Avatar" class="avatar">
                         {% else %}
-                            <img src="{% static 'images/default-avatar.png' %}" alt="Default Avatar" class="avatar" onerror="this.style.display='none'">
+                            <img src="{% static 'img/default-avatar.png' %}" alt="Default Avatar" class="avatar" onerror="this.style.display='none'">
                         {% endif %}
                         <div class="card-content">
                             <p>

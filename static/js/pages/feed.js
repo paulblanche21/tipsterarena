@@ -1,5 +1,5 @@
 // feed.js
-import { attachFollowButtonListeners } from './follow.js';
+import { attachFollowButtonListeners } from '../follow.js';
 import { getEventList } from './upcoming-events.js';
 
 export function setupShowMoreButtons() {

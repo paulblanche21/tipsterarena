@@ -11,7 +11,7 @@
                 {% if request.user.is_authenticated and request.user.userprofile.avatar %}
                     <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
                 {% else %}
-                    <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
+                    <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
                 {% endif %}
                 <div class="post-username-container">
                     <span class="post-username">{{ request.user.username|default:"Guest" }}</span>
@@ -51,7 +51,7 @@
                     {% if tip.user.userprofile.avatar %}
                         <img src="{{ tip.user.userprofile.avatar.url }}" alt="{{ tip.user.username }} Avatar" class="tip-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
                     {% else %}
-                        <img src="{% static 'images/default-avatar.png' %}" alt="{{ tip.user.username }} Avatar" class="tip-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
+                        <img src="{% static 'img/default-avatar.png' %}" alt="{{ tip.user.username }} Avatar" class="tip-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
                     {% endif %}
                     <div class="tip-content">
                         <div class="tip-header">
@@ -157,7 +157,7 @@
                     {% if request.user.is_authenticated and request.user.userprofile.avatar %}
                         <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
                     {% else %}
-                        <img src="{% static 'images/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
+                        <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
                     {% endif %}
                     <div class="post-reply-content">
                         <div class="post-username-container">

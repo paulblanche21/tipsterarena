@@ -1,6 +1,6 @@
 // tips.js
 import { getCSRFToken } from './utils.js';
-import { applyFormatting, showGifModal, showEmojiPicker } from './post.js';
+import { applyFormatting, showGifModal, showEmojiPicker } from './pages/post.js';
 
 // Move fetchComments to top level
 function fetchComments(tipId, list, callback) {

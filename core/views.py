@@ -98,10 +98,10 @@ def home(request):
     for user in suggested_users:
         try:
             profile = user.userprofile
-            avatar_url = profile.avatar.url if profile.avatar else settings.STATIC_URL + 'images/default-avatar.png'
+            avatar_url = profile.avatar.url if profile.avatar else settings.STATIC_URL + 'img/default-avatar.png'
             bio = profile.description or "No bio available"
         except UserProfile.DoesNotExist:
-            avatar_url = settings.STATIC_URL + 'images/default-avatar.png'
+            avatar_url = settings.STATIC_URL + 'img/default-avatar.png'
             bio = "No bio available"
         suggested_tipsters.append({
             'username': user.username,
@@ -276,7 +276,7 @@ def comment_tip(request):
         
         avatar_url = (request.user.userprofile.avatar.url 
                      if hasattr(request.user, 'userprofile') and request.user.userprofile.avatar 
-                     else settings.STATIC_URL + 'images/default-avatar.png')
+                     else settings.STATIC_URL + 'img/default-avatar.png')
         comment_data = {
             'id': comment.id,
             'user__username': request.user.username,
@@ -319,9 +319,9 @@ def get_tip_comments(request, tip_id):
         for comment in comments:
             try:
                 profile = comment.user.userprofile
-                avatar_url = profile.avatar.url if profile.avatar else settings.STATIC_URL + 'images/default-avatar.png'
+                avatar_url = profile.avatar.url if profile.avatar else settings.STATIC_URL + 'img/default-avatar.png'
             except UserProfile.DoesNotExist:
-                avatar_url = settings.STATIC_URL + 'images/default-avatar.png'
+                avatar_url = settings.STATIC_URL + 'img/default-avatar.png'
             comments_data.append({
                 'id': comment.id,
                 'user__username': comment.user.username,
@@ -508,10 +508,10 @@ def suggested_users_api(request):
     for user in suggested_users:
         try:
             profile = user.userprofile
-            avatar_url = profile.avatar.url if profile.avatar else settings.STATIC_URL + 'images/default-avatar.png'
+            avatar_url = profile.avatar.url if profile.avatar else settings.STATIC_URL + 'img/default-avatar.png'
             bio = profile.description or "No bio available"
         except UserProfile.DoesNotExist:
-            avatar_url = settings.STATIC_URL + 'images/default-avatar.png'
+            avatar_url = settings.STATIC_URL + 'img/default-avatar.png'
             bio = "No bio available"
         users_data.append({
             'username': user.username,
@@ -566,7 +566,7 @@ def post_tip(request):
                     'created_at': tip.created_at.isoformat(),
                     'username': tip.user.username,
                     'handle': tip.user.userprofile.handle or f"@{tip.user.username}",
-                    'avatar': tip.user.userprofile.avatar.url if tip.user.userprofile.avatar else settings.STATIC_URL + 'images/default-avatar.png',
+                    'avatar': tip.user.userprofile.avatar.url if tip.user.userprofile.avatar else settings.STATIC_URL + 'img/default-avatar.png',
                 }
             }
             return JsonResponse(response_data)
@@ -617,11 +617,11 @@ def trending_tips_api(request):
     for tip in trending_tips:
         try:
             profile = tip.user.userprofile
-            avatar_url = profile.avatar.url if profile.avatar else settings.STATIC_URL + 'images/default-avatar.png'
+            avatar_url = profile.avatar.url if profile.avatar else settings.STATIC_URL + 'img/default-avatar.png'
             # Strip the @ from the handle if it exists
             handle = profile.handle.lstrip('@') if profile.handle else tip.user.username
         except UserProfile.DoesNotExist:
-            avatar_url = settings.STATIC_URL + 'images/default-avatar.png'
+            avatar_url = settings.STATIC_URL + 'img/default-avatar.png'
             handle = tip.user.username
         tips_data.append({
             'username': tip.user.username,
@@ -639,10 +639,10 @@ def current_user_api(request):
     user = request.user
     try:
         profile = user.userprofile
-        avatar_url = profile.avatar.url if profile.avatar else settings.STATIC_URL + 'images/default-avatar.png'
+        avatar_url = profile.avatar.url if profile.avatar else settings.STATIC_URL + 'img/default-avatar.png'
         handle = profile.handle or user.username
     except UserProfile.DoesNotExist:
-        avatar_url = settings.STATIC_URL + 'images/default-avatar.png'
+        avatar_url = settings.STATIC_URL + 'img/default-avatar.png'
         handle = user.username
 
     return JsonResponse({
