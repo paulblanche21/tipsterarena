@@ -50,8 +50,6 @@ function setupDotNavigation(container) {
   const dots = dotsContainer ? dotsContainer.querySelectorAll('.dot') : [];
   const slides = container.querySelectorAll('.carousel-slide');
 
-  console.log(`Setting up navigation: ${slides.length} slides, ${dots.length} dots`);
-
   if (slides.length <= 1) {
     return;
   }

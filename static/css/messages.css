@@ -79,6 +79,11 @@
     font-weight: bold;
 }
 
+.messages-text-base{
+    font-size: 16px;
+    color: white;
+}
+
 .messages-icons {
     display: flex;
     gap: 10px;
@@ -87,6 +92,53 @@
 .messages-settings,
 .messages-new {
     cursor: pointer;
+}
+
+/* Messages Button (Bottom Right) */
+.messages-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1002; /* Above other elements */
+}
+
+.messages-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--red-accent); /* Tipster Arena's red (#ff4136) */
+    border-radius: 50px;
+    padding: 10px 15px;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.2s ease;
+}
+
+.messages-card:hover {
+    background-color: #e63b31; /* Slightly darker red for hover */
+}
+
+.messages-text-base {
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    margin-right: 8px;
+}
+
+.messages-icon-base {
+    color: #fff;
+    font-size: 18px;
+}
+
+.messages-caret-base {
+    color: #fff;
+    font-size: 14px;
+    margin-left: 8px;
+}
+
+/* Ensure the caret is visible on non-messages pages */
+.messages-caret-base {
+    display: inline-block !important;
 }
 
 .card {
@@ -273,7 +325,7 @@
 .messages-page .sidebar,
 .messages-page .sidebar-card,
 .messages-page .search-input,
-.messages-page .messages-carrot {
+.messages-page .messages-caret {
     display: none !important;
 }
 
