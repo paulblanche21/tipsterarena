@@ -1,5 +1,4 @@
-<!-- templates/core/base.html -->
-{% load django_vite static %}
+{% load static django_vite %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -174,18 +173,8 @@
         window.default_banner_url = "{% static 'img/default-banner.png' %}";
     </script>
 
-     <!-- Debug Marker -->
-    <p>DEBUG is: {{ debug }}</p>
-
-    <!-- Load Vite-Bundled JavaScript -->
-    {% if debug %}
-        <script type="module" src="http://localhost:3000/static/js/main.js"></script>
-    {% else %}
-        {% load django_vite %}
-        {% vite_asset 'static/js/main.js' %}
-    {% endif %}
-
+      <!-- Load Vite-Bundled JavaScript -->
+    {% vite_asset 'js/main.js' %}
     {% block extra_js %}{% endblock %}
-
 </body>
 </html>

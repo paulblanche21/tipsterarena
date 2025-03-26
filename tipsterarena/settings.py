@@ -175,12 +175,11 @@ CSP_OBJECT_SRC = ("'none'",)  # Disallow <object>, <embed>, etc.
 CSP_REPORT_ONLY = True
 CSP_REPORT_URI = "/csp-report/"  # Endpoint to receive violation reports
 
-# Django Vite settings
 DJANGO_VITE = {
     'default': {
-        'dev_mode': DEBUG,                      # Use Vite dev server in DEBUG mode
-        'dev_server_port': 3000,               # Matches vite.config.js
-        'static_url_prefix': 'dist',           # Serve from /static/dist/
+        'dev_mode': DEBUG,
+        'dev_server_port': 3000,
+        'static_url_prefix': '',  # Empty to avoid prepending 'dist'
         'manifest_path': BASE_DIR / 'static/dist/manifest.json',
     }
 }
