@@ -183,3 +183,5 @@ DJANGO_VITE = {
         'manifest_path': BASE_DIR / 'static/dist/manifest.json',
     }
 }
+
+VITE_APP_DIR = BASE_DIR  # Points to tipsterarena/, where vite.config.mjs is
