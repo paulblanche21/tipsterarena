@@ -1,4 +1,4 @@
-import { getCSRFToken } from './utils.js';
+import { getCSRFToken } from './pages/utils.js';
 
 export function attachFollowButtonListeners() {
     const followButtons = document.querySelectorAll('.follow-btn');

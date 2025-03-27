@@ -1,5 +1,5 @@
 // tips.js
-import { getCSRFToken } from './utils.js';
+import { getCSRFToken } from './pages/utils.js';
 import { applyFormatting, showGifModal, showEmojiPicker } from './pages/post.js';
 
 // Move fetchComments to top level

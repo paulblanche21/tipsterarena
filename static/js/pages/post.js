@@ -1,4 +1,3 @@
-// post.js
 import { getCSRFToken } from './utils.js';
 
 // Giphy API Key
@@ -129,7 +128,7 @@ function showGifModal(textarea, previewDiv) {
 }
 
 // Function to fetch and show the emoji picker with all emojis, X-style
-async function showEmojiPicker(textarea, triggerButton) {
+export async function showEmojiPicker(textarea, triggerButton) {
     let emojiPicker = document.getElementById('emoji-picker');
     if (!emojiPicker) {
         emojiPicker = document.createElement('div');
@@ -164,52 +163,53 @@ async function showEmojiPicker(textarea, triggerButton) {
     let allEmojis = [];
     let recentEmojis = JSON.parse(localStorage.getItem('recentEmojis')) || [];
 
-    // Fetch emoji data from a public source
-    try {
-        const response = await fetch('https://unpkg.com/emoji.json@14.0.0/emoji.json');
-        const emojiData = await response.json();
-        allEmojis = emojiData;
-        console.log(`Loaded ${allEmojis.length} emojis`);
+    // Fetch emoji data only when the function runs
+    const loadEmojis = async () => {
+        try {
+            const response = await fetch('https://unpkg.com/emoji.json@14.0.0/emoji.json');
+            const emojiData = await response.json();
+            console.log(`Loaded ${emojiData.length} emojis`);
+            const uniqueCategories = [...new Set(emojiData.map(emoji => emoji.category))];
+            console.log('Unique categories in emoji.json:', uniqueCategories);
+            return emojiData;
+        } catch (error) {
+            console.error('Error fetching emoji data:', error);
+            return [
+                { char: '😀', category: 'Smileys & Emotion', name: 'grinning face' },
+                { char: '😂', category: 'Smileys & Emotion', name: 'face with tears of joy' },
+                { char: '😍', category: 'Smileys & Emotion', name: 'smiling face with heart-eyes' },
+                { char: '😢', category: 'Smileys & Emotion', name: 'crying face' },
+                { char: '😡', category: 'Smileys & Emotion', name: 'pouting face' },
+                { char: '👍', category: 'Smileys & Emotion', name: 'thumbs up' },
+                { char: '👎', category: 'Smileys & Emotion', name: 'thumbs down' },
+                { char: '❤️', category: 'Symbols', name: 'red heart' },
+                { char: '🔥', category: 'Symbols', name: 'fire' },
+                { char: '✨', category: 'Symbols', name: 'sparkles' },
+                { char: '🎉', category: 'Activities', name: 'party popper' },
+                { char: '💪', category: 'Smileys & Emotion', name: 'flexed biceps' },
+                { char: '🙌', category: 'Smileys & Emotion', name: 'raising hands' },
+                { char: '👏', category: 'Smileys & Emotion', name: 'clapping hands' },
+                { char: '🤓', category: 'Smileys & Emotion', name: 'nerd face' },
+                { char: '😎', category: 'Smileys & Emotion', name: 'smiling face with sunglasses' },
+                { char: '🤔', category: 'Smileys & Emotion', name: 'thinking face' },
+                { char: '🙏', category: 'Smileys & Emotion', name: 'folded hands' },
+                { char: '🚀', category: 'Travel & Places', name: 'rocket' },
+                { char: '🌟', category: 'Symbols', name: 'glowing star' },
+                { char: '⚽', category: 'Activities', name: 'soccer ball' },
+                { char: '⛳', category: 'Activities', name: 'flag in hole' },
+                { char: '🎾', category: 'Activities', name: 'tennis' },
+                { char: '🏇', category: 'Animals & Nature', name: 'horse racing' },
+                { char: '🏀', category: 'Activities', name: 'basketball' },
+                { char: '🏈', category: 'Activities', name: 'american football' },
+                { char: '🎲', category: 'Objects', name: 'game die' },
+                { char: '🎯', category: 'Activities', name: 'bullseye' },
+                { char: '🎸', category: 'Objects', name: 'guitar' },
+                { char: '🎮', category: 'Objects', name: 'video game' }
+            ];
+        }
+    };
 
-        // Log unique categories to debug
-        const uniqueCategories = [...new Set(allEmojis.map(emoji => emoji.category))];
-        console.log('Unique categories in emoji.json:', uniqueCategories);
-    } catch (error) {
-        console.error('Error fetching emoji data:', error);
-        // Fallback to a smaller set if fetch fails
-        allEmojis = [
-            { char: '😀', category: 'Smileys & Emotion', name: 'grinning face' },
-            { char: '😂', category: 'Smileys & Emotion', name: 'face with tears of joy' },
-            { char: '😍', category: 'Smileys & Emotion', name: 'smiling face with heart-eyes' },
-            { char: '😢', category: 'Smileys & Emotion', name: 'crying face' },
-            { char: '😡', category: 'Smileys & Emotion', name: 'pouting face' },
-            { char: '👍', category: 'Smileys & Emotion', name: 'thumbs up' },
-            { char: '👎', category: 'Smileys & Emotion', name: 'thumbs down' },
-            { char: '❤️', category: 'Symbols', name: 'red heart' },
-            { char: '🔥', category: 'Symbols', name: 'fire' },
-            { char: '✨', category: 'Symbols', name: 'sparkles' },
-            { char: '🎉', category: 'Activities', name: 'party popper' },
-            { char: '💪', category: 'Smileys & Emotion', name: 'flexed biceps' },
-            { char: '🙌', category: 'Smileys & Emotion', name: 'raising hands' },
-            { char: '👏', category: 'Smileys & Emotion', name: 'clapping hands' },
-            { char: '🤓', category: 'Smileys & Emotion', name: 'nerd face' },
-            { char: '😎', category: 'Smileys & Emotion', name: 'smiling face with sunglasses' },
-            { char: '🤔', category: 'Smileys & Emotion', name: 'thinking face' },
-            { char: '🙏', category: 'Smileys & Emotion', name: 'folded hands' },
-            { char: '🚀', category: 'Travel & Places', name: 'rocket' },
-            { char: '🌟', category: 'Symbols', name: 'glowing star' },
-            { char: '⚽', category: 'Activities', name: 'soccer ball' },
-            { char: '⛳', category: 'Activities', name: 'flag in hole' },
-            { char: '🎾', category: 'Activities', name: 'tennis' },
-            { char: '🏇', category: 'Animals & Nature', name: 'horse racing' },
-            { char: '🏀', category: 'Activities', name: 'basketball' },
-            { char: '🏈', category: 'Activities', name: 'american football' },
-            { char: '🎲', category: 'Objects', name: 'game die' },
-            { char: '🎯', category: 'Activities', name: 'bullseye' },
-            { char: '🎸', category: 'Objects', name: 'guitar' },
-            { char: '🎮', category: 'Objects', name: 'video game' }
-        ];
-    }
+    allEmojis = await loadEmojis();
 
     function renderEmojis(emojis) {
         emojiGrid.innerHTML = '';
