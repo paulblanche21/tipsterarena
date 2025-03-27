@@ -10,6 +10,6 @@ db.sqlite3
 staticfiles/
 media/__pycache__/
 *.pyc
-node_modules
 node_modules/
-
+*.log
+dist/
