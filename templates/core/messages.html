@@ -7,48 +7,81 @@
 
 {% block content %}
     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-    <!-- Messages Feed (narrower center column, like X’s Messages sidebar) -->
-    <div class="messages-feed">
-        <h2 class="messages-header">
-            <span class="messages-title">Messages</span>
-            <span class="messages-icons">
-                <span class="messages-settings"><i class="fa-solid fa-gear"></i></span>
-                <span class="messages-new" id="newMessageBtn"><i class="fa-solid fa-envelope"></i></span>
-            </span>
-        </h2>
-        {% if message_threads %}
-            {% for thread in message_threads %}
-                <div class="card" data-thread-id="{{ thread.id }}">
-                    {% with other_participant=thread.get_other_participant|default:"Unknown User" %}
-                        {% if other_participant.userprofile.avatar %}
-                            <img src="{{ other_participant.userprofile.avatar.url }}" alt="User Avatar" class="avatar">
-                        {% else %}
-                            <img src="{% static 'img/default-avatar.png' %}" alt="Default Avatar" class="avatar" onerror="this.style.display='none'">
-                        {% endif %}
+    <!-- Messages Container (holds both the feed and the message content) -->
+    <div class="messages-container">
+        <!-- Messages Feed (narrower center column, like X’s Messages sidebar) -->
+        <div class="messages-feed">
+            <h2 class="messages-header">
+                <span class="messages-title">Messages</span>
+                <span class="messages-icons">
+                    <span class="messages-settings"><i class="fa-solid fa-gear"></i></span>
+                    <span class="messages-new" id="newMessageBtn"><i class="fa-solid fa-envelope"></i></span>
+                </span>
+            </h2>
+            {% if message_threads %}
+                {% for thread in message_threads %}
+                    <div class="card" data-thread-id="{{ thread.id }}">
+                        {% with other_participant=thread.get_other_participant|default:"Unknown User" %}
+                            {% if other_participant.userprofile.avatar %}
+                                <img src="{{ other_participant.userprofile.avatar.url }}" alt="User Avatar" class="avatar">
+                            {% else %}
+                                <img src="{% static 'img/default-avatar.png' %}" alt="Default Avatar" class="avatar" onerror="this.style.display='none'">
+                            {% endif %}
+                            <div class="card-content">
+                                <p>
+                                    <strong>{{ other_participant.username|default:"Unknown User" }}</strong>
+                                    <span class="user-handle">@{{ other_participant.userprofile.handle|default:other_participant.username }}</span>
+                                    <span class="message-date">{{ thread.updated_at|date:"M d" }}</span>
+                                </p>
+                                <p>{{ thread.last_message|truncatechars:50|default:"No message" }}</p>
+                            </div>
+                        {% endwith %}
+                    </div>
+                {% empty %}
+                    <div class="card">
                         <div class="card-content">
-                            <p>
-                                <strong>{{ other_participant.username|default:"Unknown User" }}</strong>
-                                <span class="user-handle">@{{ other_participant.userprofile.handle|default:other_participant.username }}</span>
-                                <span class="message-date">{{ thread.updated_at|date:"M d" }}</span>
-                            </p>
-                            <p>{{ thread.last_message|truncatechars:50|default:"No message" }}</p>
+                            <p>No messages yet. Start a conversation!</p>
                         </div>
-                    {% endwith %}
-                </div>
-            {% empty %}
+                    </div>
+                {% endfor %}
+            {% else %}
                 <div class="card">
                     <div class="card-content">
                         <p>No messages yet. Start a conversation!</p>
                     </div>
                 </div>
-            {% endfor %}
-        {% else %}
-            <div class="card">
-                <div class="card-content">
-                    <p>No messages yet. Start a conversation!</p>
+            {% endif %}
+        </div>
+
+        <aside class="sidebar-messages" id="messageContent">
+            {% if selected_thread %}
+                <!-- Render the selected thread directly -->
+                <div class="message-thread">
+                    <div class="thread-header">
+                        <h3>{{ selected_thread.other_participant.username }}</h3>
+                    </div>
+                    <div class="messages-list" id="messagesList">
+                        {% for message in selected_thread.messages %}
+                            <div class="message {% if message.sender == request.user %}sent{% else %}received{% endif %}">
+                                <p>{{ message.content }}</p>
+                                <small>{{ message.created_at|date:"M d, Y, g:i A" }}</small>
+                            </div>
+                        {% empty %}
+                            <p>No messages yet. Say hello!</p>
+                        {% endfor %}
+                    </div>
+                    <div class="message-input">
+                        <textarea id="messageInput" placeholder="Type a message..."></textarea>
+                        <button id="sendMessageBtn" data-thread-id="{{ selected_thread.id }}">Send</button>
+                    </div>
                 </div>
-            </div>
-        {% endif %}
+            {% else %}
+                <!-- Show placeholder if no thread is selected -->
+                <h3>Select a message</h3>
+                <p>Choose from your existing conversations, start a new one, or just keep swimming.</p>
+                <button class="new-message-btn" id="newMessageSidebarBtn">New message</button>
+            {% endif %}
+        </aside>
     </div>
 
     <!-- Modal for New Message -->
@@ -64,15 +97,8 @@
 {% endblock %}
 
 {% block sidebar %}
-    <aside class="sidebar-messages" id="messageContent">
-        <div class="sidebar-message-content">
-            <h3>Select a message</h3>
-            <p>Choose from your existing conversations, start a new one, or just keep swimming.</p>
-            <button class="new-message-btn" id="newMessageSidebarBtn">New message</button>
-        </div>
-    </aside>
+    <!-- Empty to prevent default sidebar content from rendering -->
 {% endblock %}
-
 
 {% block extra_js %}
     <!-- No additional scripts needed, as main.js dynamically imports messages.js -->

@@ -5,18 +5,22 @@ console.log('Vite config loaded with port 3000');
 
 export default defineConfig({
   build: {
-    outDir: 'static/dist', // Output to static/dist relative to root
+    outDir: 'static/dist',
     manifest: true,
     rollupOptions: {
       input: {
-        main: 'static/js/main.js', // Correct relative to root
-        styles: 'static/css/styles.css', // Correct relative to root
+        main: 'static/js/main.js',
+        styles: 'static/css/styles.css',
       },
       output: {
         entryFileNames: '[name]-[hash].js',
         chunkFileNames: '[name]-[hash].js',
         assetFileNames: '[name]-[hash].[ext]',
       },
+    },
+    css: {
+      // Enable CSS minification in production
+      minify: true,
     },
   },
   server: {
@@ -28,7 +32,7 @@ export default defineConfig({
       port: 3000,
     },
     watch: {
-      ignored: ['**/venv/**', '**/*.py', '**/site-packages/**'], // Ignore virtualenv and Python files
+      ignored: ['**/venv/**', '**/*.py', '**/site-packages/**'],
     },
   },
 });
