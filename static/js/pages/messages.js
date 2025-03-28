@@ -28,7 +28,8 @@ function init() {
     threadCards.forEach(card => {
         card.addEventListener('click', () => {
             const threadId = card.getAttribute('data-thread-id');
-            loadThread(threadId);
+            // Navigate to the thread URL instead of dynamically loading
+            window.location.href = `/messages/${threadId}/`;
         });
     });
 
@@ -120,34 +121,12 @@ function startNewConversation() {
     .then(data => {
         if (data.success) {
             closeNewMessageModal();
-            loadThread(data.thread_id);
+            // Navigate to the new thread URL instead of dynamically loading
+            window.location.href = `/messages/${data.thread_id}/`;
         } else {
             alert(data.error);
         }
     });
-}
-
-// Thread Functions
-function loadThread(threadId) {
-    fetch(`/messages/${threadId}/`)
-        .then(response => response.text())
-        .then(html => {
-            const messageContent = document.getElementById('messageContent');
-            if (messageContent) {
-                messageContent.innerHTML = html;
-                // Re-attach the send message event listener after loading new content
-                const sendMessageBtn = document.getElementById('sendMessageBtn');
-                if (sendMessageBtn) {
-                    const newThreadId = sendMessageBtn.getAttribute('data-thread-id');
-                    sendMessageBtn.addEventListener('click', () => sendMessage(newThreadId));
-                }
-                // Auto-scroll to the bottom of the messages list
-                const messagesList = document.getElementById('messagesList');
-                if (messagesList) {
-                    messagesList.scrollTop = messagesList.scrollHeight;
-                }
-            }
-        });
 }
 
 function sendMessage(threadId) {
