@@ -25,9 +25,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-or8ih)*8^-c_@9h4r&sojeg#*5841-k%f9s+$tj##9n=&thm)4"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
+DEBUG = False
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 
 # Application definition
@@ -140,7 +139,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # For development, add this to serve media files
 # Security settings (optional, adjust as needed)
-DEBUG = True  # Ensure this is True for development to serve media files
+DEBUG = True # Ensure this is True for development to serve media files
 
 # Authentication settings
 LOGIN_REDIRECT_URL = '/home/'  # After login
@@ -180,7 +179,7 @@ DJANGO_VITE = {
         'dev_mode': DEBUG,
         'dev_server_port': 3000,
         'static_url_prefix': '',  # Empty to avoid prepending 'dist'
-        'manifest_path': BASE_DIR / 'static/dist/manifest.json',
+        'manifest_path': BASE_DIR / 'static/dist/.vite/manifest.json',
     }
 }
 
