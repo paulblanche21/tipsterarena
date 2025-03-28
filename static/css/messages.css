@@ -1,36 +1,218 @@
 /* messages.css */
 
-/* Override for Messages Page */
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1003; /* Higher than the navbar (1002) */
+    left: 260px; /* Start at the center feed (250px navbar + 30px padding) */
+    top: 0;
+    width: 388px; /* Match the center feed width */
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent background */
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 0; /* Remove padding, handle in children */
+    border: 1px solid #e1e8ed; /* Retain your custom light border */
+    border-radius: 12px; /* Retain your custom rounded corners */
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Re-add your custom shadow */
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 15px;
+    border-bottom: 1px solid #e1e8ed;
+    background-color: #f8f9fa;
+}
+
+.modal-header h3 {
+    font-size: 16px; /* Reduce font size to give more space */
+    font-weight: bold;
+    color: #001f3f;
+    margin: 0;
+    flex: 1; /* Allow the title to take available space */
+    text-align: center; /* Center the title */
+}
+
+.close {
+    font-size: 20px; /* Slightly smaller for balance */
+    font-weight: bold;
+    color: #657786;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.close:hover,
+.close:focus {
+    color: #001f3f;
+}
+
+.next-btn {
+    padding: 5px 10px; /* Reduce padding to make the button narrower */
+    background-color: #1DA1F2; /* X's blue */
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.next-btn:disabled {
+    background-color: #b0c4de; /* Disabled state */
+    cursor: not-allowed;
+}
+
+.next-btn:not(:disabled):hover {
+    background-color: #0d8ecf; /* Darker blue on hover */
+}
+
+.selected-users {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 10px 15px;
+    border-bottom: 1px solid #e1e8ed;
+    min-height: 40px; /* Ensure space even when empty */
+}
+
+.selected-user {
+    display: flex;
+    align-items: center;
+    background-color: #e1e8ed;
+    border-radius: 20px;
+    padding: 5px 10px;
+    font-size: 14px;
+    color: #001f3f;
+}
+
+.selected-user .remove-user {
+    margin-left: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    color: #657786;
+    transition: color 0.2s;
+}
+
+.selected-user .remove-user:hover {
+    color: #ff4136; /* Red on hover */
+}
+
+.modal-search {
+    padding: 10px 15px;
+    border-bottom: 1px solid #e1e8ed;
+}
+
+.modal-search input[type="text"] {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #e1e8ed;
+    border-radius: 20px;
+    font-size: 14px;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.modal-search input[type="text"]:focus {
+    border-color: var(--red-accent); /* Retain your red accent on focus */
+}
+
+.create-group {
+    display: block;
+    margin-top: 5px;
+    font-size: 14px;
+    color: var(--red-accent); /* Use Tipster Arena's red instead of X's blue */
+    text-decoration: none;
+}
+
+.create-group:hover {
+    text-decoration: underline;
+}
+
+.suggestions-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.suggestion {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #e1e8ed;
+    transition: background-color 0.2s;
+}
+
+.suggestion:hover {
+    background-color: rgba(255, 65, 54, 0.1); /* Retain your light red background on hover */
+}
+
+.suggestion input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+.suggestion .user-info {
+    flex: 1;
+}
+
+.suggestion .user-info .username {
+    font-weight: bold;
+    color: #001f3f;
+}
+
+.suggestion .user-info .handle {
+    color: #657786;
+    font-size: 14px;
+}
+
+.avatar-small {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+/* Rest of the styles remain unchanged */
 .messages-page .main-container {
-    padding-right: 0; /* Remove right padding to allow .messages-container to expand */
-    width: 100%; /* Ensure it takes up the full width */
+    padding-right: 0;
+    width: 100%;
     box-sizing: border-box;
 }
 
 .messages-page .content {
-    max-width: none; /* Remove max-width constraint */
-    width: 100%; /* Take up the full available width */
-    margin: 0; /* Remove centering */
-    padding: 0; /* Remove padding, let .messages-container handle it */
-    min-height: 100vh; /* Ensure it takes up the full height */
+    max-width: none;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
     box-sizing: border-box;
 }
 
-/* Messages Container (Flexbox for Center and Right Columns) */
 .messages-page .messages-container {
     display: flex;
-    height: 100vh; /* Full viewport height */
-    gap: 20px; /* Separation between columns, matching X */
-    padding: 20px 20px 20px 0; /* Remove left padding to align with navbar */
+    height: 100vh;
+    gap: 20px;
+    padding: 20px 20px 20px 0;
     box-sizing: border-box;
-    width: calc(100% - 280px); /* Adjust width to account for the navbar */
-    margin-left: 280px; /* Match navbar width */
-    flex-wrap: nowrap; /* Prevent wrapping */
+    width: calc(100% - 280px);
+    margin-left: 280px;
+    flex-wrap: nowrap;
 }
 
-/* Center Feed (Messages List) */
 .messages-feed {
-    flex: 0 0 388px; /* Fixed width for the center column, matching X */
+    flex: 0 0 388px;
     height: 100%;
     border: 1px solid #ddd;
     overflow-y: auto;
@@ -39,25 +221,23 @@
     box-sizing: border-box;
 }
 
-/* Right-Hand Feed (Message Content) */
 .messages-page .sidebar-messages {
-    flex: 1; /* Take up the remaining space */
-    height: 100%; /* Match the height of .messages-container */
+    flex: 1;
+    height: 100%;
     background-color: #fff;
     border: 1px solid #ddd;
     border-radius: 8px;
     padding: 20px;
     box-sizing: border-box;
-    display: flex; /* Ensure the container is a flexbox */
-    flex-direction: column; /* Stack children vertically */
-    align-items: center; /* Center content horizontally */
-    justify-content: center; /* Center content vertically */
-    text-align: center; /* Center text */
-    min-width: 0; /* Prevent overflow issues */
-    max-width: none; /* Ensure it can expand fully */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-width: 0;
+    max-width: none;
 }
 
-/* Style the direct children of .sidebar-messages (e.g., h3, p, button) */
 .messages-page .sidebar-messages h3 {
     font-size: 24px;
     font-weight: bold;
@@ -70,7 +250,6 @@
     margin-bottom: 20px;
 }
 
-/* Rest of the styles remain unchanged */
 .messages-header {
     display: flex;
     justify-content: space-between;
@@ -143,7 +322,7 @@
 
 .new-message-btn {
     padding: 10px 20px;
-    background-color: var(--red-accent); /* Use Tipster Arena's red */
+    background-color: var(--red-accent);
     color: white;
     border: none;
     border-radius: 20px;
@@ -154,10 +333,9 @@
 }
 
 .new-message-btn:hover {
-    background-color: #e63b31; /* Slightly darker red for hover */
+    background-color: #e63b31;
 }
 
-/* Message Thread Styles */
 .message-thread {
     padding: 20px;
     height: 100%;
@@ -178,7 +356,7 @@
 }
 
 .messages-list {
-    flex: 1; /* Take up remaining space */
+    flex: 1;
     overflow-y: auto;
     margin-bottom: 20px;
 }
@@ -191,7 +369,7 @@
 }
 
 .message.sent {
-    background-color: var(--red-accent); /* Use Tipster Arena's red */
+    background-color: var(--red-accent);
     color: white;
     margin-left: auto;
     text-align: right;
@@ -229,7 +407,7 @@
 
 .message-input button {
     padding: 10px 20px;
-    background-color: var(--red-accent); /* Use Tipster Arena's red */
+    background-color: var(--red-accent);
     color: white;
     border: none;
     border-radius: 5px;
@@ -237,117 +415,77 @@
 }
 
 .message-input button:hover {
-    background-color: #e63b31; /* Slightly darker red for hover */
+    background-color: #e63b31;
 }
 
-/* Modal Styles */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1003; /* Higher than the navbar (1002) */
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6); /* Slightly darker overlay for better contrast */
-    display: flex; /* Center the modal content */
-    align-items: center;
-    justify-content: center;
-}
-
-
-.modal-content {
-    background-color: #fff;
-    margin: 0; /* Remove margin auto to let flexbox handle centering */
-    padding: 20px;
-    border: 1px solid #e1e8ed; /* Light border to match site style */
-    border-radius: 12px; /* Rounded corners, matching --border-radius */
-    width: 90%; /* Responsive width */
-    max-width: 500px; /* Maximum width */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
-    position: relative; /* For positioning the close button */
-}
-
-.modal-content h3 {
-    font-size: 20px;
-    font-weight: bold;
-    color: #001f3f; /* Primary background color for text */
-    margin-bottom: 15px;
-    text-align: center;
-}
-
-.modal-content input[type="text"] {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #e1e8ed;
-    border-radius: 8px;
-    font-size: 16px;
-    box-sizing: border-box;
-    outline: none;
-    transition: border-color 0.2s;
-}
-
-.modal-content input[type="text"]:focus {
-    border-color: var(--red-accent); /* Red accent on focus */
-}
-
-.close {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    color: #aaa;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: color 0.2s;
-}
-
-.close:hover,
-.close:focus {
-    color: #001f3f; /* Darker color on hover */
-    text-decoration: none;
-}
-
-.suggestion {
-    padding: 10px;
-    cursor: pointer;
+.user-details {
     display: flex;
-    align-items: center;
-    border-bottom: 1px solid #e1e8ed;
-    transition: background-color 0.2s;
-}
-
-.suggestion:hover {
-    background-color: rgba(255, 65, 54, 0.1); /* Light red background on hover */
-}
-
-.avatar-small {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    margin-right: 10px;
-}
-
-.modal-content button {
-    display: block;
+    flex-direction: column;
+    height: 100%;
     width: 100%;
+}
+
+.user-details .thread-header {
+    border-bottom: 1px solid #e1e8ed;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.user-details .thread-header h3 {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.user-details .thread-header .handle {
+    font-size: 14px;
+    color: #657786;
+}
+
+.user-details .user-info {
+    flex: 1;
+    padding: 0 20px;
+}
+
+.user-details .user-info p {
+    font-size: 14px;
+    color: #14171a;
+    margin-bottom: 10px;
+}
+
+.user-details .message-input {
+    display: flex;
+    gap: 10px;
+    padding: 10px 20px;
+    border-top: 1px solid #e1e8ed;
+}
+
+.user-details .message-input textarea {
+    flex: 1;
     padding: 10px;
-    background-color: var(--red-accent); /* Tipster Arena's red */
+    border-radius: 20px;
+    border: 1px solid #e1e8ed;
+    resize: none;
+    font-size: 14px;
+    height: 40px;
+}
+
+.user-details .message-input button {
+    padding: 10px 20px;
+    background-color: var(--red-accent);
     color: white;
     border: none;
     border-radius: 20px;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.2s;
 }
 
-.modal-content button:hover {
-    background-color: #e63b31; /* Slightly darker red on hover */
+.user-details .message-input button:hover {
+    background-color: #e63b31;
 }
 
-/* Hide default sidebar elements only on the messages page */
 .messages-page .sidebar,
 .messages-page .sidebar-card,
 .messages-page .search-input,
@@ -355,14 +493,13 @@
     display: none !important;
 }
 
-/* Responsive Design */
 @media (max-width: 1000px) {
     .messages-page .messages-container {
         flex-direction: column;
-        height: auto; /* Allow height to adjust on smaller screens */
+        height: auto;
         padding: 10px;
-        margin-left: 0; /* Remove margin on smaller screens */
-        width: 100%; /* Full width on smaller screens */
+        margin-left: 0;
+        width: 100%;
     }
 
     .messages-feed {
@@ -370,7 +507,7 @@
         width: 100%;
         max-width: 388px;
         margin: 0 auto;
-        height: 50vh; /* Limit height on smaller screens */
+        height: 50vh;
     }
 
     .messages-page .sidebar-messages {
@@ -378,6 +515,11 @@
         width: 100%;
         max-width: 599px;
         margin: 20px auto 0;
-        height: 50vh; /* Limit height on smaller screens */
+        height: 50vh;
+    }
+
+    .modal {
+        left: 0;
+        width: 100%;
     }
 }

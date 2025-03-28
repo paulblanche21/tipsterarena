@@ -53,6 +53,7 @@
             {% endif %}
         </div>
 
+        <!-- Right-Hand Feed (Message Content) -->
         <aside class="sidebar-messages" id="messageContent">
             {% if selected_thread %}
                 <!-- Render the selected thread directly -->
@@ -87,11 +88,17 @@
     <!-- Modal for New Message -->
     <div id="newMessageModal" class="modal">
         <div class="modal-content">
-            <span class="close" id="closeModalBtn">×</span>
-            <h3>New Message</h3>
-            <input type="text" id="recipientUsername" placeholder="Enter username...">
-            <div id="userSuggestions"></div>
-            <button id="startConversationBtn">Start Conversation</button>
+            <div class="modal-header">
+                <span class="close" id="closeModalBtn">×</span>
+                <h3>New message</h3>
+                <button id="nextBtn" class="next-btn" disabled>Next</button>
+            </div>
+            <div class="selected-users" id="selectedUsers"></div>
+            <div class="modal-search">
+                <input type="text" id="recipientUsername" placeholder="Search people...">
+                <a href="#" class="create-group">Create a group</a>
+            </div>
+            <div id="userSuggestions" class="suggestions-list"></div>
         </div>
     </div>
 {% endblock %}
