@@ -368,7 +368,6 @@ def bookmarks(request):
 def messages_view(request, thread_id=None):
     """
     Display the messages page with a list of threads and the selected thread's messages.
-    Supports both full page loads and AJAX requests for dynamic thread loading.
     """
     user = request.user
     # Fetch message threads for the user
@@ -396,29 +395,12 @@ def messages_view(request, thread_id=None):
         selected_thread = get_object_or_404(MessageThread, id=thread_id, participants=user)
         selected_thread.other_participant = selected_thread.participants.exclude(id=user.id).first()
         messages = selected_thread.messages.all().order_by('created_at')  # Store the queryset here
-        print("Messages type before context:", type(messages))  # Debug
-        print("Messages content before context:", list(messages))  # Debug
 
     context = {
         'message_threads': threads_with_participants,
         'selected_thread': selected_thread,
         'messages': messages,  # Pass the messages separately
     }
-    print("Context messages type:", type(context['messages']))  # Debug
-
-    # Check if this is an AJAX request
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        print("AJAX request detected")
-        ajax_context = {
-            'thread': selected_thread,
-            'other_participant': selected_thread.other_participant,
-            'messages': messages,  # Use the separate variable
-            'request': request,
-        }
-        print("AJAX context messages type:", type(ajax_context['messages']))  # Debug
-        return HttpResponse(
-            render_to_string('core/message_thread.html', ajax_context)
-        )
 
     return render(request, 'core/messages.html', context)
 
