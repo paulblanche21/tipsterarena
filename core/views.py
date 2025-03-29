@@ -386,27 +386,33 @@ def messages_view(request, thread_id=None):
         })
 
     selected_thread = None
-    messages = None  # Add a variable for the messages
+    messages = []  # Default to an empty list (iterable)
     if thread_id:
         selected_thread = get_object_or_404(MessageThread, id=thread_id, participants=user)
         selected_thread.other_participant = selected_thread.participants.exclude(id=user.id).first()
         messages = selected_thread.messages.all().order_by('created_at')  # Store the queryset here
+        print("Messages type before context:", type(messages))  # Debug
+        print("Messages content before context:", list(messages))  # Debug
 
     context = {
         'message_threads': threads_with_participants,
         'selected_thread': selected_thread,
         'messages': messages,  # Pass the messages separately
     }
+    print("Context messages type:", type(context['messages']))  # Debug
 
     # Check if this is an AJAX request
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        print("AJAX request detected")
+        ajax_context = {
+            'thread': selected_thread,
+            'other_participant': selected_thread.other_participant,
+            'messages': messages,  # Use the separate variable
+            'request': request,
+        }
+        print("AJAX context messages type:", type(ajax_context['messages']))  # Debug
         return HttpResponse(
-            render_to_string('core/message_thread.html', {
-                'thread': selected_thread,
-                'other_participant': selected_thread.other_participant,
-                'messages': messages,  # Use the separate variable
-                'request': request,
-            })
+            render_to_string('core/message_thread.html', ajax_context)
         )
 
     return render(request, 'core/messages.html', context)
@@ -417,12 +423,16 @@ def messages_view(request, thread_id=None):
 def send_message(request):
     """Send a new message in a thread or create a new thread."""
     try:
+        # Log the raw request body for debugging
+        print("Raw request body:", request.body)
         # Parse JSON body
         data = json.loads(request.body.decode('utf-8'))
+        print("Parsed request data:", data)
         thread_id = data.get('thread_id')
         recipient_username = data.get('recipient_username')
         content = data.get('content')
-    except (json.JSONDecodeError, KeyError):
+    except (json.JSONDecodeError, KeyError) as e:
+        print("Error parsing JSON:", str(e))
         return JsonResponse({'success': False, 'error': 'Invalid JSON data'}, status=400)
 
     if not content:

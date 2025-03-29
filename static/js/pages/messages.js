@@ -21,8 +21,6 @@ function init() {
     const recipientInput = document.getElementById('recipientUsername');
     const settingsBtn = document.getElementById('settingsBtn'); // New settings button
 
-    console.log('Settings button:', settingsBtn);
-
     if (newMessageBtn) {
         newMessageBtn.addEventListener('click', openNewMessageModal);
     } else {
@@ -304,37 +302,46 @@ function startNewConversation() {
 
 function sendMessage(threadId) {
     const messageInput = document.getElementById('messageInput');
-    const content = messageInput ? messageInput.value : '';
+    const content = messageInput.value.trim();
+
     if (!content) {
-        alert('Please enter a message.');
+        alert('Message cannot be empty');
         return;
     }
+
+    const requestBody = JSON.stringify({
+        thread_id: threadId,
+        content: content,
+    });
+    console.log('Sending request to /send-message/ with body:', requestBody);
 
     fetch('/send-message/', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Type': 'application/json',
             'X-CSRFToken': getCsrfToken(),
         },
-        body: `thread_id=${threadId}&content=${encodeURIComponent(content)}`
+        body: requestBody,
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => {
+                throw new Error(`HTTP error! Status: ${response.status}, Response: ${text}`);
+            });
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
-            const messagesList = document.getElementById('messagesList');
-            if (messagesList) {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = 'message sent';
-                messageDiv.innerHTML = `<p>${data.content}</p><small>${new Date(data.created_at).toLocaleString()}</small>`;
-                messagesList.appendChild(messageDiv);
-                messageInput.value = '';
-                messagesList.scrollTop = messagesList.scrollHeight;
-            } else {
-                console.log('messagesList not found in sendMessage');
-            }
+            appendMessage(data);
+            messageInput.value = '';
         } else {
-            alert(data.error);
+            alert('Error sending message: ' + data.error);
         }
+    })
+    .catch(error => {
+        console.error('Error sending message:', error);
+        alert('Failed to send message. Please try again.');
     });
 }
 
