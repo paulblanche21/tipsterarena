@@ -19,7 +19,7 @@ function init() {
     const newMessageSidebarBtn = document.getElementById('newMessageSidebarBtn');
     const closeModalBtn = document.getElementById('closeModalBtn');
     const recipientInput = document.getElementById('recipientUsername');
-    const settingsBtn = document.getElementById('settingsBtn'); // New settings button
+    const settingsBtn = document.getElementById('settingsBtn');
 
     if (newMessageBtn) {
         newMessageBtn.addEventListener('click', openNewMessageModal);
@@ -48,7 +48,7 @@ function init() {
             fetch('/messages/settings/', {
                 method: 'GET',
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest', // Indicate an AJAX request
+                    'X-Requested-With': 'XMLHttpRequest',
                 },
             })
             .then(response => {
@@ -61,7 +61,6 @@ function init() {
                 console.log('Fetched HTML:', html);
                 if (messageContent) {
                     messageContent.innerHTML = html;
-                    // Add event listener for the close button after loading the settings panel
                     const closeSettingsBtn = document.getElementById('closeSettingsBtn');
                     if (closeSettingsBtn) {
                         closeSettingsBtn.addEventListener('click', () => {
@@ -69,20 +68,13 @@ function init() {
                             if (messageContent) {
                                 messageContent.innerHTML = defaultMessageContent;
                                 console.log('Restored default message content');
-                                // Reinitialize the new message sidebar button listener
                                 const newMessageSidebarBtn = document.getElementById('newMessageSidebarBtn');
                                 if (newMessageSidebarBtn) {
                                     newMessageSidebarBtn.addEventListener('click', openNewMessageModal);
-                                } else {
-                                    console.log('newMessageSidebarBtn not found after restoring default content');
                                 }
                             }
                         });
-                    } else {
-                        console.log('closeSettingsBtn not found after loading settings');
                     }
-                } else {
-                    console.log('messageContent not found');
                 }
             })
             .catch(error => {
@@ -95,7 +87,7 @@ function init() {
 
     // Function to initialize action buttons (photo, GIF, emoji)
     function initializeActionButtons() {
-        const photoBtn = document.querySelector('.action-btn[title="Add photo"]');
+        const photoBtn = document.querySelector('.action-btn[title="Add image"]');
         const gifBtn = document.querySelector('.action-btn[title="Add GIF"]');
         const emojiBtn = document.querySelector('.action-btn[title="Add emoji"]');
 
@@ -145,12 +137,17 @@ function init() {
     console.log('Thread cards found:', threadCards.length);
     threadCards.forEach(card => {
         card.addEventListener('click', () => {
+            // Remove .selected from all cards
+            threadCards.forEach(c => c.classList.remove('selected'));
+            // Add .selected to the clicked card
+            card.classList.add('selected');
+
             const threadId = card.getAttribute('data-thread-id');
             console.log('Thread card clicked, threadId:', threadId);
             fetch(`/messages/${threadId}/`, {
                 method: 'GET',
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest', // Indicate an AJAX request
+                    'X-Requested-With': 'XMLHttpRequest',
                 },
             })
             .then(response => response.text())
@@ -158,24 +155,16 @@ function init() {
                 const messageContent = document.getElementById('messageContent');
                 if (messageContent) {
                     messageContent.innerHTML = html;
-                    // Re-initialize event listeners for the new content
                     const sendMessageBtn = document.getElementById('sendMessageBtn');
                     if (sendMessageBtn) {
                         const threadId = sendMessageBtn.getAttribute('data-thread-id');
                         sendMessageBtn.addEventListener('click', () => sendMessage(threadId));
-                    } else {
-                        console.log('sendMessageBtn not found after thread load');
                     }
                     const messagesList = document.getElementById('messagesList');
                     if (messagesList) {
                         messagesList.scrollTop = messagesList.scrollHeight;
-                    } else {
-                        console.log('messagesList not found after thread load');
                     }
-                    // Re-initialize action buttons after thread load
                     initializeActionButtons();
-                } else {
-                    console.log('messageContent not found after thread load');
                 }
             });
         });
@@ -199,115 +188,61 @@ function init() {
     }
 }
 
-// Modal Functions
-function openNewMessageModal() {
-    const modal = document.getElementById('newMessageModal');
-    if (modal) {
-        modal.style.display = 'block';
-    } else {
-        console.log('newMessageModal not found');
-    }
-}
-
-function closeNewMessageModal() {
-    const modal = document.getElementById('newMessageModal');
-    const recipientInput = document.getElementById('recipientUsername');
-    const suggestionsDiv = document.getElementById('userSuggestions');
-    if (modal) {
-        modal.style.display = 'none';
-    } else {
-        console.log('newMessageModal not found');
-    }
-    if (recipientInput) {
-        recipientInput.value = '';
-    } else {
-        console.log('recipientInput not found in closeNewMessageModal');
-    }
-    if (suggestionsDiv) {
-        suggestionsDiv.innerHTML = '';
-    } else {
-        console.log('suggestionsDiv not found in closeNewMessageModal');
-    }
-}
-
-function searchUsers(query) {
-    if (query.length < 2) {
-        const suggestionsDiv = document.getElementById('userSuggestions');
-        if (suggestionsDiv) {
-            suggestionsDiv.innerHTML = '';
-        } else {
-            console.log('suggestionsDiv not found in searchUsers');
-        }
+function appendMessage(data) {
+    const messagesList = document.getElementById('messagesList');
+    if (!messagesList) {
+        console.log('messagesList not found');
         return;
     }
-    fetch(`/suggested-users/`, { method: 'GET' })
-        .then(response => response.json())
-        .then(data => {
-            const suggestions = data.users.filter(user => user.username.toLowerCase().includes(query.toLowerCase()));
-            const suggestionsDiv = document.getElementById('userSuggestions');
-            if (suggestionsDiv) {
-                suggestionsDiv.innerHTML = '';
-                suggestions.forEach(user => {
-                    const div = document.createElement('div');
-                    div.className = 'suggestion';
-                    div.innerHTML = `<img src="${user.avatar_url}" class="avatar-small"> ${user.username}`;
-                    div.addEventListener('click', () => {
-                        const recipientInput = document.getElementById('recipientUsername');
-                        if (recipientInput) {
-                            recipientInput.value = user.username;
-                        } else {
-                            console.log('recipientInput not found in searchUsers click handler');
-                        }
-                        suggestionsDiv.innerHTML = '';
-                        const nextBtn = document.getElementById('nextBtn');
-                        if (nextBtn) {
-                            nextBtn.disabled = false;
-                        } else {
-                            console.log('nextBtn not found in searchUsers click handler');
-                        }
-                    });
-                    suggestionsDiv.appendChild(div);
-                });
-            } else {
-                console.log('suggestionsDiv not found in searchUsers response handler');
-            }
-        });
+
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message sent';
+    messageDiv.innerHTML = `
+        <p>${data.content}</p>
+        <small>${new Date(data.created_at).toLocaleString()}</small>
+    `;
+
+    messagesList.appendChild(messageDiv);
+    messagesList.scrollTop = messagesList.scrollHeight;
+
+    updateMessageFeedCard(data.thread_id, data.content);
 }
 
-function startNewConversation() {
-    const recipientInput = document.getElementById('recipientUsername');
-    const recipientUsername = recipientInput ? recipientInput.value : '';
-    if (!recipientUsername) {
-        alert('Please select a user to message.');
+function updateMessageFeedCard(threadId, latestMessage) {
+    const card = document.querySelector(`.card[data-thread-id="${threadId}"]`);
+    if (!card) {
+        console.log('Card not found for threadId:', threadId);
         return;
     }
-    fetch('/send-message/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-CSRFToken': getCsrfToken(),
-        },
-        body: `recipient_username=${recipientUsername}&content=Hello! Let's start a conversation.`
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            closeNewMessageModal();
-            window.location.href = `/messages/${data.thread_id}/`;
-        } else {
-            alert(data.error);
-        }
-    });
+
+    const messagePreview = card.querySelector('.message-preview');
+    if (messagePreview) {
+        messagePreview.textContent = latestMessage.length > 50 ? latestMessage.substring(0, 47) + '...' : latestMessage;
+    }
+
+    const messageDate = card.querySelector('.message-date');
+    if (messageDate) {
+        messageDate.textContent = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+
+    const messagesFeed = document.querySelector('.messages-feed');
+    if (messagesFeed) {
+        messagesFeed.insertBefore(card, messagesFeed.firstChild.nextSibling);
+    }
 }
 
 function sendMessage(threadId) {
     const messageInput = document.getElementById('messageInput');
+    const sendButton = document.getElementById('sendMessageBtn');
     const content = messageInput.value.trim();
 
     if (!content) {
         alert('Message cannot be empty');
         return;
     }
+
+    sendButton.disabled = true;
+    sendButton.textContent = 'Sending...';
 
     const requestBody = JSON.stringify({
         thread_id: threadId,
@@ -342,6 +277,96 @@ function sendMessage(threadId) {
     .catch(error => {
         console.error('Error sending message:', error);
         alert('Failed to send message. Please try again.');
+    })
+    .finally(() => {
+        sendButton.disabled = false;
+        sendButton.textContent = 'Send';
+    });
+}
+
+function openNewMessageModal() {
+    const modal = document.getElementById('newMessageModal');
+    if (modal) {
+        modal.style.display = 'block';
+    } else {
+        console.log('newMessageModal not found');
+    }
+}
+
+function closeNewMessageModal() {
+    const modal = document.getElementById('newMessageModal');
+    const recipientInput = document.getElementById('recipientUsername');
+    const suggestionsDiv = document.getElementById('userSuggestions');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    if (recipientInput) {
+        recipientInput.value = '';
+    }
+    if (suggestionsDiv) {
+        suggestionsDiv.innerHTML = '';
+    }
+}
+
+function searchUsers(query) {
+    if (query.length < 2) {
+        const suggestionsDiv = document.getElementById('userSuggestions');
+        if (suggestionsDiv) {
+            suggestionsDiv.innerHTML = '';
+        }
+        return;
+    }
+    fetch(`/suggested-users/`, { method: 'GET' })
+        .then(response => response.json())
+        .then(data => {
+            const suggestions = data.users.filter(user => user.username.toLowerCase().includes(query.toLowerCase()));
+            const suggestionsDiv = document.getElementById('userSuggestions');
+            if (suggestionsDiv) {
+                suggestionsDiv.innerHTML = '';
+                suggestions.forEach(user => {
+                    const div = document.createElement('div');
+                    div.className = 'suggestion';
+                    div.innerHTML = `<img src="${user.avatar_url}" class="avatar-small"> ${user.username}`;
+                    div.addEventListener('click', () => {
+                        const recipientInput = document.getElementById('recipientUsername');
+                        if (recipientInput) {
+                            recipientInput.value = user.username;
+                        }
+                        suggestionsDiv.innerHTML = '';
+                        const nextBtn = document.getElementById('nextBtn');
+                        if (nextBtn) {
+                            nextBtn.disabled = false;
+                        }
+                    });
+                    suggestionsDiv.appendChild(div);
+                });
+            }
+        });
+}
+
+function startNewConversation() {
+    const recipientInput = document.getElementById('recipientUsername');
+    const recipientUsername = recipientInput ? recipientInput.value : '';
+    if (!recipientUsername) {
+        alert('Please select a user to message.');
+        return;
+    }
+    fetch('/send-message/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': getCsrfToken(),
+        },
+        body: `recipient_username=${recipientUsername}&content=Hello! Let's start a conversation.`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeNewMessageModal();
+            window.location.href = `/messages/${data.thread_id}/`;
+        } else {
+            alert(data.error);
+        }
     });
 }
 

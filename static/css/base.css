@@ -42,8 +42,8 @@ body {
 
 /* layout.css */
 .main-container {
-    padding-left: var(--navbar-width);    /* 250px to account for the fixed navbar */
-    padding-right: var(--sidebar-width);  /* 350px to account for the fixed sidebar */
+    margin-left: var(--navbar-width);    /* 250px to account for the fixed navbar */
+    margin-right: var(--sidebar-width);  /* 350px to account for the fixed sidebar */
     min-height: 100vh;
     background-color: #001f3f;
     box-sizing: border-box;
@@ -69,22 +69,3 @@ body {
     text-decoration: underline;
 }
 
-/* Override for Messages Page */
-.messages-page .main-container {
-    padding-right: 0; /* Remove right padding to allow .messages-container to expand */
-    width: 100%; /* Ensure it takes up the full width */
-}
-
-.messages-page .content {
-    max-width: none; /* Remove max-width constraint */
-    width: 100%; /* Take up the full available width */
-    margin: 0; /* Remove centering */
-    padding: 0; /* Remove padding, let .messages-container handle it */
-    min-height: 100vh; /* Ensure it takes up the full height */
-}
-
-.messages-page .sidebar-messages {
-    position: static; /* Remove fixed positioning */
-    flex: 1; /* Take up remaining space */
-    max-width: none; /* Remove max-width constraint */
-}

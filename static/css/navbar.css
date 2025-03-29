@@ -12,6 +12,7 @@
     justify-content: flex-start;
     border-right: 1px solid #e1e8ed;
     z-index: 1002;
+    box-sizing: border-box; /* Include padding and border in width */
 }
 
 .nav-avatar {

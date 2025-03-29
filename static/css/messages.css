@@ -3,13 +3,20 @@
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 18px;
+    font-size: 16px;
     color: #657786;
-    transition: color 0.2s;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: color 0.2s, background-color 0.2s;
 }
 
 .action-btn:hover {
-    color: var(--red-accent); /* Use Tipster Arena's red on hover */
+    color: #1DA1F2;
+    background-color: rgba(29, 161, 242, 0.1);
 }
 
 .avatar {
@@ -17,6 +24,7 @@
     height: 40px;
     border-radius: 50%;
     margin-right: 10px;
+    object-fit: cover;
 }
 
 .avatar-small {
@@ -24,8 +32,8 @@
     height: 30px;
     border-radius: 50%;
     margin-right: 10px;
+    object-fit: cover;
 }
-
 
 .card {
     display: flex;
@@ -40,37 +48,62 @@
     background-color: #f5f8fa;
 }
 
+.card:focus, .card:active {
+    outline: none;
+    background-color: #f5f8fa;
+}
+
+.card.selected {
+    background-color: #e6ecf0;
+}
+
 .card-content {
     flex: 1;
     display: flex;
     flex-direction: column;
+    gap: 4px;
 }
 
-.card-content p {
-    margin: 0;
-    font-size: 14px;
+.card-header {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card-header .username {
+    font-weight: bold;
+    font-size: 15px;
     color: #14171a;
 }
 
-.card-content p strong {
-    font-weight: bold;
-}
-
-.card-content .user-handle {
+.card-header .user-handle {
     color: #657786;
+    font-size: 14px;
     margin-left: 5px;
 }
 
-.card-content .message-date {
+.card-header .message-date {
     color: #657786;
+    font-size: 14px;
     margin-left: 5px;
+}
+
+.message-preview {
+    margin: 0;
+    font-size: 14px;
+    color: #657786;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .create-group {
     display: block;
     margin-top: 5px;
     font-size: 14px;
-    color: var(--red-accent); /* Use Tipster Arena's red instead of X's blue */
+    color: #003087;
     text-decoration: none;
 }
 
@@ -82,26 +115,26 @@
 .modal {
     display: none;
     position: fixed;
-    z-index: 1003; /* Higher than the navbar (1002) */
-    left: 260px; /* Start at the center feed (250px navbar + 30px padding) */
+    z-index: 1003;
+    left: 260px;
     top: 0;
-    width: 388px; /* Match the center feed width */
+    width: 300px;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent background */
+    background-color: rgba(0, 0, 0, 0.6);
 }
 
 .modal-content {
     background-color: #fff;
-    padding: 0; /* Remove padding, handle in children */
-    border: 1px solid #e1e8ed; /* Retain your custom light border */
-    border-radius: 12px; /* Retain your custom rounded corners */
+    padding: 0;
+    border: 1px solid #e1e8ed;
+    border-radius: 12px;
     width: 100%;
     height: 100%;
     box-sizing: border-box;
     position: relative;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Re-add your custom shadow */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .modal-header {
@@ -114,16 +147,16 @@
 }
 
 .modal-header h3 {
-    font-size: 16px; /* Reduce font size to give more space */
+    font-size: 16px;
     font-weight: bold;
     color: #001f3f;
     margin: 0;
-    flex: 1; /* Allow the title to take available space */
-    text-align: center; /* Center the title */
+    flex: 1;
+    text-align: center;
 }
 
 .close {
-    font-size: 20px; /* Slightly smaller for balance */
+    font-size: 20px;
     font-weight: bold;
     color: #657786;
     cursor: pointer;
@@ -152,12 +185,12 @@
 }
 
 .modal-search input[type="text"]:focus {
-    border-color: var(--red-accent); /* Retain your red accent on focus */
+    border-color: #003087;
 }
 
 .next-btn {
-    padding: 5px 10px; /* Reduce padding to make the button narrower */
-    background-color: #1DA1F2; /* X's blue */
+    padding: 5px 10px;
+    background-color: #1DA1F2;
     color: white;
     border: none;
     border-radius: 20px;
@@ -167,7 +200,15 @@
     transition: background-color 0.2s;
 }
 
-/* Rest of the styles remain unchanged */
+.next-btn:disabled {
+    background-color: #b0c4de;
+    cursor: not-allowed;
+}
+
+.next-btn:not(:disabled):hover {
+    background-color: #0d8ecf;
+}
+
 .messages-page .main-container {
     padding-right: 0;
     width: 100%;
@@ -183,102 +224,19 @@
     box-sizing: border-box;
 }
 
-
-
 .messages-page .messages-container {
     display: flex;
     height: 100vh;
-    gap: 20px;
-    padding: 20px 20px 20px 0;
+    gap: 10px;
+    padding: 20px;
     box-sizing: border-box;
-    width: calc(100% - 280px);
-    margin-left: 280px;
-    flex-wrap: nowrap;
-}
-
-/* Message styling */
-.message-container {
-    display: flex;
-    flex-direction: column;
-    padding: 10px;
-}
-
-.message-container .message {
-    max-width: 70%;
-    padding: 8px 12px;
-    margin: 5px 0;
-    border-radius: 15px;
-    font-size: 14px;
-    line-height: 1.4;
-}
-
-.message-container .message.sent {
-    background-color: #003087; /* Navy blue for sent messages */
-    color: white;
-    align-self: flex-end;
-}
-
-.message-container .message.received {
-    background-color: #F5F8FA; /* Light gray for received messages */
-    color: #333;
-    align-self: flex-start;
-}
-
-.message-container .message .timestamp {
-    font-size: 12px;
-    color: #999;
-    margin-top: 2px;
-    text-align: right;
-}
-
-/* Input bar styling */
-.message-input-container {
-    display: flex;
-    align-items: center;
-    padding: 8px 12px;
-    background-color: #fff;
-    border-top: 1px solid #E1E8ED;
-}
-
-.message-input-container input {
-    flex: 1;
-    padding: 8px 12px;
-    border: 1px solid #E1E8ED;
-    border-radius: 20px;
-    margin-right: 8px;
-    font-size: 14px;
-    outline: none;
-}
-
-.message-input-container button {
-    padding: 8px;
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.message-input-container button#sendMessageBtn {
-    background-color: #1DA1F2; /* Navy blue for send button */
-    color: white;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
-}
-
-.message-input-container button#sendMessageBtn:hover {
-    background-color: #0C8DE0;
-}
-
-.message-input-container button img {
-    width: 20px;
-    height: 20px;
+    width: calc(100% - 260px);
+    margin-left: 260px;
+    overflow: hidden;
 }
 
 .messages-feed {
-    flex: 0 0 388px;
+    flex: 0 0 clamp(300px, 30%, 388px);
     height: 100%;
     border: 1px solid #ddd;
     overflow-y: auto;
@@ -287,37 +245,27 @@
     box-sizing: border-box;
 }
 
-.message-input button#sendMessageBtn {
-    padding: 10px 20px;
-    background-color: var(--red-accent);
-    color: white;
-    border: none;
-    border-radius: 20px; /* Match X's rounded button */
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.message-input button#sendMessageBtn:hover {
-    background-color: #e63b31;
-}
-
 .messages-page .sidebar-messages {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     flex: 1;
     height: 100%;
     background-color: #fff;
     border: 1px solid #ddd;
     border-radius: 8px;
-    padding: 20px;
     box-sizing: border-box;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
-    min-width: 0;
-    max-width: none;
+    padding: 20px;
+}
+
+.messages-page .sidebar-messages:has(.message-thread) {
+    justify-content: flex-start;
+    align-items: stretch;
+    padding: 0;
 }
 
 .messages-page .sidebar-messages h3 {
@@ -356,9 +304,6 @@
     cursor: pointer;
 }
 
-/* messages.css */
-
-/* Message Settings Styles */
 .message-settings {
     padding: 20px;
     height: 100%;
@@ -370,7 +315,7 @@
 .message-settings h2 {
     font-size: 24px;
     font-weight: bold;
-    margin:0;
+    margin: 0;
 }
 
 .message-settings .settings-header {
@@ -424,84 +369,197 @@
 }
 
 .message-thread {
-    padding: 20px;
+    padding: 0;
     height: 100%;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+}
+
+.thread-header {
+    padding: 20px;
+    border-bottom: 1px solid #ddd;
+    background-color: #fff;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.thread-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.thread-header-name {
+    font-size: 20px;
+    font-weight: bold;
+    color: #14171a;
+    margin: 0;
+    text-align: left;
+}
+
+.thread-header-info {
+    cursor: pointer;
+    font-size: 18px;
+    color: #657786;
+}
+
+.thread-header-details {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.thread-header .avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+
+.thread-header .user-details {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.thread-header h3 {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0;
+    color: #14171a;
+}
+
+.thread-header .user-handle {
+    font-size: 14px;
+    color: #657786;
+}
+
+.thread-header .user-bio {
+    font-size: 14px;
+    color: #14171a;
+    margin: 0;
+    text-align: center;
+}
+
+.thread-header .user-email {
+    font-size: 14px;
+    color: #14171a;
+    margin: 0;
+}
+
+.thread-header .user-stats {
+    font-size: 14px;
+    color: #657786;
+    margin: 0;
+}
+
+.thread-header .user-followed-by {
+    font-size: 14px;
+    color: #657786;
+    margin: 0;
 }
 
 .messages-list {
     flex: 1;
     overflow-y: auto;
     margin-bottom: 20px;
+    padding: 0 10px;
+    max-height: calc(100% - 200px);
 }
 
 .message {
-    margin-bottom: 10px;
-    padding: 10px;
-    border-radius: 10px;
+    margin-bottom: 15px;
+    padding: 12px 16px;
+    border-radius: 15px;
     max-width: 70%;
 }
 
 .message.sent {
-    background-color: var(--red-accent);
-    color: white;
+    background-color: #003087;
     margin-left: auto;
-    text-align: right;
+    text-align: left;
+}
+
+.message.sent p {
+    color: white;
 }
 
 .message.received {
     background-color: #f0f0f0;
     margin-right: auto;
+    text-align: left;
+}
+
+.message.received p {
+    color: #14171a;
 }
 
 .message p {
     margin: 0;
-    font-size: 14px;
+    font-size: 15px;
+    line-height: 1.5;
 }
 
 .message small {
     font-size: 12px;
-    color: #657786;
+    color: #999;
     display: block;
-    margin-top: 5px;
+    margin-top: 4px;
 }
 
 .message-input {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
     gap: 10px;
-}
-
-.message-input textarea {
-    flex: 1;
     padding: 10px;
-    border-radius: 20px; /* Match X's rounded input */
-    border: 1px solid #ddd;
-    resize: none;
-    height: 40px;
-}
-
-.message-input button {
-    padding: 10px 20px;
-    background-color: var(--red-accent);
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.message-input button:hover {
-    background-color: #e63b31;
+    border-top: 1px solid #ddd;
+    background-color: #fff;
+    flex-shrink: 0;
 }
 
 .message-actions {
     display: flex;
-    align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
+.message-input textarea {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    flex: 1;
+    padding: 10px 15px;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    resize: none;
+    height: 40px;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.message-input textarea:focus {
+    border-color: #003087;
+}
+
+.message-input button#sendMessageBtn {
+    padding: 10px 20px;
+    background-color: #003087;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.message-input button#sendMessageBtn:hover {
+    background-color: #002669;
+}
 
 .messages-page .sidebar,
 .messages-page .sidebar-card,
@@ -512,7 +570,7 @@
 
 .new-message-btn {
     padding: 10px 20px;
-    background-color: var(--red-accent);
+    background-color: #001f3f;
     color: white;
     border: none;
     border-radius: 20px;
@@ -523,16 +581,7 @@
 }
 
 .new-message-btn:hover {
-    background-color: #e63b31;
-}
-
-.next-btn:disabled {
-    background-color: #b0c4de; /* Disabled state */
-    cursor: not-allowed;
-}
-
-.next-btn:not(:disabled):hover {
-    background-color: #0d8ecf; /* Darker blue on hover */
+    background-color: #002669;
 }
 
 .selected-users {
@@ -541,7 +590,7 @@
     gap: 5px;
     padding: 10px 15px;
     border-bottom: 1px solid #e1e8ed;
-    min-height: 40px; /* Ensure space even when empty */
+    min-height: 40px;
 }
 
 .selected-user {
@@ -563,7 +612,7 @@
 }
 
 .selected-user .remove-user:hover {
-    color: #ff4136; /* Red on hover */
+    color: #ff4136;
 }
 
 .suggestion {
@@ -581,7 +630,7 @@
 }
 
 .suggestion:hover {
-    background-color: rgba(255, 65, 54, 0.1); /* Retain your light red background on hover */
+    background-color: rgba(255, 65, 54, 0.1);
 }
 
 .suggestion input[type="checkbox"] {
@@ -598,19 +647,8 @@
 }
 
 .suggestion .user-info .handle {
-    color: #657786;
     font-size: 14px;
-}
-
-.thread-header {
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-}
-
-.thread-header h3 {
-    font-size: 18px;
-    font-weight: bold;
+    color: #657786;
 }
 
 .user-details {
@@ -644,10 +682,9 @@
 
 .user-details .follow-status {
     font-size: 14px;
-    color: #1DA1F2; /* X's blue for the follow status */
+    color: #1DA1F2;
     margin: 5px 0;
 }
-
 
 .user-details .thread-header {
     border-bottom: 1px solid #e1e8ed;
@@ -696,7 +733,7 @@
 
 .user-details .message-input button {
     padding: 10px 20px;
-    background-color: var(--red-accent);
+    background-color: #003087;
     color: white;
     border: none;
     border-radius: 20px;
@@ -707,5 +744,27 @@
 }
 
 .user-details .message-input button:hover {
-    background-color: #e63b31;
+    background-color: #002669;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .messages-page .messages-container {
+        flex-direction: column;
+        width: 100%;
+        margin-left: 0;
+        padding: 10px;
+    }
+
+    .messages-feed {
+        flex: none;
+        width: 100%;
+        max-height: 40vh;
+    }
+
+    .messages-page .sidebar-messages {
+        flex: none;
+        width: 100%;
+        height: auto;
+    }
 }

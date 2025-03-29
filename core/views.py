@@ -366,40 +366,37 @@ def bookmarks(request):
 
 @login_required
 def messages_view(request, thread_id=None):
-    """
-    Display the messages page with a list of threads and the selected thread's messages.
-    """
     user = request.user
-    # Fetch message threads for the user
     message_threads = (MessageThread.objects.filter(participants=user)
                       .order_by('-updated_at')[:20]
                       .prefetch_related('participants__userprofile'))
 
-    # Compute other_participant for each thread
     threads_with_participants = []
     for thread in message_threads:
         other_participant = thread.participants.exclude(id=user.id).first()
-        # Evaluate the messages and followers to avoid RelatedManager in the template
         last_message = thread.messages.last()
         follower_count = other_participant.followers.count() if other_participant else 0
+        followed_by = Follow.objects.filter(followed=other_participant).exclude(follower=user).order_by('?')[:3]  # Random 3 followers
+        followed_by_names = [f.follower.username for f in followed_by]
         threads_with_participants.append({
             'thread': thread,
             'other_participant': other_participant,
             'last_message': last_message,
             'follower_count': follower_count,
+            'followed_by': followed_by_names,
         })
 
     selected_thread = None
-    messages = []  # Default to an empty list (iterable)
+    messages = []
     if thread_id:
         selected_thread = get_object_or_404(MessageThread, id=thread_id, participants=user)
         selected_thread.other_participant = selected_thread.participants.exclude(id=user.id).first()
-        messages = selected_thread.messages.all().order_by('created_at')  # Store the queryset here
+        messages = selected_thread.messages.all().order_by('created_at')
 
     context = {
         'message_threads': threads_with_participants,
         'selected_thread': selected_thread,
-        'messages': messages,  # Pass the messages separately
+        'messages': messages,
     }
 
     return render(request, 'core/messages.html', context)
