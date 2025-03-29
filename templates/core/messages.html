@@ -34,12 +34,24 @@
                                         <span class="user-handle">@{{ other_participant.userprofile.handle|default:other_participant.username }}</span>
                                         <span class="message-date">{{ item.thread.updated_at|date:"M d" }}</span>
                                     </p>
-                                    <p>{{ item.thread.last_message|truncatechars:50|default:"No message" }}</p>
+                                    <p>
+                                        {% if item.last_message %}
+                                            {{ item.last_message.content|truncatechars:50 }}
+                                        {% else %}
+                                            No message
+                                        {% endif %}
+                                    </p>
                                 </div>
                             {% else %}
                                 <div class="card-content">
                                     <p>Unknown User</p>
-                                    <p>{{ item.thread.last_message|truncatechars:50|default:"No message" }}</p>
+                                    <p>
+                                        {% if item.last_message %}
+                                            {{ item.last_message.content|truncatechars:50 }}
+                                        {% else %}
+                                            No message
+                                        {% endif %}
+                                    </p>
                                 </div>
                             {% endif %}
                         {% endwith %}
@@ -75,14 +87,18 @@
                         </h3>
                     </div>
                     <div class="messages-list" id="messagesList">
-                        {% for message in selected_thread.messages %}
-                            <div class="message {% if message.sender == request.user %}sent{% else %}received{% endif %}">
-                                <p>{{ message.content }}</p>
-                                <small>{{ message.created_at|date:"M d, Y, g:i A" }}</small>
-                            </div>
-                        {% empty %}
-                            <p>No messages yet. Say hello!</p>
-                        {% endfor %}
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="message {% if message.sender == request.user %}sent{% else %}received{% endif %}">
+                                    <p>{{ message.content }}</p>
+                                    <small>{{ message.created_at|date:"M d, Y, g:i A" }}</small>
+                                </div>
+                            {% empty %}
+                                <p>No messages yet. Say hello!</p>
+                            {% endfor %}
+                        {% else %}
+                            <p>No messages available.</p>
+                        {% endif %}
                     </div>
                     <div class="message-input">
                         <textarea id="messageInput" placeholder="Type a message..."></textarea>

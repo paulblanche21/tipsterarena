@@ -380,9 +380,14 @@ def messages_view(request, thread_id=None):
     threads_with_participants = []
     for thread in message_threads:
         other_participant = thread.participants.exclude(id=user.id).first()
+        # Evaluate the messages and followers to avoid RelatedManager in the template
+        last_message = thread.messages.last()
+        follower_count = other_participant.followers.count() if other_participant else 0
         threads_with_participants.append({
             'thread': thread,
             'other_participant': other_participant,
+            'last_message': last_message,
+            'follower_count': follower_count,
         })
 
     selected_thread = None
