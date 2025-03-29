@@ -1,0 +1,23 @@
+<!-- templates/core/message_settings.html -->
+<div class="message-settings">
+    <div class="settings-header">
+        <h2>Direct Messages</h2>
+        <span class="close-settings" id="closeSettingsBtn">×</span>
+    </div>
+    <div class="setting-group">
+        <h3>Allow message requests from:</h3>
+        <p>Choose who can send you message requests.</p>
+        <div class="setting-option">
+            <input type="radio" id="allowMessagesNoOne" name="allow_messages" value="no_one" {% if user.userprofile.allow_messages == 'no_one' %}checked{% endif %}>
+            <label for="allowMessagesNoOne">No one</label>
+        </div>
+        <div class="setting-option">
+            <input type="radio" id="allowMessagesFollowers" name="allow_messages" value="followers" {% if user.userprofile.allow_messages == 'followers' %}checked{% endif %}>
+            <label for="allowMessagesFollowers">Followers</label>
+        </div>
+        <div class="setting-option">
+            <input type="radio" id="allowMessagesEveryone" name="allow_messages" value="everyone" {% if user.userprofile.allow_messages == 'everyone' %}checked{% endif %}>
+            <label for="allowMessagesEveryone">Everyone</label>
+        </div>
+    </div>
+</div>

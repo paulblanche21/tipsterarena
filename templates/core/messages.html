@@ -14,27 +14,34 @@
             <h2 class="messages-header">
                 <span class="messages-title">Messages</span>
                 <span class="messages-icons">
-                    <span class="messages-settings"><i class="fa-solid fa-gear"></i></span>
+                    <span class="messages-settings" id="settingsBtn"><i class="fa-solid fa-gear"></i></span>
                     <span class="messages-new" id="newMessageBtn"><i class="fa-solid fa-envelope"></i></span>
                 </span>
             </h2>
             {% if message_threads %}
-                {% for thread in message_threads %}
-                    <div class="card" data-thread-id="{{ thread.id }}">
-                        {% with other_participant=thread.get_other_participant|default:"Unknown User" %}
-                            {% if other_participant.userprofile.avatar %}
-                                <img src="{{ other_participant.userprofile.avatar.url }}" alt="User Avatar" class="avatar">
+                {% for item in message_threads %}
+                    <div class="card" data-thread-id="{{ item.thread.id }}">
+                        {% with other_participant=item.other_participant %}
+                            {% if other_participant %}
+                                {% if other_participant.userprofile.avatar %}
+                                    <img src="{{ other_participant.userprofile.avatar.url }}" alt="User Avatar" class="avatar">
+                                {% else %}
+                                    <img src="{% static 'img/default-avatar.png' %}" alt="Default Avatar" class="avatar" onerror="this.style.display='none'">
+                                {% endif %}
+                                <div class="card-content">
+                                    <p>
+                                        <strong>{{ other_participant.username }}</strong>
+                                        <span class="user-handle">@{{ other_participant.userprofile.handle|default:other_participant.username }}</span>
+                                        <span class="message-date">{{ item.thread.updated_at|date:"M d" }}</span>
+                                    </p>
+                                    <p>{{ item.thread.last_message|truncatechars:50|default:"No message" }}</p>
+                                </div>
                             {% else %}
-                                <img src="{% static 'img/default-avatar.png' %}" alt="Default Avatar" class="avatar" onerror="this.style.display='none'">
+                                <div class="card-content">
+                                    <p>Unknown User</p>
+                                    <p>{{ item.thread.last_message|truncatechars:50|default:"No message" }}</p>
+                                </div>
                             {% endif %}
-                            <div class="card-content">
-                                <p>
-                                    <strong>{{ other_participant.username|default:"Unknown User" }}</strong>
-                                    <span class="user-handle">@{{ other_participant.userprofile.handle|default:other_participant.username }}</span>
-                                    <span class="message-date">{{ thread.updated_at|date:"M d" }}</span>
-                                </p>
-                                <p>{{ thread.last_message|truncatechars:50|default:"No message" }}</p>
-                            </div>
                         {% endwith %}
                     </div>
                 {% empty %}
@@ -59,7 +66,13 @@
                 <!-- Render the selected thread directly -->
                 <div class="message-thread">
                     <div class="thread-header">
-                        <h3>{{ selected_thread.other_participant.username }}</h3>
+                        <h3>
+                            {% if selected_thread.other_participant %}
+                                {{ selected_thread.other_participant.username }}
+                            {% else %}
+                                Unknown User
+                            {% endif %}
+                        </h3>
                     </div>
                     <div class="messages-list" id="messagesList">
                         {% for message in selected_thread.messages %}
@@ -108,5 +121,4 @@
 {% endblock %}
 
 {% block extra_js %}
-    <!-- No additional scripts needed, as main.js dynamically imports messages.js -->
 {% endblock %}

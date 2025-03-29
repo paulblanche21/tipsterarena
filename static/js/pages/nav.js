@@ -1,3 +1,4 @@
+// static/js/pages/nav.js
 import { getCSRFToken } from './utils.js';
 
 export function setupNavigation() {
@@ -34,7 +35,8 @@ export function setupNavigation() {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            fetch(window.LOGOUT_URL, {
+            console.log('Logout button clicked, fetching:', window.logout_url);
+            fetch(window.logout_url, { // Use lowercase window.logout_url
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': getCSRFToken(),
@@ -42,8 +44,10 @@ export function setupNavigation() {
             })
             .then(response => {
                 if (response.ok) {
-                    window.location.href = window.LANDING_URL;
+                    console.log('Logout successful, redirecting to:', window.landing_url);
+                    window.location.href = window.landing_url; // Use lowercase window.landing_url
                 } else {
+                    console.error('Logout failed, response status:', response.status);
                     alert('Error logging out');
                 }
             })

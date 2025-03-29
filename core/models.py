@@ -37,7 +37,7 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     banner = models.ImageField(upload_to='banners/', blank=True, null=True)
-    description = models.TextField(blank=True)
+    description = models.TextField(blank=True)  # Used as bio
     location = models.CharField(max_length=255, blank=True)
     date_of_birth = models.DateField(blank=True, null=True)
     handle = models.CharField(
@@ -46,6 +46,22 @@ class UserProfile(models.Model):
         blank=True,
         help_text="Your unique handle starting with @ (e.g., @username)"
     )
+
+    allow_messages = models.CharField(
+        max_length=20,
+        choices=[
+            ('no_one', 'No one'),
+            ('followers', 'Followers'),
+            ('everyone', 'Everyone'),
+        ],
+        default='everyone',
+        help_text="Who can send you message requests"
+    )
+
+    @property
+    def followers_count(self):
+        """Return the number of followers for this user using the Follow model."""
+        return Follow.objects.filter(followed=self.user).count()
 
     def __str__(self):
         return f"{self.user.username}'s profile"
@@ -97,7 +113,6 @@ class Comment(models.Model):
     parent_comment = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
     image = models.ImageField(upload_to='comments/', blank=True, null=True)
     gif_url = models.URLField(blank=True, null=True)
-    
 
     def __str__(self):
         return f"{self.user.username} commented on {self.tip.user.username}'s tip: {self.content[:20]}"
@@ -135,7 +150,6 @@ class Message(models.Model):
         super().save(*args, **kwargs)
         # Update the thread's last_message and updated_at fields
         self.thread.update_last_message()
-
 
 class RaceMeeting(models.Model):
     date = models.DateField()

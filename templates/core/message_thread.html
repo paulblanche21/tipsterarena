@@ -1,7 +1,28 @@
-<!-- core/message_thread.html -->
+<!-- templates/core/message_thread.html -->
 <div class="message-thread">
     <div class="thread-header">
-        <h3>{{ other_participant.username }}</h3>
+        <div class="user-details">
+            {% if other_participant %}
+                <h3>{{ other_participant.username }}</h3>
+                <p class="handle">@{{ other_participant.userprofile.handle|default:other_participant.username }}</p>
+                {% if other_participant.userprofile.description %}
+                    <p class="bio">{{ other_participant.userprofile.description }}</p>
+                {% endif %}
+                <p class="stats">
+                    Joined {{ other_participant.date_joined|date:"F Y" }} • 
+                    {{ other_participant.userprofile.followers_count }} Followers
+                </p>
+                {% if other_participant.followers.exists %}
+                    {% if request.user in other_participant.followers.all %}
+                        <p class="follow-status">You followed this account</p>
+                    {% endif %}
+                {% endif %}
+            {% else %}
+                <h3>Unknown User</h3>
+                <p class="handle">@unknown</p>
+                <p class="stats">Details unavailable</p>
+            {% endif %}
+        </div>
     </div>
     <div class="messages-list" id="messagesList">
         {% for message in messages %}
@@ -15,6 +36,11 @@
     </div>
     <div class="message-input">
         <textarea id="messageInput" placeholder="Type a message..."></textarea>
-        <button id="sendMessageBtn" data-thread-id="{{ thread.id }}">Send</button>
+        <div class="message-actions">
+            <button class="action-btn" title="Add photo"><i class="fa-solid fa-camera"></i></button>
+            <button class="action-btn" title="Add GIF"><i class="fa-solid fa-film"></i></button>
+            <button class="action-btn" title="Add emoji"><i class="fa-solid fa-face-smile"></i></button>
+            <button id="sendMessageBtn" data-thread-id="{{ thread.id }}">Send</button>
+        </div>
     </div>
 </div>

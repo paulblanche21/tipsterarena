@@ -5,6 +5,7 @@ function getCurrentPage() {
 
 document.addEventListener('DOMContentLoaded', async function () {
   console.log('DOM fully loaded');
+  console.log('Current page:', getCurrentPage());
 
   const page = getCurrentPage();
 
@@ -184,11 +185,15 @@ document.addEventListener('DOMContentLoaded', async function () {
   }
 
   if (page === '/messages/') {
+    console.log('Importing messages.js for messages page');
     import('./pages/messages.js')
-      .then(module => module.init())
-      .catch(error => console.error('Error loading scripts for messages page:', error));
+      .then(module => {
+        console.log('messages.js loaded successfully');
+        module.init();
+    })
+    .catch(error => console.error('Error loading scripts for messages page:', error));
   }
-
+  
   // Trending Tips (shared across pages)
   const trendingTipsList = document.querySelector('.trending-tips-list');
   if (trendingTipsList) {

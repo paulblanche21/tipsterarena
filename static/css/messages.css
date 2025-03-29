@@ -1,4 +1,82 @@
 /* messages.css */
+.action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: #657786;
+    transition: color 0.2s;
+}
+
+.action-btn:hover {
+    color: var(--red-accent); /* Use Tipster Arena's red on hover */
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.avatar-small {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+
+.card {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #e6ecf0;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.card:hover {
+    background-color: #f5f8fa;
+}
+
+.card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-content p {
+    margin: 0;
+    font-size: 14px;
+    color: #14171a;
+}
+
+.card-content p strong {
+    font-weight: bold;
+}
+
+.card-content .user-handle {
+    color: #657786;
+    margin-left: 5px;
+}
+
+.card-content .message-date {
+    color: #657786;
+    margin-left: 5px;
+}
+
+.create-group {
+    display: block;
+    margin-top: 5px;
+    font-size: 14px;
+    color: var(--red-accent); /* Use Tipster Arena's red instead of X's blue */
+    text-decoration: none;
+}
+
+.create-group:hover {
+    text-decoration: underline;
+}
 
 /* Modal Styles */
 .modal {
@@ -57,58 +135,6 @@
     color: #001f3f;
 }
 
-.next-btn {
-    padding: 5px 10px; /* Reduce padding to make the button narrower */
-    background-color: #1DA1F2; /* X's blue */
-    color: white;
-    border: none;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.next-btn:disabled {
-    background-color: #b0c4de; /* Disabled state */
-    cursor: not-allowed;
-}
-
-.next-btn:not(:disabled):hover {
-    background-color: #0d8ecf; /* Darker blue on hover */
-}
-
-.selected-users {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    padding: 10px 15px;
-    border-bottom: 1px solid #e1e8ed;
-    min-height: 40px; /* Ensure space even when empty */
-}
-
-.selected-user {
-    display: flex;
-    align-items: center;
-    background-color: #e1e8ed;
-    border-radius: 20px;
-    padding: 5px 10px;
-    font-size: 14px;
-    color: #001f3f;
-}
-
-.selected-user .remove-user {
-    margin-left: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    color: #657786;
-    transition: color 0.2s;
-}
-
-.selected-user .remove-user:hover {
-    color: #ff4136; /* Red on hover */
-}
-
 .modal-search {
     padding: 10px 15px;
     border-bottom: 1px solid #e1e8ed;
@@ -129,59 +155,16 @@
     border-color: var(--red-accent); /* Retain your red accent on focus */
 }
 
-.create-group {
-    display: block;
-    margin-top: 5px;
+.next-btn {
+    padding: 5px 10px; /* Reduce padding to make the button narrower */
+    background-color: #1DA1F2; /* X's blue */
+    color: white;
+    border: none;
+    border-radius: 20px;
     font-size: 14px;
-    color: var(--red-accent); /* Use Tipster Arena's red instead of X's blue */
-    text-decoration: none;
-}
-
-.create-group:hover {
-    text-decoration: underline;
-}
-
-.suggestions-list {
-    flex: 1;
-    overflow-y: auto;
-}
-
-.suggestion {
-    display: flex;
-    align-items: center;
-    padding: 10px 15px;
-    cursor: pointer;
-    border-bottom: 1px solid #e1e8ed;
-    transition: background-color 0.2s;
-}
-
-.suggestion:hover {
-    background-color: rgba(255, 65, 54, 0.1); /* Retain your light red background on hover */
-}
-
-.suggestion input[type="checkbox"] {
-    margin-right: 10px;
-}
-
-.suggestion .user-info {
-    flex: 1;
-}
-
-.suggestion .user-info .username {
     font-weight: bold;
-    color: #001f3f;
-}
-
-.suggestion .user-info .handle {
-    color: #657786;
-    font-size: 14px;
-}
-
-.avatar-small {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    margin-right: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s;
 }
 
 /* Rest of the styles remain unchanged */
@@ -200,6 +183,8 @@
     box-sizing: border-box;
 }
 
+
+
 .messages-page .messages-container {
     display: flex;
     height: 100vh;
@@ -211,6 +196,87 @@
     flex-wrap: nowrap;
 }
 
+/* Message styling */
+.message-container {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+}
+
+.message-container .message {
+    max-width: 70%;
+    padding: 8px 12px;
+    margin: 5px 0;
+    border-radius: 15px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.message-container .message.sent {
+    background-color: #003087; /* Navy blue for sent messages */
+    color: white;
+    align-self: flex-end;
+}
+
+.message-container .message.received {
+    background-color: #F5F8FA; /* Light gray for received messages */
+    color: #333;
+    align-self: flex-start;
+}
+
+.message-container .message .timestamp {
+    font-size: 12px;
+    color: #999;
+    margin-top: 2px;
+    text-align: right;
+}
+
+/* Input bar styling */
+.message-input-container {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: #fff;
+    border-top: 1px solid #E1E8ED;
+}
+
+.message-input-container input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #E1E8ED;
+    border-radius: 20px;
+    margin-right: 8px;
+    font-size: 14px;
+    outline: none;
+}
+
+.message-input-container button {
+    padding: 8px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.message-input-container button#sendMessageBtn {
+    background-color: #1DA1F2; /* Navy blue for send button */
+    color: white;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+}
+
+.message-input-container button#sendMessageBtn:hover {
+    background-color: #0C8DE0;
+}
+
+.message-input-container button img {
+    width: 20px;
+    height: 20px;
+}
+
 .messages-feed {
     flex: 0 0 388px;
     height: 100%;
@@ -219,6 +285,22 @@
     background-color: #fff;
     border-radius: 8px;
     box-sizing: border-box;
+}
+
+.message-input button#sendMessageBtn {
+    padding: 10px 20px;
+    background-color: var(--red-accent);
+    color: white;
+    border: none;
+    border-radius: 20px; /* Match X's rounded button */
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.message-input button#sendMessageBtn:hover {
+    background-color: #e63b31;
 }
 
 .messages-page .sidebar-messages {
@@ -274,66 +356,71 @@
     cursor: pointer;
 }
 
-.card {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    border-bottom: 1px solid #e6ecf0;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
+/* messages.css */
 
-.card:hover {
-    background-color: #f5f8fa;
-}
-
-.avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    margin-right: 10px;
-}
-
-.card-content {
-    flex: 1;
+/* Message Settings Styles */
+.message-settings {
+    padding: 20px;
+    height: 100%;
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
 }
 
-.card-content p {
-    margin: 0;
-    font-size: 14px;
+.message-settings h2 {
+    font-size: 24px;
+    font-weight: bold;
+    margin:0;
+}
+
+.message-settings .settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.message-settings .close-settings {
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #657786;
+    transition: color 0.2s;
+}
+
+.message-settings .close-settings:hover {
     color: #14171a;
 }
 
-.card-content p strong {
+.setting-group {
+    margin-bottom: 30px;
+}
+
+.setting-group h3 {
+    font-size: 18px;
     font-weight: bold;
+    margin-bottom: 5px;
 }
 
-.card-content .user-handle {
+.setting-group p {
+    font-size: 14px;
     color: #657786;
-    margin-left: 5px;
+    margin-bottom: 10px;
 }
 
-.card-content .message-date {
-    color: #657786;
-    margin-left: 5px;
+.setting-option {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
 }
 
-.new-message-btn {
-    padding: 10px 20px;
-    background-color: var(--red-accent);
-    color: white;
-    border: none;
-    border-radius: 20px;
+.setting-option input[type="radio"] {
+    margin-right: 10px;
+}
+
+.setting-option label {
     font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.new-message-btn:hover {
-    background-color: #e63b31;
+    color: #14171a;
 }
 
 .message-thread {
@@ -342,17 +429,6 @@
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-}
-
-.thread-header {
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-}
-
-.thread-header h3 {
-    font-size: 18px;
-    font-weight: bold;
 }
 
 .messages-list {
@@ -394,15 +470,17 @@
 
 .message-input {
     display: flex;
+    flex-direction: column;
     gap: 10px;
 }
 
 .message-input textarea {
     flex: 1;
     padding: 10px;
-    border-radius: 5px;
+    border-radius: 20px; /* Match X's rounded input */
     border: 1px solid #ddd;
     resize: none;
+    height: 40px;
 }
 
 .message-input button {
@@ -418,12 +496,158 @@
     background-color: #e63b31;
 }
 
+.message-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+
+.messages-page .sidebar,
+.messages-page .sidebar-card,
+.messages-page .search-input,
+.messages-page .messages-caret {
+    display: none !important;
+}
+
+.new-message-btn {
+    padding: 10px 20px;
+    background-color: var(--red-accent);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.new-message-btn:hover {
+    background-color: #e63b31;
+}
+
+.next-btn:disabled {
+    background-color: #b0c4de; /* Disabled state */
+    cursor: not-allowed;
+}
+
+.next-btn:not(:disabled):hover {
+    background-color: #0d8ecf; /* Darker blue on hover */
+}
+
+.selected-users {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 10px 15px;
+    border-bottom: 1px solid #e1e8ed;
+    min-height: 40px; /* Ensure space even when empty */
+}
+
+.selected-user {
+    display: flex;
+    align-items: center;
+    background-color: #e1e8ed;
+    border-radius: 20px;
+    padding: 5px 10px;
+    font-size: 14px;
+    color: #001f3f;
+}
+
+.selected-user .remove-user {
+    margin-left: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    color: #657786;
+    transition: color 0.2s;
+}
+
+.selected-user .remove-user:hover {
+    color: #ff4136; /* Red on hover */
+}
+
+.suggestion {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #e1e8ed;
+    transition: background-color 0.2s;
+}
+
+.suggestions-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.suggestion:hover {
+    background-color: rgba(255, 65, 54, 0.1); /* Retain your light red background on hover */
+}
+
+.suggestion input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+.suggestion .user-info {
+    flex: 1;
+}
+
+.suggestion .user-info .username {
+    font-weight: bold;
+    color: #001f3f;
+}
+
+.suggestion .user-info .handle {
+    color: #657786;
+    font-size: 14px;
+}
+
+.thread-header {
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.thread-header h3 {
+    font-size: 18px;
+    font-weight: bold;
+}
+
 .user-details {
     display: flex;
     flex-direction: column;
-    height: 100%;
-    width: 100%;
 }
+
+.user-details h3 {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.user-details .handle {
+    font-size: 14px;
+    color: #657786;
+    margin: 2px 0;
+}
+
+.user-details .bio {
+    font-size: 14px;
+    color: #14171a;
+    margin: 5px 0;
+}
+
+.user-details .stats {
+    font-size: 14px;
+    color: #657786;
+    margin: 5px 0;
+}
+
+.user-details .follow-status {
+    font-size: 14px;
+    color: #1DA1F2; /* X's blue for the follow status */
+    margin: 5px 0;
+}
+
 
 .user-details .thread-header {
     border-bottom: 1px solid #e1e8ed;
@@ -484,42 +708,4 @@
 
 .user-details .message-input button:hover {
     background-color: #e63b31;
-}
-
-.messages-page .sidebar,
-.messages-page .sidebar-card,
-.messages-page .search-input,
-.messages-page .messages-caret {
-    display: none !important;
-}
-
-@media (max-width: 1000px) {
-    .messages-page .messages-container {
-        flex-direction: column;
-        height: auto;
-        padding: 10px;
-        margin-left: 0;
-        width: 100%;
-    }
-
-    .messages-feed {
-        flex: 0 0 auto;
-        width: 100%;
-        max-width: 388px;
-        margin: 0 auto;
-        height: 50vh;
-    }
-
-    .messages-page .sidebar-messages {
-        flex: 0 0 auto;
-        width: 100%;
-        max-width: 599px;
-        margin: 20px auto 0;
-        height: 50vh;
-    }
-
-    .modal {
-        left: 0;
-        width: 100%;
-    }
 }

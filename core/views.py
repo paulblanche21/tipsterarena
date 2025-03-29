@@ -16,8 +16,7 @@ from rest_framework import generics
 from rest_framework.serializers import ModelSerializer
 from datetime import datetime
 import json
-
-
+from django.template.loader import render_to_string  # Added for AJAX rendering
 
 import logging
 import bleach
@@ -29,7 +28,6 @@ def landing(request):
         return redirect('home')  # Redirect logged-in users to home
     return render(request, 'core/landing.html')  # No forms needed here
 
-# views.py (relevant snippet)
 def signup(request):
     if request.user.is_authenticated:
         return redirect('home')
@@ -58,7 +56,6 @@ def login_view(request):
     else:
         form = AuthenticationForm()
     return render(request, 'core/login.html', {'form': form})
-
 
 @login_required
 def home(request):
@@ -134,7 +131,6 @@ def sport_view(request, sport):
         'sport': sport,  # Pass the sport to pre-select and disable the dropdown
     })
 
-
 def explore(request):
     tips = Tip.objects.all().order_by('-created_at')[:20]  # Latest 20 tips from all users, X-like Explore
 
@@ -148,7 +144,6 @@ def explore(request):
         # No 'sport' variable passed, so dropdown is editable
     }
     return render(request, 'core/explore.html', context)
-
 
 @login_required
 @require_POST
@@ -171,7 +166,6 @@ def follow_user(request):
         return JsonResponse({'success': True, 'message': f'Now following {followed_username}'})
     else:
         return JsonResponse({'success': True, 'message': f'Already following {followed_username}'})
-
 
 @login_required
 def profile(request, username):
@@ -200,8 +194,7 @@ def profile(request, username):
         'is_following': is_following,
     })
 
-
-@login_required  # Require users to log in to edit their profile
+@login_required
 def profile_edit(request, username):
     user = get_object_or_404(User, username=username)
     user_profile = user.userprofile
@@ -216,7 +209,6 @@ def profile_edit(request, username):
     else:
         form = UserProfileForm(instance=user_profile)
         return render(request, 'core/profile.html', {'form': form, 'user_profile': user_profile})
-    
 
 @login_required
 @require_POST
@@ -232,7 +224,6 @@ def like_tip(request):
         like.delete()
         return JsonResponse({'success': True, 'message': 'Like removed', 'like_count': tip.likes.count()})
 
-
 @login_required
 @require_POST
 def share_tip(request):
@@ -246,7 +237,6 @@ def share_tip(request):
     else:
         share.delete()
         return JsonResponse({'success': True, 'message': 'Share removed', 'share_count': tip.shares.count()})
-
 
 @login_required
 @require_POST
@@ -307,7 +297,6 @@ def comment_tip(request):
     except Exception as e:
         logger.error(f"Error creating comment: {str(e)}")
         return JsonResponse({'success': False, 'error': 'An error occurred while commenting.'}, status=500)
-
 
 @login_required
 def get_tip_comments(request, tip_id):
@@ -370,43 +359,71 @@ def share_comment(request):
         share.delete()
         return JsonResponse({'success': True, 'message': 'Share removed', 'share_count': comment.shares.count()})
 
-
-@login_required  # Require users to log in to see bookmarks
+@login_required
 def bookmarks(request):
     # Placeholder view for Bookmarks (can be expanded later to show bookmarked tips)
     return render(request, 'core/bookmarks.html')
 
 @login_required
-def messages(request):
+def messages_view(request, thread_id=None):
+    """
+    Display the messages page with a list of threads and the selected thread's messages.
+    Supports both full page loads and AJAX requests for dynamic thread loading.
+    """
     user = request.user
+    # Fetch message threads for the user
     message_threads = (MessageThread.objects.filter(participants=user)
                       .order_by('-updated_at')[:20]
-                      .prefetch_related('participants__userprofile'))  # Use prefetch_related for ManyToMany
-    return render(request, 'core/messages.html', {
-        'message_threads': message_threads,
-    })
+                      .prefetch_related('participants__userprofile'))
 
-@login_required
-def message_thread(request, thread_id):
-    """View a specific message thread and its messages."""
-    thread = get_object_or_404(MessageThread, id=thread_id, participants=request.user)
-    messages = thread.messages.all().order_by('created_at')
-    other_participant = thread.get_other_participant(request.user)
+    # Compute other_participant for each thread
+    threads_with_participants = []
+    for thread in message_threads:
+        other_participant = thread.participants.exclude(id=user.id).first()
+        threads_with_participants.append({
+            'thread': thread,
+            'other_participant': other_participant,
+        })
 
-    return render(request, 'core/message_thread.html', {
-        'thread': thread,
-        'messages': messages,
-        'other_participant': other_participant,
-    })
+    selected_thread = None
+    messages = None  # Add a variable for the messages
+    if thread_id:
+        selected_thread = get_object_or_404(MessageThread, id=thread_id, participants=user)
+        selected_thread.other_participant = selected_thread.participants.exclude(id=user.id).first()
+        messages = selected_thread.messages.all().order_by('created_at')  # Store the queryset here
+
+    context = {
+        'message_threads': threads_with_participants,
+        'selected_thread': selected_thread,
+        'messages': messages,  # Pass the messages separately
+    }
+
+    # Check if this is an AJAX request
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return HttpResponse(
+            render_to_string('core/message_thread.html', {
+                'thread': selected_thread,
+                'other_participant': selected_thread.other_participant,
+                'messages': messages,  # Use the separate variable
+                'request': request,
+            })
+        )
+
+    return render(request, 'core/messages.html', context)
 
 @login_required
 @require_POST
 @csrf_exempt
 def send_message(request):
     """Send a new message in a thread or create a new thread."""
-    thread_id = request.POST.get('thread_id')
-    recipient_username = request.POST.get('recipient_username')
-    content = request.POST.get('content')
+    try:
+        # Parse JSON body
+        data = json.loads(request.body.decode('utf-8'))
+        thread_id = data.get('thread_id')
+        recipient_username = data.get('recipient_username')
+        content = data.get('content')
+    except (json.JSONDecodeError, KeyError):
+        return JsonResponse({'success': False, 'error': 'Invalid JSON data'}, status=400)
 
     if not content:
         return JsonResponse({'success': False, 'error': 'Message content cannot be empty'}, status=400)
@@ -460,7 +477,7 @@ def get_thread_messages(request, thread_id):
     ]
     return JsonResponse({'success': True, 'messages': messages_data})
 
-@login_required  # Require users to log in to see notifications
+@login_required
 def notifications(request):
     user = request.user
     # Get notifications with optimized queries for UserProfile
@@ -522,7 +539,6 @@ def suggested_users_api(request):
 
     return JsonResponse({'users': users_data})
 
-
 @csrf_exempt
 @login_required
 def post_tip(request):
@@ -573,7 +589,6 @@ def post_tip(request):
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
     return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
-
 
 # Serializer for RaceMeeting
 class RaceMeetingSerializer(ModelSerializer):
@@ -659,3 +674,22 @@ def csp_report(request):
         print("CSP Violation:", report)  # Log the violation for debugging
         return HttpResponse(status=204)
     return HttpResponse(status=400)
+
+
+@login_required
+def message_settings_view(request):
+    """
+    Render the message settings panel for the right-hand column.
+    """
+    user = request.user
+    # Ensure the user has a UserProfile
+    if not hasattr(user, 'userprofile'):
+        UserProfile.objects.get_or_create(user=user)
+
+    # Render the settings template
+    return HttpResponse(
+        render_to_string('core/message_settings.html', {
+            'user': user,
+            'request': request,
+        })
+    )
