@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
   // Shared utilities loaded on all pages
   const sharedModules = await Promise.all([
-    import('./config.js'), // Assuming this has shared utilities; adjust path if needed
+    import('./config.js'),
     import('./pages/nav.js').then(module => module.setupNavigation()),
     import('./pages/carousel.js').then(module => module.initCarousel()),
     import('./follow.js').then(module => module.attachFollowButtonListeners()),
@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         module.setupTipInteractions();
         module.setupReplyModal();
       }),
+      import('./pages/bookmarks.js').then(module => module.setupBookmarkInteractions()),
       import('./pages/upcoming-events.js').then(module => {
         module.getDynamicEvents().then(dynamicEvents => {
           const footballEventsElement = document.getElementById('football-events');
@@ -73,6 +74,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         module.setupTipInteractions();
         module.setupReplyModal();
       }),
+      import('./pages/bookmarks.js').then(module => module.setupBookmarkInteractions()),
       import('./pages/upcoming-events.js').then(module => {
         module.getDynamicEvents().then(dynamicEvents => {
           const footballEventsElement = document.getElementById('football-events');
@@ -108,9 +110,14 @@ document.addEventListener('DOMContentLoaded', async function () {
     Promise.all([
       import('./pages/profile.js').then(module => module.setupProfileEditing()),
       import('./pages/post.js').then(module => {
-        module.setupPostModal(); // No setupCentralFeedPost for profile
+        module.setupPostModal();
       }),
       import('./pages/feed.js').then(module => module.setupShowMoreButtons()),
+      import('./tips.js').then(module => {
+        module.setupTipInteractions();
+        module.setupReplyModal();
+      }),
+      import('./pages/bookmarks.js').then(module => module.setupBookmarkInteractions()),
       import('./pages/upcoming-events.js').then(module => {
         module.getDynamicEvents().then(dynamicEvents => {
           const footballEventsElement = document.getElementById('football-events');
@@ -153,6 +160,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         module.setupTipInteractions();
         module.setupReplyModal();
       }),
+      import('./pages/bookmarks.js').then(module => module.setupBookmarkInteractions()),
       import('./pages/upcoming-events.js').then(module => {
         module.getDynamicEvents().then(dynamicEvents => {
           const footballEventsElement = document.getElementById('football-events');
@@ -184,16 +192,53 @@ document.addEventListener('DOMContentLoaded', async function () {
     ]).catch(error => console.error('Error loading scripts for sports page:', error));
   }
 
+  if (page === '/bookmarks/') {
+    Promise.all([
+      import('./pages/bookmarks.js').then(module => module.setupBookmarkInteractions()),
+      import('./tips.js').then(module => {
+        module.setupTipInteractions();
+        module.setupReplyModal();
+      }),
+      import('./pages/upcoming-events.js').then(module => {
+        module.getDynamicEvents().then(dynamicEvents => {
+          const footballEventsElement = document.getElementById('football-events');
+          if (footballEventsElement) {
+            const footballEvents = dynamicEvents.football || [];
+            footballEventsElement.innerHTML = module.formatFootballList(footballEvents, 'football', false) || '<p>No upcoming events available.</p>';
+          }
+
+          const golfEventsElement = document.getElementById('golf-events');
+          if (golfEventsElement) {
+            const golfEvents = dynamicEvents.golf || [];
+            golfEventsElement.innerHTML = module.formatGolfList(golfEvents, 'golf', false) || '<p>No upcoming events available.</p>';
+          }
+
+          const tennisEventsElement = document.getElementById('tennis-events');
+          if (tennisEventsElement) {
+            const tennisEvents = dynamicEvents.tennis || [];
+            tennisEventsElement.innerHTML = module.formatTennisList(tennisEvents, 'tennis', false) || '<p>No upcoming tournaments available.</p>';
+          }
+
+          const horseRacingEventsElement = document.getElementById('horse-racing-events');
+          if (horseRacingEventsElement) {
+            const horseRacingEvents = dynamicEvents.horse_racing || [];
+            horseRacingEventsElement.innerHTML = module.formatHorseRacingList(horseRacingEvents, 'horse_racing', false) || '<p>No upcoming races available.</p>';
+          }
+        });
+      }),
+    ]).catch(error => console.error('Error loading scripts for bookmarks page:', error));
+  }
+
   if (page === '/messages/') {
     console.log('Importing messages.js for messages page');
     import('./pages/messages.js')
       .then(module => {
         console.log('messages.js loaded successfully');
         module.init();
-    })
-    .catch(error => console.error('Error loading scripts for messages page:', error));
+      })
+      .catch(error => console.error('Error loading scripts for messages page:', error));
   }
-  
+
   // Trending Tips (shared across pages)
   const trendingTipsList = document.querySelector('.trending-tips-list');
   if (trendingTipsList) {
@@ -254,7 +299,6 @@ document.addEventListener('DOMContentLoaded', async function () {
               </div>
             `;
           });
-          // Re-attach follow button listeners after DOM update
           import('./follow.js').then(module => module.attachFollowButtonListeners());
         } else {
           followList.innerHTML = '<p>No suggested tipsters available.</p>';

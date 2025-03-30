@@ -99,7 +99,8 @@
                         </div>
                         <div class="tip-action-spacer-large"></div>
                         <div class="tip-action-group">
-                            <a href="#" class="tip-action tip-action-bookmark"><i class="fas fa-bookmark"></i></a>
+                            <button class="tip-action tip-action-bookmark {% if request.user in tip.bookmarks.all %}bookmarked{% endif %}" 
+                                    data-action="bookmark"><i class="fas fa-bookmark"></i></button>
                         </div>
                         <div class="tip-action-group">
                             <a href="#" class="tip-action tip-action-share-link"><i class="fas fa-arrow-up"></i></a>

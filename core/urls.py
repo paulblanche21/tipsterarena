@@ -20,6 +20,7 @@ urlpatterns = [
     path('messages/settings/', views.message_settings_view, name='message_settings'),
     path('notifications/', views.notifications, name='notifications'),
     path('bookmarks/', views.bookmarks, name='bookmarks'),
+    path('toggle-bookmark/', views.toggle_bookmark, name='toggle_bookmark'),
     path('api/like-tip/', views.like_tip, name='like_tip'),
     path('api/share-tip/', views.share_tip, name='share_tip'),
     path('api/comment-tip/', views.comment_tip, name='comment_tip'),

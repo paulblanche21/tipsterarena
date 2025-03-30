@@ -1,0 +1,46 @@
+/* static/css/styles.css */
+.tip-action-bookmark.bookmarked {
+    color: #1DA1F2; /* Or your preferred highlight color */
+}
+
+.empty-bookmarks {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+
+.page-header {
+    padding: 10px 15px;
+    border-bottom: 1px solid #e6ecf0;
+    margin-bottom: 10px;
+}
+
+/* static/css/styles.css */
+
+/* Default state for bookmark icon */
+.tip-action-bookmark {
+    color: #808080; /* Grey for unbookmarked state */
+    background: none; /* Remove any background */
+    border: none; /* Remove any border */
+    outline: none; /* Remove focus outline */
+    padding: 0; /* Remove padding that might cause a circle */
+    cursor: pointer; /* Ensure it looks clickable */
+  }
+  
+  /* Bookmarked state */
+  .tip-action-bookmark.bookmarked {
+    color: #FFD700; /* Yellow for bookmarked state */
+  }
+  
+  /* Remove focus/hover effects that might cause a circle */
+  .tip-action-bookmark:focus,
+  .tip-action-bookmark:hover {
+    outline: none; /* No outline on focus */
+    background: none; /* No background on hover */
+    border-radius: 0; /* No rounding that might look like a circle */
+  }
+  
+  /* Ensure the icon itself is styled correctly */
+  .tip-action-bookmark i {
+    font-size: 16px; /* Adjust size if needed */
+  }

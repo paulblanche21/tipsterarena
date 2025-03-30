@@ -31,7 +31,13 @@
                             <div class="card-content">
                                 <div class="card-header">
                                     <span class="username"><strong>{{ other_participant.username }}</strong></span>
-                                    <span class="user-handle">{{ other_participant.userprofile.handle|default:other_participant.username }}</span>
+                                    <span class="user-handle">
+                                        {% if other_participant.userprofile.handle %}
+                                            {{ other_participant.userprofile.handle }}
+                                        {% else %}
+                                            @{{ other_participant.username }}
+                                        {% endif %}
+                                    </span>
                                     <span class="message-date">{{ item.thread.updated_at|date:"M d" }}</span>
                                 </div>
                                 <p class="message-preview">
@@ -93,7 +99,13 @@
                                 {% endif %}
                                 <div class="user-details">
                                     <h3>{{ selected_thread.other_participant.username }}</h3>
-                                    <span class="user-handle">{{ selected_thread.other_participant.userprofile.handle|default:selected_thread.other_participant.username }}</span>
+                                    <span class="user-handle">
+                                        {% if selected_thread.other_participant.userprofile.handle %}
+                                            {{ selected_thread.other_participant.userprofile.handle }}
+                                        {% else %}
+                                            @{{ selected_thread.other_participant.username }}
+                                        {% endif %}
+                                    </span>
                                     {% if selected_thread.other_participant.userprofile.description %}
                                         <p class="user-bio">{{ selected_thread.other_participant.userprofile.description }}</p>
                                     {% endif %}
@@ -120,6 +132,12 @@
                             {% for message in messages %}
                                 <div class="message {% if message.sender == request.user %}sent{% else %}received{% endif %}">
                                     <p>{{ message.content }}</p>
+                                    {% if message.image %}
+                                        <img src="{{ message.image.url }}" alt="Message Image" class="msg-message-image">
+                                    {% endif %}
+                                    {% if message.gif_url %}
+                                        <img src="{{ message.gif_url }}" alt="Message GIF" class="msg-message-image">
+                                    {% endif %}
                                     <small>{{ message.created_at|date:"M d, Y, g:i A" }}</small>
                                 </div>
                             {% empty %}
@@ -128,6 +146,10 @@
                         {% else %}
                             <p>No messages available.</p>
                         {% endif %}
+                    </div>
+                    <div class="msg-message-preview" style="display: none;">
+                        <img src="" alt="Preview" class="msg-preview-media">
+                        <span class="msg-remove-preview">×</span>
                     </div>
                     <div class="message-input">
                         <div class="message-actions">

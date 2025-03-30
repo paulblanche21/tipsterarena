@@ -361,8 +361,31 @@ def share_comment(request):
 
 @login_required
 def bookmarks(request):
-    # Placeholder view for Bookmarks (can be expanded later to show bookmarked tips)
-    return render(request, 'core/bookmarks.html')
+    bookmarked_tips = Tip.objects.filter(bookmarks=request.user).select_related('user__userprofile')
+    return render(request, 'core/bookmarks.html', {'tips': bookmarked_tips})
+
+@login_required
+def toggle_bookmark(request):
+    if request.method == 'POST':
+        tip_id = request.POST.get('tip_id')
+        try:
+            tip = Tip.objects.get(id=tip_id)
+            if request.user in tip.bookmarks.all():
+                tip.bookmarks.remove(request.user)
+                bookmarked = False
+            else:
+                tip.bookmarks.add(request.user)
+                bookmarked = True
+            tip.save()  # Ensure changes are saved
+            return JsonResponse({
+                'success': True,
+                'bookmarked': bookmarked,
+                'bookmark_count': tip.bookmarks.count()
+            })
+        except Tip.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Tip not found'})
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
 
 @login_required
 def messages_view(request, thread_id=None):
@@ -406,21 +429,15 @@ def messages_view(request, thread_id=None):
 @csrf_exempt
 def send_message(request):
     """Send a new message in a thread or create a new thread."""
-    try:
-        # Log the raw request body for debugging
-        print("Raw request body:", request.body)
-        # Parse JSON body
-        data = json.loads(request.body.decode('utf-8'))
-        print("Parsed request data:", data)
-        thread_id = data.get('thread_id')
-        recipient_username = data.get('recipient_username')
-        content = data.get('content')
-    except (json.JSONDecodeError, KeyError) as e:
-        print("Error parsing JSON:", str(e))
-        return JsonResponse({'success': False, 'error': 'Invalid JSON data'}, status=400)
+    # Since we're now handling file uploads, we can't use json.loads
+    thread_id = request.POST.get('thread_id')
+    recipient_username = request.POST.get('recipient_username')
+    content = request.POST.get('content')
+    image = request.FILES.get('image')
+    gif_url = request.POST.get('gif_url')
 
-    if not content:
-        return JsonResponse({'success': False, 'error': 'Message content cannot be empty'}, status=400)
+    if not content and not image and not gif_url:
+        return JsonResponse({'success': False, 'error': 'Message content, image, or GIF URL must be provided'}, status=400)
 
     # If thread_id is provided, send a message in that thread
     if thread_id:
@@ -443,7 +460,9 @@ def send_message(request):
     message = Message.objects.create(
         thread=thread,
         sender=request.user,
-        content=content
+        content=content or '',  # Allow empty content if image or GIF is provided
+        image=image,
+        gif_url=gif_url
     )
 
     return JsonResponse({
@@ -453,6 +472,8 @@ def send_message(request):
         'created_at': message.created_at.isoformat(),
         'sender': message.sender.username,
         'thread_id': thread.id,
+        'image': message.image.url if message.image else None,
+        'gif_url': message.gif_url if message.gif_url else None,
     })
 
 @login_required

@@ -18,6 +18,7 @@ class Tip(models.Model):
     gif_height = models.PositiveIntegerField(null=True, blank=True)
     poll = models.TextField(blank=True, null=True, default='{}')  # Store JSON as string
     emojis = models.TextField(blank=True, null=True, default='{}')  # Store JSON as string
+    bookmarks = models.ManyToManyField(User, related_name='bookmarked_tips', blank=True)
     location = models.CharField(max_length=255, blank=True, null=True)
     scheduled_at = models.DateTimeField(blank=True, null=True)
     audience = models.CharField(
@@ -142,13 +143,14 @@ class Message(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+    image = models.ImageField(upload_to='messages/', blank=True, null=True)  # New field for images
+    gif_url = models.URLField(blank=True, null=True)  # New field for GIF URLs
 
     def __str__(self):
         return f"{self.sender.username} in {self.thread}: {self.content[:20]}"
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        # Update the thread's last_message and updated_at fields
         self.thread.update_last_message()
 
 class RaceMeeting(models.Model):

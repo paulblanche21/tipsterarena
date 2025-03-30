@@ -1,4 +1,6 @@
 // static/js/pages/messages.js
+import { showEmojiPicker, showGifModal } from './post.js';
+
 let defaultMessageContent = ''; // Store the default content of the messageContent area
 
 function init() {
@@ -23,23 +25,15 @@ function init() {
 
     if (newMessageBtn) {
         newMessageBtn.addEventListener('click', openNewMessageModal);
-    } else {
-        console.log('newMessageBtn not found');
     }
     if (newMessageSidebarBtn) {
         newMessageSidebarBtn.addEventListener('click', openNewMessageModal);
-    } else {
-        console.log('newMessageSidebarBtn not found');
     }
     if (closeModalBtn) {
         closeModalBtn.addEventListener('click', closeNewMessageModal);
-    } else {
-        console.log('closeModalBtn not found');
     }
     if (recipientInput) {
         recipientInput.addEventListener('input', (e) => searchUsers(e.target.value));
-    } else {
-        console.log('recipientInput not found');
     }
     if (settingsBtn) {
         console.log('Attaching event listener to settings button');
@@ -81,8 +75,6 @@ function init() {
                 console.error('Fetch error:', error);
             });
         });
-    } else {
-        console.log('Settings button not found in DOM');
     }
 
     // Function to initialize action buttons (photo, GIF, emoji)
@@ -90,7 +82,15 @@ function init() {
         const photoBtn = document.querySelector('.action-btn[title="Add image"]');
         const gifBtn = document.querySelector('.action-btn[title="Add GIF"]');
         const emojiBtn = document.querySelector('.action-btn[title="Add emoji"]');
+        const messageInput = document.getElementById('messageInput');
+        const previewDiv = document.querySelector('.msg-message-preview');
 
+        if (!messageInput || !previewDiv) {
+            console.log('messageInput or msg-message-preview not found');
+            return;
+        }
+
+        // Photo functionality
         if (photoBtn) {
             const photoInput = document.createElement('input');
             photoInput.type = 'file';
@@ -105,27 +105,46 @@ function init() {
             photoInput.addEventListener('change', (e) => {
                 const file = e.target.files[0];
                 if (file) {
-                    alert(`Selected photo: ${file.name}`);
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const previewImg = previewDiv.querySelector('.msg-preview-media');
+                        previewImg.src = event.target.result;
+                        previewDiv.style.display = 'block';
+                        messageInput.dataset.imageFile = 'true';
+                        messageInput.dataset.image = file; // Store the file for sending
+                        messageInput.dataset.gifUrl = ''; // Clear any GIF URL
+                    };
+                    reader.readAsDataURL(file);
                 }
             });
-        } else {
-            console.log('photoBtn not found');
         }
 
+        // GIF functionality
         if (gifBtn) {
             gifBtn.addEventListener('click', () => {
-                alert('GIF functionality coming soon!');
+                showGifModal(messageInput, previewDiv);
             });
-        } else {
-            console.log('gifBtn not found');
         }
 
+        // Emoji functionality
         if (emojiBtn) {
             emojiBtn.addEventListener('click', () => {
-                alert('Emoji picker coming soon!');
+                showEmojiPicker(messageInput, emojiBtn);
             });
-        } else {
-            console.log('emojiBtn not found');
+        }
+
+        // Remove preview functionality
+        const removePreviewBtn = previewDiv.querySelector('.msg-remove-preview');
+        if (removePreviewBtn) {
+            removePreviewBtn.addEventListener('click', () => {
+                previewDiv.style.display = 'none';
+                messageInput.dataset.imageFile = '';
+                messageInput.dataset.gifUrl = '';
+                if (photoBtn) {
+                    const photoInput = document.querySelector('input[type="file"][accept="image/*"]');
+                    if (photoInput) photoInput.value = '';
+                }
+            });
         }
     }
 
@@ -137,9 +156,7 @@ function init() {
     console.log('Thread cards found:', threadCards.length);
     threadCards.forEach(card => {
         card.addEventListener('click', () => {
-            // Remove .selected from all cards
             threadCards.forEach(c => c.classList.remove('selected'));
-            // Add .selected to the clicked card
             card.classList.add('selected');
 
             const threadId = card.getAttribute('data-thread-id');
@@ -175,16 +192,11 @@ function init() {
     if (sendMessageBtn) {
         const threadId = sendMessageBtn.getAttribute('data-thread-id');
         sendMessageBtn.addEventListener('click', () => sendMessage(threadId));
-    } else {
-        console.log('sendMessageBtn not found on initial load');
     }
 
-    // Auto-scroll to the bottom of the messages list
     const messagesList = document.getElementById('messagesList');
     if (messagesList) {
         messagesList.scrollTop = messagesList.scrollHeight;
-    } else {
-        console.log('messagesList not found on initial load');
     }
 }
 
@@ -199,13 +211,15 @@ function appendMessage(data) {
     messageDiv.className = 'message sent';
     messageDiv.innerHTML = `
         <p>${data.content}</p>
+        ${data.image ? `<img src="${data.image}" alt="Message Image" class="msg-message-image">` : ''}
+        ${data.gif_url ? `<img src="${data.gif_url}" alt="Message GIF" class="msg-message-image">` : ''}
         <small>${new Date(data.created_at).toLocaleString()}</small>
     `;
 
     messagesList.appendChild(messageDiv);
     messagesList.scrollTop = messagesList.scrollHeight;
 
-    updateMessageFeedCard(data.thread_id, data.content);
+    updateMessageFeedCard(data.thread_id, data.content || (data.image ? '[Image]' : '[GIF]'));
 }
 
 function updateMessageFeedCard(threadId, latestMessage) {
@@ -234,29 +248,36 @@ function updateMessageFeedCard(threadId, latestMessage) {
 function sendMessage(threadId) {
     const messageInput = document.getElementById('messageInput');
     const sendButton = document.getElementById('sendMessageBtn');
+    const previewDiv = document.querySelector('.msg-message-preview');
     const content = messageInput.value.trim();
 
-    if (!content) {
-        alert('Message cannot be empty');
+    if (!content && !messageInput.dataset.imageFile && !messageInput.dataset.gifUrl) {
+        alert('Message content, image, or GIF must be provided');
         return;
     }
 
     sendButton.disabled = true;
     sendButton.textContent = 'Sending...';
 
-    const requestBody = JSON.stringify({
-        thread_id: threadId,
-        content: content,
-    });
-    console.log('Sending request to /send-message/ with body:', requestBody);
+    const formData = new FormData();
+    formData.append('thread_id', threadId);
+    formData.append('content', content);
+    if (messageInput.dataset.imageFile && messageInput.dataset.image) {
+        const photoInput = document.querySelector('input[type="file"][accept="image/*"]');
+        if (photoInput && photoInput.files[0]) {
+            formData.append('image', photoInput.files[0]);
+        }
+    }
+    if (messageInput.dataset.gifUrl) {
+        formData.append('gif_url', messageInput.dataset.gifUrl);
+    }
 
     fetch('/send-message/', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
             'X-CSRFToken': getCsrfToken(),
         },
-        body: requestBody,
+        body: formData,
     })
     .then(response => {
         if (!response.ok) {
@@ -270,6 +291,11 @@ function sendMessage(threadId) {
         if (data.success) {
             appendMessage(data);
             messageInput.value = '';
+            messageInput.dataset.imageFile = '';
+            messageInput.dataset.gifUrl = '';
+            previewDiv.style.display = 'none';
+            const photoInput = document.querySelector('input[type="file"][accept="image/*"]');
+            if (photoInput) photoInput.value = '';
         } else {
             alert('Error sending message: ' + data.error);
         }
@@ -288,8 +314,6 @@ function openNewMessageModal() {
     const modal = document.getElementById('newMessageModal');
     if (modal) {
         modal.style.display = 'block';
-    } else {
-        console.log('newMessageModal not found');
     }
 }
 
