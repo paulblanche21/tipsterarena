@@ -1,14 +1,5 @@
-// static/js/main.js
-import '../css/comment.css';
-import '../css/profile.css';
-import '../css/profile-edit.css';
-import '../css/notification.css';
-import '../css/modal.css';
-import '../css/form.css';
-import '../css/follow.css';
 import '../css/messages.css';
-import '../css/misc.css';
-import '../css/bookmarks.css';
+
 
 function getCurrentPage() {
   return window.location.pathname;

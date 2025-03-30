@@ -35,4 +35,8 @@ export default defineConfig({
       ignored: ['**/venv/**', '**/*.py', '**/site-packages/**'],
     },
   },
+    css: {
+      devSourcemap: true, // For debugging
+      // Vite bundles CSS from main.js imports automatically
+    }
 });

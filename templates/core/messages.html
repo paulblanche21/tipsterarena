@@ -1,6 +1,10 @@
 <!-- templates/core/messages.html -->
 {% extends 'core/base.html' %}
 {% load static %}
+{% block page_css %}
+    <link rel="stylesheet" href="http://localhost:3000/static/css/messages.css">
+{% endblock %}
+
 {% block title %}Messages - Tipster Arena{% endblock %}
 
 {% block body_class %}messages-page{% endblock %}
