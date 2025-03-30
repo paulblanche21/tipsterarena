@@ -179,7 +179,7 @@ DJANGO_VITE = {
         'dev_mode': DEBUG,
         'dev_server_port': 3000,
         'static_url_prefix': '',  # Empty to avoid prepending 'dist'
-        'manifest_path': BASE_DIR / 'static/dist/.vite/manifest.json',
+        'manifest_path': BASE_DIR / 'static/dist/manifest.json',
     }
 }
 
