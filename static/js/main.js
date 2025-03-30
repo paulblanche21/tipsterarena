@@ -1,12 +1,7 @@
 // static/js/main.js
-import '../css/base.css';
 import '../css/comment.css';
-import '../css/tip.css';
-import '../css/post.css';
 import '../css/profile.css';
 import '../css/profile-edit.css';
-import '../css/navbar.css';
-import '../css/sidebar.css';
 import '../css/notification.css';
 import '../css/modal.css';
 import '../css/form.css';
