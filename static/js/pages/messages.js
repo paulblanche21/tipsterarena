@@ -377,6 +377,16 @@ function openNewMessageModal() {
         } else {
             console.log('closeModalBtn not found in modal');
         }
+
+        const nextBtn = document.getElementById('nextBtn');
+        if (nextBtn) {
+            nextBtn.removeEventListener('click', startNewConversation);
+            nextBtn.addEventListener('click', startNewConversation);
+            nextBtn.disabled = true;
+            console.log('Next button listener reattached and reset to disabled');
+        } else {
+            console.log('nextBtn not found in modal');
+        }
     } else {
         console.log('Modal element not found');
     }
@@ -434,6 +444,9 @@ function searchUsers(query) {
                         const nextBtn = document.getElementById('nextBtn');
                         if (nextBtn) {
                             nextBtn.disabled = false;
+                            console.log('Next button enabled');
+                        } else {
+                            console.log('nextBtn not found in suggestion click');
                         }
                     });
                     suggestionsDiv.appendChild(div);
