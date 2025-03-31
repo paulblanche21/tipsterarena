@@ -491,6 +491,67 @@
     border-color: #ff4136;
 }
 
+/* Suggested Search Results Styling (add this if not already present) */
+.search-results {
+    position: absolute;
+    top: 100%; /* Positions it right below the input */
+    left: 0;
+    width: 100%;
+    max-height: 300px;
+    overflow-y: auto;
+    background-color: #ffffff;
+    border: 1px solid #e1e8ed;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 10000;
+    padding: 10px;
+    display: none; /* Hidden by default, toggled by JS */
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    border-bottom: 1px solid #e1e8ed;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.search-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.search-details {
+    flex-grow: 1;
+}
+
+.search-username {
+    color: #001f3f;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.search-username:hover {
+    text-decoration: underline;
+    color: #ff4136;
+}
+
+.search-tip-text {
+    margin: 0;
+    font-size: 12px;
+    color: #657786;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+
 /* Show more button styling (Tipster Arena blue) */
 .show-more {
     display: block;
@@ -533,21 +594,7 @@
     color: var(--red-accent); /* No color change on hover */
 }
 
-/* Sidebar Adjustment */
-.sidebar {
-    width: 350px;
-    max-width: 350px;
-    padding: 10px 0;
-    background-color: #001f3f;
-    color: #001f3f;
-    position: fixed;
-    right: 0;
-    top: 0;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    z-index: 1001;
-}
+
 
 
 

@@ -30,6 +30,7 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),  # Separate login view
     path('signup/', views.signup, name='signup'),    # Separate signup view
     path('terms-of-service/', views.terms_of_service, name='terms_of_service'),
+    path('search/', views.search, name='search'),
     path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
     path('cookie-policy/', views.cookie_policy, name='cookie_policy'),
     path('accessibility/', views.accessibility, name='accessibility'),

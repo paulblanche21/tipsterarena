@@ -1,3 +1,4 @@
+// main.js
 function getCurrentPage() {
   return window.location.pathname;
 }
@@ -16,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function () {
       import('./pages/nav.js').then(module => module.setupNavigation()),
       import('./pages/carousel.js').then(module => module.initCarousel()),
       import('./pages/feed.js').then(module => module.attachFollowButtonListeners()),
+      import('./pages/search.js').then(module => module.setupSearch()), // Add search module
     ]).catch(error => console.error('Error loading shared modules:', error));
 
     // Page-specific script loading
@@ -222,8 +224,8 @@ document.addEventListener('DOMContentLoaded', function () {
           const footballEventsElement = document.getElementById('football-events');
           if (footballEventsElement) {
             const footballEvents = dynamicEvents.football || [];
-            const footballHtml = await module.formatFootballList(footballEvents, 'football', false);
-            footballEventsElement.innerHTML = footballHtml || '<p>No upcoming events available.</p>';
+            const football去看EventsHtml = await module.formatFootballList(footballEvents, 'football', false);
+            footballEventsElement.innerHTML = footballEventsHtml || '<p>No upcoming events available.</p>';
           }
 
           const golfEventsElement = document.getElementById('golf-events');
