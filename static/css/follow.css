@@ -1,25 +1,21 @@
-/* Who to Follow list styling */
-/* Ensure dynamically generated content respects boundaries */
-.content .follow-card,
-.content .events-popup {
-    max-width: 100%;
-    width: 100%;
-    margin: 0;
-    box-sizing: border-box;
-    padding: 20px;
-}
-
 
 .follow-card {
     background-color: #ffffff; /* White background for the card */
     color: #001f3f; /* Dark text for readability */
+    border:1px solid #e1e8ed;
+    max-width: 660px;
     border-radius: 12px; /* Match card style */
     padding: 12px; /* Add padding for consistency */
-    margin-bottom: 12px; /* Space below the card */
+    margin: 0 10px; /* Space below the card */
     display: flex; /* Use flex to stack content vertically */
     flex-direction: column; /* Stack children vertically */
+    width:calc(100% - 20px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 1000;
+    overflow: hidden;
+    box-sizing: border-box;
 }
-
 
 .follow-card .show-less {
     margin-top: 12px; /* Add space above "Show Less" */
