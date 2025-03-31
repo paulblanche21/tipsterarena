@@ -37,7 +37,7 @@ function init() {
         closeModalBtn.addEventListener('click', closeNewMessageModal);
     }
     if (recipientInput) {
-        recipientInput.addEventListener('input', (e) => searchUsers(e.target.value));
+        recipientInput.addEventListener('input', inputHandler);
     }
     if (settingsBtn) {
         console.log('Attaching event listener to settings button');
@@ -82,7 +82,6 @@ function init() {
         console.log('Next button listener attached');
     }
 
-    // Document-level delegation for #newMessageBtn
     document.addEventListener('click', (e) => {
         const newMessageTarget = e.target.closest('#newMessageBtn');
         if (newMessageTarget) {
@@ -92,7 +91,6 @@ function init() {
             e.stopPropagation();
         }
 
-        // Delegation for thread cards
         const threadCardTarget = e.target.closest('.card[data-thread-id]');
         if (threadCardTarget) {
             const threadCards = document.querySelectorAll('.card[data-thread-id]');
@@ -361,13 +359,31 @@ function openNewMessageModal() {
         modal.style.display = 'block';
         modal.style.zIndex = '10000';
         console.log('Modal display set to block');
+
+        const recipientInput = document.getElementById('recipientUsername');
+        if (recipientInput) {
+            recipientInput.removeEventListener('input', inputHandler);
+            recipientInput.addEventListener('input', inputHandler);
+            console.log('Recipient input listener reattached');
+        } else {
+            console.log('recipientUsername not found in modal');
+        }
+
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        if (closeModalBtn) {
+            closeModalBtn.removeEventListener('click', closeNewMessageModal);
+            closeModalBtn.addEventListener('click', closeNewMessageModal);
+            console.log('Close modal button listener reattached');
+        } else {
+            console.log('closeModalBtn not found in modal');
+        }
     } else {
         console.log('Modal element not found');
     }
 }
 
 function closeNewMessageModal() {
-    console.log('Closing new message modal'); // Add debug log
+    console.log('Closing new message modal');
     const modal = document.getElementById('newMessageModal');
     const recipientInput = document.getElementById('recipientUsername');
     const suggestionsDiv = document.getElementById('userSuggestions');
@@ -385,6 +401,10 @@ function closeNewMessageModal() {
     }
 }
 
+function inputHandler(e) {
+    searchUsers(e.target.value);
+}
+
 function searchUsers(query) {
     if (query.length < 2) {
         const suggestionsDiv = document.getElementById('userSuggestions');
@@ -396,7 +416,7 @@ function searchUsers(query) {
     fetch(`/api/suggested-users/`, { method: 'GET' })
         .then(response => response.json())
         .then(data => {
-            console.log('Suggested users fetched:', data); // Add debug log
+            console.log('Suggested users fetched:', data);
             const suggestions = data.users.filter(user => user.username.toLowerCase().includes(query.toLowerCase()));
             const suggestionsDiv = document.getElementById('userSuggestions');
             if (suggestionsDiv) {
@@ -449,7 +469,7 @@ function startNewConversation() {
     .then(data => {
         console.log('Send message response data:', data);
         if (data.success) {
-            closeNewMessageModal(); // Should close modal here
+            closeNewMessageModal();
             fetch(`/messages/${data.thread_id}/`, {
                 method: 'GET',
                 headers: {
