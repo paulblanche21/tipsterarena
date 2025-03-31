@@ -1,5 +1,3 @@
-import '../css/messages.css';
-
 
 function getCurrentPage() {
   return window.location.pathname;
@@ -16,7 +14,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     import('./config.js'),
     import('./pages/nav.js').then(module => module.setupNavigation()),
     import('./pages/carousel.js').then(module => module.initCarousel()),
-    import('./follow.js').then(module => module.attachFollowButtonListeners()),
+    import('./pages/feed.js').then(module => module.attachFollowButtonListeners()),
   ]).catch(error => console.error('Error loading shared modules:', error));
 
   // Page-specific script loading
@@ -301,7 +299,7 @@ document.addEventListener('DOMContentLoaded', async function () {
               </div>
             `;
           });
-          import('./follow.js').then(module => module.attachFollowButtonListeners());
+          import('./pages/feed.js').then(module => module.attachFollowButtonListeners());
         } else {
           followList.innerHTML = '<p>No suggested tipsters available.</p>';
         }

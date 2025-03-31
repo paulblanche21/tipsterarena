@@ -1,6 +1,44 @@
-// feed.js
-import { attachFollowButtonListeners } from '../follow.js';
+import { getCSRFToken } from './utils.js'; // Moved from follow.js
 import { getEventList } from './upcoming-events.js';
+
+// Function to attach follow button listeners (from follow.js)
+function attachFollowButtonListeners() {
+    const followButtons = document.querySelectorAll('.follow-btn');
+    followButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const username = this.getAttribute('data-username');
+            followUser(username, this);
+        });
+    });
+}
+
+// Function to handle following a user (from follow.js)
+function followUser(username, button) {
+    const formData = new FormData();
+    formData.append('username', username);
+    fetch('/api/follow/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': getCSRFToken(),
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            button.textContent = 'Following';
+            button.disabled = true;
+            button.classList.add('followed');
+            console.log(data.message);
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error following user:', error);
+        alert('An error occurred while following.');
+    });
+}
 
 export function setupShowMoreButtons() {
   const showMoreButtons = document.querySelectorAll('.show-more');
@@ -63,7 +101,7 @@ export function setupShowMoreButtons() {
             break;
 
           case 'who-to-follow':
-            // Fetch suggested users dynamically (already implemented, but let's refine it)
+            // Fetch suggested users dynamically
             content.innerHTML = `
               <div class="follow-card">
                 <h2>Who to Follow</h2>
@@ -88,7 +126,7 @@ export function setupShowMoreButtons() {
                 data.users.forEach(user => {
                   followList.innerHTML += `
                     <div class="follow-item">
-                      <img src="${user.avatar_url}" alt="${user.username}" class="follow-avatar">
+                      <img src="${user.avatar_url}" alt="${user.username}" class="follow-avatar" width="48" height="48">
                       <div class="follow-details">
                         <a href="${user.profile_url}" class="follow-username">@${user.username}</a>
                         <p class="follow-bio">${user.bio}</p>
@@ -97,7 +135,7 @@ export function setupShowMoreButtons() {
                     </div>
                   `;
                 });
-                attachFollowButtonListeners();
+                attachFollowButtonListeners(); // Now calling the local function
               } else {
                 followList.innerHTML = '<p>No suggestions available.</p>';
               }
@@ -124,6 +162,9 @@ export function setupShowMoreButtons() {
     });
   });
 }
+
+// Expose attachFollowButtonListeners for use in main.js
+export { attachFollowButtonListeners };
 
 document.addEventListener("DOMContentLoaded", () => {
   setupShowMoreButtons();

@@ -65,18 +65,23 @@
     gap: 12px;
     padding: 12px 0;
     border-bottom: 1px solid #e1e8ed; /* Light border between items, like Twitter/X */
+    max-width: 100%; /* Prevent overflow */
 }
 
 .follow-item:last-child {
     border-bottom: none; /* Remove border from the last item */
 }
 
+/* follow.css */
 .follow-avatar {
-    width: 48px;
-    height: 48px;
+    width: 48px !important; /* Force it */
+    height: 48px !important;
     border-radius: 50%;
     margin-right: 12px;
     flex-shrink: 0;
+    object-fit: cover; /* Crop large images */
+    max-width: 48px; /* Cap it */
+    max-height: 48px;
 }
 
 .follow-details {
