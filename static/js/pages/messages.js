@@ -7,7 +7,6 @@ function init() {
     console.log('messages.js init() called');
     console.log('Document readyState in init():', document.readyState);
 
-    // Store the default content of the messageContent area
     const messageContent = document.getElementById('messageContent');
     if (messageContent) {
         defaultMessageContent = messageContent.innerHTML;
@@ -16,18 +15,23 @@ function init() {
         console.log('messageContent not found on initial load');
     }
 
-    // Modal Event Listeners
     const newMessageBtn = document.getElementById('newMessageBtn');
     const newMessageSidebarBtn = document.getElementById('newMessageSidebarBtn');
     const closeModalBtn = document.getElementById('closeModalBtn');
     const recipientInput = document.getElementById('recipientUsername');
     const settingsBtn = document.getElementById('settingsBtn');
+    const nextBtn = document.getElementById('nextBtn');
 
     if (newMessageBtn) {
-        newMessageBtn.addEventListener('click', openNewMessageModal);
+        newMessageBtn.addEventListener('click', () => {
+            console.log('New message button clicked (direct listener)');
+            openNewMessageModal();
+        });
+        console.log('New message button listener attached');
     }
     if (newMessageSidebarBtn) {
         newMessageSidebarBtn.addEventListener('click', openNewMessageModal);
+        console.log('New message sidebar button listener attached');
     }
     if (closeModalBtn) {
         closeModalBtn.addEventListener('click', closeNewMessageModal);
@@ -45,10 +49,7 @@ function init() {
                     'X-Requested-With': 'XMLHttpRequest',
                 },
             })
-            .then(response => {
-                console.log('Fetch response status:', response.status);
-                return response.text();
-            })
+            .then(response => response.text())
             .then(html => {
                 const messageContent = document.getElementById('messageContent');
                 console.log('Message content element:', messageContent);
@@ -76,89 +77,67 @@ function init() {
             });
         });
     }
-
-    // Function to initialize action buttons (photo, GIF, emoji)
-    function initializeActionButtons() {
-        const photoBtn = document.querySelector('.action-btn[title="Add image"]');
-        const gifBtn = document.querySelector('.action-btn[title="Add GIF"]');
-        const emojiBtn = document.querySelector('.action-btn[title="Add emoji"]');
-        const messageInput = document.getElementById('messageInput');
-        const previewDiv = document.querySelector('.msg-message-preview');
-
-        if (!messageInput || !previewDiv) {
-            console.log('messageInput or msg-message-preview not found');
-            return;
-        }
-
-        // Photo functionality
-        if (photoBtn) {
-            const photoInput = document.createElement('input');
-            photoInput.type = 'file';
-            photoInput.accept = 'image/*';
-            photoInput.style.display = 'none';
-            document.body.appendChild(photoInput);
-
-            photoBtn.addEventListener('click', () => {
-                photoInput.click();
-            });
-
-            photoInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        const previewImg = previewDiv.querySelector('.msg-preview-media');
-                        previewImg.src = event.target.result;
-                        previewDiv.style.display = 'block';
-                        messageInput.dataset.imageFile = 'true';
-                        messageInput.dataset.image = file; // Store the file for sending
-                        messageInput.dataset.gifUrl = ''; // Clear any GIF URL
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-        }
-
-        // GIF functionality
-        if (gifBtn) {
-            gifBtn.addEventListener('click', () => {
-                showGifModal(messageInput, previewDiv);
-            });
-        }
-
-        // Emoji functionality
-        if (emojiBtn) {
-            emojiBtn.addEventListener('click', () => {
-                showEmojiPicker(messageInput, emojiBtn);
-            });
-        }
-
-        // Remove preview functionality
-        const removePreviewBtn = previewDiv.querySelector('.msg-remove-preview');
-        if (removePreviewBtn) {
-            removePreviewBtn.addEventListener('click', () => {
-                previewDiv.style.display = 'none';
-                messageInput.dataset.imageFile = '';
-                messageInput.dataset.gifUrl = '';
-                if (photoBtn) {
-                    const photoInput = document.querySelector('input[type="file"][accept="image/*"]');
-                    if (photoInput) photoInput.value = '';
-                }
-            });
-        }
+    if (nextBtn) {
+        nextBtn.addEventListener('click', startNewConversation);
+        console.log('Next button listener attached');
     }
 
-    // Initialize action buttons on initial load (if a thread is already selected)
+    // Document-level delegation for #newMessageBtn
+    document.addEventListener('click', (e) => {
+        const newMessageTarget = e.target.closest('#newMessageBtn');
+        if (newMessageTarget) {
+            console.log('New message button clicked (delegated listener)');
+            openNewMessageModal();
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // Delegation for thread cards
+        const threadCardTarget = e.target.closest('.card[data-thread-id]');
+        if (threadCardTarget) {
+            const threadCards = document.querySelectorAll('.card[data-thread-id]');
+            threadCards.forEach(c => c.classList.remove('selected'));
+            threadCardTarget.classList.add('selected');
+            const threadId = threadCardTarget.getAttribute('data-thread-id');
+            console.log('Thread card clicked, threadId:', threadId);
+            fetch(`/messages/${threadId}/`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(response => response.text())
+            .then(html => {
+                const messageContent = document.getElementById('messageContent');
+                if (messageContent) {
+                    messageContent.innerHTML = html;
+                    const sendMessageBtn = document.getElementById('sendMessageBtn');
+                    if (sendMessageBtn) {
+                        const threadId = sendMessageBtn.getAttribute('data-thread-id');
+                        sendMessageBtn.addEventListener('click', () => sendMessage(threadId));
+                    }
+                    const messagesList = document.getElementById('messagesList');
+                    if (messagesList) {
+                        messagesList.scrollTop = messagesList.scrollHeight;
+                    }
+                    initializeActionButtons();
+                }
+            })
+            .catch(error => console.error('Error loading thread:', error));
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    });
+    console.log('Document-level delegation listener attached for #newMessageBtn and thread cards');
+
     initializeActionButtons();
 
-    // Thread Card Event Listeners
     const threadCards = document.querySelectorAll('.card[data-thread-id]');
     console.log('Thread cards found:', threadCards.length);
     threadCards.forEach(card => {
         card.addEventListener('click', () => {
             threadCards.forEach(c => c.classList.remove('selected'));
             card.classList.add('selected');
-
             const threadId = card.getAttribute('data-thread-id');
             console.log('Thread card clicked, threadId:', threadId);
             fetch(`/messages/${threadId}/`, {
@@ -187,7 +166,6 @@ function init() {
         });
     });
 
-    // Send Message Event Listener
     const sendMessageBtn = document.getElementById('sendMessageBtn');
     if (sendMessageBtn) {
         const threadId = sendMessageBtn.getAttribute('data-thread-id');
@@ -197,6 +175,72 @@ function init() {
     const messagesList = document.getElementById('messagesList');
     if (messagesList) {
         messagesList.scrollTop = messagesList.scrollHeight;
+    }
+}
+
+function initializeActionButtons() {
+    const photoBtn = document.querySelector('.action-btn[title="Add image"]');
+    const gifBtn = document.querySelector('.action-btn[title="Add GIF"]');
+    const emojiBtn = document.querySelector('.action-btn[title="Add emoji"]');
+    const messageInput = document.getElementById('messageInput');
+    const previewDiv = document.querySelector('.msg-message-preview');
+
+    if (!messageInput || !previewDiv) {
+        console.log('messageInput or msg-message-preview not found');
+        return;
+    }
+
+    if (photoBtn) {
+        const photoInput = document.createElement('input');
+        photoInput.type = 'file';
+        photoInput.accept = 'image/*';
+        photoInput.style.display = 'none';
+        document.body.appendChild(photoInput);
+
+        photoBtn.addEventListener('click', () => {
+            photoInput.click();
+        });
+
+        photoInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const previewImg = previewDiv.querySelector('.msg-preview-media');
+                    previewImg.src = event.target.result;
+                    previewDiv.style.display = 'block';
+                    messageInput.dataset.imageFile = 'true';
+                    messageInput.dataset.image = file;
+                    messageInput.dataset.gifUrl = '';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    if (gifBtn) {
+        gifBtn.addEventListener('click', () => {
+            showGifModal(messageInput, previewDiv);
+        });
+    }
+
+    if (emojiBtn) {
+        emojiBtn.addEventListener('click', () => {
+            showEmojiPicker(messageInput, emojiBtn);
+        });
+    }
+
+    const removePreviewBtn = previewDiv.querySelector('.msg-remove-preview');
+    if (removePreviewBtn) {
+        removePreviewBtn.addEventListener('click', () => {
+            previewDiv.style.display = 'none';
+            messageInput.dataset.imageFile = '';
+            messageInput.dataset.gifUrl = '';
+            if (photoBtn) {
+                const photoInput = document.querySelector('input[type="file"][accept="image/*"]');
+                if (photoInput) photoInput.value = '';
+            }
+        });
     }
 }
 
@@ -311,18 +355,27 @@ function sendMessage(threadId) {
 }
 
 function openNewMessageModal() {
+    console.log('Opening new message modal');
     const modal = document.getElementById('newMessageModal');
     if (modal) {
         modal.style.display = 'block';
+        modal.style.zIndex = '10000';
+        console.log('Modal display set to block');
+    } else {
+        console.log('Modal element not found');
     }
 }
 
 function closeNewMessageModal() {
+    console.log('Closing new message modal'); // Add debug log
     const modal = document.getElementById('newMessageModal');
     const recipientInput = document.getElementById('recipientUsername');
     const suggestionsDiv = document.getElementById('userSuggestions');
     if (modal) {
         modal.style.display = 'none';
+        console.log('Modal hidden');
+    } else {
+        console.log('Modal element not found in closeNewMessageModal');
     }
     if (recipientInput) {
         recipientInput.value = '';
@@ -340,9 +393,10 @@ function searchUsers(query) {
         }
         return;
     }
-    fetch(`/suggested-users/`, { method: 'GET' })
+    fetch(`/api/suggested-users/`, { method: 'GET' })
         .then(response => response.json())
         .then(data => {
+            console.log('Suggested users fetched:', data); // Add debug log
             const suggestions = data.users.filter(user => user.username.toLowerCase().includes(query.toLowerCase()));
             const suggestionsDiv = document.getElementById('userSuggestions');
             if (suggestionsDiv) {
@@ -365,7 +419,8 @@ function searchUsers(query) {
                     suggestionsDiv.appendChild(div);
                 });
             }
-        });
+        })
+        .catch(error => console.error('Error fetching suggested users:', error));
 }
 
 function startNewConversation() {
@@ -375,6 +430,7 @@ function startNewConversation() {
         alert('Please select a user to message.');
         return;
     }
+    console.log('Starting conversation with:', recipientUsername);
     fetch('/send-message/', {
         method: 'POST',
         headers: {
@@ -383,14 +439,49 @@ function startNewConversation() {
         },
         body: `recipient_username=${recipientUsername}&content=Hello! Let's start a conversation.`
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            closeNewMessageModal();
-            window.location.href = `/messages/${data.thread_id}/`;
-        } else {
-            alert(data.error);
+    .then(response => {
+        console.log('Send message response status:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
         }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Send message response data:', data);
+        if (data.success) {
+            closeNewMessageModal(); // Should close modal here
+            fetch(`/messages/${data.thread_id}/`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(response => response.text())
+            .then(html => {
+                const messageContent = document.getElementById('messageContent');
+                if (messageContent) {
+                    messageContent.innerHTML = html;
+                    const sendMessageBtn = document.getElementById('sendMessageBtn');
+                    if (sendMessageBtn) {
+                        const threadId = sendMessageBtn.getAttribute('data-thread-id');
+                        sendMessageBtn.addEventListener('click', () => sendMessage(threadId));
+                    }
+                    const messagesList = document.getElementById('messagesList');
+                    if (messagesList) {
+                        messagesList.scrollTop = messagesList.scrollHeight;
+                    }
+                    initializeActionButtons();
+                }
+                updateMessageFeedCard(data.thread_id, "Hello! Let's start a conversation.");
+            })
+            .catch(error => console.error('Error loading thread:', error));
+        } else {
+            alert('Error: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error sending message:', error);
+        alert('Failed to start conversation. Check console for details.');
     });
 }
 

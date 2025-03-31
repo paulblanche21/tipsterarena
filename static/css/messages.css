@@ -229,7 +229,6 @@
     height: 100vh;
     gap: 10px;
     padding: 20px;
-    box-sizing: border-box;
     width: calc(100% - 260px);
     margin-left: 260px;
     overflow: hidden;
@@ -414,7 +413,7 @@
 }
 
 .thread-header {
-    padding: 20px;
+    padding: 10px; /* Reduced from 20px */
     border-bottom: 1px solid #ddd;
     background-color: #fff;
     text-align: center;
@@ -425,11 +424,11 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 5px; /* Reduced from 15px */
 }
 
 .thread-header-name {
-    font-size: 20px;
+    font-size: 18px; /* Reduced from 20px */
     font-weight: bold;
     color: #14171a;
     margin: 0;
@@ -438,7 +437,7 @@
 
 .thread-header-info {
     cursor: pointer;
-    font-size: 18px;
+    font-size: 16px; /* Reduced from 18px */
     color: #657786;
 }
 
@@ -449,62 +448,64 @@
 }
 
 .thread-header .avatar {
-    width: 50px;
-    height: 50px;
+    width: 40px; /* Reduced from 50px */
+    height: 40px;
     border-radius: 50%;
-    margin-bottom: 10px;
+    margin-bottom: 5px; /* Reduced from 10px */
 }
 
 .thread-header .user-details {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px;
+    gap: 2px; /* Reduced from 5px */
 }
 
 .thread-header h3 {
-    font-size: 16px;
+    font-size: 14px; /* Reduced from 16px */
     font-weight: bold;
     margin: 0;
     color: #14171a;
 }
 
+
 .thread-header .user-handle {
-    font-size: 14px;
+    font-size: 12px; /* Reduced from 14px */
     color: #657786;
 }
 
 .thread-header .user-bio {
-    font-size: 14px;
+    font-size: 12px; /* Reduced from 14px */
     color: #14171a;
     margin: 0;
     text-align: center;
 }
 
 .thread-header .user-email {
-    font-size: 14px;
+    font-size: 12px; /* Reduced from 14px */
     color: #14171a;
     margin: 0;
 }
 
 .thread-header .user-stats {
-    font-size: 14px;
+    font-size: 12px; /* Reduced from 14px */
     color: #657786;
     margin: 0;
 }
 
+
 .thread-header .user-followed-by {
-    font-size: 14px;
+    font-size: 12px; /* Reduced from 14px */
     color: #657786;
     margin: 0;
 }
 
 .messages-list {
-    flex: 1;
+    flex: 1; /* Let it grow fully */
     overflow-y: auto;
-    margin-bottom: 20px;
+    margin-bottom: 10px; /* Reduced from 20px */
     padding: 0 10px;
-    max-height: calc(100% - 200px);
+    /* Remove max-height to allow full expansion */
 }
 
 .message {
