@@ -1,11 +1,9 @@
-/* Landing Page Styles */
 /* Reset CSS */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
-
 
 /* Custom CSS Variables */
 :root {
@@ -23,14 +21,11 @@
     --font-default: 'Helvetica Neue', Arial, sans-serif;
     --font-size-base: 14px;
 }
-/* Landing Page Styles */
 
-
-
-/* Ensure font matches X theme */
+/* Body */
 body {
-    font-family: 'Helvetica Neue', Arial, sans-serif;
-    font-size: 14px; /* Matches --font-size-base from original styles.css */
+    font-family: var(--font-default);
+    font-size: var(--font-size-base);
     background-color: var(--primary-bg);
     color: #ffffff;
 }
@@ -39,7 +34,6 @@ body {
 .landing-full-container {
     min-height: calc(100vh - 60px);
     background-color: var(--primary-bg);
-    color: #ffffff;
     padding: 20px 0;
 }
 
@@ -91,12 +85,12 @@ body {
     padding: var(--padding-small);
 }
 
-.landing-section.left .landing-image {
-    order: 1;
+.landing-section.left {
+    flex-direction: row;
 }
 
-.landing-section.right .landing-text {
-    order: 2;
+.landing-section.right {
+    flex-direction: row-reverse;
 }
 
 .landing-text {
@@ -114,14 +108,19 @@ body {
     max-width: 400px;
     height: auto;
     border-radius: var(--border-radius);
-    box-shadow: var(--shadow-light);
+    box-shadow: var(--shadow-hover); /* Slightly stronger shadow for emphasis */
+    transition: transform 0.3s ease; /* Add hover effect */
+}
+
+.landing-section-image:hover {
+    transform: scale(1.05); /* Slight zoom on hover */
 }
 
 .landing-section-title {
     font-size: clamp(24px, 4vw, 32px);
     font-weight: bold;
     margin-bottom: 15px;
-    color: #ffffff;
+    color: var(--red-accent); /* Red to stand out against navy */
 }
 
 .landing-section-description {
@@ -131,30 +130,16 @@ body {
     margin-bottom: 20px;
 }
 
-/* Landing Page Call to Action */
-.landing-cta {
-    text-align: center;
-    padding: 40px 20px;
-    background-color: #f5f5f5;
-}
-
-.landing-cta-title {
-    font-size: clamp(28px, 5vw, 36px);
-    font-weight: bold;
-    margin-bottom: 20px;
-    color: #ffffff;
-}
-
 /* Landing Buttons */
 .landing-button {
-    width: 100%;
-    padding: var(--padding-small);
+    width: auto; /* Changed from 100% to fit content */
+    padding: var(--padding-small) 20px; /* Slightly wider */
     border: none;
     border-radius: var(--border-radius);
     color: white;
     font-size: 1.1em;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s, transform 0.2s;
     text-decoration: none;
     display: inline-block;
 }
@@ -162,22 +147,108 @@ body {
 .landing-button--primary {
     background-color: var(--red-accent);
 }
+
 .landing-button--primary:hover {
     background-color: #d9362e;
+    transform: translateY(-2px); /* Slight lift on hover */
 }
 
-/* Remove .landing-button--auth if not needed, or keep for future use */
-.landing-button--auth {
-    background-color: #007bff;
+.landing-button--secondary {
+    background-color: var(--secondary-bg);
+    color: var(--primary-bg); /* Navy text on white */
 }
-.landing-button--auth:hover {
-    background-color: #0056b3;
+
+.landing-button--secondary:hover {
+    background-color: #e6e6e6;
+    transform: translateY(-2px);
+}
+
+/* Landing Page Call to Action */
+.landing-cta {
+    text-align: center;
+    padding: 40px 20px;
+    background-color: var(--secondary-bg); /* White for contrast */
+    color: var(--primary-bg); /* Navy text */
+    border-radius: var(--border-radius);
+    margin: 40px auto;
+    max-width: 800px;
+}
+
+.landing-cta-title {
+    font-size: clamp(28px, 5vw, 36px);
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: var(--primary-bg);
+}
+
+.landing-cta-description {
+    font-size: clamp(16px, 2vw, 18px);
+    margin-bottom: 20px;
+    color: var(--gray-light);
 }
 
 .landing-buttons {
     display: flex;
     gap: 20px;
     justify-content: center;
+}
+
+/* Footer */
+.landing-footer {
+    background-color: var(--primary-bg);
+    color: #ffffff;
+    text-align: center;
+    padding: var(--padding-small);
+    font-size: 14px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .landing-section {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .landing-section.left,
+    .landing-section.right {
+        flex-direction: column;
+    }
+
+    .landing-section-image {
+        max-width: 100%;
+    }
+
+    .landing-text {
+        padding: 0 var(--padding-small);
+    }
+
+    .landing-button {
+        width: 100%;
+        max-width: 200px; /* Limit width on mobile */
+    }
+
+    .landing-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
+/* Optional Animation for Sections */
+.landing-section {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.landing-section:nth-child(1) { animation-delay: 0.2s; }
+.landing-section:nth-child(2) { animation-delay: 0.4s; }
+.landing-section:nth-child(3) { animation-delay: 0.6s; }
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Auth Container */
@@ -268,15 +339,6 @@ body {
 .auth-link:hover {
     color: #5a6268;
     text-decoration: underline;
-}
-
-/* Footer */
-.landing-footer {
-    background-color: var(--primary-bg);
-    color: #ffffff;
-    text-align: center;
-    padding: var(--padding-small);
-    font-size: 14px;
 }
 
 

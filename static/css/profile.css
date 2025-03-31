@@ -176,12 +176,11 @@
     background-color: #ffffff;
     border-bottom: 1px solid rgba(225, 232, 237, 0.5);
     display: flex;
-    left: var(--navbar-width); /* 250px, aligns with navbar end */
     padding: 5px 20px;
     position: fixed;
     top: 0;
     max-width: 700px; /* Match .profile-content max-width */
-    width: calc(100vw - var(--navbar-width) - var(--sidebar-width)); /* Dynamic width */
+    width:660px;
     box-sizing: border-box;
     z-index: 1000;
 }
