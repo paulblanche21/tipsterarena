@@ -26,7 +26,7 @@ export function setupBookmarkInteractions() {
           if (data.success) {
             // Toggle the bookmarked state
             button.classList.toggle('bookmarked');
-            console.log(`Bookmark toggled for tip ${tipId}: ${data.bookmarked}`);
+            console.log(`Bookmark toggled for tip ${tipId}: ${data.bookmarked}, Class: ${button.className}`)
           } else {
             console.error('Bookmark toggle failed:', data.error);
           }

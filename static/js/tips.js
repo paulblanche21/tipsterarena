@@ -381,6 +381,10 @@ function setupReplyModal() {
 function handleTipClick(e) {
     const action = e.target.closest('.tip-action');
     if (action) {
+        // Skip bookmark actions, let bookmarks.js handle them
+        if (action.classList.contains('tip-action-bookmark')) {
+            return; // Exit early, allowing bookmarks.js to handle the click
+        }
         e.preventDefault();
         const tipId = this.getAttribute('data-tip-id');
         const actionType = action.getAttribute('data-action');
