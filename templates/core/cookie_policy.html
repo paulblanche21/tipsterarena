@@ -1,83 +1,53 @@
 {% extends 'core/policy_base.html' %}
+<!-- cookie_policy.html: Template for the Cookie Policy page in Tipster Arena. Details the use of cookies and user options for managing them. -->
+
+{% load static %}
 
 {% block title %}Cookie Policy - Tipster Arena{% endblock %}
 
 {% block content %}
+<!-- Main content area for the cookie policy -->
 <div class="policy-content">
     <h1>Cookie Policy</h1>
     <p><strong>Last Updated:</strong> March 06, 2025</p>
-    <p>Tipster Arena uses cookies and similar technologies to enhance your experience, analyze usage, and deliver personalized content on our website, services, and applications (collectively, the "Service"). This Cookie Policy explains what cookies are, how we use them, and your choices regarding their use.</p>
+    <!-- Introductory statement on cookie usage -->
+    <p>Tipster Arena uses cookies and similar technologies to enhance your experience on our website, services, and applications (collectively, the "Service"). This Cookie Policy explains what cookies are, how we use them, and how you can manage your cookie preferences.</p>
 
+    <!-- Section explaining what cookies are -->
     <h2>1. What Are Cookies?</h2>
-    <p>Cookies are small text files that are stored on your device (computer, tablet, or mobile) when you visit a website. They allow the website to recognize your device and store information about your preferences or past actions. We also use similar technologies, such as web beacons, pixels, and local storage, to collect and store information.</p>
+    <p>Cookies are small text files stored on your device when you visit a website. They help us remember your preferences, analyze site usage, and deliver personalized content. We also use similar technologies, such as local storage and tracking pixels, for these purposes.</p>
 
-    <h2>2. Types of Cookies We Use</h2>
-    <h3>2.1 Essential Cookies</h3>
-    <p>These cookies are necessary for the Service to function properly. They enable core functionality, such as:</p>
+    <!-- Section detailing types and purposes of cookies -->
+    <h2>2. How We Use Cookies</h2>
+    <p>We use cookies for the following purposes:</p>
     <ul>
-        <li>Maintaining your login session.</li>
-        <li>Ensuring the security of your account.</li>
-        <li>Allowing you to navigate the Service and use its features.</li>
-    </ul>
-    <p>Essential cookies cannot be disabled, as they are critical to the operation of the Service.</p>
-
-    <h3>2.2 Performance Cookies</h3>
-    <p>These cookies collect information about how you use the Service, such as which pages you visit and any errors you encounter. We use this data to:</p>
-    <ul>
-        <li>Analyze usage patterns and improve the Service’s performance.</li>
-        <li>Monitor the effectiveness of our features and content.</li>
-        <li>Identify and fix technical issues.</li>
-    </ul>
-    <p>Performance cookies do not collect personally identifiable information and are used in an aggregated form.</p>
-
-    <h3>2.3 Functionality Cookies</h3>
-    <p>These cookies allow the Service to remember your preferences and provide enhanced functionality, such as:</p>
-    <ul>
-        <li>Remembering your language or region settings.</li>
-        <li>Customizing the appearance of the Service based on your preferences.</li>
-        <li>Storing your choices, such as cookie consent preferences.</li>
+        <li><strong>Essential Cookies:</strong> Necessary for the Service to function, such as maintaining your login session and enabling core features.</li>
+        <li><strong>Performance Cookies:</strong> Collect data on how users interact with the Service to improve its performance and usability.</li>
+        <li><strong>Functionality Cookies:</strong> Remember your preferences (e.g., language settings) to provide a tailored experience.</li>
+        <li><strong>Advertising Cookies:</strong> Deliver relevant ads and measure their effectiveness, often set by third-party partners.</li>
     </ul>
 
-    <h3>2.4 Analytics and Advertising Cookies</h3>
-    <p>We may use third-party analytics and advertising cookies to:</p>
+    <!-- Section on third-party cookies -->
+    <h2>3. Third-Party Cookies</h2>
+    <p>Some cookies are set by third parties, such as analytics providers or advertisers, to support the Service. We do not control these cookies but work with partners who adhere to applicable data protection standards. Examples include Google Analytics and social media plugins.</p>
+
+    <!-- Section on managing cookie preferences -->
+    <h2>4. Managing Cookies</h2>
+    <p>You can control how cookies are used through the following options:</p>
     <ul>
-        <li>Understand how users interact with the Service through tools like Google Analytics.</li>
-        <li>Deliver personalized advertisements based on your interests.</li>
-        <li>Measure the effectiveness of our marketing campaigns.</li>
+        <li><strong>Browser Settings:</strong> Most browsers allow you to block or delete cookies. Check your browser’s help section for instructions.</li>
+        <li><strong>Cookie Consent Tool:</strong> On your first visit, you can customize your cookie preferences via our consent popup.</li>
+        <li><strong>Opt-Out Links:</strong> For third-party advertising cookies, visit opt-out pages like <a href="https://www.networkadvertising.org/choices/">NAI Opt-Out</a> or <a href="https://www.youronlinechoices.com/">Your Online Choices</a>.</li>
     </ul>
-    <p>These cookies may track your browsing activity across other websites and are subject to the privacy policies of the third-party providers.</p>
+    <p>Note: Disabling essential cookies may affect the functionality of the Service.</p>
 
-    <h2>3. How We Use Cookies</h2>
-    <p>We use cookies to:</p>
-    <ul>
-        <li>Authenticate users and maintain session security.</li>
-        <li>Analyze usage trends to improve the Service’s functionality and user experience.</li>
-        <li>Personalize your experience by remembering your preferences.</li>
-        <li>Deliver relevant content and advertisements.</li>
-        <li>Monitor the performance of the Service and identify technical issues.</li>
-    </ul>
+    <!-- Section on policy updates -->
+    <h2>5. Updates to This Policy</h2>
+    <p>We may update this Cookie Policy to reflect changes in our practices or legal requirements. Updates will be posted here with a revised "Last Updated" date. We encourage you to review this policy periodically.</p>
 
-    <h2>4. Your Choices Regarding Cookies</h2>
-    <p>You can manage your cookie preferences through your browser settings or by adjusting your preferences on the Service (if available). Options include:</p>
-    <ul>
-        <li><strong>Browser Settings:</strong> Most browsers allow you to block or delete cookies. You can also set your browser to notify you when cookies are being set. Note that blocking essential cookies may affect the functionality of the Service.</li>
-        <li><strong>Opt-Out Tools:</strong> For advertising cookies, you can opt out using tools like the Digital Advertising Alliance’s <a href="http://optout.aboutads.info/">AdChoices</a> or the Network Advertising Initiative’s <a href="http://optout.networkadvertising.org/">opt-out page</a>.</li>
-        <li><strong>Do Not Track:</strong> Some browsers support "Do Not Track" (DNT) signals. We currently do not respond to DNT signals, but you can manage cookies through your browser settings.</li>
-    </ul>
-    <p>For more information on managing cookies, visit <a href="https://www.allaboutcookies.org">www.allaboutcookies.org</a>.</p>
-
-    <h2>5. Third-Party Cookies</h2>
-    <p>We may allow third-party service providers, such as analytics and advertising partners, to set cookies on the Service. These cookies are subject to the third parties’ privacy policies. Examples include:</p>
-    <ul>
-        <li><strong>Google Analytics:</strong> We use Google Analytics to analyze usage data. You can opt out using the <a href="https://tools.google.com/dlpage/gaoptout">Google Analytics Opt-Out Browser Add-On</a>.</li>
-        <li><strong>Advertising Networks:</strong> We may use third-party advertising networks to deliver personalized ads. You can manage these through the opt-out tools mentioned above.</li>
-    </ul>
-
-    <h2>6. Changes to This Cookie Policy</h2>
-    <p>We may update this Cookie Policy from time to time to reflect changes in our practices or legal requirements. We will notify you of significant changes by posting the updated policy on the Service with a revised "Last Updated" date. Your continued use of the Service after such changes constitutes your acceptance of the updated Cookie Policy.</p>
-
-    <h2>7. Contact Us</h2>
-    <p>If you have any questions or concerns about this Cookie Policy or our use of cookies, please contact us at:</p>
+    <!-- Section for user inquiries -->
+    <h2>6. Contact Us</h2>
+    <p>If you have questions about our use of cookies or this policy, please contact us at:</p>
     <p>Email: <a href="mailto:support@tipsterarena.com">support@tipsterarena.com</a></p>
     <p>Address: Tipster Arena, 123 Betting Lane, San Francisco, CA 94105, USA</p>
 </div>

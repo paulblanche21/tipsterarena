@@ -1,40 +1,42 @@
+/* form.css */
+
+/* Styles for the edit profile form */
 form#editProfileForm {
-    margin-top: 20px;
+    margin-top: 20px;  /* Space above the form for separation from header */
 }
 
+/* Styles for each form group (label + input/textarea) */
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 15px;  /* Space between form groups for readability */
 }
 
+/* Styles for inputs and textareas within form groups */
 .form-group input,
 .form-group textarea {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    width: 100%;           /* Full width to fill container */
+    padding: 8px;          /* Internal padding for comfort */
+    border: 1px solid #ccc;  /* Light gray border for definition */
+    border-radius: 4px;    /* Slightly rounded corners */
 }
 
+/* Focus state for inputs within form groups */
 .form-group input:focus {
-    outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+    outline: none;          /* Remove default outline */
+    border-color: #007bff;  /* Blue border on focus */
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);  /* Subtle blue glow */
 }
 
+/* Styles for labels within form groups */
 .form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-    color: #1a2b3c;
-    font-weight: bold;
-    font-size: 1em;
+    display: block;         /* Block display for stacking */
+    margin-bottom: 5px;     /* Space below label */
+    font-weight: bold;      /* Bold text for emphasis (defined twice, redundant) */
+    color: #1a2b3c;         /* Dark blue-gray text */
+    font-size: 1em;         /* Standard font size */
 }
 
+/* Styles for textareas within form groups */
 .form-group textarea {
-    min-height: 100px;
-    resize: vertical;
-}
-
-.form-input:focus {
-    outline: none;
-    border-color: #ff4136;
+    min-height: 100px;      /* Minimum height for bio field */
+    resize: vertical;       /* Allow vertical resizing only */
 }

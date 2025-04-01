@@ -1,29 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Metadata and page setup -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Tipster Arena{% endblock %}</title>
     {% load static %}
+    <!-- Favicon for branding -->
     <link rel="icon" type="img/x-icon" href="{% static 'img/favicon.ico' %}">
+    <!-- Core stylesheet for policy pages -->
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <!-- Google Fonts for consistent typography -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 
 <body class="policy-body">
+    <!-- Header container for policy pages -->
     <div class="policy-container">
         <div class="policy-header">
+            <!-- Tipster Arena logo -->
             <img src="{% static 'img/tipster-arena-logo.png' %}" alt="Tipster Arena Logo" class="policy-logo">
         </div>
+        <!-- Close button linking back to home -->
         <a href="{% url 'home' %}" class="policy-close-btn" title="Close">
             <i class="fas fa-times"></i>
         </a>
     </div>
+    <!-- Main content container for policy details -->
     <div class="policy-container">
+        <!-- Secondary close button for accessibility -->
         <a href="{% url 'home' %}" class="policy-close-btn" title="Close">
             <i class="fas fa-times"></i>
         </a>
+        <!-- Block for child templates to insert policy content -->
         {% block content %}
         {% endblock %}
     </div>

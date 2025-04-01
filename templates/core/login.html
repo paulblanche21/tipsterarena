@@ -1,25 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Metadata and page setup -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Tipster Arena</title>
     {% load static %}
+    <!-- Stylesheet for landing and auth pages -->
     <link rel="stylesheet" href="{% static 'css/landing.css' %}">
 </head>
 <body>
+    <!-- Container for the login interface -->
     <div class="auth-container">
-        <!-- Tipster Arena Logo -->
+        <!-- Tipster Arena branding -->
         <div class="auth-logo">
             <img src="{% static 'img/tipster-arena-logo.png' %}" alt="Tipster Arena Logo" class="auth-logo-img">
         </div>
 
+        <!-- Page heading and subtitle -->
         <h1>Login to Tipster Arena</h1>
         <p class="auth-subtitle">Access your account and dive into the world of sports tips!</p>
 
+        <!-- Login form with username and password fields -->
         <form method="post" class="auth-form">
             {% csrf_token %}
-            <!-- Username Field -->
+            <!-- Username input field -->
             <div class="form-group">
                 <label for="{{ form.username.id_for_label }}">Username</label>
                 {{ form.username }}
@@ -28,7 +33,7 @@
                 {% endif %}
             </div>
 
-            <!-- Password Field -->
+            <!-- Password input field -->
             <div class="form-group">
                 <label for="{{ form.password.id_for_label }}">Password</label>
                 {{ form.password }}
@@ -37,13 +42,16 @@
                 {% endif %}
             </div>
 
+            <!-- Submit button for login -->
             <button type="submit" class="landing-button landing-button--primary">Log In</button>
         </form>
 
+        <!-- General error message for invalid credentials -->
         {% if form.errors %}
             <p class="error">Invalid username or password. Please try again.</p>
         {% endif %}
 
+        <!-- Navigation links for signup and landing page -->
         <p class="auth-links">Don’t have an account? <a href="{% url 'signup' %}" class="auth-link">Sign up here</a>.</p>
         <p class="auth-links"><a href="{% url 'landing' %}" class="auth-link">Back to Landing</a></p>
     </div>

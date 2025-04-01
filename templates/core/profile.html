@@ -1,10 +1,13 @@
 {% extends 'core/base.html' %}
 {% load static %}
+<!-- profile.html: Template for the Profile page in Tipster Arena. Displays user details, tips, and editing options. -->
+
 {% block title %}{{ user.username }} - Tipster Arena{% endblock %}
 
 {% block content %}
+    <!-- Main container for profile content -->
     <div class="profile-content">
-        <!-- Username and Post Count (Header) with Back Arrow -->
+        <!-- Header with back arrow, username, and post count -->
         <div class="profile-header-top">
             <a href="{% url 'home' %}" class="profile-back-arrow"><i class="fas fa-arrow-left"></i></a>
             <div class="profile-username-container">
@@ -14,7 +17,7 @@
             </div>
         </div>
 
-        <!-- Banner and Avatar -->
+        <!-- Banner and avatar section -->
         <div class="profile-header">
             {% if user_profile.banner %}
                 <img src="{{ user_profile.banner.url }}" alt="Banner Image" class="profile-banner" onerror="this.style.display='none'; this.src=window.default_banner_url;">
@@ -26,15 +29,16 @@
             {% else %}
                 <img src="{% static 'img/default-avatar.png' %}" alt="{{ user.username }} Avatar" class="profile-avatar">
             {% endif %}
-            <!-- Removed .profile-actions from here -->
         </div>
 
-        <!-- Username, Handle, and Bio Below Avatar -->
+        <!-- User info and action buttons -->
         <div class="profile-user-info">
             <div class="profile-actions">
                 {% if is_owner %}
+                    <!-- Edit button for profile owner -->
                     <button class="profile-edit-btn" id="editProfileBtn">Edit Profile</button>
                 {% else %}
+                    <!-- Follow/unfollow button for visitors -->
                     <button class="follow-btn" data-username="{{ user.username }}">
                         {% if is_following %}Following{% else %}Follow{% endif %}
                     </button>
@@ -47,11 +51,13 @@
             </div>  
         </div>
 
+        <!-- Follow stats -->
         <div class="profile-follow">
             <span><strong>{{ following_count }}</strong> Following</span>
             <span><strong>{{ followers_count }}</strong> Followers</span>
         </div>
 
+        <!-- Navigation tabs for profile sections -->
         <div class="profile-nav">
             <a href="#" class="profile-nav-item active">Posts</a>
             <a href="#" class="profile-nav-item">Replies</a>
@@ -60,6 +66,7 @@
             <a href="#" class="profile-nav-item">Likes</a>
         </div>
 
+        <!-- Feed of user's tips -->
         <div class="tip-feed">
             {% for tip in user_tips %}
                 <div class="tip" data-tip-id="{{ tip.id }}">
@@ -79,6 +86,7 @@
                         {% if tip.sport == 'horse_racing' %}🏇{% endif %}
                         <p>{{ tip.text }}</p>
                         <small>{{ tip.created_at|date:"F j, Y, g:i a" }}</small>
+                        <!-- Tip interaction buttons -->
                         <div class="tip-actions">
                             <div class="tip-action-group">
                                 <a href="#" class="tip-action tip-action-like" data-action="like"><i class="fas fa-heart"></i></a>
@@ -108,15 +116,16 @@
                     </div>
                 </div>
             {% empty %}
+                <!-- Placeholder for no tips -->
                 <p>No posts yet. Start posting tips!</p>
             {% endfor %}
         </div>
 
-        <!-- Comment Modal (Same as home.html) -->
+        <!-- Modal for viewing and posting comments -->
         <div class="comment-modal" id="comment-modal">
             <div class="comment-modal-content">
                 <span class="comment-modal-close">×</span>
-                <!-- Original Tip with Avatar -->
+                <!-- Original tip display -->
                 <div class="modal-tip">
                     <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="tip-avatar modal-tip-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
                     <div class="modal-tip-content">
@@ -155,7 +164,7 @@
                         </div>
                     </div>
                 </div>
-                <!-- Replying to Text and Post a Reply Box -->
+                <!-- Reply input area -->
                 <div class="reply-to-header" style="display: none;">Replying to <span class="reply-to-username"></span></div>
                 <div class="post-reply-box">
                     {% if request.user.is_authenticated and request.user.userprofile.avatar %}
@@ -186,7 +195,7 @@
         </div>
     </div>
 
-    <!-- Edit Profile Modal -->
+    <!-- Modal for editing profile -->
     <div id="editProfileModal" class="profile-edit-modal">
         <div class="profile-edit-modal-content">
             <span class="profile-edit-modal-close">×</span>
@@ -214,6 +223,7 @@
                     </div>
                 </div>
             </div>
+            <!-- Form for updating profile details -->
             <div class="edit-profile-form">
                 <form method="post" enctype="multipart/form-data" id="editProfileForm">
                     {% csrf_token %}
@@ -246,6 +256,7 @@
 {% endblock %}
 
 {% block upcoming_events %}
+<!-- Sidebar widget for upcoming events -->
 <div class="sidebar-card upcoming-events-card" data-card="upcoming-events" style="background-color: white;">
     <h3>Upcoming Events</h3>
     <div class="carousel-container">
@@ -281,6 +292,7 @@
 {% endblock %}
 
 {% block trending_tips %}
+<!-- Sidebar widget for trending tips -->
 <div class="sidebar-card trending-tips-card" data-card="trending-tips" style="background-color: white;">
     <h3>Trending Tips</h3>
     <div class="trending-tips-list">

@@ -1,7 +1,10 @@
 <!-- templates/core/messages.html -->
 {% extends 'core/base.html' %}
 {% load static %}
+<!-- messages.html: Template for the Messages page in Tipster Arena. Displays message threads and conversation details. -->
+
 {% block page_css %}
+    <!-- Additional stylesheet for messages-specific styling -->
     <link rel="stylesheet" href="http://localhost:3000/static/css/messages.css">
 {% endblock %}
 
@@ -10,11 +13,13 @@
 {% block body_class %}messages-page{% endblock %}
 
 {% block content %}
+    <!-- Hidden CSRF token for form submissions -->
     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-    <!-- Messages Container (holds both the feed and the message content) -->
+    <!-- Main container for messages layout -->
     <div class="messages-container">
-        <!-- Messages Feed (narrower center column, like X’s Messages sidebar) -->
+        <!-- Left-hand feed showing message threads -->
         <div class="messages-feed">
+            <!-- Header with title and action icons -->
             <h2 class="messages-header">
                 <span class="messages-title">Messages</span>
                 <span class="messages-icons">
@@ -24,9 +29,11 @@
             </h2>
             {% if message_threads %}
                 {% for item in message_threads %}
+                <!-- Card representing a message thread -->
                 <div class="card" data-thread-id="{{ item.thread.id }}">
                     {% with other_participant=item.other_participant %}
                         {% if other_participant %}
+                            <!-- Avatar for thread participant -->
                             {% if other_participant.userprofile.avatar %}
                                 <img src="{{ other_participant.userprofile.avatar.url }}" alt="User Avatar" class="avatar">
                             {% else %}
@@ -44,6 +51,7 @@
                                     </span>
                                     <span class="message-date">{{ item.thread.updated_at|date:"M d" }}</span>
                                 </div>
+                                <!-- Preview of the last message -->
                                 <p class="message-preview">
                                     {% if item.last_message %}
                                         {{ item.last_message.content|truncatechars:50 }}
@@ -53,6 +61,7 @@
                                 </p>
                             </div>
                         {% else %}
+                            <!-- Fallback for unknown participant -->
                             <div class="card-content">
                                 <div class="card-header">
                                     <span class="username">Unknown User</span>
@@ -69,6 +78,7 @@
                     {% endwith %}
                 </div>
                 {% empty %}
+                    <!-- Placeholder for no threads -->
                     <div class="card">
                         <div class="card-content">
                             <p>No messages yet. Start a conversation!</p>
@@ -76,6 +86,7 @@
                     </div>
                 {% endfor %}
             {% else %}
+                <!-- Alternative placeholder for no threads -->
                 <div class="card">
                     <div class="card-content">
                         <p>No messages yet. Start a conversation!</p>
@@ -84,10 +95,10 @@
             {% endif %}
         </div>
 
-        <!-- Right-Hand Feed (Message Content) -->
+        <!-- Right-hand feed for selected thread or placeholder -->
         <aside class="sidebar-messages" id="messageContent">
             {% if selected_thread %}
-                <!-- Render the selected thread directly -->
+                <!-- Render the selected message thread -->
                 <div class="message-thread">
                     <div class="thread-header">
                         <div class="thread-header-top">
@@ -96,6 +107,7 @@
                         </div>
                         <div class="thread-header-details">
                             {% if selected_thread.other_participant %}
+                                <!-- Participant avatar -->
                                 {% if selected_thread.other_participant.userprofile.avatar %}
                                     <img src="{{ selected_thread.other_participant.userprofile.avatar.url }}" alt="Avatar" class="avatar">
                                 {% else %}
@@ -131,6 +143,7 @@
                             {% endif %}
                         </div>
                     </div>
+                    <!-- List of messages in the thread -->
                     <div class="messages-list" id="messagesList">
                         {% if messages %}
                             {% for message in messages %}
@@ -151,10 +164,12 @@
                             <p>No messages available.</p>
                         {% endif %}
                     </div>
+                    <!-- Preview area for media before sending -->
                     <div class="msg-message-preview" style="display: none;">
                         <img src="" alt="Preview" class="msg-preview-media">
                         <span class="msg-remove-preview">×</span>
                     </div>
+                    <!-- Input area for sending new messages -->
                     <div class="message-input">
                         <div class="message-actions">
                             <button type="button" class="action-btn" id="imageBtn" title="Add image">
@@ -172,7 +187,7 @@
                     </div>
                 </div>
             {% else %}
-                <!-- Show placeholder if no thread is selected -->
+                <!-- Placeholder when no thread is selected -->
                 <h3>Select a message</h3>
                 <p>Choose from your existing conversations, start a new one, or just keep swimming.</p>
                 <button class="new-message-btn" id="newMessageSidebarBtn">New message</button>
@@ -180,7 +195,7 @@
         </aside>
     </div>
 
-    <!-- Modal for New Message -->
+    <!-- Modal for starting a new message -->
     <div id="newMessageModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -203,4 +218,5 @@
 {% endblock %}
 
 {% block extra_js %}
+    <!-- No additional scripts needed, as main.js handles dynamic functionality -->
 {% endblock %}

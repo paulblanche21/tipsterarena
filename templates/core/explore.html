@@ -1,13 +1,16 @@
 {% extends 'core/base.html' %}
 {% load static %}
+<!-- explore.html: Template for the Explore page in Tipster Arena. Allows users to post tips and browse a feed of tips from all users. -->
 
 {% block title %}Explore - Tipster Arena{% endblock %}
 
 {% block content %}
+    <!-- Main content area for the Explore page -->
     <div class="content">
-        <!-- Post Box (Central Feed) -->
+        <!-- Interface for posting new tips -->
         <div class="post-box">
             <div class="post-user">
+                <!-- User avatar and posting options -->
                 {% if request.user.is_authenticated and request.user.userprofile.avatar %}
                     <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar">
                 {% else %}
@@ -33,6 +36,7 @@
                 <button class="remove-preview">×</button>
             </div>
             <div class="post-footer">
+                <!-- Action buttons and submission controls -->
                 <div class="post-actions">
                     <button class="post-action-btn image" aria-label="Add image"><i class="fas fa-image"></i></button>
                     <button class="post-action-btn gif" aria-label="Add GIF"><i class="far fa-file-image"></i></button>
@@ -50,9 +54,11 @@
             </div>
         </div>
 
+        <!-- Feed displaying tips from all users -->
         <div class="tip-feed">
             {% for tip in tips %}
             <div class="tip" data-tip-id="{{ tip.id }}">
+                <!-- Tip author avatar -->
                 {% if tip.user.userprofile.avatar %}
                     <img src="{{ tip.user.userprofile.avatar.url }}" alt="{{ tip.user.username }} Avatar" class="tip-avatar">
                 {% else %}
@@ -64,6 +70,7 @@
                             <strong>{{ tip.user.username }}</strong>
                             <span class="user-handle">{{ tip.user.userprofile.handle }}</span>
                         </a>
+                        <!-- Sport-specific emoji -->
                         {% if tip.sport == 'football' %}⚽{% endif %}
                         {% if tip.sport == 'golf' %}⛳{% endif %}
                         {% if tip.sport == 'tennis' %}🎾{% endif %}
@@ -80,6 +87,7 @@
                         {% endif %}
                     </div>
                     <small class="tip-timestamp">{{ tip.created_at|date:"F j, Y, g:i a" }}</small>
+                    <!-- Interaction buttons and counts -->
                     <div class="tip-actions">
                         <div class="tip-action-group">
                             <a href="#" class="tip-action tip-action-like" data-action="like" aria-label="Like this tip"><i class="fas fa-heart"></i></a>
@@ -114,7 +122,7 @@
             {% endfor %}
         </div>
 
-        <!-- Comment Modal (Same as home.html) -->
+        <!-- Modal for viewing and posting comments -->
         <div class="comment-modal" id="comment-modal">
             <div class="comment-modal-content">
                 <span class="comment-modal-close">×</span>
@@ -158,6 +166,7 @@
                 </div>
                 <div class="reply-to-header" style="display: none;">Replying to <span class="reply-to-username"></span></div>
                 <div class="post-reply-box">
+                    <!-- Reply input area -->
                     {% if request.user.is_authenticated and request.user.userprofile.avatar %}
                         <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar">
                     {% else %}
@@ -184,6 +193,7 @@
                 <div class="comment-list"></div>
             </div>
         </div>
+        <!-- Success notification popup -->
         <div id="success-popup" class="success-popup">
             <div class="success-popup-content">
                 <span class="success-popup-close">×</span>
@@ -194,6 +204,7 @@
 {% endblock %}
 
 {% block upcoming_events %}
+<!-- Sidebar widget for upcoming events with carousel -->
 <div class="sidebar-card upcoming-events-card" data-card="upcoming-events" style="background-color: white;">
     <h3>Upcoming Events</h3>
     <div class="carousel-container">
@@ -229,6 +240,7 @@
 {% endblock %}
 
 {% block trending_tips %}
+<!-- Sidebar widget for trending tips -->
 <div class="sidebar-card trending-tips-card" data-card="trending-tips" style="background-color: white;">
     <h3>Trending Tips</h3>
     <div class="trending-tips-list">
@@ -237,7 +249,6 @@
     <a href="#" class="show-more" data-target="trending-tips">Show more</a>
 </div>
 {% endblock %}
-
 
 {% block extra_js %}
     <!-- No additional scripts needed, as main.js dynamically imports comment.js, like.js, share.js, post.js, gif.js, poll.js, emoji.js, modal.js, trendingTips.js, eventPopup.js -->

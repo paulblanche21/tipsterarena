@@ -1,127 +1,139 @@
-
-.follow-card {
-    background-color: #ffffff; /* White background for the card */
-    color: #001f3f; /* Dark text for readability */
-    border:1px solid #e1e8ed;
-    max-width: 660px;
-    border-radius: 12px; /* Match card style */
-    padding: 12px; /* Add padding for consistency */
-    margin: 0 10px; /* Space below the card */
-    display: flex; /* Use flex to stack content vertically */
-    flex-direction: column; /* Stack children vertically */
-    width:calc(100% - 20px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    position: relative;
-    z-index: 1000;
-    overflow: hidden;
-    box-sizing: border-box;
-}
-
-.follow-card .show-less {
-    margin-top: 12px; /* Add space above "Show Less" */
-    color: #ff4136; /* Red text for consistency */
-    text-decoration: none;
-    font-size: 14px;
-    cursor: pointer;
-    padding: 0;
-    background: none;
-    border: none;
-    width: fit-content;
-}
-
-.follow-card .show-less:hover {
-    text-decoration: underline; /* Optional hover effect */
-}
-
-.follow-card h2{
-    background-color: transparent; /* Ensure no background color overrides */
-    margin: 0 0 8px 0; /* Reduce margin to eliminate gaps */
-    padding: 0; /* No padding to avoid extra space */
-    font: size 24px;
-    font-weight: bold;
-    color: var(--black);
-
-}
-.follow-card p {
-    background-color: transparent; /* Ensure no background color overrides */
-    margin: 0 0 8px 0; /* Reduce margin to eliminate gaps */
-    padding: 0; /* No padding to avoid extra space */
-    font-size: 16px;
-    color: #001f3f;
-    line-height: 1.5;
-}
-
-.follow-list {
-    margin-bottom: 8px;
-}
-
-.follow-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 0;
-    border-bottom: 1px solid #e1e8ed; /* Light border between items, like Twitter/X */
-    max-width: 100%; /* Prevent overflow */
-}
-
-.follow-item:last-child {
-    border-bottom: none; /* Remove border from the last item */
-}
-
 /* follow.css */
+
+/* Styles for the follow card container */
+.follow-card {
+    background-color: #ffffff;  /* White background for contrast against dark site theme */
+    color: #001f3f;            /* Dark blue text for readability */
+    border: 1px solid #e1e8ed; /* Light gray border for definition */
+    max-width: 660px;          /* Limit width to align with content areas */
+    border-radius: 12px;       /* Rounded corners matching site-wide style */
+    padding: 12px;             /* Consistent internal padding */
+    margin: 0 10px;            /* Horizontal margin for spacing */
+    display: flex;             /* Flex layout for vertical stacking */
+    flex-direction: column;    /* Stack children vertically */
+    width: calc(100% - 20px);  /* Full width minus margins */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);  /* Subtle shadow for elevation */
+    position: relative;        /* Relative positioning for potential overlays */
+    z-index: 1000;             /* High z-index to sit above most content */
+    overflow: hidden;          /* Prevent content overflow */
+    box-sizing: border-box;    /* Include padding/borders in dimensions */
+}
+
+/* Styles for the "Show Less" link within follow card */
+.follow-card .show-less {
+    margin-top: 12px;          /* Space above the link */
+    color: #ff4136;            /* Red text matching site accent */
+    text-decoration: none;     /* No underline by default */
+    font-size: 14px;           /* Consistent font size */
+    cursor: pointer;           /* Indicate clickability */
+    padding: 0;                /* No padding for minimal footprint */
+    background: none;          /* No background */
+    border: none;              /* No border */
+    width: fit-content;        /* Shrink to content width */
+}
+
+/* Hover state for "Show Less" link */
+.follow-card .show-less:hover {
+    text-decoration: underline;  /* Underline on hover for clarity */
+}
+
+/* Heading styles within follow card */
+.follow-card h2 {
+    background-color: transparent;  /* Ensure no background interference */
+    margin: 0 0 8px 0;             /* Tight margins for compact layout */
+    padding: 0;                    /* No padding to avoid extra space */
+    font-size: 24px;               /* Larger font for prominence */
+    font-weight: bold;             /* Bold for emphasis */
+    color: var(--black);           /* Black text for contrast */
+}
+
+/* Paragraph styles within follow card */
+.follow-card p {
+    background-color: transparent;  /* Ensure no background interference */
+    margin: 0 0 8px 0;             /* Tight margins for compact layout */
+    padding: 0;                    /* No padding to avoid extra space */
+    font-size: 16px;               /* Slightly larger font for readability */
+    color: #001f3f;                /* Dark blue text */
+    line-height: 1.5;              /* Comfortable line spacing */
+}
+
+/* Container for the list of follow items */
+.follow-list {
+    margin-bottom: 8px;  /* Space below the list */
+}
+
+/* Styles for individual follow items */
+.follow-item {
+    display: flex;          /* Flex layout for avatar and details */
+    align-items: center;    /* Center items vertically */
+    gap: 12px;              /* Space between avatar and details */
+    padding: 12px 0;        /* Vertical padding for separation */
+    border-bottom: 1px solid #e1e8ed;  /* Light gray border between items */
+    max-width: 100%;        /* Prevent overflow */
+}
+
+/* Remove border from the last follow item */
+.follow-item:last-child {
+    border-bottom: none;  /* No border on the final item */
+}
+
+/* Styles for the follow avatar */
 .follow-avatar {
-    width: 48px !important; /* Force it */
-    height: 48px !important;
-    border-radius: 50%;
-    margin-right: 12px;
-    flex-shrink: 0;
-    object-fit: cover; /* Crop large images */
-    max-width: 48px; /* Cap it */
-    max-height: 48px;
+    width: 48px !important;     /* Fixed width, forced with !important */
+    height: 48px !important;    /* Fixed height, forced with !important */
+    border-radius: 50%;         /* Circular shape */
+    margin-right: 12px;         /* Space between avatar and details */
+    flex-shrink: 0;             /* Prevent shrinking in flex layout */
+    object-fit: cover;          /* Crop oversized images */
+    max-width: 48px;            /* Cap width */
+    max-height: 48px;           /* Cap height */
 }
 
+/* Container for follow item details */
 .follow-details {
-    flex: 1;
+    flex: 1;  /* Take remaining space in flex layout */
 }
 
+/* Styles for the follow username */
 .follow-username {
-    color: var(--black); /* Black links instead of Twitter blue */
-    font-weight: 600;
-    font-size: 15px;
-    text-decoration: none;
-    display: block;
-    margin-bottom: 4px;
+    color: var(--black);        /* Black text for visibility */
+    font-weight: 600;           /* Bold for emphasis */
+    font-size: 15px;            /* Slightly larger than base for prominence */
+    text-decoration: none;      /* No underline by default */
+    display: block;             /* Block display for spacing */
+    margin-bottom: 4px;         /* Space below username */
 }
 
+/* Hover state for follow username */
 .follow-username:hover {
-    text-decoration: underline; /* Optional: Minimal hover effect, like Twitter/X */
+    text-decoration: underline;  /* Underline on hover for clarity */
 }
 
+/* Styles for the follow bio */
 .follow-bio {
-    font-size: 14px;
-    color: #666666;
-    margin: 0;
-    line-height: 1.4;
-    max-width: 200px; /* Prevent overflow, like Twitter/X */
-    overflow-wrap: break-word;
+    font-size: 14px;            /* Base font size for bio */
+    color: #666666;             /* Gray text for subtlety */
+    margin: 0;                  /* No margins */
+    line-height: 1.4;           /* Comfortable line spacing */
+    max-width: 200px;           /* Limit width to prevent overflow */
+    overflow-wrap: break-word;  /* Break long words to fit */
 }
 
-/* Follow button styling (Twitter/X black oval) */
+/* Styles for the follow button */
 .follow-btn {
-    background-color: #000000; /* Black background, like Twitter/X */
-    color: #ffffff;
-    border: none;
-    border-radius: 20px; /* Oval shape, like Twitter/X */
-    padding: 6px 16px;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    min-width: 80px;
-    text-align: center;
+    background-color: #000000;  /* Black background mimicking Twitter/X */
+    color: #ffffff;            /* White text for contrast */
+    border: none;              /* No border */
+    border-radius: 20px;       /* Oval shape */
+    padding: 6px 16px;         /* Vertical and horizontal padding */
+    font-size: 14px;           /* Base font size */
+    font-weight: bold;         /* Bold text */
+    cursor: pointer;           /* Indicate clickability */
+    min-width: 80px;           /* Minimum width for consistency */
+    text-align: center;        /* Center text */
 }
 
+/* Hover state for follow button */
 .follow-btn:hover {
-    background-color: #333333; /* Darker gray on hover, like Twitter/X */
+    background-color: #333333;  /* Darker gray on hover */
 }
-
-

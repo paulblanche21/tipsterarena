@@ -1,25 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Metadata and page setup -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up - Tipster Arena</title>
     {% load static %}
+    <!-- Stylesheet for landing and auth pages -->
     <link rel="stylesheet" href="{% static 'css/landing.css' %}">
 </head>
 <body>
+    <!-- Container for the sign-up interface -->
     <div class="auth-container">
-        <!-- Tipster Arena Logo -->
+        <!-- Tipster Arena branding -->
         <div class="auth-logo">
             <img src="{% static 'img/tipster-arena-logo.png' %}" alt="Tipster Arena Logo" class="auth-logo-img">
         </div>
 
+        <!-- Page heading and subtitle -->
         <h1>Sign Up for Tipster Arena</h1>
         <p class="auth-subtitle">Join our thriving community of sports tipsters and enthusiasts!</p>
 
+        <!-- Sign-up form with user input fields -->
         <form method="post" class="auth-form">
             {% csrf_token %}
-            <!-- Username Field -->
+            <!-- Username input field -->
             <div class="form-group">
                 <label for="{{ form.username.id_for_label }}">Username</label>
                 {{ form.username }}
@@ -28,7 +33,7 @@
                 {% endif %}
             </div>
 
-            <!-- Handle Field -->
+            <!-- Handle input field -->
             <div class="form-group">
                 <label for="{{ form.handle.id_for_label }}">Handle</label>
                 {{ form.handle }}
@@ -37,7 +42,7 @@
                 {% endif %}
             </div>
 
-            <!-- Email Field -->
+            <!-- Email input field -->
             <div class="form-group">
                 <label for="{{ form.email.id_for_label }}">Email</label>
                 {{ form.email }}
@@ -46,7 +51,7 @@
                 {% endif %}
             </div>
 
-            <!-- Password Field -->
+            <!-- Password input field -->
             <div class="form-group">
                 <label for="{{ form.password1.id_for_label }}">Password</label>
                 {{ form.password1 }}
@@ -55,7 +60,7 @@
                 {% endif %}
             </div>
 
-            <!-- Confirm Password Field -->
+            <!-- Confirm password input field -->
             <div class="form-group">
                 <label for="{{ form.password2.id_for_label }}">Confirm Password</label>
                 {{ form.password2 }}
@@ -64,13 +69,16 @@
                 {% endif %}
             </div>
 
+            <!-- Submit button for sign-up -->
             <button type="submit" class="landing-button landing-button--primary">Sign Up</button>
         </form>
 
+        <!-- General error message for form issues -->
         {% if form.errors %}
             <p class="error">Please correct the errors above.</p>
         {% endif %}
 
+        <!-- Navigation links for login and landing page -->
         <p class="auth-links">Already have an account? <a href="{% url 'login' %}" class="auth-link">Log in here</a>.</p>
         <p class="auth-links"><a href="{% url 'landing' %}" class="auth-link">Back to Landing</a></p>
     </div>

@@ -1,26 +1,32 @@
 {% extends 'core/base.html' %}
 {% load static %}
+<!-- notifications.html: Template for the Notifications page in Tipster Arena. Displays a feed of user activity notifications like likes, follows, and shares. -->
+
 {% block title %}Notifications - Tipster Arena{% endblock %}
 
 {% block content %}
-    <!-- Notification Feed (like X’s notifications) -->
+    <!-- Feed container for notifications -->
     <div class="tip-feed">
+        <!-- Page header -->
         <h2>Notifications</h2>
         {% if like_notifications or follow_notifications or share_notifications %}
-            <!-- Likes -->
+            <!-- Section for like notifications -->
             {% for like in like_notifications %}
                 <div class="notification">
+                    <!-- User avatar for the liker -->
                     {% if like.user.userprofile.avatar %}
                         <img src="{{ like.user.userprofile.avatar.url }}" alt="User Avatar" class="tip-avatar">
                     {% else %}
                         <img src="{% static 'img/default-avatar.png' %}" alt="Default Avatar" class="tip-avatar" onerror="this.style.display='none'">
                     {% endif %}
                     <div class="tip-content">
+                        <!-- Notification text with username and tip preview -->
                         <p><strong>{{ like.user.username|default:"Unknown User" }}</strong> liked your tip: "{{ like.tip.text|truncatechars:20|default:"No tip text" }}"</p>
                         <small>{{ like.created_at|date:"F j, Y, g:i a"|default:"No date" }}</small>
                     </div>
                 </div>
             {% empty %}
+                <!-- Placeholder for no likes -->
                 <div class="notification">
                     <div class="tip-content">
                         <p>No likes yet. Engage with tips to get updates!</p>
@@ -28,20 +34,23 @@
                 </div>
             {% endfor %}
 
-            <!-- Follows -->
+            <!-- Section for follow notifications -->
             {% for follow in follow_notifications %}
                 <div class="notification">
+                    <!-- Follower avatar -->
                     {% if follow.follower.userprofile.avatar %}
                         <img src="{{ follow.follower.userprofile.avatar.url }}" alt="User Avatar" class="tip-avatar">
                     {% else %}
                         <img src="{% static 'img/default-avatar.png' %}" alt="Default Avatar" class="tip-avatar" onerror="this.style.display='none'">
                     {% endif %}
                     <div class="tip-content">
+                        <!-- Notification text for new follower -->
                         <p><strong>{{ follow.follower.username|default:"Unknown User" }}</strong> followed you</p>
                         <small>{{ follow.created_at|date:"F j, Y, g:i a"|default:"No date" }}</small>
                     </div>
                 </div>
             {% empty %}
+                <!-- Placeholder for no follows -->
                 <div class="notification">
                     <div class="tip-content">
                         <p>No follows yet. Engage with tips to get updates!</p>
@@ -49,32 +58,11 @@
                 </div>
             {% endfor %}
 
-            <!-- Shares -->
+            <!-- Section for share notifications -->
             {% for share in share_notifications %}
                 <div class="notification">
+                    <!-- User avatar for the sharer -->
                     {% if share.user.userprofile.avatar %}
                         <img src="{{ share.user.userprofile.avatar.url }}" alt="User Avatar" class="tip-avatar">
                     {% else %}
-                        <img src="{% static 'img/default-avatar.png' %}" alt="Default Avatar" class="tip-avatar" onerror="this.style.display='none'">
-                    {% endif %}
-                    <div class="tip-content">
-                        <p><strong>{{ share.user.username|default:"Unknown User" }}</strong> shared your tip: "{{ share.tip.text|truncatechars:20|default:"No tip text" }}"</p>
-                        <small>{{ share.created_at|date:"F j, Y, g:i a"|default:"No date" }}</small>
-                    </div>
-                </div>
-            {% empty %}
-                <div class="notification">
-                    <div class="tip-content">
-                        <p>No shares yet. Engage with tips to get updates!</p>
-                    </div>
-                </div>
-            {% endfor %}
-        {% else %}
-            <div class="notification">
-                <div class="tip-content">
-                    <p>No notifications yet. Engage with tips to get updates!</p>
-                </div>
-            </div>
-        {% endif %}
-    </div>
-{% endblock %}
+                        <img src="{% static 'img/default-avatar.png' %}"

@@ -1,12 +1,15 @@
 {% load static django_vite %}
+<!-- base.html: Core template for Tipster Arena. Provides the foundational HTML structure, styles, and navigation shared across all pages. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Metadata and title setup -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Tipster Arena{% endblock %}</title>
     <link rel="icon" type="image/x-icon" href="{% static 'img/favicon.ico' %}">
-    <!-- Critical CSS -->
+
+    <!-- Core stylesheets for layout and components -->
     <link rel="stylesheet" href="http://localhost:3000/static/css/base.css">
     <link rel="stylesheet" href="http://localhost:3000/static/css/navbar.css">
     <link rel="stylesheet" href="http://localhost:3000/static/css/sidebar.css">
@@ -23,19 +26,26 @@
     <link rel="stylesheet" href="http://localhost:3000/static/css/misc.css">
     <link rel="stylesheet" href="http://localhost:3000/static/css/messages.css">
 
+    <!-- Load main JavaScript bundle via Vite -->
     {% vite_asset 'js/main.js' defer=True %}
+
+    <!-- External fonts and icons with preload for performance -->
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" as="style" onload="this.rel='stylesheet'">
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" as="style" onload="this.rel='stylesheet'">
     <noscript>
+        <!-- Fallback for no-JS environments -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap">
     </noscript>
+
+    <!-- Placeholder for page-specific CSS -->
     {% block extra_css %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
-    <!-- Navbar -->
+    <!-- Navigation bar with links and user info -->
     <nav class="navbar">
         <div class="nav-brand">
+            <!-- Logo with responsive resolution support -->
             <img src="{% static 'img/tipster-arena-logo.png' %}" 
                  srcset="{% static 'img/tipster-arena-logo.png' %} 1x, {% static 'img/tipster-arena-logo@2x.png' %} 2x" 
                  alt="Tipster Arena Logo" 
@@ -44,6 +54,7 @@
                  height="40">
         </div>
         <ul class="nav-menu">
+            <!-- Main navigation links with icons -->
             <li><a href="{% url 'home' %}"><i class="fas fa-home nav-icon"></i> Home</a></li>
             <li><a href="{% url 'explore' %}"><i class="fas fa-search nav-icon"></i> Explore</a></li>
             <li><a href="{% url 'notifications' %}"><i class="fas fa-bell nav-icon"></i> Notifications</a></li>
@@ -56,9 +67,11 @@
             <li><a href="{% url 'bookmarks' %}"><i class="fas fa-bookmark nav-icon"></i> Bookmarks</a></li>
         </ul>
         <div class="nav-post">
+            <!-- Button to trigger the post tip modal -->
             <button class="nav-post-btn" data-toggle="post-modal">Post Tip</button>
         </div>
         <div class="nav-user">
+            <!-- User profile dropdown with avatar and options -->
             <div class="nav-user-content" tabindex="0">
                 {% if request.user.is_authenticated and request.user.userprofile.avatar %}
                     <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="nav-avatar">
@@ -78,19 +91,20 @@
         </div>
     </nav>
 
-    <!-- Main Container for Content and Sidebar -->
+    <!-- Main layout container for content and sidebar -->
     <div class="main-container">
-        <!-- Main Content -->
+        <!-- Primary content area, overridden by child templates -->
         <main class="content">
             {% block content %}{% endblock %}
         </main>
 
-        <!-- Right Sidebar -->
+        <!-- Sidebar with search, events, and follow suggestions -->
         {% block sidebar %}
         <aside class="sidebar">
             <input type="text" placeholder="Search Tipster Arena..." class="search-input">
             <div class="search-results" style="display: none;"></div>
             <div class="sidebar-scrollable">
+                <!-- Upcoming events widget -->
                 {% block upcoming_events %}
                 <div class="sidebar-card" data-card="upcoming-events">
                     <h3>Upcoming Events</h3>
@@ -99,6 +113,7 @@
                 </div>
                 {% endblock %}
                 {% block trending_tips %}{% endblock %}
+                <!-- Who to follow widget -->
                 <div class="sidebar-card" data-card="who-to-follow">
                     <h3 class="who-to-follow-header">Who to Follow</h3>
                     <div class="follow-list">
@@ -117,6 +132,7 @@
                     </div>
                     <a href="#" class="show-more" data-target="who-to-follow">Show more</a>
                 </div>
+                <!-- Policy and copyright links -->
                 <div class="sidebar-card" data-card="policy-links">
                     <div class="policy-links">
                         <div class="policy-links-columns">
@@ -129,7 +145,7 @@
                     </div>
                 </div>
             </div>
-            <!-- Messages Button -->
+            <!-- Quick access to messages -->
             <div class="messages-container">
                 <a href="{% url 'messages' %}" class="messages-card">
                     <span class="messages-text-base">Messages</span>
@@ -141,10 +157,11 @@
         {% endblock %}
     </div>
 
-    <!-- Post Modal -->
+    <!-- Modal for posting tips -->
     <div class="post-modal" id="post-modal">
         <div class="post-modal-content">
             <div class="post-user">
+                <!-- User info and post options -->
                 {% if request.user.is_authenticated and request.user.userprofile.avatar %}
                     <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
                 {% else %}
@@ -171,6 +188,7 @@
                 <img src="" alt="Preview" class="preview-media">
                 <button class="remove-preview">×</button>
             </div>
+            <!-- Post formatting and media options -->
             <div class="post-actions">
                 <button class="post-action-btn image" aria-label="Add image"><i class="fas fa-image"></i></button>
                 <button class="post-action-btn gif" aria-label="Add GIF"><i class="far fa-file-image"></i></button>
@@ -186,7 +204,7 @@
         </div>
     </div>
 
-    <!-- CSRF Token and Constants -->
+    <!-- Hidden CSRF token and global JavaScript variables -->
     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
     <script>
         window.logout_url = "{% url 'logout' %}";
@@ -195,7 +213,7 @@
         window.default_banner_url = "{% static 'img/default-banner.png' %}";
     </script>
 
-    <!-- Load Vite-Bundled JavaScript -->
+    <!-- Placeholder for page-specific JavaScript -->
     {% block extra_js %}{% endblock %}
 </body>
 </html>

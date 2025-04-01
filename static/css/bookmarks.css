@@ -1,46 +1,44 @@
-/* static/css/styles.css */
-.tip-action-bookmark.bookmarked {
-    color: #1DA1F2; /* Or your preferred highlight color */
-}
+/* bookmarks.css */
 
+/* Styles for the empty bookmarks placeholder */
 .empty-bookmarks {
-    text-align: center;
-    padding: 20px;
-    color: #666;
+  text-align: center;  /* Center-align text when no bookmarks are present */
+  padding: 20px;       /* Add padding for spacing */
+  color: #666;         /* Medium gray text for a subtle appearance */
 }
 
+/* Styles for the page header on the bookmarks page */
 .page-header {
-    padding: 10px 15px;
-    border-bottom: 1px solid #e6ecf0;
-    margin-bottom: 10px;
+  padding: 10px 15px;      /* Vertical and horizontal padding for spacing */
+  border-bottom: 1px solid #e6ecf0;  /* Light gray border for separation */
+  margin-bottom: 10px;     /* Space below the header */
 }
 
-/* static/css/styles.css */
-
-/* Default state for bookmark icon */
+/* Default state for the bookmark action button */
 .tip-action-bookmark {
-    color: #808080; /* Grey for unbookmarked state */
-    background: none; /* Remove any background */
-    border: none; /* Remove any border */
-    outline: none; /* Remove focus outline */
-    padding: 0; /* Remove padding that might cause a circle */
-    cursor: pointer; /* Ensure it looks clickable */
-  }
-  
-  /* Bookmarked state */
-  .tip-action-bookmark.bookmarked {
-    color: #FFD700; /* Yellow for bookmarked state */
-  }
-  
-  /* Remove focus/hover effects that might cause a circle */
-  .tip-action-bookmark:focus,
-  .tip-action-bookmark:hover {
-    outline: none; /* No outline on focus */
-    background: none; /* No background on hover */
-    border-radius: 0; /* No rounding that might look like a circle */
-  }
-  
-  /* Ensure the icon itself is styled correctly */
-  .tip-action-bookmark i {
-    font-size: 16px; /* Adjust size if needed */
-  }
+  color: #808080;      /* Grey color for unbookmarked state */
+  background: none;    /* Remove any background to keep it minimal */
+  border: none;        /* Remove border for a clean look */
+  outline: none;       /* Remove focus outline for consistency */
+  padding: 0;          /* Remove padding to avoid unwanted spacing */
+  cursor: pointer;     /* Indicate clickability with pointer cursor */
+}
+
+/* Bookmarked state for the bookmark action button (overrides earlier definition) */
+.tip-action-bookmark.bookmarked {
+  color: #FFD700;      /* Gold/yellow to highlight bookmarked state */
+ 
+}
+
+/* Remove focus and hover effects that might add unwanted styling */
+.tip-action-bookmark:focus,
+.tip-action-bookmark:hover {
+  outline: none;       /* No outline on focus for a clean appearance */
+  background: none;    /* No background change on hover */
+  border-radius: 0;    /* Prevent rounding that could mimic a circle */
+}
+
+/* Styles for the bookmark icon within the action button */
+.tip-action-bookmark i {
+  font-size: 16px;     /* Set icon size for consistency */
+}

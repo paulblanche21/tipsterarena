@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Join Tipster Arena: Share sports tips, connect with pros, and prove who’s the best in a thriving betting community.">
-    <meta name="keywords" content="sports tips, betting community, tipsters, football, golf, tennis, horse racing, win ratios">
+    <meta name="description" content="Join Tipster Arena: Share sports tips, connect with pros, and take on the bookies in a thriving betting community.">
+    <meta name="keywords" content="sports tips, betting community, tipsters, football, golf, tennis, horse racing, win ratios, anti-bookie">
     <title>Welcome to Tipster Arena</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/landing.css' %}">
@@ -25,7 +25,7 @@
     <!-- Landing Page Content -->
     <div class="landing-full-container">
         <div class="landing-zigzag">
-            <!-- Section 1: Image on Left, Text on Right -->
+            <!-- Section 1: Your Central Hub for Sports Tips -->
             <div class="landing-section left">
                 <div class="landing-image">
                     <img src="{% static 'img/sports1.jpg' %}" alt="Sports Action" class="landing-section-image">
@@ -33,27 +33,27 @@
                 <div class="landing-text">
                     <h2 class="landing-section-title">Your Central Hub for Sports Tips</h2>
                     <p class="landing-section-description">
-                        Sick of chasing tips across random Patreon pages that don’t get sports? Tipster Arena is the one-stop community where punters like you share, snag, and sharpen their betting game—for free. No more fragmented nonsense; this is where the real action lives.
+                        Sick of chasing tips across dodgy pages that don’t get sports? Tipster Arena is the one-stop community where punters share, snag, and sharpen their betting game. Filter tabs for football, golf, tennis, or horse racing—see only what you want. First month’s free, then it’s just €5/month—cheaper than a pint. No politics, no religion—just sport.
                     </p>
-                    <a href="{% url 'signup' %}" class="landing-button landing-button--secondary">Join the Hub</a>
+                    <a href="{% url 'signup' %}" class="landing-button landing-button--secondary">Join Tipster Arena Now</a>
                 </div>
             </div>
 
-            <!-- Section 2: Image on Right, Text on Left -->
+            <!-- Section 2: Pro Tipsters, Your Stage Awaits -->
             <div class="landing-section right">
                 <div class="landing-text">
                     <h2 class="landing-section-title">Pro Tipsters, Your Stage Awaits</h2>
                     <p class="landing-section-description">
-                        Calling all pros: Build your own community right here. Soon, you’ll offer subscriptions for exclusive tips and grow your following. Tipster Arena isn’t just a platform—it’s your chance to shine and cash in on your expertise.
+                        Calling all pros: Build your community here. Soon, you’ll offer exclusive tips via subscriptions—and the best tipsters will earn a cut of the pot. It’s your shot to shine, cash in, and keep the riff raff out.
                     </p>
-                    <a href="{% url 'signup' %}" class="landing-button landing-button--secondary">Start Building</a>
+                    <a href="{% url 'signup' %}" class="landing-button landing-button--secondary">Build Your Empire</a>
                 </div>
                 <div class="landing-image">
                     <img src="{% static 'img/sports2.jpg' %}" alt="Tipster Community" class="landing-section-image">
                 </div>
             </div>
 
-            <!-- Section 3: Image on Left, Text on Right -->
+            <!-- Section 3: Face Off & Prove Who’s Best -->
             <div class="landing-section left">
                 <div class="landing-image">
                     <img src="{% static 'img/sports3.jpg' %}" alt="Tipster Face-Off" class="landing-section-image">
@@ -63,17 +63,65 @@
                     <p class="landing-section-description">
                         Pros gloating about picking favorites? Time to face the music. Tipster Arena ranks everyone with win ratios and leveraged odds—no hiding behind big egos. Whether you’re a pro or Colin from the pub, step up and show the world who’s the real deal.
                     </p>
-                    <a href="{% url 'signup' %}" class="landing-button landing-button--secondary">Prove It</a>
+                    <a href="{% url 'signup' %}" class="landing-button landing-button--secondary">Prove You’re the Best</a>
                 </div>
             </div>
 
-            <!-- Call to Action at the Bottom -->
+            <!-- New Section: The Anti-Bookie Revolution -->
+            <div class="landing-section left">
+                <div class="landing-image">
+                    <img src="{% static 'img/sports4.jpg' %}" alt="Anti-Bookie Fight" class="landing-section-image">
+                </div>
+                <div class="landing-text">
+                    <h2 class="landing-section-title">The Anti-Bookie Revolution</h2>
+                    <p class="landing-section-description">
+                        Bookies love taking our cash—Tipster Arena says no more. We’re leveling the playing field. If there’s value, our community finds it. €5/month (first month free) keeps the bots and freeloaders out.
+                    </p>
+                    <a href="{% url 'signup' %}" class="landing-button landing-button--secondary">Fight Back</a>
+                </div>
+            </div>
+
+            <!-- New Mid-Page CTA: Take Back the Edge -->
+            <div class="landing-mid-cta">
+                <h2 class="landing-cta-title">Take Back the Edge</h2>
+                <p class="landing-cta-description">Join the community that’s beating the bookies at their own game.</p>
+                <a href="{% url 'signup' %}" class="landing-button landing-button--primary">Claim Your Edge</a>
+            </div>
+
+            <!-- New Section: Simple Pricing, Big Value -->
+            <div class="landing-section pricing">
+                <h2 class="landing-section-title center">Simple Pricing, Big Value</h2>
+                <div class="pricing-grid">
+                    <div class="pricing-item">
+                        <h3>First Month Free</h3>
+                        <p>Test the waters, no strings attached.</p>
+                    </div>
+                    <div class="pricing-item">
+                        <h3>€5/Month</h3>
+                        <p>The price of a pint keeps you in the game.</p>
+                    </div>
+                    <div class="pricing-item">
+                        <h3>€40/Year</h3>
+                        <p>Save more and commit to crushing it.</p>
+                    </div>
+                </div>
+                <a href="{% url 'signup' %}" class="landing-button landing-button--secondary">Lock In Your Spot</a>
+            </div>
+
+            <!-- New Standalone CTA: Smash the Odds -->
+            <div class="landing-mid-cta smash-odds">
+                <h2 class="landing-cta-title">Smash the Odds</h2>
+                <p class="landing-cta-description">No bookies, no bullshit—just a community that wins.</p>
+                <a href="{% url 'signup' %}" class="landing-button landing-button--primary">Get In Now</a>
+            </div>
+
+            <!-- Final Call to Action -->
             <div class="landing-cta">
                 <h2 class="landing-cta-title">Bet Smarter. Join Today.</h2>
-                <p class="landing-cta-description">From casual punters to pro tipsters, Tipster Arena is where legends are made. Sign up now—it’s free!</p>
+                <p class="landing-cta-description">From casual punters to pro tipsters, Tipster Arena is where legends are made. First month’s free, then €5/month or €40/year. Join the fight against the bookies.</p>
                 <div class="landing-buttons">
-                    <a href="{% url 'login' %}" class="landing-button landing-button--primary">Login</a>
-                    <a href="{% url 'signup' %}" class="landing-button landing-button--primary">Signup</a>
+                    <a href="{% url 'login' %}" class="landing-button landing-button--primary">Login to Win</a>
+                    <a href="{% url 'signup' %}" class="landing-button landing-button--primary">Signup & Strike Back</a>
                 </div>
             </div>
         </div>
@@ -83,5 +131,7 @@
     <footer class="landing-footer">
         <p>© 2025 Tipster Arena. All rights reserved.</p>
     </footer>
+
+ 
 </body>
 </html>

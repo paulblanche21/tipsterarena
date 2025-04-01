@@ -1,807 +1,892 @@
 /* messages.css */
+
+/* Styles for action buttons (e.g., image, GIF, emoji) */
 .action-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-    color: #657786;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: color 0.2s, background-color 0.2s;
+    background: none;          /* No background for minimal look */
+    border: none;              /* No border */
+    cursor: pointer;           /* Indicate clickability */
+    font-size: 16px;           /* Icon size */
+    color: #657786;            /* Gray color for default state */
+    width: 36px;               /* Fixed width for circular button */
+    height: 36px;              /* Fixed height for circular button */
+    display: flex;             /* Flex layout for centering */
+    align-items: center;       /* Center vertically */
+    justify-content: center;   /* Center horizontally */
+    border-radius: 50%;        /* Circular shape */
+    transition: color 0.2s, background-color 0.2s;  /* Smooth transitions */
 }
 
+/* Hover state for action buttons */
 .action-btn:hover {
-    color: #1DA1F2;
-    background-color: rgba(29, 161, 242, 0.1);
+    color: #1DA1F2;            /* Twitter blue on hover */
+    background-color: rgba(29, 161, 242, 0.1);  /* Light blue background */
 }
 
+/* Styles for standard avatar */
 .avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    margin-right: 10px;
-    object-fit: cover;
+    width: 40px;               /* Fixed width */
+    height: 40px;              /* Fixed height */
+    border-radius: 50%;        /* Circular shape */
+    margin-right: 10px;        /* Space to the right */
+    object-fit: cover;         /* Crop oversized images */
 }
 
-.avatar-small {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    margin-right: 10px;
-    object-fit: cover;
-}
-
+/* Styles for message thread cards in the feed */
 .card {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    height: 61px; /* Match your reported height */
-    border-bottom: 1px solid #e6ecf0;
-    cursor: pointer;
-    transition: background-color 0.2s;
+    display: flex;             /* Flex layout for avatar and content */
+    align-items: center;       /* Center vertically */
+    padding: 10px;             /* Internal padding */
+    height: 61px;              /* Fixed height to match design */
+    border-bottom: 1px solid #e6ecf0;  /* Light gray border */
+    cursor: pointer;           /* Indicate clickability */
+    transition: background-color 0.2s;  /* Smooth background transition */
 }
 
+/* Hover state for cards */
 .card:hover {
-    background-color: #f5f8fa;
+    background-color: #f5f8fa;  /* Light gray on hover */
 }
 
+/* Focus and active states for cards */
 .card:focus, .card:active {
-    outline: none;
-    background-color: #f5f8fa;
+    outline: none;             /* Remove default outline */
+    background-color: #f5f8fa;  /* Light gray when focused/clicked */
 }
 
+/* Selected state for cards */
 .card.selected {
-    background-color: #e6ecf0;
+    background-color: #e6ecf0;  /* Slightly darker gray for selected state */
 }
 
+/* Content within message cards */
 .card-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+    flex: 1;                   /* Take remaining space */
+    display: flex;             /* Flex layout for stacking */
+    flex-direction: column;    /* Stack vertically */
+    gap: 4px;                  /* Small gap between elements */
 }
 
+/* Header within message cards */
 .card-header {
-    display: flex;
-    align-items: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    display: flex;             /* Flex layout for alignment */
+    align-items: center;       /* Center vertically */
+    white-space: nowrap;       /* Prevent text wrapping */
+    overflow: hidden;          /* Hide overflow */
+    text-overflow: ellipsis;   /* Ellipsis for overflow text */
 }
 
+/* Username within card header */
 .card-header .username {
-    font-weight: bold;
-    font-size: 15px;
-    color: #14171a;
+    font-weight: bold;         /* Bold for emphasis */
+    font-size: 15px;           /* Slightly larger font */
+    color: #14171a;            /* Dark text */
 }
 
+/* Handle within card header */
 .card-header .user-handle {
-    color: #657786;
-    font-size: 14px;
-    margin-left: 5px;
+    color: #657786;            /* Gray color */
+    font-size: 14px;           /* Base font size */
+    margin-left: 5px;          /* Space from username */
 }
 
+/* Date within card header */
 .card-header .message-date {
-    color: #657786;
-    font-size: 14px;
-    margin-left: 5px;
+    color: #657786;            /* Gray color */
+    font-size: 14px;           /* Base font size */
+    margin-left: 5px;          /* Space from handle */
 }
 
+/* Message preview within cards */
 .message-preview {
-    margin: 0;
-    font-size: 14px;
-    color: #657786;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    margin: 0;                 /* No margins */
+    font-size: 14px;           /* Base font size */
+    color: #657786;            /* Gray color */
+    overflow: hidden;          /* Hide overflow */
+    text-overflow: ellipsis;   /* Ellipsis for overflow text */
+    white-space: nowrap;       /* Prevent wrapping */
 }
 
+/* Styles for "Create a group" link */
 .create-group {
-    display: block;
-    margin-top: 5px;
-    font-size: 14px;
-    color: #003087;
-    text-decoration: none;
+    display: block;            /* Block display */
+    margin-top: 5px;           /* Space above */
+    font-size: 14px;           /* Base font size */
+    color: #003087;            /* Dark blue color */
+    text-decoration: none;     /* No underline */
 }
 
+/* Hover state for "Create a group" link */
 .create-group:hover {
-    text-decoration: underline;
+    text-decoration: underline;  /* Underline on hover */
 }
 
-/* Modal Styles */
+/* Styles for the new message modal overlay */
 .modal {
-    display: none;
-    position: fixed;
-    z-index: 1003;
-    left: 260px;
-    top: 0;
-    width: 300px;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
+    display: none;             /* Hidden by default, shown via JS */
+    position: fixed;           /* Fixed position */
+    z-index: 1003;             /* High z-index to overlay content */
+    left: 260px;               /* Offset from navbar width + margin */
+    top: 0;                    /* Full height from top */
+    width: 300px;              /* Fixed width */
+    height: 100%;              /* Full height */
+    background-color: rgba(0, 0, 0, 0.6);  /* Semi-transparent overlay */
 }
 
+/* Content within the new message modal */
 .modal-content {
-    background-color: #fff;
-    padding: 0;
-    border: 1px solid #e1e8ed;
-    border-radius: 12px;
-    width: 100%;
-    height: 100%;
-    box-sizing: border-box;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    background-color: #fff;    /* White background */
+    padding: 0;                /* No padding (handled by children) */
+    border: 1px solid #e1e8ed; /* Light gray border */
+    border-radius: 12px;       /* Rounded corners */
+    width: 100%;               /* Full width of modal */
+    height: 100%;              /* Full height of modal */
+    box-sizing: border-box;    /* Include borders in dimensions */
+    position: relative;        /* Relative positioning */
+    display: flex;             /* Flex layout */
+    flex-direction: column;    /* Stack vertically */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);  /* Stronger shadow */
 }
 
+/* Header within the modal */
 .modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 15px;
-    border-bottom: 1px solid #e1e8ed;
-    background-color: #f8f9fa;
+    display: flex;             /* Flex layout */
+    align-items: center;       /* Center vertically */
+    justify-content: space-between;  /* Space out children */
+    padding: 10px 15px;        /* Padding */
+    border-bottom: 1px solid #e1e8ed;  /* Light gray border */
+    background-color: #f8f9fa; /* Light gray background */
 }
 
+/* Title within modal header */
 .modal-header h3 {
-    font-size: 16px;
-    font-weight: bold;
-    color: #001f3f;
-    margin: 0;
-    flex: 1;
-    text-align: center;
+    font-size: 16px;           /* Slightly larger font */
+    font-weight: bold;         /* Bold for emphasis */
+    color: #001f3f;            /* Dark blue text */
+    margin: 0;                 /* No margins */
+    flex: 1;                   /* Take available space */
+    text-align: center;        /* Center-align text */
 }
 
+/* Close button within modal */
 .close {
-    font-size: 20px;
-    font-weight: bold;
-    color: #657786;
-    cursor: pointer;
-    transition: color 0.2s;
+    font-size: 20px;           /* Larger font for visibility */
+    font-weight: bold;         /* Bold for emphasis */
+    color: #657786;            /* Gray color */
+    cursor: pointer;           /* Indicate clickability */
+    transition: color 0.2s;    /* Smooth color transition */
 }
 
+/* Hover and focus states for close button */
 .close:hover,
 .close:focus {
-    color: #001f3f;
+    color: #001f3f;            /* Dark blue on interaction */
 }
 
+/* Search section within modal */
 .modal-search {
-    padding: 10px 15px;
-    border-bottom: 1px solid #e1e8ed;
+    padding: 10px 15px;        /* Padding */
+    border-bottom: 1px solid #e1e8ed;  /* Light gray border */
 }
 
+/* Search input within modal */
 .modal-search input[type="text"] {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #e1e8ed;
-    border-radius: 20px;
-    font-size: 14px;
-    box-sizing: border-box;
-    outline: none;
-    transition: border-color 0.2s;
+    width: 100%;               /* Full width */
+    padding: 8px 12px;         /* Internal padding */
+    border: 1px solid #e1e8ed; /* Light gray border */
+    border-radius: 20px;       /* Oval shape */
+    font-size: 14px;           /* Base font size */
+    box-sizing: border-box;    /* Include borders in dimensions */
+    outline: none;             /* Remove default outline */
+    transition: border-color 0.2s;  /* Smooth border transition */
 }
 
+/* Focus state for search input */
 .modal-search input[type="text"]:focus {
-    border-color: #003087;
+    border-color: #003087;     /* Dark blue border on focus */
 }
 
+/* Next button within modal header */
 .next-btn {
-    padding: 5px 10px;
-    background-color: #1DA1F2;
-    color: white;
-    border: none;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s;
+    padding: 5px 10px;         /* Compact padding */
+    background-color: #1DA1F2; /* Twitter blue background */
+    color: white;              /* White text */
+    border: none;              /* No border */
+    border-radius: 20px;       /* Oval shape */
+    font-size: 14px;           /* Base font size */
+    font-weight: bold;         /* Bold text */
+    cursor: pointer;           /* Indicate clickability */
+    transition: background-color 0.2s;  /* Smooth background transition */
 }
 
+/* Disabled state for next button */
 .next-btn:disabled {
-    background-color: #b0c4de;
-    cursor: not-allowed;
+    background-color: #b0c4de; /* Light gray when disabled */
+    cursor: not-allowed;       /* Indicate non-clickable */
 }
 
+/* Hover state for enabled next button */
 .next-btn:not(:disabled):hover {
-    background-color: #0d8ecf;
+    background-color: #0d8ecf; /* Darker blue on hover */
 }
 
+/* Override main container for messages page */
 .messages-page .main-container {
-    padding-right: 0;
-    width: 100%;
-    box-sizing: border-box;
+    padding-right: 0;          /* Remove right padding */
+    width: 100%;               /* Full width */
+    box-sizing: border-box;    /* Include padding/borders */
 }
 
+/* Override content area for messages page */
 .messages-page .content {
-    max-width: none;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-    box-sizing: border-box;
+    max-width: none;           /* Remove max-width constraint */
+    width: 100%;               /* Full width */
+    margin: 0;                 /* Remove margins */
+    padding: 0;                /* Remove padding */
+    min-height: 100vh;         /* Full viewport height */
+    box-sizing: border-box;    /* Include padding/borders */
 }
 
+/* Container for messages layout */
 .messages-page .messages-container {
-    display: flex;
-    height: 100vh;
-    gap: 10px;
-    padding: 20px;
-    width: calc(100% - 260px);
-    margin-left: 260px;
-    overflow: hidden;
+    display: flex;             /* Flex layout for feed and content */
+    height: 100vh;             /* Full viewport height */
+    gap: 10px;                 /* Space between feed and content */
+    padding: 20px;             /* Internal padding */
+    width: calc(100% - 260px); /* Full width minus navbar */
+    margin-left: 260px;        /* Offset for navbar */
+    overflow: hidden;          /* Prevent overflow */
 }
 
+/* Styles for the messages feed (left column) */
 .messages-feed {
-    flex: 0 0 298px; /* Fixed width, no shrinking or growing */
-    height: 100%;
-    border: 1px solid #ddd;
-    overflow-y: auto;
-    background-color: #fff;
-    border-radius: 8px;
-    box-sizing: border-box;
+    flex: 0 0 298px;           /* Fixed width, no grow/shrink */
+    height: 100%;              /* Full height */
+    border: 1px solid #ddd;    /* Light gray border */
+    overflow-y: auto;          /* Scrollable if needed */
+    background-color: #fff;    /* White background */
+    border-radius: 8px;        /* Slightly rounded corners */
+    box-sizing: border-box;    /* Include borders */
 }
 
-/* Ensure .sidebar-messages adapts */
+/* Styles for the sidebar-messages (right column) */
 .messages-page .sidebar-messages {
-    flex: 1 1 auto; /* Grow and shrink as needed */
-    height: 100%;
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-sizing: border-box;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 20px;
+    flex: 1 1 auto;            /* Grow and shrink as needed */
+    height: 100%;              /* Full height */
+    background-color: #fff;    /* White background */
+    border: 1px solid #ddd;    /* Light gray border */
+    border-radius: 8px;        /* Slightly rounded corners */
+    box-sizing: border-box;    /* Include borders */
+    min-width: 0;              /* Allow shrinking */
+    display: flex;             /* Flex layout */
+    flex-direction: column;    /* Stack vertically */
+    align-items: center;       /* Center items (placeholder state) */
+    justify-content: center;   /* Center items (placeholder state) */
+    text-align: center;        /* Center text (placeholder state) */
+    padding: 20px;             /* Padding for placeholder */
 }
 
+/* Adjust sidebar-messages when containing a thread */
 .messages-page .sidebar-messages:has(.message-thread) {
-    justify-content: flex-start;
-    align-items: stretch;
-    padding: 0;
+    justify-content: flex-start;  /* Align top when thread present */
+    align-items: stretch;         /* Stretch items */
+    padding: 0;                   /* Remove padding for thread */
 }
 
+/* Heading within sidebar-messages (placeholder) */
 .messages-page .sidebar-messages h3 {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 10px;
+    font-size: 24px;           /* Larger font for emphasis */
+    font-weight: bold;         /* Bold text */
+    margin-bottom: 10px;       /* Space below */
 }
 
+/* Paragraph within sidebar-messages (placeholder) */
 .messages-page .sidebar-messages p {
-    font-size: 16px;
-    color: #657786;
-    margin-bottom: 20px;
+    font-size: 16px;           /* Slightly larger font */
+    color: #657786;            /* Gray text */
+    margin-bottom: 20px;       /* Space below */
 }
 
+/* Header for messages feed */
 .messages-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
-    background-color: #f8f9fa;
+    display: flex;             /* Flex layout */
+    justify-content: space-between;  /* Space out children */
+    align-items: center;       /* Center vertically */
+    padding: 10px;             /* Internal padding */
+    border-bottom: 1px solid #ddd;  /* Light gray border */
+    background-color: #f8f9fa; /* Light gray background */
 }
 
+/* Title within messages header */
 .messages-title {
-    font-size: 20px;
-    font-weight: bold;
+    font-size: 20px;           /* Larger font */
+    font-weight: bold;         /* Bold text */
 }
 
+/* Icons container within messages header */
 .messages-icons {
-    display: flex;
-    gap: 10px;
+    display: flex;             /* Flex layout */
+    gap: 10px;                 /* Space between icons */
 }
 
+/* Settings and new message icons */
 .messages-settings,
 .messages-new {
-    cursor: pointer;
+    cursor: pointer;           /* Indicate clickability */
 }
 
+/* Styles for the message settings panel */
 .message-settings {
-    padding: 20px;
-    height: 100%;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
+    padding: 20px;             /* Internal padding */
+    height: 100%;              /* Full height */
+    box-sizing: border-box;    /* Include padding/borders */
+    display: flex;             /* Flex layout */
+    flex-direction: column;    /* Stack vertically */
 }
 
+/* Heading within message settings */
 .message-settings h2 {
-    font-size: 24px;
-    font-weight: bold;
-    margin: 0;
+    font-size: 24px;           /* Larger font */
+    font-weight: bold;         /* Bold text */
+    margin: 0;                 /* No margins */
 }
 
+/* Header within message settings */
 .message-settings .settings-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+    display: flex;             /* Flex layout */
+    justify-content: space-between;  /* Space out children */
+    align-items: center;       /* Center vertically */
+    margin-bottom: 20px;       /* Space below */
 }
 
+/* Close button within message settings */
 .message-settings .close-settings {
-    font-size: 24px;
-    font-weight: bold;
-    cursor: pointer;
-    color: #657786;
-    transition: color 0.2s;
+    font-size: 24px;           /* Larger font */
+    font-weight: bold;         /* Bold text */
+    cursor: pointer;           /* Indicate clickability */
+    color: #657786;            /* Gray color */
+    transition: color 0.2s;    /* Smooth color transition */
 }
 
+/* Hover state for close-settings button */
 .message-settings .close-settings:hover {
-    color: #14171a;
+    color: #14171a;            /* Darker text on hover */
 }
 
+/* Preview area for messages */
 .msg-message-preview {
-    display: none;
-    position: relative;
-    margin: 10px 0;
-    text-align: center;
+    display: none;             /* Hidden by default */
+    position: relative;        /* Relative positioning */
+    margin: 10px 0;            /* Vertical spacing */
+    text-align: center;        /* Center content */
 }
 
+/* Preview media within message preview */
 .msg-preview-media {
-    max-width: 200px;
-    max-height: 200px;
-    border-radius: 10px;
+    max-width: 200px;          /* Limit width */
+    max-height: 200px;         /* Limit height */
+    border-radius: 10px;       /* Rounded corners */
 }
 
+/* Remove button for message preview */
 .msg-remove-preview {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background: rgba(0, 0, 0, 0.5);
-    color: white;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    line-height: 20px;
-    text-align: center;
-    cursor: pointer;
+    position: absolute;        /* Position over media */
+    top: 5px;                  /* Offset from top */
+    right: 5px;                /* Offset from right */
+    background: rgba(0, 0, 0, 0.5);  /* Semi-transparent background */
+    color: white;              /* White text */
+    border-radius: 50%;        /* Circular shape */
+    width: 20px;               /* Fixed width */
+    height: 20px;              /* Fixed height */
+    line-height: 20px;         /* Center text vertically */
+    text-align: center;        /* Center text horizontally */
+    cursor: pointer;           /* Indicate clickability */
 }
 
+/* Image within sent/received messages */
 .msg-message-image {
-    max-width: 200px;
-    max-height: 200px;
-    border-radius: 10px;
-    margin-top: 5px;
-    display: block;
+    max-width: 200px;          /* Limit width */
+    max-height: 200px;         /* Limit height */
+    border-radius: 10px;       /* Rounded corners */
+    margin-top: 5px;           /* Space above */
+    display: block;            /* Block display */
 }
 
+/* Group of settings options */
 .setting-group {
-    margin-bottom: 30px;
+    margin-bottom: 30px;       /* Space below group */
 }
 
+/* Heading within setting group */
 .setting-group h3 {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 5px;
+    font-size: 18px;           /* Larger font */
+    font-weight: bold;         /* Bold text */
+    margin-bottom: 5px;        /* Space below */
 }
 
+/* Paragraph within setting group */
 .setting-group p {
-    font-size: 14px;
-    color: #657786;
-    margin-bottom: 10px;
+    font-size: 14px;           /* Base font size */
+    color: #657786;            /* Gray text */
+    margin-bottom: 10px;       /* Space below */
 }
 
+/* Individual setting option */
 .setting-option {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
+    display: flex;             /* Flex layout */
+    align-items: center;       /* Center vertically */
+    margin-bottom: 10px;       /* Space below */
 }
 
+/* Radio input within setting option */
 .setting-option input[type="radio"] {
-    margin-right: 10px;
+    margin-right: 10px;        /* Space to the right */
 }
 
+/* Label within setting option */
 .setting-option label {
-    font-size: 16px;
-    color: #14171a;
+    font-size: 16px;           /* Slightly larger font */
+    color: #14171a;            /* Dark text */
 }
 
+/* Styles for the message thread container */
 .message-thread {
-    padding: 0;
-    height: 100%;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: flex-start;
+    padding: 0;                /* No padding */
+    height: 100%;              /* Full height */
+    box-sizing: border-box;    /* Include borders */
+    display: flex;             /* Flex layout */
+    flex-direction: column;    /* Stack vertically */
+    align-items: stretch;      /* Stretch items */
+    justify-content: flex-start;  /* Align top */
 }
 
+/* Header within message thread */
 .thread-header {
-    padding: 10px; /* Reduced from 20px */
-    border-bottom: 1px solid #ddd;
-    background-color: #fff;
-    text-align: center;
-    flex-shrink: 0;
+    padding: 10px;             /* Reduced padding */
+    border-bottom: 1px solid #ddd;  /* Light gray border */
+    background-color: #fff;    /* White background */
+    text-align: center;        /* Center-align content */
+    flex-shrink: 0;            /* Prevent shrinking */
 }
 
+/* Top section of thread header */
 .thread-header-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 5px; /* Reduced from 15px */
+    display: flex;             /* Flex layout */
+    justify-content: space-between;  /* Space out children */
+    align-items: center;       /* Center vertically */
+    margin-bottom: 5px;        /* Reduced space below */
 }
 
+/* Name within thread header */
 .thread-header-name {
-    font-size: 18px; /* Reduced from 20px */
-    font-weight: bold;
-    color: #14171a;
-    margin: 0;
-    text-align: left;
+    font-size: 18px;           /* Reduced font size */
+    font-weight: bold;         /* Bold text */
+    color: #14171a;            /* Dark text */
+    margin: 0;                 /* No margins */
+    text-align: left;          /* Left-align name */
 }
 
+/* Info icon within thread header */
 .thread-header-info {
-    cursor: pointer;
-    font-size: 16px; /* Reduced from 18px */
-    color: #657786;
+    cursor: pointer;           /* Indicate clickability */
+    font-size: 16px;           /* Reduced font size */
+    color: #657786;            /* Gray color */
 }
 
+/* Details section within thread header */
 .thread-header-details {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    display: flex;             /* Flex layout */
+    flex-direction: column;    /* Stack vertically */
+    align-items: center;       /* Center items */
 }
 
+/* Avatar within thread header */
 .thread-header .avatar {
-    width: 40px; /* Reduced from 50px */
-    height: 40px;
-    border-radius: 50%;
-    margin-bottom: 5px; /* Reduced from 10px */
+    width: 40px;               /* Reduced width */
+    height: 40px;              /* Reduced height */
+    border-radius: 50%;        /* Circular shape */
+    margin-bottom: 5px;        /* Reduced space below */
 }
 
+/* User details within thread header */
 .thread-header .user-details {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px; /* Reduced from 5px */
+    display: flex;             /* Flex layout */
+    flex-direction: column;    /* Stack vertically */
+    align-items: center;       /* Center items */
+    gap: 2px;                  /* Reduced gap */
 }
 
+/* Username within thread header */
 .thread-header h3 {
-    font-size: 14px; /* Reduced from 16px */
-    font-weight: bold;
-    margin: 0;
-    color: #14171a;
+    font-size: 14px;           /* Reduced font size */
+    font-weight: bold;         /* Bold text */
+    margin: 0;                 /* No margins */
+    color: #14171a;            /* Dark text */
 }
 
-
+/* Handle within thread header */
 .thread-header .user-handle {
-    font-size: 12px; /* Reduced from 14px */
-    color: #657786;
+    font-size: 12px;           /* Reduced font size */
+    color: #657786;            /* Gray text */
 }
 
+/* Bio within thread header */
 .thread-header .user-bio {
-    font-size: 12px; /* Reduced from 14px */
-    color: #14171a;
-    margin: 0;
-    text-align: center;
+    font-size: 12px;           /* Reduced font size */
+    color: #14171a;            /* Dark text */
+    margin: 0;                 /* No margins */
+    text-align: center;        /* Center-align */
 }
 
+/* Email within thread header */
 .thread-header .user-email {
-    font-size: 12px; /* Reduced from 14px */
-    color: #14171a;
-    margin: 0;
+    font-size: 12px;           /* Reduced font size */
+    color: #14171a;            /* Dark text */
+    margin: 0;                 /* No margins */
 }
 
+/* Stats within thread header */
 .thread-header .user-stats {
-    font-size: 12px; /* Reduced from 14px */
-    color: #657786;
-    margin: 0;
+    font-size: 12px;           /* Reduced font size */
+    color: #657786;            /* Gray text */
+    margin: 0;                 /* No margins */
 }
 
-
+/* Followed-by text within thread header */
 .thread-header .user-followed-by {
-    font-size: 12px; /* Reduced from 14px */
-    color: #657786;
-    margin: 0;
+    font-size: 12px;           /* Reduced font size */
+    color: #657786;            /* Gray text */
+    margin: 0;                 /* No margins */
 }
 
+/* List of messages within thread */
 .messages-list {
-    flex: 1; /* Let it grow fully */
-    overflow-y: auto;
-    margin-bottom: 10px; /* Reduced from 20px */
-    padding: 0 10px;
-    /* Remove max-height to allow full expansion */
+    flex: 1;                   /* Grow to fill space */
+    overflow-y: auto;          /* Scrollable if needed */
+    margin-bottom: 10px;       /* Reduced space below */
+    padding: 0 10px;           /* Horizontal padding */
 }
 
+/* Individual message styles */
 .message {
-    margin-bottom: 15px;
-    padding: 12px 16px;
-    border-radius: 15px;
-    max-width: 70%;
+    margin-bottom: 15px;       /* Space below message */
+    padding: 12px 16px;        /* Internal padding */
+    border-radius: 15px;       /* Rounded corners */
+    max-width: 70%;            /* Limit width */
 }
 
+/* Sent message styles */
 .message.sent {
-    background-color: #003087;
-    margin-left: auto;
-    text-align: left;
+    background-color: #003087; /* Dark blue background */
+    margin-left: auto;         /* Align right */
+    text-align: left;          /* Text left-aligned */
 }
 
+/* Text within sent messages */
 .message.sent p {
-    color: white;
+    color: white;              /* White text */
 }
 
+/* Received message styles */
 .message.received {
-    background-color: #f0f0f0;
-    margin-right: auto;
-    text-align: left;
+    background-color: #f0f0f0; /* Light gray background */
+    margin-right: auto;        /* Align left */
+    text-align: left;          /* Text left-aligned */
 }
 
+/* Text within received messages */
 .message.received p {
-    color: #14171a;
+    color: #14171a;            /* Dark text */
 }
 
+/* Paragraph within messages */
 .message p {
-    margin: 0;
-    font-size: 15px;
-    line-height: 1.5;
+    margin: 0;                 /* No margins */
+    font-size: 15px;           /* Slightly larger font */
+    line-height: 1.5;          /* Comfortable line spacing */
 }
 
+/* Timestamp within messages */
 .message small {
-    font-size: 12px;
-    color: #999;
-    display: block;
-    margin-top: 4px;
+    font-size: 12px;           /* Smaller font */
+    color: #999;               /* Light gray */
+    display: block;            /* Block display */
+    margin-top: 4px;           /* Space above */
 }
 
+/* Input area for sending messages */
 .message-input {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 10px;
-    padding: 10px;
-    border-top: 1px solid #ddd;
-    background-color: #fff;
-    flex-shrink: 0;
+    display: flex;             /* Flex layout */
+    flex-direction: row;       /* Row layout */
+    align-items: center;       /* Center vertically */
+    gap: 10px;                 /* Space between elements */
+    padding: 10px;             /* Internal padding */
+    border-top: 1px solid #ddd;  /* Light gray border */
+    background-color: #fff;    /* White background */
+    flex-shrink: 0;            /* Prevent shrinking */
 }
 
+/* Container for message input actions */
 .message-actions {
-    display: flex;
-    gap: 8px;
+    display: flex;             /* Flex layout */
+    gap: 8px;                  /* Space between actions */
 }
 
+/* Textarea for message input */
 .message-input textarea {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    flex: 1;
-    padding: 10px 15px;
-    border-radius: 20px;
-    border: 1px solid #ddd;
-    resize: none;
-    height: 40px;
-    font-size: 15px;
-    outline: none;
-    transition: border-color 0.2s;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;  /* System font stack */
+    flex: 1;                   /* Grow to fill space */
+    padding: 10px 15px;        /* Internal padding */
+    border-radius: 20px;       /* Oval shape */
+    border: 1px solid #ddd;    /* Light gray border */
+    resize: none;              /* Prevent resizing */
+    height: 40px;              /* Fixed height */
+    font-size: 15px;           /* Slightly larger font */
+    outline: none;             /* Remove default outline */
+    transition: border-color 0.2s;  /* Smooth border transition */
 }
 
+/* Focus state for message input textarea */
 .message-input textarea:focus {
-    border-color: #003087;
+    border-color: #003087;     /* Dark blue border */
 }
 
+/* Send button within message input */
 .message-input button#sendMessageBtn {
-    padding: 10px 20px;
-    background-color: #003087;
-    color: white;
-    border: none;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s;
+    padding: 10px 20px;        /* Padding */
+    background-color: #003087; /* Dark blue background */
+    color: white;              /* White text */
+    border: none;              /* No border */
+    border-radius: 20px;       /* Oval shape */
+    font-size: 14px;           /* Base font size */
+    font-weight: bold;         /* Bold text */
+    cursor: pointer;           /* Indicate clickability */
+    transition: background-color 0.2s;  /* Smooth background transition */
 }
 
+/* Hover state for send button */
 .message-input button#sendMessageBtn:hover {
-    background-color: #002669;
+    background-color: #002669; /* Darker blue on hover */
 }
 
+/* Hide default sidebar elements on messages page */
 .messages-page .sidebar,
 .messages-page .sidebar-card,
-.messages-page .search-input,
-.messages-page .messages-caret {
-    display: none !important;
+.messages-page .search-input{
+    display: none !important;  /* Forcefully hide with !important */
 }
 
+/* Styles for the new message button in sidebar */
 .new-message-btn {
-    padding: 10px 20px;
-    background-color: #001f3f;
-    color: white;
-    border: none;
-    border-radius: 20px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s;
+    padding: 10px 20px;        /* Padding */
+    background-color: #001f3f; /* Dark blue background */
+    color: white;              /* White text */
+    border: none;              /* No border */
+    border-radius: 20px;       /* Oval shape */
+    font-size: 16px;           /* Slightly larger font */
+    font-weight: bold;         /* Bold text */
+    cursor: pointer;           /* Indicate clickability */
+    transition: background-color 0.2s;  /* Smooth background transition */
 }
 
+/* Hover state for new message button */
 .new-message-btn:hover {
-    background-color: #002669;
+    background-color: #002669; /* Darker blue on hover */
 }
 
+/* Container for selected users in modal */
 .selected-users {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    padding: 10px 15px;
-    border-bottom: 1px solid #e1e8ed;
-    min-height: 40px;
+    display: flex;             /* Flex layout */
+    flex-wrap: wrap;           /* Allow wrapping */
+    gap: 5px;                  /* Small gap between items */
+    padding: 10px 15px;        /* Internal padding */
+    border-bottom: 1px solid #e1e8ed;  /* Light gray border */
+    min-height: 40px;          /* Minimum height */
 }
 
+/* Individual selected user chip */
 .selected-user {
-    display: flex;
-    align-items: center;
-    background-color: #e1e8ed;
-    border-radius: 20px;
-    padding: 5px 10px;
-    font-size: 14px;
-    color: #001f3f;
+    display: flex;             /* Flex layout */
+    align-items: center;       /* Center vertically */
+    background-color: #e1e8ed; /* Light gray background */
+    border-radius: 20px;       /* Oval shape */
+    padding: 5px 10px;         /* Internal padding */
+    font-size: 14px;           /* Base font size */
+    color: #001f3f;            /* Dark blue text */
 }
 
+/* Remove button within selected user chip */
 .selected-user .remove-user {
-    margin-left: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    color: #657786;
-    transition: color 0.2s;
+    margin-left: 5px;          /* Space from text */
+    font-size: 16px;           /* Slightly larger font */
+    cursor: pointer;           /* Indicate clickability */
+    color: #657786;            /* Gray color */
+    transition: color 0.2s;    /* Smooth color transition */
 }
 
+/* Hover state for remove button */
 .selected-user .remove-user:hover {
-    color: #ff4136;
+    color: #ff4136;            /* Red on hover */
 }
 
+/* Styles for user suggestion items in modal */
 .suggestion {
-    display: flex;
-    align-items: center;
-    padding: 10px 15px;
-    cursor: pointer;
-    border-bottom: 1px solid #e1e8ed;
-    transition: background-color 0.2s;
+    display: flex;             /* Flex layout */
+    align-items: center;       /* Center vertically */
+    padding: 10px 15px;        /* Internal padding */
+    cursor: pointer;           /* Indicate clickability */
+    border-bottom: 1px solid #e1e8ed;  /* Light gray border */
+    transition: background-color 0.2s;  /* Smooth background transition */
 }
 
+/* Container for suggestion list */
 .suggestions-list {
-    flex: 1;
-    overflow-y: auto;
+    flex: 1;                   /* Grow to fill space */
+    overflow-y: auto;          /* Scrollable if needed */
 }
 
+/* Hover state for suggestion items */
 .suggestion:hover {
-    background-color: rgba(255, 65, 54, 0.1);
+    background-color: rgba(255, 65, 54, 0.1);  /* Light red background */
 }
 
+/* Checkbox within suggestion items */
 .suggestion input[type="checkbox"] {
-    margin-right: 10px;
+    margin-right: 10px;        /* Space to the right */
 }
 
+/* User info within suggestion items */
 .suggestion .user-info {
-    flex: 1;
+    flex: 1;                   /* Take remaining space */
 }
 
+/* Username within suggestion user info */
 .suggestion .user-info .username {
-    font-weight: bold;
-    color: #001f3f;
+    font-weight: bold;         /* Bold text */
+    color: #001f3f;            /* Dark blue text */
 }
 
+/* Handle within suggestion user info */
 .suggestion .user-info .handle {
-    font-size: 14px;
-    color: #657786;
+    font-size: 14px;           /* Base font size */
+    color: #657786;            /* Gray text */
 }
 
+/* User details container (general) */
 .user-details {
-    display: flex;
-    flex-direction: column;
+    display: flex;             /* Flex layout */
+    flex-direction: column;    /* Stack vertically */
 }
 
+/* Heading within user details */
 .user-details h3 {
-    font-size: 18px;
-    font-weight: bold;
-    margin: 0;
+    font-size: 18px;           /* Larger font */
+    font-weight: bold;         /* Bold text */
+    margin: 0;                 /* No margins */
 }
 
+/* Handle within user details */
 .user-details .handle {
-    font-size: 14px;
-    color: #657786;
-    margin: 2px 0;
+    font-size: 14px;           /* Base font size */
+    color: #657786;            /* Gray text */
+    margin: 2px 0;             /* Small vertical spacing */
 }
 
+/* Bio within user details */
 .user-details .bio {
-    font-size: 14px;
-    color: #14171a;
-    margin: 5px 0;
+    font-size: 14px;           /* Base font size */
+    color: #14171a;            /* Dark text */
+    margin: 5px 0;             /* Vertical spacing */
 }
 
+/* Stats within user details */
 .user-details .stats {
-    font-size: 14px;
-    color: #657786;
-    margin: 5px 0;
+    font-size: 14px;           /* Base font size */
+    color: #657786;            /* Gray text */
+    margin: 5px 0;             /* Vertical spacing */
 }
 
+/* Follow status within user details */
 .user-details .follow-status {
-    font-size: 14px;
-    color: #1DA1F2;
-    margin: 5px 0;
+    font-size: 14px;           /* Base font size */
+    color: #1DA1F2;            /* Twitter blue text */
+    margin: 5px 0;             /* Vertical spacing */
 }
 
-.user-details .thread-header {
-    border-bottom: 1px solid #e1e8ed;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-}
 
+
+/* Heading within thread header in user details */
 .user-details .thread-header h3 {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 5px;
+    font-size: 18px;           /* Larger font */
+    font-weight: bold;         /* Bold text */
+    margin-bottom: 5px;        /* Space below */
 }
 
+/* Handle within thread header in user details */
 .user-details .thread-header .handle {
-    font-size: 14px;
-    color: #657786;
+    font-size: 14px;           /* Base font size */
+    color: #657786;            /* Gray text */
 }
 
+/* User info within user details */
 .user-details .user-info {
-    flex: 1;
-    padding: 0 20px;
+    flex: 1;                   /* Take remaining space */
+    padding: 0 20px;           /* Horizontal padding */
 }
 
+/* Paragraph within user info in user details */
 .user-details .user-info p {
-    font-size: 14px;
-    color: #14171a;
-    margin-bottom: 10px;
+    font-size: 14px;           /* Base font size */
+    color: #14171a;            /* Dark text */
+    margin-bottom: 10px;       /* Space below */
 }
 
-.user-details .message-input {
-    display: flex;
-    gap: 10px;
-    padding: 10px 20px;
-    border-top: 1px solid #e1e8ed;
-}
-
+/* Textarea within message input in user details */
 .user-details .message-input textarea {
-    flex: 1;
-    padding: 10px;
-    border-radius: 20px;
-    border: 1px solid #e1e8ed;
-    resize: none;
-    font-size: 14px;
-    height: 40px;
+    flex: 1;                   /* Grow to fill space */
+    padding: 10px;             /* Internal padding */
+    border-radius: 20px;       /* Oval shape */
+    border: 1px solid #e1e8ed; /* Light gray border */
+    resize: none;              /* Prevent resizing */
+    font-size: 14px;           /* Base font size */
+    height: 40px;              /* Fixed height */
 }
 
+/* Send button within message input in user details */
 .user-details .message-input button {
-    padding: 10px 20px;
-    background-color: #003087;
-    color: white;
-    border: none;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s;
+    padding: 10px 20px;        /* Padding */
+    background-color: #003087; /* Dark blue background */
+    color: white;              /* White text */
+    border: none;              /* No border */
+    border-radius: 20px;       /* Oval shape */
+    font-size: 14px;           /* Base font size */
+    font-weight: bold;         /* Bold text */
+    cursor: pointer;           /* Indicate clickability */
+    transition: background-color 0.2s;  /* Smooth background transition */
 }
 
+/* Hover state for send button in user details */
 .user-details .message-input button:hover {
-    background-color: #002669;
+    background-color: #002669; /* Darker blue on hover */
 }
 
-/* Responsive Design */
+/* Responsive adjustments for smaller screens */
 @media (max-width: 768px) {
     .messages-page .messages-container {
-        flex-direction: column;
-        width: 100%;
-        margin-left: 0;
-        padding: 10px;
+        flex-direction: column;  /* Stack vertically */
+        width: 100%;             /* Full width */
+        margin-left: 0;          /* Remove navbar offset */
+        padding: 10px;           /* Reduced padding */
     }
 
     .messages-feed {
-        flex: none;
-        width: 100%;
-        max-height: 40vh;
+        flex: none;              /* No flex growth */
+        width: 100%;             /* Full width */
+        max-height: 40vh;        /* Limit height */
     }
 
     .messages-page .sidebar-messages {
-        flex: none;
-        width: 100%;
-        height: auto;
+        flex: none;              /* No flex growth */
+        width: 100%;             /* Full width */
+        height: auto;            /* Auto height */
     }
 }

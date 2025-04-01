@@ -1,13 +1,16 @@
 {% extends 'core/base.html' %}
 {% load static %}
+<!-- sport.html: Template for sport-specific pages in Tipster Arena. Displays a posting interface and feed for tips related to a specific sport. -->
 
 {% block title %}{{ sport|title }} - Tipster Arena{% endblock %}
 
 {% block content %}
+    <!-- Main content area for the sport page -->
     <div class="content">
-        <!-- Post Box (Central Feed) -->
+        <!-- Interface for posting sport-specific tips -->
         <div class="post-box" data-sport="{{ sport }}">
             <div class="post-user">
+                <!-- User avatar for the poster -->
                 {% if request.user.is_authenticated and request.user.userprofile.avatar %}
                     <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
                 {% else %}
@@ -27,6 +30,7 @@
                 <button class="remove-preview">×</button>
             </div>
             <div class="post-footer">
+                <!-- Post action buttons and submission controls -->
                 <div class="post-actions">
                     <button class="post-action-btn image"><i class="fas fa-image"></i></button>
                     <button class="post-action-btn gif"><i class="far fa-file-image"></i></button>
@@ -44,10 +48,11 @@
             </div>
         </div>
 
-        <!-- Tip Feed -->
+        <!-- Feed of sport-specific tips -->
         <div class="tip-feed">
             {% for tip in tips %}
                 <div class="tip" data-tip-id="{{ tip.id }}">
+                    <!-- Tip author avatar -->
                     {% if tip.user.userprofile.avatar %}
                         <img src="{{ tip.user.userprofile.avatar.url }}" alt="{{ tip.user.username }} Avatar" class="tip-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
                     {% else %}
@@ -59,6 +64,7 @@
                                 <strong>{{ tip.user.username }}</strong>
                                 <span class="user-handle">{{ tip.user.userprofile.handle }}</span>
                             </a>
+                            <!-- Sport-specific emoji -->
                             {% if tip.sport == 'football' %}⚽{% endif %}
                             {% if tip.sport == 'golf' %}⛳{% endif %}
                             {% if tip.sport == 'tennis' %}🎾{% endif %}
@@ -77,6 +83,7 @@
                             {% endif %}
                         </div>
                         <small class="tip-timestamp">{{ tip.created_at|date:"F j, Y, g:i a" }}</small>
+                        <!-- Interaction buttons and counts -->
                         <div class="tip-actions">
                             <div class="tip-action-group">
                                 <a href="#" class="tip-action tip-action-like" data-action="like"><i class="fas fa-heart"></i></a>
@@ -106,11 +113,12 @@
                     </div>
                 </div>
             {% empty %}
+                <!-- Placeholder for no tips -->
                 <p>No {{ sport }} tips yet. Be the first to post!</p>
             {% endfor %}
         </div>
 
-        <!-- Comment Modal -->
+        <!-- Modal for viewing and posting comments -->
         <div class="comment-modal" id="comment-modal">
             <div class="comment-modal-content">
                 <span class="comment-modal-close">×</span>
@@ -185,6 +193,7 @@
 {% endblock %}
 
 {% block upcoming_events %}
+<!-- Sidebar widget for sport-specific upcoming events -->
 <div class="sidebar-card upcoming-events-card" data-card="upcoming-events" style="background-color: white;">
     <h3>
         {% if sport == 'horse_racing' %}
@@ -207,6 +216,7 @@
 {% endblock %}
 
 {% block trending_tips %}
+<!-- Sidebar widget for sport-specific trending tips -->
 <div class="sidebar-card trending-tips-card" data-card="trending-tips" style="background-color: white;">
     <h3>Trending {{ sport|title }} Tips</h3>
     <div class="trending-tips-list">
