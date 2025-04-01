@@ -78,11 +78,6 @@
     text-decoration: none;     /* No underline */
 }
 
-/* Styles for icons within nav links */
-.nav-icon {
-    margin-right: 8px;         /* Space to the right */
-}
-
 /* Styles for the nav menu list */
 .nav-menu {
     list-style: none;          /* Remove bullets */

@@ -124,13 +124,13 @@
 
 /* Hover state for tip username */
 .tip-username:hover {
-    color: black;  /* Red on hover */
+    color: var(--red-accent);  /* Red on hover */
     text-decoration: underline;  /* Underline on hover */
 }
 
 /* Styles for the user handle */
 .user-handle {
-    color: var(--gray-light);         /* Incorrect: should be #666666 or var(--gray-light) */
+    color: var(white);         /* Incorrect: should be #666666 or var(--gray-light) */
     font-size: 14px;           /* Base font size */
     margin-left: 5px;          /* Space to the left */
 }
@@ -265,6 +265,13 @@
     flex-grow: 1;              /* Full growth */
 }
 
+/* Styles for tip details container */
+.tip-details {
+    flex: 1;                   /* Take remaining space */
+    display: flex;             /* Flex layout */
+    flex-direction: column;    /* Stack vertically */
+    gap: 5px;                  /* Space between elements */
+}
 
 /* Bold text within tip details */
 .tip-details strong {
@@ -274,6 +281,13 @@
     text-decoration: none;     /* No underline */
     display: block;            /* Block display */
     margin-bottom: 4px;        /* Space below */
+}
+
+/* Styles for tip items in lists */
+.tip-item {
+    display: flex;             /* Flex layout */
+    align-items: flex-start;   /* Align at top */
+    gap: 10px;                 /* Space between elements */
 }
 
 /* Avatar within tip items */
@@ -320,3 +334,31 @@
     border-bottom: none;       /* No bottom border */
 }
 
+/* Styles for tip list container */
+.tip-list {
+    display: flex;             /* Flex layout */
+    flex-direction: column;    /* Stack vertically */
+    gap: 15px;                 /* Space between items */
+    margin-top: 10px;          /* Space above */
+}
+
+/* Styles for tip text */
+.tip-text {
+    margin: 0;                 /* No margins */
+    font-size: 14px;           /* Base font size */
+    color: #333;               /* Dark gray text */
+}
+
+/* Styles for tip likes container */
+.tip-likes {
+    display: flex;             /* Flex layout */
+    align-items: center;       /* Center vertically */
+    gap: 5px;                  /* Space between elements */
+    font-size: 14px;           /* Base font size */
+    color: #555;               /* Gray text */
+}
+
+/* Icon within tip likes */
+.tip-likes i {
+    color: #ff4d4f;            /* Red heart */
+}

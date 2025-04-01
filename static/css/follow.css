@@ -1,4 +1,24 @@
 /* follow.css */
+
+/* Styles for the follow card container */
+.follow-card {
+    background-color: #ffffff;  /* White background for contrast against dark site theme */
+    color: #001f3f;            /* Dark blue text for readability */
+    border: 1px solid #e1e8ed; /* Light gray border for definition */
+    max-width: 660px;          /* Limit width to align with content areas */
+    border-radius: 12px;       /* Rounded corners matching site-wide style */
+    padding: 12px;             /* Consistent internal padding */
+    margin: 0 10px;            /* Horizontal margin for spacing */
+    display: flex;             /* Flex layout for vertical stacking */
+    flex-direction: column;    /* Stack children vertically */
+    width: calc(100% - 20px);  /* Full width minus margins */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);  /* Subtle shadow for elevation */
+    position: relative;        /* Relative positioning for potential overlays */
+    z-index: 1000;             /* High z-index to sit above most content */
+    overflow: hidden;          /* Prevent content overflow */
+    box-sizing: border-box;    /* Include padding/borders in dimensions */
+}
+
 /* Styles for the "Show Less" link within follow card */
 .follow-card .show-less {
     margin-top: 12px;          /* Space above the link */

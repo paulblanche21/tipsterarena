@@ -1,44 +1,61 @@
 /* bookmarks.css */
 
-/* Styles for the empty bookmarks placeholder */
-.empty-bookmarks {
-  text-align: center;  /* Center-align text when no bookmarks are present */
-  padding: 20px;       /* Add padding for spacing */
-  color: #666;         /* Medium gray text for a subtle appearance */
+/* Styles for the fixed header on the Bookmarks page */
+.bookmarks-header-top {
+  align-items: center;       /* Center vertically */
+  backdrop-filter: blur(5px);  /* Blur effect */
+  -webkit-backdrop-filter: blur(5px);  /* Safari support */
+  background-color: #ffffff; /* White background */
+  border-bottom: 1px solid rgba(225, 232, 237, 0.5);  /* Semi-transparent border */
+  display: flex;             /* Flex layout */
+  padding: 20px 20px;         /* Internal padding */
+  position: fixed;           /* Fixed to top */
+  top: 0;                    /* Align to top */
+  max-width: 700px;          /* Matches .content max-width */
+  width: 660px;              /* Fixed width (initially matches profile-header-top) */
+  margin-left: 10px;           
+  box-sizing: border-box;    /* Include padding/borders */
+  z-index: 1000;             /* High z-index */
 }
 
-/* Styles for the page header on the bookmarks page */
-.page-header {
-  padding: 10px 15px;      /* Vertical and horizontal padding for spacing */
-  border-bottom: 1px solid #e6ecf0;  /* Light gray border for separation */
-  margin-bottom: 10px;     /* Space below the header */
+/* Wrapper for tip feed to clear fixed header */
+.bookmarks-feed-wrapper {
+  margin-top: 67px;          /* Matches profile-content padding-top to clear header */
 }
 
-/* Default state for the bookmark action button */
-.tip-action-bookmark {
-  color: #808080;      /* Grey color for unbookmarked state */
-  background: none;    /* Remove any background to keep it minimal */
-  border: none;        /* Remove border for a clean look */
-  outline: none;       /* Remove focus outline for consistency */
-  padding: 0;          /* Remove padding to avoid unwanted spacing */
-  cursor: pointer;     /* Indicate clickability with pointer cursor */
-}
-
-/* Bookmarked state for the bookmark action button (overrides earlier definition) */
+/* Existing styles from your previous bookmarks.css */
 .tip-action-bookmark.bookmarked {
-  color: #FFD700;      /* Gold/yellow to highlight bookmarked state */
- 
+  color: #FFD700;            /* Yellow for bookmarked state */
 }
 
-/* Remove focus and hover effects that might add unwanted styling */
+.empty-bookmarks {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.page-header {
+  padding: 10px 15px;
+  border-bottom: 1px solid #e6ecf0;
+  margin-bottom: 10px;
+}
+
+.tip-action-bookmark {
+  color: #808080;            /* Grey for unbookmarked state */
+  background: none;
+  border: none;
+  outline: none;
+  padding: 0;
+  cursor: pointer;
+}
+
 .tip-action-bookmark:focus,
 .tip-action-bookmark:hover {
-  outline: none;       /* No outline on focus for a clean appearance */
-  background: none;    /* No background change on hover */
-  border-radius: 0;    /* Prevent rounding that could mimic a circle */
+  outline: none;
+  background: none;
+  border-radius: 0;
 }
 
-/* Styles for the bookmark icon within the action button */
 .tip-action-bookmark i {
-  font-size: 16px;     /* Set icon size for consistency */
+  font-size: 16px;
 }

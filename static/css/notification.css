@@ -14,19 +14,6 @@
     align-items: flex-start;                /* Align items at the top */
 }
 
-/* Styles for the notification feed container */
-.notification-feed {
-    background-color: #ffffff;              /* White background */
-    border: 1px solid #e1e8ed;              /* Light gray border */
-    border-radius: 12px;                    /* Rounded corners */
-    padding: 12px;                          /* Internal padding */
-    margin-bottom: 10px;                    /* Space below */
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);  /* Subtle shadow */
-    color: #001f3f;                         /* Dark blue text */
-    max-width: 700px;                       /* Matches content width in base.css */
-    margin: 0 0 0 0;                        /* Explicit margins (redundant shorthand) */
-}
-
 /* Remove bottom border and margin for the last notification */
 .notification:last-child {
     border-bottom: none;                    /* No bottom border */

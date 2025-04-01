@@ -14,7 +14,6 @@ i {
     color: #666666;            /* Gray text from base.css */
     font-size: 12px;           /* Smaller font for subtlety */
 }
-
 /* Styles for the emoji picker modal */
 .emoji-picker {
     position: absolute;        /* Absolute positioning over content */

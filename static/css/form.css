@@ -15,15 +15,8 @@ form#editProfileForm {
 .form-group textarea {
     width: 100%;           /* Full width to fill container */
     padding: 8px;          /* Internal padding for comfort */
-    border: 1px solid #ccc;  /* Light gray border for definition */
-    border-radius: 4px;    /* Slightly rounded corners */
-}
-
-/* Focus state for inputs within form groups */
-.form-group input:focus {
-    outline: none;          /* Remove default outline */
-    border-color: #007bff;  /* Blue border on focus */
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);  /* Subtle blue glow */
+    border: 1px solid var(--border-color);  /* #e1e8ed */
+    border-radius: var(--border-radius);     /* Slightly rounded corners */
 }
 
 /* Styles for labels within form groups */
