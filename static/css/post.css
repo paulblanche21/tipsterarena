@@ -1,661 +1,713 @@
-/* Move Char Count and Note to Styles.css (Remove Inline Styles) */
-/* static/css/styles.css */
+/* post.css */
 
-/* Post Styling */
+/* Basic styling for bold and italic text */
 b {
-    font-weight: bold;
+    font-weight: bold;         /* Bold text */
 }
+
 i {
-    font-style: italic;
+    font-style: italic;        /* Italic text */
 }
 
+/* Styles for character count display */
 .char-count {
-    color: #666666;
-    font-size: 12px;
+    color: #666666;            /* Gray text from base.css */
+    font-size: 12px;           /* Smaller font for subtlety */
 }
 
-/* Emoji Picker Styles (X-like Design) */
+/* Styles for the emoji picker modal */
 .emoji-picker {
-    position: absolute;
-    z-index: 1005;
-    background: #fff; /* Solid white background */
-    border: 1px solid #e1e8ed;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    padding: 10px;
-    width: 320px;
-    max-height: 400px;
-    overflow: hidden;
-    font-family: "Noto Color Emoji", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    position: absolute;        /* Absolute positioning over content */
+    z-index: 1005;             /* High z-index above other modals */
+    background: #fff;          /* White background */
+    border: 1px solid #e1e8ed; /* Light gray border */
+    border-radius: 12px;       /* Rounded corners */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);  /* Stronger shadow */
+    padding: 10px;             /* Internal padding */
+    width: 320px;              /* Fixed width */
+    max-height: 400px;         /* Limit height */
+    overflow: hidden;          /* Prevent overflow */
+    font-family: "Noto Color Emoji", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;  /* Emoji-compatible font stack */
 }
 
+/* Content container within emoji picker */
 .emoji-picker-content {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+    position: relative;        /* Relative positioning */
+    display: flex;             /* Flex layout */
+    flex-direction: column;    /* Stack vertically */
+    height: 100%;              /* Full height */
 }
 
+/* Close button within emoji picker */
 .emoji-picker-close {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    cursor: pointer;
-    font-size: 20px;
-    color: #657786;
-    display: none; /* X doesn't show a close button in the picker */
+    position: absolute;        /* Positioned in top-right */
+    top: 5px;                  /* Offset from top */
+    right: 5px;                /* Offset from right */
+    cursor: pointer;           /* Indicate clickability */
+    font-size: 20px;           /* Larger font */
+    color: #657786;            /* Gray color */
+    display: none;             /* Hidden per X-like design */
 }
 
+/* Search input within emoji picker */
 .emoji-search {
-    width: 100%;
-    padding: 8px 12px;
-    margin-bottom: 8px;
-    border: 1px solid #e1e8ed;
-    border-radius: 20px;
-    font-size: 14px;
-    background: #f5f8fa;
-    outline: none;
-    box-sizing: border-box;
+    width: 100%;               /* Full width */
+    padding: 8px 12px;         /* Internal padding */
+    margin-bottom: 8px;        /* Space below */
+    border: 1px solid #e1e8ed; /* Light gray border */
+    border-radius: 20px;       /* Oval shape */
+    font-size: 14px;           /* Base font size */
+    background: #f5f8fa;       /* Light gray background */
+    outline: none;             /* Remove default outline */
+    box-sizing: border-box;    /* Include borders */
 }
 
+/* Tab container within emoji picker */
 .emoji-tabs {
-    display: flex;
-    border-bottom: 1px solid #e1e8ed;
-    margin-bottom: 8px;
-    overflow-x: auto;
-    white-space: nowrap;
-    padding: 0 4px;
+    display: flex;             /* Flex layout */
+    border-bottom: 1px solid #e1e8ed;  /* Light gray border */
+    margin-bottom: 8px;        /* Space below */
+    overflow-x: auto;          /* Scrollable if needed */
+    white-space: nowrap;       /* Prevent wrapping */
+    padding: 0 4px;            /* Horizontal padding */
 }
 
+/* Individual tab within emoji picker */
 .emoji-tab {
-    background: none;
-    border: none;
-    padding: 8px 12px;
-    font-size: 18px;
-    cursor: pointer;
-    color: #657786;
-    transition: color 0.2s;
+    background: none;          /* No background */
+    border: none;              /* No border */
+    padding: 8px 12px;         /* Internal padding */
+    font-size: 18px;           /* Larger font */
+    cursor: pointer;           /* Indicate clickability */
+    color: #657786;            /* Gray color */
+    transition: color 0.2s;    /* Smooth color transition */
 }
 
+/* Active state for emoji tab */
 .emoji-tab.active {
-    color: #1da1f2;
-    border-bottom: 2px solid #1da1f2;
+    color: #1da1f2;            /* Twitter blue */
+    border-bottom: 2px solid #1da1f2;  /* Blue underline */
 }
 
+/* Hover state for emoji tab */
 .emoji-tab:hover {
-    color: #1da1f2;
+    color: #1da1f2;            /* Twitter blue */
 }
 
+/* Category title within emoji picker */
 .emoji-category-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: #657786;
-    padding: 4px 8px;
-    text-transform: capitalize;
+    font-size: 14px;           /* Base font size */
+    font-weight: 600;          /* Bold text */
+    color: #657786;            /* Gray color */
+    padding: 4px 8px;          /* Internal padding */
+    text-transform: capitalize;  /* Capitalize text */
 }
 
+/* Grid for emoji items */
 .emoji-grid {
-    flex: 1;
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    gap: 2px;
-    overflow-y: auto; /* Enable scrolling */
-    padding: 2px 8px;
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on mobile */
+    flex: 1;                   /* Grow to fill space */
+    display: grid;             /* Grid layout */
+    grid-template-columns: repeat(8, 1fr);  /* 8 equal columns */
+    gap: 2px;                  /* Small gap between items */
+    overflow-y: auto;          /* Scrollable vertically */
+    padding: 2px 8px;          /* Internal padding */
+    -webkit-overflow-scrolling: touch;  /* Smooth scrolling on mobile */
 }
 
+/* Individual emoji item */
 .emoji-item {
-    font-size: 20px;
-    text-align: center;
-    cursor: pointer;
-    padding: 6px;
-    border-radius: 4px;
-    transition: background 0.1s;
-    line-height: 1; /* Ensure proper alignment */
+    font-size: 20px;           /* Larger font for emojis */
+    text-align: center;        /* Center emoji */
+    cursor: pointer;           /* Indicate clickability */
+    padding: 6px;              /* Internal padding */
+    border-radius: 4px;        /* Slightly rounded corners */
+    transition: background 0.1s;  /* Smooth background transition */
+    line-height: 1;            /* Ensure proper alignment */
 }
 
+/* Hover state for emoji item */
 .emoji-item:hover {
-    background: #f5f8fa;
+    background: #f5f8fa;       /* Light gray background */
 }
 
-
-
-/* GIF Modal Styles (Updated for Consistency) */
+/* Styles for the GIF modal overlay */
 .gif-modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 31, 63, 0.5); /* Matches --primary-bg with transparency */
-    z-index: 1005;
+    display: none;             /* Hidden by default */
+    position: fixed;           /* Fixed over viewport */
+    top: 0;                    /* Full height from top */
+    left: 0;                   /* Full width from left */
+    width: 100%;               /* Full width */
+    height: 100%;              /* Full height */
+    background: rgba(0, 31, 63, 0.5);  /* Dark blue with transparency */
+    z-index: 1005;             /* High z-index */
 }
 
+/* Content within GIF modal */
 .gif-modal-content {
-    background: var(--secondary-bg); /* #ffffff */
-    margin: 10% auto;
-    padding: var(--padding-small); /* 12px */
-    width: 400px;
-    max-height: 80vh;
-    overflow-y: auto;
-    border-radius: var(--border-radius); /* 12px */
-    position: relative;
-    box-shadow: var(--shadow-light); /* 0 1px 3px rgba(0, 0, 0, 0.1) */
+    background: var(--secondary-bg);  /* White background */
+    margin: 10% auto;          /* Center vertically and horizontally */
+    padding: var(--padding-small);  /* Consistent padding */
+    width: 400px;              /* Fixed width */
+    max-height: 80vh;          /* Limit height */
+    overflow-y: auto;          /* Scrollable if needed */
+    border-radius: var(--border-radius);  /* Rounded corners */
+    position: relative;        /* Relative positioning */
+    box-shadow: var(--shadow-light);  /* Subtle shadow */
 }
 
-
+/* Close button within GIF modal */
 .gif-modal-close {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 24px;
-    color: var(--gray-light); /* #666666 */
-    cursor: pointer;
+    position: absolute;        /* Positioned in top-right */
+    top: 10px;                 /* Offset from top */
+    right: 15px;               /* Offset from right */
+    font-size: 24px;           /* Larger font */
+    color: var(--gray-light);  /* Gray color */
+    cursor: pointer;           /* Indicate clickability */
 }
 
+/* Hover state for GIF modal close button */
 .gif-modal-close:hover {
-    color: var(--red-accent); /* #ff4136 */
+    color: var(--red-accent);  /* Red on hover */
 }
 
-
+/* Search input within GIF modal */
 .gif-search-input {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: var(--margin-small); /* 10px */
-    border: 1px solid var(--border-color); /* #e1e8ed */
-    border-radius: 4px;
-    font-size: var(--font-size-base); /* 14px */
-    color: var(--primary-bg); /* #001f3f */
+    width: 100%;               /* Full width */
+    padding: 8px;              /* Internal padding */
+    margin-bottom: var(--margin-small);  /* Space below */
+    border: 1px solid var(--border-color);  /* Light gray border */
+    border-radius: 4px;        /* Slightly rounded corners */
+    font-size: var(--font-size-base);  /* Base font size */
+    color: var(--primary-bg);  /* Dark blue text */
 }
 
+/* Focus state for GIF search input */
 .gif-search-input:focus {
-    outline: none;
-    border-color: var(--red-accent); /* #ff4136 */
+    outline: none;             /* Remove default outline */
+    border-color: var(--red-accent);  /* Red border */
 }
 
+/* Container for GIF search results */
 .gif-results {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+    display: flex;             /* Flex layout */
+    flex-wrap: wrap;           /* Allow wrapping */
+    gap: 10px;                 /* Space between items */
 }
 
+/* Individual GIF result */
 .gif-result {
-    width: 100px;
-    height: 100px;
-    object-fit: cover;
-    cursor: pointer;
-    border-radius: 8px;
-    transition: opacity 0.2s;
+    width: 100px;              /* Fixed width */
+    height: 100px;             /* Fixed height */
+    object-fit: cover;         /* Crop to fit */
+    cursor: pointer;           /* Indicate clickability */
+    border-radius: 8px;        /* Rounded corners */
+    transition: opacity 0.2s;  /* Smooth opacity transition */
 }
 
+/* Hover state for GIF result */
 .gif-result:hover {
-    opacity: 0.8;
+    opacity: 0.8;              /* Slightly transparent */
 }
 
-
+/* Styles for images within tips */
 .tip-image {
-    border-radius: 8px;
-    max-height: 300px;
-    object-fit: cover;
-    margin-top: 10px;
+    border-radius: 8px;        /* Rounded corners */
+    max-height: 300px;         /* Limit height */
+    object-fit: cover;         /* Crop to fit */
+    margin-top: 10px;          /* Space above */
 }
 
+/* Container for post actions (icons) */
 .post-actions {
-    margin-top: 8px;
-    display: flex;
-    gap: 8px; /* Slightly larger gap for better spacing */
-    align-items: center; /* Vertically center icons */
-    position:relative
+    margin-top: 8px;           /* Space above */
+    display: flex;             /* Flex layout */
+    gap: 8px;                  /* Space between icons */
+    align-items: center;       /* Center vertically */
+    position: relative;        /* Relative positioning */
 }
 
-/* Post Action Button Styling */
+/* Base styles for post action buttons */
 .post-action-btn {
-    background-color: transparent; /* Remove background for a cleaner look */
-    border: none; /* Remove border for a flat design */
-    padding: 6px; /* Adjusted padding for icon size */
-    font-size: 16px; /* Ensure icons are visible */
-    color: #999999; /* Light grey color (adjust to your preference or use a variable like var(--gray-light)) */
-    cursor: pointer;
-    transition: color 0.2s, background-color 0.2s, transform 0.1s; /* Include background-color transition for spotlight */
-    border-radius: 50%; /* Circular buttons like X */
-    width: 32px; /* Fixed width for consistency */
-    height: 32px; /* Fixed height for consistency */
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background-color: transparent;  /* No background */
+    border: none;              /* No border */
+    padding: 6px;              /* Padding for icon */
+    font-size: 16px;           /* Icon size */
+    color: #999999;            /* Light gray color */
+    cursor: pointer;           /* Indicate clickability */
+    transition: color 0.2s, background-color 0.2s, transform 0.1s;  /* Smooth transitions */
+    border-radius: 50%;        /* Circular shape */
+    width: 32px;               /* Fixed width */
+    height: 32px;              /* Fixed height */
+    display: flex;             /* Flex layout */
+    align-items: center;       /* Center vertically */
+    justify-content: center;   /* Center horizontally */
+    outline: 2px solid;         /*focus*/
 }
 
-/* Unique hover spotlight colors for each icon */
+/* Hover states for specific post action buttons */
 .post-action-btn.image:hover {
-    color: #4a90e2; /* Blue for image */
-    background-color: rgba(74, 144, 226, 0.1); /* Light blue spotlight */
-    transform: scale(1.1); /* Slight scale-up on hover */
+    color: #4a90e2;            /* Blue for image */
+    background-color: rgba(74, 144, 226, 0.1);  /* Light blue spotlight */
+    transform: scale(1.1);     /* Slight scale-up */
 }
 
 .post-action-btn.gif:hover {
-    color: #50e3c2; /* Teal for GIF */
-    background-color: rgba(80, 227, 194, 0.1); /* Light teal spotlight */
-    transform: scale(1.1);
+    color: #50e3c2;            /* Teal for GIF */
+    background-color: rgba(80, 227, 194, 0.1);  /* Light teal spotlight */
+    transform: scale(1.1);     /* Slight scale-up */
 }
 
 .post-action-btn.poll:hover {
-    color: #f5a623; /* Orange for poll */
-    background-color: rgba(245, 166, 35, 0.1); /* Light orange spotlight */
-    transform: scale(1.1);
+    color: #f5a623;            /* Orange for poll */
+    background-color: rgba(245, 166, 35, 0.1);  /* Light orange spotlight */
+    transform: scale(1.1);     /* Slight scale-up */
 }
 
 .post-action-btn.emoji:hover {
-    color: #9b59b6; /* Purple for emoji */
-    background-color: rgba(155, 89, 182, 0.1); /* Light purple spotlight */
-    transform: scale(1.1);
+    color: #9b59b6;            /* Purple for emoji */
+    background-color: rgba(155, 89, 182, 0.1);  /* Light purple spotlight */
+    transform: scale(1.1);     /* Slight scale-up */
 }
 
 .post-action-btn.location:hover {
-    color: #2ecc71; /* Green for location */
-    background-color: rgba(46, 204, 113, 0.1); /* Light green spotlight */
-    transform: scale(1.1);
+    color: #2ecc71;            /* Green for location */
+    background-color: rgba(46, 204, 113, 0.1);  /* Light green spotlight */
+    transform: scale(1.1);     /* Slight scale-up */
 }
 
 .post-action-btn.schedule:hover {
-    color: #e74c3c; /* Red for scheduled post */
-    background-color: rgba(231, 76, 60, 0.1); /* Light red spotlight */
-    transform: scale(1.1);
+    color: #e74c3c;            /* Red for schedule */
+    background-color: rgba(231, 76, 60, 0.1);  /* Light red spotlight */
+    transform: scale(1.1);     /* Slight scale-up */
 }
 
 .post-action-btn.bold:hover {
-    color: #3498db; /* Blue for bold */
-    background-color: rgba(52, 152, 219, 0.1); /* Light blue spotlight */
-    transform: scale(1.1);
+    color: #3498db;            /* Blue for bold */
+    background-color: rgba(52, 152, 219, 0.1);  /* Light blue spotlight */
+    transform: scale(1.1);     /* Slight scale-up */
 }
 
 .post-action-btn.italic:hover {
-    color: #8e44ad; /* Purple for italic */
-    background-color: rgba(142, 68, 173, 0.1); /* Light purple spotlight */
-    transform: scale(1.1);
+    color: #8e44ad;            /* Purple for italic */
+    background-color: rgba(142, 68, 173, 0.1);  /* Light purple spotlight */
+    transform: scale(1.1);     /* Slight scale-up */
 }
 
+/* Icon within post action buttons */
 .post-action-btn i {
-    margin: 0; /* Remove default margin on icons */
+    margin: 0;                 /* Remove default margin */
 }
 
+/* Styles for the avatar in post areas */
 .post-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    margin-right: 8px;
+    width: 48px;               /* Fixed width */
+    height: 48px;              /* Fixed height */
+    border-radius: 50%;        /* Circular shape */
+    margin-right: 8px;         /* Space to the right */
 }
 
+/* Styles for the post composition box */
 .post-box {
-    width: calc(100% - 20px);             /* 650px - 20px = 630px */
-    margin: 0 10px 10px 10px;
-    background-color: #ffffff;
-    border: 1px solid #e1e8ed;
-    border-radius: 12px;
-    padding: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    color: #001f3f;
-    box-sizing: border-box;
+    width: calc(100% - 20px);  /* Full width minus margins */
+    margin: 0 10px 10px 10px;  /* Margins */
+    background-color: #ffffff; /* White background */
+    border: 1px solid #e1e8ed; /* Light gray border */
+    border-radius: 12px;       /* Rounded corners */
+    padding: 12px;             /* Internal padding */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);  /* Subtle shadow */
+    color: #001f3f;            /* Dark blue text */
+    box-sizing: border-box;    /* Include padding/borders */
 }
 
+/* Styles for the post input textarea */
 .post-input {
-    width: 100%;
-    min-height: 150px;
-    padding: 8px 12px;
-    border: 1px solid #e1e8ed;
-    border-radius: 8px;
-    font-size: 14px;
-    color: #001f3f;
-    resize: vertical;
-    background-color: #f5f8fa;
-    margin-bottom: 8px;
+    width: 100%;               /* Full width */
+    min-height: 150px;         /* Minimum height */
+    padding: 8px 12px;         /* Internal padding */
+    border: 1px solid #e1e8ed; /* Light gray border */
+    border-radius: 8px;        /* Rounded corners */
+    font-size: 14px;           /* Base font size */
+    color: #001f3f;            /* Dark blue text */
+    resize: vertical;          /* Vertical resize only */
+    background-color: #f5f8fa; /* Light gray background */
+    margin-bottom: 8px;        /* Space below */
 }
 
+/* Focus state for post input */
 .post-input:focus {
-    outline: none;
-    border-color: #ff4136;
+    outline: none;             /* Remove default outline */
+    border-color: #ff4136;     /* Red border */
 }
 
+/* Styles for the post modal overlay */
 .post-modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1003;
-    
+    display: none;             /* Hidden by default */
+    position: fixed;           /* Fixed over viewport */
+    top: 0;                    /* Full height from top */
+    left: 0;                   /* Full width from left */
+    width: 100%;               /* Full width */
+    height: 100%;              /* Full height */
+    background-color: rgba(0, 0, 0, 0.5);  /* Semi-transparent overlay */
+    z-index: 1003;             /* Above most content */
 }
 
+/* Close button within post modal */
 .post-modal-close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 24px;
-    color: #666666;
-    cursor: pointer;
-    border: none;
-    background: none;
+    position: absolute;        /* Positioned in top-right */
+    top: 10px;                 /* Offset from top */
+    right: 10px;               /* Offset from right */
+    font-size: 24px;           /* Larger font */
+    color: #666666;            /* Gray color */
+    cursor: pointer;           /* Indicate clickability */
+    border: none;              /* No border */
+    background: none;          /* No background */
 }
 
+/* Hover state for post modal close button */
 .post-modal-close:hover {
-    color: #ff4136;
+    color: #ff4136;            /* Red on hover */
 }
 
+/* Content within post modal */
 .post-modal-content {
-    background-color: #ffffff;
-    border: 1px solid #e1e8ed;
-    border-radius: 12px;
-    padding: 12px;
-    width: 630px;
-    max-height: 80vh;
-    overflow-y: auto;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    position: relative;
-    color: #001f3f;
-    margin: 0 auto;
+    background-color: #ffffff; /* White background */
+    border: 1px solid #e1e8ed; /* Light gray border */
+    border-radius: 12px;       /* Rounded corners */
+    padding: 12px;             /* Internal padding */
+    width: 630px;              /* Fixed width */
+    max-height: 80vh;          /* Limit height */
+    overflow-y: auto;          /* Scrollable if needed */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  /* Shadow */
+    position: relative;        /* Relative positioning */
+    color: #001f3f;            /* Dark blue text */
+    margin: 0 auto;            /* Center horizontally */
 }
 
-/* Post a Reply Box with Avatar */
+/* Styles for the post reply box */
 .post-reply-box {
-    background-color: var(--secondary-bg);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    padding: var(--padding-small);
-    margin: 10px 0;
-    box-shadow: var(--shadow-light);
-    color: var(--primary-bg);
-    display: flex;
-    align-items: flex-start;
+    background-color: var(--secondary-bg);  /* White background */
+    border: 1px solid var(--border-color);  /* Light gray border */
+    border-radius: var(--border-radius);    /* Rounded corners */
+    padding: var(--padding-small);          /* Consistent padding */
+    margin: 10px 0;                         /* Vertical spacing */
+    box-shadow: var(--shadow-light);        /* Subtle shadow */
+    color: var(--primary-bg);               /* Dark blue text */
+    display: flex;                          /* Flex layout */
+    align-items: flex-start;                /* Align items at the top */
 }
 
+/* Footer within post box */
 .post-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 10px;
-    flex-wrap: nowrap; /* Prevent wrapping */
+    display: flex;             /* Flex layout */
+    justify-content: space-between;  /* Space out children */
+    align-items: center;       /* Center vertically */
+    margin-top: 10px;          /* Space above */
+    flex-wrap: nowrap;         /* Prevent wrapping */
 }
 
+/* Meta section within post footer */
 .post-meta {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-shrink: 0; /* Prevent shrinking to ensure it stays on the same line */
+    display: flex;             /* Flex layout */
+    align-items: center;       /* Center vertically */
+    gap: 10px;                 /* Space between items */
+    flex-shrink: 0;            /* Prevent shrinking */
 }
 
+/* Disabled state for post submit button */
 .post-submit:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
+    background-color: #ccc;    /* Gray background */
+    cursor: not-allowed;       /* Indicate non-clickable */
 }
 
+/* Avatar within post reply box */
 .post-reply-box .post-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    margin-right: 12px;
-    flex-shrink: 0;
+    width: 48px;               /* Fixed width */
+    height: 48px;              /* Fixed height */
+    border-radius: 50%;        /* Circular shape */
+    margin-right: 12px;        /* Space to the right */
+    flex-shrink: 0;            /* Prevent shrinking */
 }
 
+/* Styles for the reply input textarea */
 .post-reply-input {
-    width: 100%;
-    min-height: 80px;
-    padding: 8px 12px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-size: var(--font-size-base);
-    color: var(--primary-bg);
-    resize: vertical;
-    background-color: #f5f8fa;
-    margin-bottom: 8px;
+    width: 100%;               /* Full width */
+    min-height: 80px;          /* Minimum height */
+    padding: 8px 12px;         /* Internal padding */
+    border: 1px solid var(--border-color);  /* Light gray border */
+    border-radius: 8px;        /* Rounded corners */
+    font-size: var(--font-size-base);  /* Base font size */
+    color: var(--primary-bg);  /* Dark blue text */
+    resize: vertical;          /* Vertical resize only */
+    background-color: #f5f8fa; /* Light gray background */
+    margin-bottom: 8px;        /* Space below */
 }
 
+/* Content container within post reply box */
 .post-reply-box .post-reply-content {
-    flex: 1;
+    flex: 1;                   /* Take remaining space */
 }
 
+/* Username container within post reply box */
 .post-reply-box .post-username-container {
-    margin-bottom: 5px;
+    margin-bottom: 5px;        /* Space below */
 }
 
+/* Username within post reply box */
 .post-reply-box .post-username {
-    font-size: var(--font-size-base);
-    color: var(--black);
-    font-weight: 600;
+    font-size: var(--font-size-base);  /* Base font size */
+    color: var(--black);       /* Black text */
+    font-weight: 600;          /* Bold text */
 }
 
+/* Focus state for reply input */
 .post-reply-input:focus {
-    outline: none;
-    border-color: var(--red-accent);
+    outline: none;             /* Remove default outline */
+    border-color: var(--red-accent);  /* Red border */
 }
 
+/* Submit button for post reply */
 .post-reply-submit {
-    background-color: var(--twitter-blue);
-    color: var(--secondary-bg);
-    border: none;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-weight: bold;
-    font-size: var(--font-size-base);
-    cursor: pointer;
-    margin-top: 8px;
-    display: block;
-    width: fit-content;
+    background-color: var(--twitter-blue);  /* Twitter blue background */
+    color: var(--secondary-bg);  /* White text */
+    border: none;              /* No border */
+    padding: 8px 16px;         /* Padding */
+    border-radius: 20px;       /* Oval shape */
+    font-weight: bold;         /* Bold text */
+    font-size: var(--font-size-base);  /* Base font size */
+    cursor: pointer;           /* Indicate clickability */
+    margin-top: 8px;           /* Space above */
+    display: block;            /* Block display */
+    width: fit-content;        /* Fit content width */
 }
 
+/* Hover state for reply submit button */
 .post-reply-submit:hover {
-    background-color: #0d8ddb;
+    background-color: #0d8ddb; /* Darker blue */
 }
 
-/* Post Sport Dropdown */
+/* Styles for the post sport dropdown */
 .post-sport {
-    background-color: var(--primary-bg); /* #001f3f - Dark navy blue background */
-    color: #ffffff; /* White text for contrast */
-    border: 1px solid var(--primary-bg); /* Match the border to the background */
-    border-radius: 9999px; /* Pill shape, like X */
-    padding: 6px 12px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    position: relative;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff' width='18px' height='18px'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E"); /* White caret icon */
-    background-repeat: no-repeat;
-    background-position: right 8px center;
-    background-size: 12px;
-    padding-right: 28px;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
+    background-color: var(--primary-bg);  /* Dark blue background */
+    color: #ffffff;            /* White text */
+    border: 1px solid var(--primary-bg);  /* Matching border */
+    border-radius: 9999px;     /* Pill shape */
+    padding: 6px 12px;         /* Internal padding */
+    font-size: 14px;           /* Base font size */
+    font-weight: 500;          /* Medium weight */
+    cursor: pointer;           /* Indicate clickability */
+    appearance: none;          /* Remove default styling */
+    -webkit-appearance: none;  /* Remove default styling (WebKit) */
+    -moz-appearance: none;     /* Remove default styling (Mozilla) */
+    position: relative;        /* For caret positioning */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff' width='18px' height='18px'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");  /* White caret */
+    background-repeat: no-repeat;  /* No repeat */
+    background-position: right 8px center;  /* Position caret */
+    background-size: 12px;     /* Caret size */
+    padding-right: 28px;       /* Space for caret */
+    transition: background-color 0.2s ease, border-color 0.2s ease;  /* Smooth transitions */
 }
 
+/* Hover state for post sport dropdown */
 .post-sport:hover {
-    background-color: #003087; /* Slightly lighter navy blue on hover */
-    border-color: #003087;
+    background-color: #003087; /* Lighter blue */
+    border-color: #003087;     /* Matching border */
 }
 
+/* Disabled state for post sport dropdown */
 .post-sport:disabled {
-    background-color: var(--gray-light); /* #666666 - Grayed out when disabled */
-    border-color: var(--gray-light);
-    color: #ffffff;
-    cursor: not-allowed;
-    opacity: 0.7;
+    background-color: var(--gray-light);  /* Gray background */
+    border-color: var(--gray-light);  /* Matching border */
+    color: #ffffff;            /* White text */
+    cursor: not-allowed;       /* Indicate non-clickable */
+    opacity: 0.7;              /* Slightly transparent */
 }
 
+/* Styles for the post submit button */
 .post-submit {
-    background-color: #657786;
-    color: #ffffff;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-weight: bold;
-    font-size: 14px;
-    cursor: pointer;
-    margin-top: 8px;
-    display: block;
-    width: fit-content;
+    background-color: #1DA1F2;
+    /* Gray background */
+    color: #ffffff;            /* White text */
+    border: none;              /* No border */
+    padding: 8px 16px;         /* Padding */
+    border-radius: 20px;       /* Oval shape */
+    font-weight: bold;         /* Bold text */
+    font-size: 14px;           /* Base font size */
+    cursor: pointer;           /* Indicate clickability */
+    margin-top: 8px;           /* Space above */
+    display: block;            /* Block display */
+    width: fit-content;        /* Fit content width */
 }
 
+/* Hover state for post submit button */
 .post-submit:hover {
-    background-color: #546a7a;
+    background-color: #546a7a; /* Darker gray */
 }
 
+/* Container for post user info */
 .post-user {
-    display: flex;
-    align-items: center;
-    margin-bottom: 8px;
+    display: flex;             /* Flex layout */
+    align-items: center;       /* Center vertically */
+    margin-bottom: 8px;        /* Space below */
 }
 
+/* Styles for post username */
 .post-username {
-    color: #000000;
-    font-weight: 600;
-    font-size: 16px;
-    text-decoration: none;
+    color: #000000;            /* Black text */
+    font-weight: 600;          /* Bold text */
+    font-size: 16px;           /* Slightly larger font */
+    text-decoration: none;     /* No underline */
 }
 
+/* Hover state for post username */
 .post-username:hover {
-    text-decoration: underline;
+    text-decoration: underline;  /* Underline on hover */
 }
 
+/* Container for post username and audience */
 .post-username-container {
-    display: flex;
-    align-items: center;
-    gap: 5px;
+    display: flex;             /* Flex layout */
+    align-items: center;       /* Center vertically */
+    gap: 5px;                  /* Small gap */
 }
 
+/* Styles for the post audience dropdown */
 .post-audience {
-    background-color: var(--primary-bg); /* #001f3f - Dark navy blue background */
-    color: #ffffff; /* White text for contrast */
-    border: 1px solid var(--primary-bg); /* Match the border to the background */
-    border-radius: 9999px; /* Pill shape, like X */
-    padding: 6px 12px; /* Slightly more padding for a polished look */
-    font-size: 14px; /* Slightly larger font size for readability */
-    font-weight: 500; /* Medium weight for a modern look */
-    cursor: pointer;
-    appearance: none; /* Remove default browser styling */
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    position: relative; /* For the caret */
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff' width='18px' height='18px'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E"); /* White caret icon */
-    background-repeat: no-repeat;
-    background-position: right 8px center;
-    background-size: 12px;
-    padding-right: 28px; /* Space for the caret */
-    transition: background-color 0.2s ease, border-color 0.2s ease;
+    background-color: var(--primary-bg);  /* Dark blue background */
+    color: #ffffff;            /* White text */
+    border: 1px solid var(--primary-bg);  /* Matching border */
+    border-radius: 9999px;     /* Pill shape */
+    padding: 6px 12px;         /* Internal padding */
+    font-size: 14px;           /* Base font size */
+    font-weight: 500;          /* Medium weight */
+    cursor: pointer;           /* Indicate clickability */
+    appearance: none;          /* Remove default styling */
+    -webkit-appearance: none;  /* Remove default styling (WebKit) */
+    -moz-appearance: none;     /* Remove default styling (Mozilla) */
+    position: relative;        /* For caret positioning */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff' width='18px' height='18px'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");  /* White caret */
+    background-repeat: no-repeat;  /* No repeat */
+    background-position: right 8px center;  /* Position caret */
+    background-size: 12px;     /* Caret size */
+    padding-right: 28px;       /* Space for caret */
+    transition: background-color 0.2s ease, border-color 0.2s ease;  /* Smooth transitions */
 }
 
+/* Hover state for post audience dropdown */
 .post-audience:hover {
-    background-color: #003087; /* Slightly lighter navy blue on hover */
-    border-color: #003087;
+    background-color: #003087; /* Lighter blue */
+    border-color: #003087;     /* Matching border */
 }
 
+/* Styles for the success popup overlay */
 .success-popup {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 31, 63, 0.5); /* Derived from --primary-bg with transparency */
-    z-index: 1004; /* Above comment-modal (z-index: 1003) */
+    display: none;             /* Hidden by default */
+    position: fixed;           /* Fixed over viewport */
+    top: 0;                    /* Full height from top */
+    left: 0;                   /* Full width from left */
+    width: 100%;               /* Full width */
+    height: 100%;              /* Full height */
+    background-color: rgba(0, 31, 63, 0.5);  /* Dark blue with transparency */
+    z-index: 1004;             /* Above comment-modal */
 }
 
+/* Content within success popup */
 .success-popup-content {
-    background-color: var(--secondary-bg); /* White background */
-    border: 3px solid var(--red-accent); /* Red accent border */
-    border-radius: var(--border-radius); /* 12px, matches your design */
-    padding: var(--padding-small); /* 12px, consistent with your padding */
-    width: 300px;
-    max-width: 90%;
-    text-align: center;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    box-shadow: var(--shadow-light); /* 0 1px 3px rgba(0, 0, 0, 0.1) */
-    color: var(--primary-bg); /* Dark navy text */
+    background-color: var(--secondary-bg);  /* White background */
+    border: 3px solid var(--red-accent);  /* Red border */
+    border-radius: var(--border-radius);  /* Rounded corners */
+    padding: var(--padding-small);  /* Consistent padding */
+    width: 300px;              /* Fixed width */
+    max-width: 90%;            /* Responsive max width */
+    text-align: center;        /* Center-align content */
+    position: absolute;        /* Centered positioning */
+    top: 50%;                  /* Center vertically */
+    left: 50%;                 /* Center horizontally */
+    transform: translate(-50%, -50%);  /* Center precisely */
+    box-shadow: var(--shadow-light);  /* Subtle shadow */
+    color: var(--primary-bg);  /* Dark blue text */
 }
 
+/* Paragraph within success popup content */
 .success-popup-content p {
-    margin: 0;
-    font-size: var(--font-size-base); /* 14px, matches your base font size */
-    font-weight: 600;
-    color: var(--primary-bg); /* Dark navy */
+    margin: 0;                 /* No margins */
+    font-size: var(--font-size-base);  /* Base font size */
+    font-weight: 600;          /* Bold text */
+    color: var(--primary-bg);  /* Dark blue text */
 }
 
+/* Close button within success popup */
 .success-popup-close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 24px;
-    color: var(--gray-light); /* #666666 for close button */
-    cursor: pointer;
-    border: none;
-    background: none;
+    position: absolute;        /* Positioned in top-right */
+    top: 10px;                 /* Offset from top */
+    right: 10px;               /* Offset from right */
+    font-size: 24px;           /* Larger font */
+    color: var(--gray-light);  /* Gray color */
+    cursor: pointer;           /* Indicate clickability */
+    border: none;              /* No border */
+    background: none;          /* No background */
 }
 
+/* Hover state for success popup close button */
 .success-popup-close:hover {
-    color: var(--red-accent); /* #ff4136 on hover */
+    color: var(--red-accent);  /* Red on hover */
 }
 
-.tip-gif {
-    display: block;
-    margin-top: 10px;
-}
-
-/* Existing Tip Image Styles (for Feed Display) */
+/* Styles for images within tips (duplicate definition) */
 .tip-image {
-    border-radius: 8px;
-    max-height: 300px;
-    object-fit: cover;
-    margin-top: var(--margin-small); /* 10px */
+    border-radius: 8px;        /* Rounded corners */
+    max-height: 300px;         /* Limit height */
+    object-fit: cover;         /* Crop to fit */
+    margin-top: var(--margin-small);  /* Space above */
 }
 
+/* Styles for location text within tips */
 .tip-location {
-    display: block;
-    font-size: 0.9em;
-    color: #666;
-    margin-top: 5px;
+    display: block;            /* Block display */
+    font-size: 0.9em;          /* Slightly smaller font */
+    color: #666;               /* Gray color */
+    margin-top: 5px;           /* Space above */
 }
 
-/* Post Preview Area */
+/* Styles for the post preview area */
 .post-preview {
-    position: relative;
-    margin-top: var(--margin-small); /* 10px, consistent with your spacing */
-    max-width: 100%;
-    background-color: #f5f8fa; /* Matches post-input background */
-    border: 1px solid var(--border-color); /* #e1e8ed */
-    border-radius: var(--border-radius); /* 12px */
-    padding: 5px;
+    position: relative;        /* Relative positioning */
+    margin-top: var(--margin-small);  /* Space above */
+    max-width: 100%;           /* Full width */
+    background-color: #f5f8fa; /* Light gray background */
+    border: 1px solid var(--border-color);  /* Light gray border */
+    border-radius: var(--border-radius);  /* Rounded corners */
+    padding: 5px;              /* Internal padding */
 }
 
+/* Media within post preview */
 .preview-media {
-    max-width: 100%;
-    max-height: 200px;
-    object-fit: contain;
-    border-radius: 8px; /* Slightly smaller than the container for a nested effect */
-    display: block;
+    max-width: 100%;           /* Full width */
+    max-height: 200px;         /* Limit height */
+    object-fit: contain;       /* Fit without cropping */
+    border-radius: 8px;        /* Rounded corners */
+    display: block;            /* Block display */
 }
 
+/* Remove button within post preview */
 .remove-preview {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(0, 0, 0, 0.5);
-    color: var(--secondary-bg); /* #ffffff */
-    border: none;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background 0.2s;
+    position: absolute;        /* Positioned over media */
+    top: 10px;                 /* Offset from top */
+    right: 10px;               /* Offset from right */
+    background: rgba(0, 0, 0, 0.5);  /* Semi-transparent background */
+    color: var(--secondary-bg);  /* White text */
+    border: none;              /* No border */
+    border-radius: 50%;        /* Circular shape */
+    width: 24px;               /* Fixed width */
+    height: 24px;              /* Fixed height */
+    display: flex;             /* Flex layout */
+    align-items: center;       /* Center vertically */
+    justify-content: center;   /* Center horizontally */
+    cursor: pointer;           /* Indicate clickability */
+    font-size: 16px;           /* Font size */
+    transition: background 0.2s;  /* Smooth background transition */
 }
 
+/* Hover state for remove preview button */
 .remove-preview:hover {
-    background: var(--red-accent); /* #ff4136 */
+    background: var(--red-accent);  /* Red background */
 }

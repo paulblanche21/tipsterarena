@@ -1,27 +1,29 @@
+/* modals.css */
 
+/* Styles for the tip display within a modal */
 .modal-tip {
-    display: flex;
-    align-items: flex-start;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 10px;
-    margin-bottom: 10px;
+    display: flex;             /* Flex layout for avatar and content */
+    align-items: flex-start;   /* Align items at the top */
+    border-bottom: 1px solid var(--border-color);  /* Light gray border below tip */
+    padding-bottom: 10px;      /* Space below content */
+    margin-bottom: 10px;       /* Space below the entire tip */
 }
 
+/* Styles for the content area within the modal tip */
 .modal-tip-content {
-    flex: 1;
-    min-width: 0;
+    flex: 1;                   /* Take remaining space in flex layout */
+    min-width: 0;              /* Allow content to shrink without overflow */
 }
 
-/* Reply to Header */
+/* Styles for the "Replying to" header above reply input */
 .reply-to-header {
-    color: var(--gray-light);
-    font-size: var(--font-size-base);
-    margin-bottom: 5px;
+    color: var(--gray-light);  /* Light gray text for subtlety */
+    font-size: var(--font-size-base);  /* Base font size (14px) */
+    margin-bottom: 5px;        /* Space below header */
 }
 
+/* Styles for the username within the "Replying to" header */
 .reply-to-header .reply-to-username {
-    color: var(--twitter-blue);
-    font-weight: 600;
+    color: var(--twitter-blue);  /* Twitter blue for emphasis */
+    font-weight: 600;            /* Bold text for prominence */
 }
-
-

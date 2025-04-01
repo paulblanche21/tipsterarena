@@ -1,9 +1,13 @@
+/* misc.css */
+
+/* Styles for sport-specific icons */
 .sport-icon {
-    margin-right: 5px;
+    margin-right: 5px;  /* Space to the right of the icon for separation from text */
 }
 
+/* Styles for error messages */
 .error {
-    color: red;
-    font-size: 0.9em;
-    margin-top: 10px;
+    color: red;         /* Red text to indicate errors */
+    font-size: 0.9em;   /* Slightly smaller font size for subtlety */
+    margin-top: 10px;   /* Space above the error message */
 }

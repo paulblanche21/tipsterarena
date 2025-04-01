@@ -1,254 +1,284 @@
-/* Base styles */
+/* profile.css */
+
+/* Styles for the profile actions container (edit/follow buttons) */
 .profile-actions {
-    position: absolute;
-    right: 15px;
-    top: 15px;
-    z-index: 2;
-    display: flex;
-    align-items: flex-start;
+    position: absolute;        /* Positioned over banner */
+    right: 15px;               /* Offset from right */
+    top: 15px;                 /* Offset from top */
+    z-index: 2;                /* Above banner */
+    display: flex;             /* Flex layout for buttons */
+    align-items: flex-start;   /* Align items at the top */
 }
 
+/* Base styles for edit and follow buttons within profile actions */
 .profile-actions .profile-edit-btn,
 .profile-actions .follow-btn {
-    background-color: inherit; /* Inherit from specific classes below */
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: bold;
-    padding: 8px 16px;
-    text-decoration: none;
-    color: var(--secondary-bg); /* #ffffff */
+    background-color: inherit; /* Inherit from specific classes */
+    border: none;              /* No border */
+    border-radius: 20px;       /* Oval shape */
+    cursor: pointer;           /* Indicate clickability */
+    font-size: 14px;           /* Base font size */
+    font-weight: bold;         /* Bold text */
+    padding: 8px 16px;         /* Internal padding */
+    text-decoration: none;     /* No underline */
+    color: var(--secondary-bg);  /* White text */
 }
 
+/* Specific styles for the follow button */
 .profile-actions .follow-btn {
-    background-color: #000000; /* Black for follow button */
+    background-color: #000000; /* Black background */
 }
 
+/* Followed state for the follow button */
 .profile-actions .follow-btn.followed {
-    background-color: #666666; /* Dimmed when following */
-    cursor: not-allowed;
+    background-color: #666666; /* Gray when followed */
+    cursor: not-allowed;       /* Indicate non-clickable */
 }
 
+/* Hover state for the follow button */
 .profile-actions .follow-btn:hover {
     background-color: #333333; /* Darker gray on hover */
 }
 
+/* Specific styles for the edit profile button */
 .profile-actions .profile-edit-btn {
-    background-color: var(--red-accent); /* Red for edit button */
+    background-color: var(--red-accent);  /* Red background */
 }
 
+/* Hover state for the edit profile button */
 .profile-actions .profile-edit-btn:hover {
-    background-color: var(--shadow-hover);
-    border-color: #ff4136;
-    color: #ff4136;
+    background-color: var(--shadow-hover);  /* Incorrect: should be a color, not shadow */
+    border-color: #ff4136;     /* Red border (requires border property) */
+    color: #ff4136;            /* Red text */
 }
 
+/* Styles for the profile avatar */
 .profile-avatar {
-    border: 4px solid #ffffff;
-    border-radius: 50%;
-    bottom: -60px;
-    height: 120px;
-    left: 20px;
-    object-fit: cover;
-    position: absolute;
-    width: 120px;
-    z-index: 1;
+    border: 4px solid #ffffff; /* White border */
+    border-radius: 50%;        /* Circular shape */
+    bottom: -60px;             /* Offset below banner */
+    height: 120px;             /* Fixed height */
+    left: 20px;                /* Offset from left */
+    object-fit: cover;         /* Crop to fit */
+    position: absolute;        /* Positioned over content */
+    width: 120px;              /* Fixed width */
+    z-index: 1;                /* Above banner */
 }
 
+/* Styles for the back arrow link */
 .profile-back-arrow {
-    align-items: center;
-    color: #000000;
-    cursor: pointer;
-    display: inline-flex;
-    font-size: 18px;
-    margin-right: 15px;
-    text-decoration: none;
-    flex-shrink: 0; /* Prevent shrinking */
+    align-items: center;       /* Center vertically */
+    color: #000000;            /* Black text */
+    cursor: pointer;           /* Indicate clickability */
+    display: inline-flex;      /* Flex layout */
+    font-size: 18px;           /* Larger font */
+    margin-right: 15px;        /* Space to the right */
+    text-decoration: none;     /* No underline */
+    flex-shrink: 0;            /* Prevent shrinking */
 }
 
+/* Styles for the standalone back arrow */
 .back-arrow {
-    color: #000000; /* Black, like Twitter/X back arrows */
-    font-size: 18px;
-    text-decoration: none;
-    margin-right: 15px;
-    cursor: pointer;
-    font-weight: bold;
-    position:relative;
+    color: #000000;            /* Black text */
+    font-size: 18px;           /* Larger font */
+    text-decoration: none;     /* No underline */
+    margin-right: 15px;        /* Space to the right */
+    cursor: pointer;           /* Indicate clickability */
+    font-weight: bold;         /* Bold text */
+    position: relative;        /* Relative positioning */
 }
 
+/* Container for the back arrow */
 .back-arrow-container {
-    display: flex;
-    align-items: center;
-    margin-bottom: 15px;
-    z-index: 1002;
-    background-color: #ffffff;
+    display: flex;             /* Flex layout */
+    align-items: center;       /* Center vertically */
+    margin-bottom: 15px;       /* Space below */
+    z-index: 1002;             /* High z-index */
+    background-color: #ffffff; /* White background */
 }
 
-
-
+/* Hover state for the back arrow */
 .back-arrow:hover {
-    color: #333333; /* Darker gray on hover, like Twitter/X */
+    color: #333333;            /* Darker gray on hover */
 }
 
+/* Icon within back arrow */
 .back-arrow i {
-    display: inline-flex; /* Ensure the Font Awesome icon renders correctly */
-    align-items: center;
+    display: inline-flex;      /* Flex layout for icon */
+    align-items: center;       /* Center vertically */
 }
 
-
+/* Styles for the profile banner image */
 .profile-banner {
-    border-top-left-radius: 12px;
-    border-top-right-radius: 12px;
-    height: 200px;
-    left: 0;
-    object-fit: cover;
-    position: absolute;
-    top: 0;
-    width: 100%;
-    z-index: 0;
+    border-top-left-radius: 12px;  /* Rounded top-left */
+    border-top-right-radius: 12px;  /* Rounded top-right */
+    height: 200px;             /* Fixed height */
+    left: 0;                   /* Full width from left */
+    object-fit: cover;         /* Crop to fit */
+    position: absolute;        /* Positioned within header */
+    top: 0;                    /* Align to top */
+    width: 100%;               /* Full width */
+    z-index: 0;                /* Below avatar */
 }
 
+/* Styles for the profile content container */
 .profile-content {
-    background-color: #ffffff;
-    border: 1px solid #e1e8ed;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    color: #001f3f;
-    margin: 0 10px 10px 10px; /* Match home page margin */
-    max-width: 700px; /* Align with home page .content max-width */
-    overflow: hidden;
-    padding-top: 67px; /* Retain to accommodate .profile-header-top */
-    width: calc(100% - 20px); /* Match post-box and tip-feed width calculation */
-    box-sizing: border-box;
+    background-color: #ffffff; /* White background */
+    border: 1px solid #e1e8ed; /* Light gray border */
+    border-radius: 12px;       /* Rounded corners */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);  /* Subtle shadow */
+    color: #001f3f;            /* Dark blue text */
+    margin: 0 10px 10px 10px;  /* Consistent margins */
+    max-width: 700px;          /* Matches .content in base.css */
+    overflow: hidden;          /* Prevent overflow */
+    padding-top: 67px;         /* Space for header-top */
+    width: calc(100% - 20px);  /* Full width minus margins */
+    box-sizing: border-box;    /* Include padding/borders */
 }
 
+/* Styles for the profile description (bio) */
 .profile-description {
-    color: #001f3f;
-    font-size: 16px;
-    margin: 5px 0 20px 0;
+    color: #001f3f;            /* Dark blue text */
+    font-size: 16px;           /* Slightly larger font */
+    margin: 5px 0 20px 0;      /* Vertical spacing */
 }
 
+/* Styles for profile details (e.g., location, join date) */
 .profile-details {
-    color: #666666;
-    display: flex;
-    font-size: 14px;
-    gap: 15px;
-    margin: 0 20px 20px 20px;
-    flex-wrap: wrap;
+    color: #666666;            /* Gray text */
+    display: flex;             /* Flex layout */
+    font-size: 14px;           /* Base font size */
+    gap: 15px;                 /* Space between items */
+    margin: 0 20px 20px 20px;  /* Consistent margins */
+    flex-wrap: wrap;           /* Allow wrapping */
 }
 
+/* Individual detail item within profile details */
 .profile-detail-item {
-    align-items: center;
-    display: inline-flex;
-    margin-right: 15px;
+    align-items: center;       /* Center vertically */
+    display: inline-flex;      /* Inline flex layout */
+    margin-right: 15px;        /* Space to the right */
 }
 
+/* Styles for follow stats (following/followers) */
 .profile-follow {
-    color: #666666;
-    display: flex;
-    font-size: 14px;
-    gap: 20px;
-    margin: 0 20px 20px 20px;
+    color: #666666;            /* Gray text */
+    display: flex;             /* Flex layout */
+    font-size: 14px;           /* Base font size */
+    gap: 20px;                 /* Space between items */
+    margin: 0 20px 20px 20px;  /* Consistent margins */
 }
 
+/* Bold numbers within follow stats */
 .profile-follow span {
-    color: #000000;
-    font-weight: bold;
+    color: #000000;            /* Black text */
+    font-weight: bold;         /* Bold text */
 }
 
+/* Styles for the profile handle */
 .profile-handle {
-    color: #657786;
-    font-size: 0.9em;
+    color: #657786;            /* Gray color */
+    font-size: 0.9em;          /* Slightly smaller font */
 }
 
+/* Styles for the profile header container */
 .profile-header {
-    height: 200px;
-    overflow: visible;
-    position: relative;
-    width: 100%;
+    height: 200px;             /* Fixed height */
+    overflow: visible;         /* Allow avatar overflow */
+    position: relative;        /* Relative positioning */
+    width: 100%;               /* Full width */
 }
 
+/* Styles for the fixed top section of the profile header */
 .profile-header-top {
-    align-items: center;
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    background-color: #ffffff;
-    border-bottom: 1px solid rgba(225, 232, 237, 0.5);
-    display: flex;
-    padding: 5px 20px;
-    position: fixed;
-    top: 0;
-    max-width: 700px; /* Match .profile-content max-width */
-    width:660px;
-    box-sizing: border-box;
-    z-index: 1000;
+    align-items: center;       /* Center vertically */
+    backdrop-filter: blur(5px);  /* Blur effect */
+    -webkit-backdrop-filter: blur(5px);  /* Safari support */
+    background-color: #ffffff; /* White background */
+    border-bottom: 1px solid rgba(225, 232, 237, 0.5);  /* Semi-transparent border */
+    display: flex;             /* Flex layout */
+    padding: 5px 20px;         /* Internal padding */
+    position: fixed;           /* Fixed to top */
+    top: 0;                    /* Align to top */
+    max-width: 700px;          /* Matches profile-content */
+    width: 660px;              /* Fixed width */
+    box-sizing: border-box;    /* Include padding/borders */
+    z-index: 1000;             /* High z-index */
 }
 
+/* Styles for the profile navigation tabs */
 .profile-nav {
-    border-bottom: 1px solid #e1e8ed;
-    display: flex;
-    gap: 20px;
-    margin: 0 10px 10px 10px; /* Reduced from 20px to 10px */
-    padding-bottom: 10px;
+    border-bottom: 1px solid #e1e8ed;  /* Light gray border */
+    display: flex;             /* Flex layout */
+    gap: 20px;                 /* Space between tabs */
+    margin: 0 10px 10px 10px;  /* Reduced margins */
+    padding-bottom: 10px;      /* Space below */
 }
 
+/* Styles for individual nav items (tabs) */
 .profile-nav-item {
-    border-radius: 4px;
-    color: #666666;
-    font-size: 16px;
-    padding: 5px 10px;
-    text-decoration: none;
-    transition: color 0.2s;
+    border-radius: 4px;        /* Slightly rounded corners */
+    color: #666666;            /* Gray text */
+    font-size: 16px;           /* Slightly larger font */
+    padding: 5px 10px;         /* Internal padding */
+    text-decoration: none;     /* No underline */
+    transition: color 0.2s;    /* Smooth color transition */
 }
 
+/* Active state for nav items */
 .profile-nav-item.active {
-    border-bottom: 2px solid #ff4136;
-    color: #000000;
-    font-weight: bold;
+    border-bottom: 2px solid #ff4136;  /* Red underline */
+    color: #000000;            /* Black text */
+    font-weight: bold;         /* Bold text */
 }
 
+/* Hover state for nav items */
 .profile-nav-item:hover {
-    color: #000000;
+    color: #000000;            /* Black text */
 }
 
+/* Styles for the post count display */
 .profile-post-count {
-    color: #666666;
-    font-size: 12px;
-    margin: 0;
-    text-align: left;
+    color: #666666;            /* Gray text */
+    font-size: 12px;           /* Smaller font */
+    margin: 0;                 /* No margins */
+    text-align: left;          /* Left-align */
 }
 
+/* Styles for the profile username */
 .profile-username {
-    color: #000000;
-    display: block;
-    font-size: 20px;
-    font-weight: bold;
-    margin: 0;
-    padding: 0;
-    text-align: left;
+    color: #000000;            /* Black text */
+    display: block;            /* Block display */
+    font-size: 20px;           /* Larger font */
+    font-weight: bold;         /* Bold text */
+    margin: 0;                 /* No margins */
+    padding: 0;                /* No padding */
+    text-align: left;          /* Left-align */
 }
 
+/* Container for username and related elements */
 .profile-username-container {
-    align-items: flex-start;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
+    align-items: flex-start;   /* Align items at the top */
+    display: flex;             /* Flex layout */
+    flex-direction: column;    /* Stack vertically */
+    flex-grow: 1;              /* Take available space */
 }
 
+/* Container for user details below avatar */
 .profile-user-details {
-    align-items: flex-start;
-    display: flex;
-    flex-direction: column;
-    margin: 0;
-    padding: 0;
+    align-items: flex-start;   /* Align items at the top */
+    display: flex;             /* Flex layout */
+    flex-direction: column;    /* Stack vertically */
+    margin: 0;                 /* No margins */
+    padding: 0;                /* No padding */
 }
 
+/* Styles for the user info section below banner */
 .profile-user-info {
-    background-color: #f5f8fa;
-    border-bottom-left-radius: 12px;
-    border-bottom-right-radius: 12px;
-    margin: 80px 10px 10px 10px; /* Reduced from 20px to 10px to match home page */
-    padding: 15px;
-    position: relative;
+    background-color: #f5f8fa; /* Light gray background */
+    border-bottom-left-radius: 12px;  /* Rounded bottom-left */
+    border-bottom-right-radius: 12px;  /* Rounded bottom-right */
+    margin: 80px 10px 10px 10px;  /* Space for avatar overlap */
+    padding: 15px;             /* Internal padding */
+    position: relative;        /* Relative positioning */
 }

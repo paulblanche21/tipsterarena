@@ -1,199 +1,188 @@
-/* Profile Edit Modal Styles */
+/* profile-edit.css */
+
+/* Styles for the profile edit modal overlay */
 .profile-edit-modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
-    z-index: 1003;
-    justify-content: center;
-    align-items: center;
+    display: none;             /* Hidden by default, shown via JS */
+    position: fixed;           /* Fixed over viewport */
+    top: 0;                    /* Full height from top */
+    left: 0;                   /* Full width from left */
+    width: 100%;               /* Full width */
+    height: 100%;              /* Full height */
+    background-color: rgba(0, 0, 0, 0.5);  /* Semi-transparent overlay */
+    z-index: 1003;             /* High z-index, matches comment-modal */
+    justify-content: center;   /* Center content horizontally */
+    align-items: center;       /* Center content vertically */
 }
 
+/* Styles for the profile edit modal content */
 .profile-edit-modal-content {
-    background-color: #ffffff;
-    border: 1px solid #e1e8ed;
-    border-radius: 12px;
-    padding: 20px;
-    width: 500px; /* Adjust width as needed for edit profile form */
-    max-height: 80vh; /* Limit height to 80% of viewport */
-    overflow-y: auto; /* Scroll if content exceeds height */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    position: relative;
-    color: #001f3f;
+    background-color: #ffffff; /* White background */
+    border: 1px solid #e1e8ed; /* Light gray border */
+    border-radius: 12px;       /* Rounded corners */
+    padding: 20px;             /* Internal padding */
+    width: 500px;              /* Fixed width */
+    max-height: 80vh;          /* Limit height to 80% of viewport */
+    overflow-y: auto;          /* Scrollable if content exceeds height */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  /* Shadow for elevation */
+    position: relative;        /* Relative positioning */
+    color: #001f3f;            /* Dark blue text */
 }
 
+/* Close button within profile edit modal */
 .profile-edit-modal-close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 24px;
-    color: #666666;
-    cursor: pointer;
-    border: none;
-    background: none;
+    position: absolute;        /* Positioned in top-right */
+    top: 10px;                 /* Offset from top */
+    right: 10px;               /* Offset from right */
+    font-size: 24px;           /* Larger font */
+    color: #666666;            /* Gray color */
+    cursor: pointer;           /* Indicate clickability */
+    border: none;              /* No border */
+    background: none;          /* No background */
 }
 
+/* Hover state for close button */
 .profile-edit-modal-close:hover {
-    color: #ff4136;
+    color: #ff4136;            /* Red on hover */
 }
 
+/* Note text within profile edit modal */
 .profile-edit-note {
-    color: #666666;
-    font-size: 12px;
-    margin-top: 10px;
+    color: #666666;            /* Gray text */
+    font-size: 12px;           /* Smaller font */
+    margin-top: 10px;          /* Space above */
 }
 
+/* Links within profile edit note */
 .profile-edit-note a {
-    color: #1da1f2;
-    text-decoration: none;
+    color: #1da1f2;            /* Twitter blue */
+    text-decoration: none;     /* No underline */
 }
 
+/* Hover state for links in profile edit note */
 .profile-edit-note a:hover {
-    text-decoration: underline;
+    text-decoration: underline;  /* Underline on hover */
 }
 
-/* Edit Profile Modal Content Styles */
+/* Styles for form groups within profile edit modal */
 .profile-edit-modal-content .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 15px;       /* Space below each group */
 }
 
+/* Labels within profile edit modal form */
 .profile-edit-modal-content label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-    color: #001f3f;
+    display: block;            /* Block display */
+    margin-bottom: 5px;        /* Space below */
+    font-weight: bold;         /* Bold text */
+    color: #001f3f;            /* Dark blue text */
 }
 
+/* Input fields within profile edit modal form */
 .profile-edit-modal-content .form-input {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #e1e8ed;
-    border-radius: 4px;
-    font-size: 14px;
-    color: #001f3f;
+    width: 100%;               /* Full width */
+    padding: 8px;              /* Internal padding */
+    border: 1px solid #e1e8ed; /* Light gray border */
+    border-radius: 4px;        /* Slightly rounded corners */
+    font-size: 14px;           /* Base font size */
+    color: #001f3f;            /* Dark blue text */
 }
 
-
+/* Hover state for profile edit button (outside modal context) */
 .profile-edit-btn:hover {
-    background-color: var(--shadow-hover);
-    border-color: darkred;
-    color: darkred;
+    background-color: #d9362e; 
+    border: 1px solid darkred;  
+    border-color: darkred;     /* Dark red border (requires border property) */      
 }
 
-
-.profile-edit-modal-content {
-    outline: none;
-    border-color: #ff4136;
-    
+/* Base styles for profile edit button (outside modal context) */
+.profile-edit-btn {
+    background-color: var(--red-accent);  /* Red background */
+    border: none;              /* No border */
+    border-radius: 20px;       /* Oval shape */
+    padding: 8px 16px;         /* Internal padding */
+    font-size: 14px;           /* Base font size */
+    color: var(--secondary-bg);  /* White text */
+    text-decoration: none;     /* No underline */
+    cursor: pointer;           /* Indicate clickability */
+    font-weight: bold;         /* Bold text */
 }
 
-.profile-edit-btn{
-    background-color: var(--red-accent); /* #ff4136 to match your Edit Profile */
-    border: none; /* Remove border for a cleaner look */
-    border-radius: 20px;
-    padding: 8px 16px;
-    font-size: 14px;
-    color: var(--secondary-bg); /* #ffffff */
-    text-decoration: none;
-    cursor: pointer;
-    font-weight: bold; /* Match Follow button's weight */
-}
-
+/* Actions container within profile edit modal */
 .profile-edit-modal-content .profile-edit-actions {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    display: flex;
-    gap: 10px;
+    position: absolute;        /* Positioned in top-right */
+    top: 10px;                 /* Offset from top */
+    right: 10px;               /* Offset from right */
+    display: flex;             /* Flex layout */
+    gap: 10px;                 /* Space between actions */
 }
 
+/* Duplicate definition of profile edit modal content (overridden above) */
 .profile-edit-modal-content {
-    background-color: #ffffff;
-    border: 1px solid #e1e8ed;
-    border-radius: 12px;
-    padding: 20px;
-    width: 500px;
-    max-height: 80vh;
-    overflow-y: auto;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    position: relative;
-    color: #001f3f;
+    background-color: #ffffff; /* White background */
+    border: 1px solid #e1e8ed; /* Light gray border */
+    border-radius: 12px;       /* Rounded corners */
+    padding: 20px;             /* Internal padding */
+    width: 500px;              /* Fixed width */
+    max-height: 80vh;          /* Limit height */
+    overflow-y: auto;          /* Scrollable */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  /* Shadow */
+    position: relative;        /* Relative positioning */
+    color: #001f3f;            /* Dark blue text */
 }
 
+/* Styles for the banner section in edit modal */
 .profile-edit-modal-content .profile-edit-banner {
-    position: relative;
-    width: 100%;
-    height: 200px; /* Match main profile banner height */
+    position: relative;        /* Relative positioning */
+    width: 100%;               /* Full width */
+    height: 200px;             /* Matches profile banner height */
 }
 
+/* Banner image within edit modal */
 .profile-edit-modal-content .profile-edit-banner img {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 12px 12px 0 0;
+    width: 100%;               /* Full width */
+    height: 200px;             /* Fixed height */
+    object-fit: cover;         /* Crop to fit */
+    border-radius: 12px 12px 0 0;  /* Rounded top corners */
 }
 
+/* Styles for the avatar section in edit modal */
 .profile-edit-modal-content .profile-edit-avatar {
-    position: absolute;
-    bottom: -60px; /* Half of 120px height below banner */
-    left: 20px;
-    z-index: 1;
+    position: absolute;        /* Positioned over banner */
+    bottom: -60px;             /* Offset below banner */
+    left: 20px;                /* Offset from left */
+    z-index: 1;                /* Above banner */
 }
 
+/* Avatar image within edit modal */
 .profile-edit-modal-content .profile-edit-avatar img {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    border: 4px solid #ffffff;
-    object-fit: cover;
+    width: 120px;              /* Fixed width */
+    height: 120px;             /* Fixed height */
+    border-radius: 50%;        /* Circular shape */
+    border: 4px solid #ffffff; /* White border */
+    object-fit: cover;         /* Crop to fit */
 }
 
-.profile-edit-modal-content .profile-edit-actions {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    display: flex;
-    gap: 10px;
-}
-
+/* Form container within edit modal */
 .edit-profile-form {
-    margin-top: 80px; /* Clear the avatar (60px overlap + 20px gap) */
+    margin-top: 80px;          /* Space to clear avatar overlap */
 }
 
+/* Action buttons (e.g., add/delete) within edit modal */
 .profile-edit-modal-content .profile-edit-action-btn {
-    background-color: #ffffff;
-    border: 1px solid #e1e8ed;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 16px;
-    color: #666666;
+    background-color: #ffffff; /* White background */
+    border: 1px solid #e1e8ed; /* Light gray border */
+    border-radius: 50%;        /* Circular shape */
+    width: 30px;               /* Fixed width */
+    height: 30px;              /* Fixed height */
+    display: flex;             /* Flex layout */
+    align-items: center;       /* Center vertically */
+    justify-content: center;   /* Center horizontally */
+    cursor: pointer;           /* Indicate clickability */
+    font-size: 16px;           /* Icon size */
+    color: #666666;            /* Gray color */
 }
 
+/* Hover state for action buttons */
 .profile-edit-modal-content .profile-edit-action-btn:hover {
-    border-color: #ff4136;
-    color: #ff4136;
-}
-
-/* Edit Profile Modal Note */
-.profile-edit-modal-content .profile-edit-note {
-    color: #666666;
-    font-size: 12px;
-    margin-top: 10px;
-}
-
-.profile-edit-modal-content .profile-edit-note a {
-    color: #1da1f2;
-    text-decoration: none;
-}
-
-.profile-edit-modal-content .profile-edit-note a:hover {
-    text-decoration: underline;
+    border-color: #ff4136;     /* Red border */
+    color: #ff4136;            /* Red text */
 }
