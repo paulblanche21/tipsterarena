@@ -65,4 +65,29 @@
                     {% if share.user.userprofile.avatar %}
                         <img src="{{ share.user.userprofile.avatar.url }}" alt="User Avatar" class="tip-avatar">
                     {% else %}
-                        <img src="{% static 'img/default-avatar.png' %}"
+                        <img src="{% static 'img/default-avatar.png' %}" alt="Default Avatar" class="tip-avatar" onerror="this.style.display='none'">
+                    {% endif %}
+                    <div class="tip-content">
+                        <!-- Notification text with username and tip preview -->
+                        <p><strong>{{ share.user.username|default:"Unknown User" }}</strong> shared your tip: "{{ share.tip.text|truncatechars:20|default:"No tip text" }}"</p>
+                        <small>{{ share.created_at|date:"F j, Y, g:i a"|default:"No date" }}</small>
+                    </div>
+                </div>
+            {% empty %}
+                <!-- Placeholder for no shares -->
+                <div class="notification">
+                    <div class="tip-content">
+                        <p>No shares yet. Engage with tips to get updates!</p>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <!-- General placeholder for no notifications -->
+            <div class="notification">
+                <div class="tip-content">
+                    <p>No notifications yet. Engage with tips to get updates!</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
