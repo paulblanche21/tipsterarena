@@ -1,63 +1,59 @@
+/* notifications.css */
+
+/* Styles for individual notification items */
 .notification {
-    background-color: var(--secondary-bg);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    padding: var(--padding-small);
-    box-shadow: var(--shadow-light);
-    margin-bottom: var(--margin-small);
-    color: var(--primary-bg);
-    transition: box-shadow 0.2s;
-    display: flex;
-    align-items: flex-start;
+    background-color: var(--secondary-bg);  /* White background for notifications */
+    border: 1px solid var(--border-color);  /* Light gray border for definition */
+    border-radius: var(--border-radius);    /* Rounded corners from base.css */
+    padding: var(--padding-small);          /* Consistent padding */
+    box-shadow: var(--shadow-light);        /* Subtle shadow for elevation */
+    margin-bottom: var(--margin-small);     /* Space below each notification */
+    color: var(--primary-bg);               /* Dark blue text */
+    transition: box-shadow 0.2s;            /* Smooth shadow transition */
+    display: flex;                          /* Flex layout for avatar and content */
+    align-items: flex-start;                /* Align items at the top */
 }
 
+/* Styles for the notification feed container */
 .notification-feed {
-    background-color: #ffffff;
-    border: 1px solid #e1e8ed;
-    border-radius: 12px;
-    padding: 12px;
-    margin-bottom: 10px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    color: #001f3f;
-    max-width: 700px;
-    margin: 0 0 0 0;
+    background-color: #ffffff;              /* White background */
+    border: 1px solid #e1e8ed;              /* Light gray border */
+    border-radius: 12px;                    /* Rounded corners */
+    padding: 12px;                          /* Internal padding */
+    margin-bottom: 10px;                    /* Space below */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);  /* Subtle shadow */
+    color: #001f3f;                         /* Dark blue text */
+    max-width: 700px;                       /* Matches content width in base.css */
+    margin: 0 0 0 0;                        /* Explicit margins (redundant shorthand) */
 }
 
+/* Remove bottom border and margin for the last notification */
 .notification:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
+    border-bottom: none;                    /* No bottom border */
+    margin-bottom: 0;                       /* No space below */
 }
 
+/* Paragraph text within notifications */
 .notification p {
-    margin: 5px 0;
-    line-height: 1.4;
-    color: #001f3f;
+    margin: 5px 0;                          /* Vertical spacing */
+    line-height: 1.4;                       /* Comfortable line spacing */
+    color: #001f3f;                         /* Dark blue text */
 }
 
+/* Timestamp within notifications */
 .notification small {
-    color: #666666;
-    font-size: 12px;
+    color: #666666;                         /* Gray text from base.css */
+    font-size: 12px;                        /* Smaller font for subtlety */
 }
 
+/* Bold text (e.g., usernames) within notifications */
 .notification strong {
-    color: #000000;
-    font-weight: 600;
-    text-decoration: none;
+    color: #000000;                         /* Black text for emphasis */
+    font-weight: 600;                       /* Bold weight */
+    text-decoration: none;                  /* No underline */
 }
 
+/* Hover state for bold text */
 .notification strong:hover {
-    text-decoration: underline;
-}
-
-.bookmark {
-    background-color: var(--secondary-bg);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    padding: var(--padding-small);
-    box-shadow: var(--shadow-light);
-    margin-bottom: var(--margin-small);
-    color: var(--primary-bg);
-    transition: box-shadow 0.2s;
-    display: flex;
-    align-items: flex-start;
+    text-decoration: underline;             /* Underline on hover */
 }

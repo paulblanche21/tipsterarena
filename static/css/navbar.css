@@ -100,6 +100,11 @@
     align-items: center;       /* Center vertically */
 }
 
+/* Hover state for nav menu links (initial) */
+.nav-menu a:hover {
+    color: #ff4136;            /* Red on hover (overridden below) */
+}
+
 /* List items within nav menu */
 .nav-menu li {
     margin: 5px 0;             /* Vertical spacing */
@@ -169,7 +174,7 @@
 
 /* Hover state for "Post Tip" button */
 .nav-post-btn:hover {
-    color: VAR(--primary-bg);       /* navy blue text */
+    color: var(--red-accent);            /* Red text */
     background-color: rgba(74, 144, 226, 0.1);  /* Light blue background */
     transform: scale(1.1);     /* Slight scale-up */
 }
@@ -185,7 +190,7 @@
 
 /* Hover state for nav user content */
 .nav-user-content:hover {
-    background-color: darkgray; /* Dark gray background */
+    background-color: #333333; /* Dark gray background */
     border-radius: 20px;       /* Rounded corners */
 }
 

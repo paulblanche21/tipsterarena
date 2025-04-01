@@ -46,23 +46,6 @@ body {
     overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
-/* Styles for the fixed navigation bar */
-.navbar {
-    position: fixed;           /* Fixed to the left side */
-    top: 0;                    /* Align to top */
-    left: 0;                   /* Align to left */
-    width: 250px;              /* Fixed width matching --navbar-width in base.css */
-    height: 100vh;             /* Full viewport height */
-    background-color: #001f3f; /* Dark blue background */
-    padding: 20px;             /* Internal padding */
-    display: flex;             /* Flex layout */
-    flex-direction: column;    /* Stack vertically */
-    justify-content: flex-start;  /* Align items to top */
-    border-right: 1px solid #e1e8ed;  /* Light gray border */
-    z-index: 1002;             /* High z-index above most content */
-    box-sizing: border-box;    /* Include padding and border in width */
-}
-
 /* Layout styles for main content container */
 .main-container {
     margin-left: var(--navbar-width);    /* Offset content to accommodate fixed navbar */

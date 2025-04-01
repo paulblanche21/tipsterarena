@@ -85,13 +85,13 @@ i {
 
 /* Active state for emoji tab */
 .emoji-tab.active {
-    color: #1da1f2;            /* Twitter blue */
+    color: #1da1f2;            /*  blue */
     border-bottom: 2px solid #1da1f2;  /* Blue underline */
 }
 
 /* Hover state for emoji tab */
 .emoji-tab:hover {
-    color: #1da1f2;            /* Twitter blue */
+    color: #1da1f2;            /*  blue */
 }
 
 /* Category title within emoji picker */
@@ -524,7 +524,7 @@ i {
 
 /* Styles for the post submit button */
 .post-submit {
-    background-color: #1DA1F2;
+    background-color: var(--red-accent);
     /* Gray background */
     color: #ffffff;            /* White text */
     border: none;              /* No border */
@@ -540,7 +540,7 @@ i {
 
 /* Hover state for post submit button */
 .post-submit:hover {
-    background-color: #546a7a; /* Darker gray */
+    background-color: #003087 /* Darker gray */
 }
 
 /* Container for post user info */
