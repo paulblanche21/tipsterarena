@@ -15,7 +15,8 @@ function debounce(func, wait) {
       console.warn('Search input or results container not found:', { searchBar, searchResults });
       return;
     }
-  
+    console.log('Search elements found:', { searchBar, searchResults });
+    
     let csrfToken;
     import('./utils.js')
       .then(module => {
@@ -61,7 +62,7 @@ function debounce(func, wait) {
                 <div class="search-result-item">
                   <img src="${user.avatar_url}" alt="${user.username}" class="search-avatar">
                   <div class="search-details">
-                    <a href="${user.profile_url}" class="search-username">@${user.handle}</a>
+                    <a href="${user.profile_url}" class="search-username">${user.handle}</a>
                   </div>
                 </div>
               `;
@@ -76,7 +77,7 @@ function debounce(func, wait) {
                 <div class="search-result-item">
                   <img src="${tip.avatar_url}" alt="${tip.username}" class="search-avatar">
                   <div class="search-details">
-                    <a href="${tip.profile_url}" class="search-username">@${tip.handle}</a>
+                    <a href="${tip.profile_url}" class="search-username">${tip.handle}</a>
                     <p class="search-tip-text">${tip.text}</p>
                   </div>
                 </div>

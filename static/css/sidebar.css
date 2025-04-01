@@ -462,20 +462,23 @@
     }
 }
 
+.search-wrapper {
+    position: relative; /* Positioning context for .search-results */
+    padding: 0 10px; /* Match sidebar padding */
+  }
+
 /* Fixed Search Input (at the top) */
+
 .search-input {
     width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #e1e8ed;
+    margin:10px auto;
+    padding: 8px;
+    border: 1px solid var(--border-color);
     border-radius: 20px;
-    font-size: 14px;
-    color: #001f3f;
-    background-color: #ffffff;
-    margin-bottom: 10px;
-    position: sticky;
-    top: 10px;
-    z-index: 1001;
-}
+    background-color: var(--secondary-bg);
+    color: var(--black);
+    display: block;
+  }
 
 .search-input:focus {
     outline: none;
@@ -483,21 +486,22 @@
 }
 
 /* Suggested Search Results Styling (add this if not already present) */
+
 .search-results {
     position: absolute;
-    top: 100%; /* Positions it right below the input */
-    left: 0;
-    width: 100%;
+    top: calc(100% + 10px); /* Below the input with a small gap */
+    left: 10px; /* Align with sidebar padding */
+    width: calc(100% - 20px); /* Account for padding */
     max-height: 300px;
     overflow-y: auto;
     background-color: #ffffff;
     border: 1px solid #e1e8ed;
     border-radius: 10px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    z-index: 10000;
+    z-index: 10002;
     padding: 10px;
-    display: none; /* Hidden by default, toggled by JS */
-}
+    display: none;
+  }
 
 .search-result-item {
     display: flex;
@@ -584,10 +588,6 @@
     text-decoration: underline; /* Optional: Minimal hover effect, like Twitter/X */
     color: var(--red-accent); /* No color change on hover */
 }
-
-
-
-
 
 /* Ensure sidebar cards don't interfere */
 .sidebar-card {

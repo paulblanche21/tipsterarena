@@ -101,8 +101,10 @@
         <!-- Sidebar with search, events, and follow suggestions -->
         {% block sidebar %}
         <aside class="sidebar">
-            <input type="text" placeholder="Search Tipster Arena..." class="search-input">
-            <div class="search-results" style="display: none;"></div>
+            <div class="search-wrapper">
+                <input type="text" placeholder="Search Tipster Arena..." class="search-input">
+                <div class="search-results" style="display: none;"></div>
+            </div>
             <div class="sidebar-scrollable">
                 <!-- Upcoming events widget -->
                 {% block upcoming_events %}
