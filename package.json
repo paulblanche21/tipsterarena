@@ -7,7 +7,8 @@
   "devDependencies": {
     "@vitejs/plugin-legacy": "^5.4.3",
     "django-vite-plugin": "^4.0.5",
-    "vite": "^5.4.15"
+    "vite": "^5.4.15",
+    "esbuild": ">=0.25.0"
   },
   "scripts": {
     "dev": "vite --host localhost --port 3000",
