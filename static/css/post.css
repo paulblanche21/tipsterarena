@@ -14,6 +14,7 @@ i {
     color: #666666;            /* Gray text from base.css */
     font-size: 12px;           /* Smaller font for subtlety */
 }
+
 /* Styles for the emoji picker modal */
 .emoji-picker {
     position: absolute;        /* Absolute positioning over content */
@@ -707,4 +708,89 @@ i {
 /* Hover state for remove preview button */
 .remove-preview:hover {
     background: var(--red-accent);  /* Red background */
+}
+
+/* New Styles for Tip-Specific Fields */
+.tip-details {
+    margin-top: 10px;          /* Space above the tip details section */
+    display: flex;             /* Flex layout for responsive arrangement */
+    flex-wrap: wrap;           /* Allow wrapping on smaller screens */
+    gap: 10px;                 /* Space between child elements */
+}
+
+.tip-odds, .tip-bet-type, .tip-conditions, .tip-stake {
+    flex: 1 1 100%;            /* Full width on small screens */
+}
+
+/* Responsive layout for larger screens */
+@media (min-width: 600px) {
+    .tip-odds, .tip-bet-type, .tip-stake {
+        flex: 1 1 30%;         /* Three columns on larger screens */
+    }
+    .tip-conditions {
+        flex: 1 1 100%;        /* Conditions take full width */
+    }
+}
+
+.tip-odds label, .tip-bet-type label, .tip-conditions label, .tip-stake label {
+    display: block;            /* Labels on their own line */
+    font-size: 14px;           /* Consistent font size with other elements */
+    color: #333;               /* Dark gray for readability */
+    margin-bottom: 5px;        /* Space below label */
+}
+
+.odds-type, .bet-type, .odds-input, .stake-input {
+    width: 100%;               /* Full width of parent */
+    padding: 8px;              /* Consistent padding with other inputs */
+    border: 1px solid var(--border-color);  /* Light gray border */
+    border-radius: 4px;        /* Slightly rounded corners */
+    font-size: 14px;           /* Consistent font size */
+    color: var(--primary-bg);  /* Dark blue text */
+    background-color: #f5f8fa; /* Light gray background, matching post-input */
+    box-sizing: border-box;    /* Include padding/borders in width */
+}
+
+/* Focus state for input fields */
+.odds-type:focus, .bet-type:focus, .odds-input:focus, .stake-input:focus {
+    outline: none;             /* Remove default outline */
+    border-color: var(--red-accent);  /* Red border on focus */
+}
+
+/* Hover state for dropdowns */
+.odds-type:hover, .bet-type:hover {
+    border-color: #003087;     /* Lighter blue on hover, matching post-sport */
+}
+
+/* Style for the conditions section */
+.tip-conditions label {
+    display: inline-block;     /* Inline-block for checkboxes */
+    margin-right: 15px;        /* Space between checkboxes */
+    font-size: 14px;           /* Consistent font size */
+    color: #333;               /* Dark gray for readability */
+}
+
+.tip-conditions input[type="checkbox"] {
+    margin-right: 5px;         /* Space between checkbox and label */
+    accent-color: var(--red-accent);  /* Red checkbox color */
+}
+
+/* Adjust post-input to ensure it fits with new fields */
+.post-input {
+    width: 100%;               /* Full width */
+    min-height: 80px;          /* Reduced height to accommodate new fields */
+    padding: 8px 12px;         /* Internal padding */
+    border: 1px solid #e1e8ed; /* Light gray border */
+    border-radius: 8px;        /* Rounded corners */
+    font-size: 14px;           /* Base font size */
+    color: #001f3f;            /* Dark blue text */
+    resize: vertical;          /* Vertical resize only */
+    background-color: #f5f8fa; /* Light gray background */
+    margin-bottom: 8px;        /* Space below */
+}
+
+/* Ensure post-footer and post-actions remain aligned */
+.post-footer, .post-actions {
+    display: flex;             /* Flex layout */
+    justify-content: space-between;  /* Space out children */
+    align-items: center;       /* Center vertically */
 }

@@ -58,6 +58,18 @@ function debounce(func, wait) {
     };
 }
 
+// Function to validate odds based on the selected format (decimal or fractional)
+function validateOdds(odds, format) {
+    if (!odds) return false;
+    if (format === 'decimal') {
+        return /^\d*\.?\d+$/.test(odds) && parseFloat(odds) > 1; // e.g., 2.5
+    } else if (format === 'fractional') {
+        return /^\d+\/\d+$/.test(odds) && parseInt(odds.split('/')[1]) !== 0; // e.g., 3/2
+    }
+    return false;
+}
+
+
 // Function to show the GIF search modal
 function showGifModal(textarea, previewDiv) {
     let gifModal = document.getElementById('gif-modal');
@@ -343,6 +355,13 @@ function setupCentralFeedPost() {
     const postInput = document.querySelector('.post-box .post-input');
     const postAudience = document.querySelector('.post-box .post-audience');
     const postSport = document.querySelector('.post-box .post-sport'); // May be null on sport pages
+    const oddsType = document.querySelector('.post-box .odds-type');
+    const oddsInput = document.querySelector('.post-box .odds-input');
+    const betType = document.querySelector('.post-box .bet-type');
+    const eachWay = document.querySelector('.post-box input[name="each-way"]');
+    const rule4 = document.querySelector('.post-box input[name="rule4"]');
+    const deadHeat = document.querySelector('.post-box input[name="dead-heat"]');
+    const stakeInput = document.querySelector('.post-box .stake-input');
     const emojiBtn = document.querySelector('.post-box .post-action-btn.emoji');
     const gifBtn = document.querySelector('.post-box .post-action-btn.gif');
     const imageBtn = document.querySelector('.post-box .post-action-btn.image');
@@ -353,7 +372,7 @@ function setupCentralFeedPost() {
     const scheduleBtn = document.querySelector('.post-box .post-action-btn.schedule');
     const previewDiv = document.querySelector('.post-box .post-preview');
 
-    if (!postBox || !postSubmitBtn || !postInput || !postAudience || !emojiBtn || !gifBtn || !imageBtn || !locationBtn || !boldBtn || !italicBtn || !pollBtn || !scheduleBtn || !previewDiv) {
+    if (!postBox || !postSubmitBtn || !postInput || !postAudience || !oddsType || !oddsInput || !betType || !eachWay || !rule4 || !deadHeat || !stakeInput || !emojiBtn || !gifBtn || !imageBtn || !locationBtn || !boldBtn || !italicBtn || !pollBtn || !scheduleBtn || !previewDiv) {
         console.warn('setupCentralFeedPost: One or more required DOM elements are missing.');
         console.log({
             postBox: !!postBox,
@@ -361,6 +380,13 @@ function setupCentralFeedPost() {
             postInput: !!postInput,
             postAudience: !!postAudience,
             postSport: !!postSport,
+            oddsType: !!oddsType,
+            oddsInput: !!oddsInput,
+            betType: !!betType,
+            eachWay: !!eachWay,
+            rule4: !!rule4,
+            deadHeat: !!deadHeat,
+            stakeInput: !!stakeInput,
             emojiBtn: !!emojiBtn,
             gifBtn: !!gifBtn,
             imageBtn: !!imageBtn,
@@ -374,14 +400,16 @@ function setupCentralFeedPost() {
         return;
     }
 
-    // Enable/disable button and update character count based on input
-    postInput.addEventListener('input', function() {
-        postSubmitBtn.disabled = !postInput.value.trim();
+    // Enable/disable button based on input and odds
+    function updateSubmitButton() {
+        const textValid = postInput.value.trim().length > 0;
+        const oddsValid = validateOdds(oddsInput.value.trim(), oddsType.value);
+        postSubmitBtn.disabled = !(textValid && oddsValid);
         const charCount = document.querySelector('.post-box .char-count');
         if (charCount) {
             charCount.textContent = `${postInput.value.length}/280`;
         }
-    });
+    }
 
     // Track location separately for form submission
     let locationData = '';
@@ -481,10 +509,23 @@ function setupCentralFeedPost() {
         const text = postInput.value.trim();
         const audience = postAudience.value;
         const sport = postSport ? postSport.value : postBox.dataset.sport;
-        console.log('Sport for posting:', sport);
+        const odds = oddsInput.value.trim();
+        const oddsFormat = oddsType.value;
+        const bet = betType.value;
+        const conditions = {
+            eachWay: eachWay.checked,
+            rule4: rule4.checked,
+            deadHeat: deadHeat.checked
+        };
+        const stake = stakeInput.value.trim();
 
         if (!text) {
             alert('Please enter a tip before posting.');
+            return;
+        }
+
+        if (!validateOdds(odds, oddsFormat)) {
+            alert('Please enter valid odds in the correct format (e.g., 2.5 for decimal, 3/2 for fractional).');
             return;
         }
 
@@ -497,6 +538,11 @@ function setupCentralFeedPost() {
         formData.append('text', text);
         formData.append('audience', audience);
         formData.append('sport', sport);
+        formData.append('odds', odds);
+        formData.append('odds_format', oddsFormat);
+        formData.append('bet_type', bet);
+        formData.append('conditions', JSON.stringify(conditions));
+        if (stake) formData.append('stake', stake);
 
         if (postInput.dataset.imageFile && imageInput.files[0]) {
             formData.append('image', imageInput.files[0]);
@@ -522,13 +568,19 @@ function setupCentralFeedPost() {
             if (data.success) {
                 showSuccessPopup();
                 postInput.value = '';
+                oddsInput.value = '';
+                betType.value = 'single';
+                eachWay.checked = false;
+                rule4.checked = false;
+                deadHeat.checked = false;
+                stakeInput.value = '';
                 postInput.dataset.gifUrl = '';
                 postInput.dataset.imageFile = '';
                 imageInput.value = '';
                 locationData = '';
                 previewDiv.style.display = 'none';
                 location.reload();
-                
+
                 const tipFeed = document.querySelector('.tip-feed');
                 const newTip = document.createElement('div');
                 newTip.className = 'tip';
@@ -545,6 +597,18 @@ function setupCentralFeedPost() {
                         </div>
                         <div class="tip-body">
                             <p>${data.tip.text}</p>
+                            <div class="tip-meta">
+                                <span>Odds: ${data.tip.odds} (${data.tip.odds_format})</span>
+                                <span>Bet Type: ${data.tip.bet_type}</span>
+                                ${data.tip.conditions.eachWay || data.tip.conditions.rule4 || data.tip.conditions.deadHeat ? `
+                                    <span>Conditions: 
+                                        ${data.tip.conditions.eachWay ? 'Each Way' : ''}
+                                        ${data.tip.conditions.rule4 ? (data.tip.conditions.eachWay ? ', ' : '') + 'Rule 4' : ''}
+                                        ${data.tip.conditions.deadHeat ? (data.tip.conditions.eachWay || data.tip.conditions.rule4 ? ', ' : '') + 'Dead Heat' : ''}
+                                    </span>
+                                ` : ''}
+                                ${data.tip.stake ? `<span>Stake: ${data.tip.stake}</span>` : ''}
+                            </div>
                             ${data.tip.image ? `<img src="${data.tip.image}" alt="Tip Image" class="tip-image">` : ''}
                             ${data.tip.gif ? `<img src="${data.tip.gif}" alt="Tip GIF" class="tip-image">` : ''}
                         </div>
@@ -576,21 +640,35 @@ function setupPostModal() {
             const modalInput = postModal.querySelector('.post-input');
             const modalAudience = postModal.querySelector('.post-audience');
             const modalSport = postModal.querySelector('.post-sport');
+            const oddsType = postModal.querySelector('.post-modal .odds-type');
+            const oddsInput = postModal.querySelector('.post-modal .odds-input');
+            const betType = postModal.querySelector('.post-modal .bet-type');
+            const eachWay = postModal.querySelector('.post-modal input[name="each-way"]');
+            const rule4 = postModal.querySelector('.post-modal input[name="rule4"]');
+            const deadHeat = postModal.querySelector('.post-modal input[name="dead-heat"]');
+            const stakeInput = postModal.querySelector('.post-modal .stake-input');
             const modalBoldBtn = postModal.querySelector('.post-action-btn.bold');
             const modalItalicBtn = postModal.querySelector('.post-action-btn.italic');
             const modalImageBtn = postModal.querySelector('.post-action-btn.image');
             const modalGifBtn = postModal.querySelector('.post-action-btn.gif');
             const modalLocationBtn = postModal.querySelector('.post-action-btn.location');
             const modalPreviewDiv = postModal.querySelector('.post-preview');
-            const modalEmojiBtn = postModal.querySelector('.post-action-btn.emoji'); // Add emoji button for modal
+            const modalEmojiBtn = postModal.querySelector('.post-action-btn.emoji');
 
-            if (!modalSubmitBtn || !modalInput || !modalAudience || !modalBoldBtn || !modalItalicBtn || !modalImageBtn || !modalGifBtn || !modalLocationBtn || !modalPreviewDiv || !modalEmojiBtn) {
+            if (!modalSubmitBtn || !modalInput || !modalAudience || !oddsType || !oddsInput || !betType || !eachWay || !rule4 || !deadHeat || !stakeInput || !modalBoldBtn || !modalItalicBtn || !modalImageBtn || !modalGifBtn || !modalLocationBtn || !modalPreviewDiv || !modalEmojiBtn) {
                 console.warn('setupPostModal: One or more required DOM elements are missing.');
                 console.log({
                     modalSubmitBtn: !!modalSubmitBtn,
                     modalInput: !!modalInput,
                     modalAudience: !!modalAudience,
                     modalSport: !!modalSport,
+                    oddsType: !!oddsType,
+                    oddsInput: !!oddsInput,
+                    betType: !!betType,
+                    eachWay: !!eachWay,
+                    rule4: !!rule4,
+                    deadHeat: !!deadHeat,
+                    stakeInput: !!stakeInput,
                     modalBoldBtn: !!modalBoldBtn,
                     modalItalicBtn: !!modalItalicBtn,
                     modalImageBtn: !!modalImageBtn,
@@ -705,14 +783,34 @@ function handleModalPostSubmit() {
     const modalInput = this.closest('.post-modal-content').querySelector('.post-input');
     const modalAudience = this.closest('.post-modal-content').querySelector('.post-audience');
     const modalSport = this.closest('.post-modal-content').querySelector('.post-sport');
+    const oddsType = this.closest('.post-modal-content').querySelector('.odds-type');
+    const oddsInput = this.closest('.post-modal-content').querySelector('.odds-input');
+    const betType = this.closest('.post-modal-content').querySelector('.bet-type');
+    const eachWay = this.closest('.post-modal-content').querySelector('input[name="each-way"]');
+    const rule4 = this.closest('.post-modal-content').querySelector('input[name="rule4"]');
+    const deadHeat = this.closest('.post-modal-content').querySelector('input[name="dead-heat"]');
+    const stakeInput = this.closest('.post-modal-content').querySelector('.stake-input');
     const modalPreviewDiv = this.closest('.post-modal-content').querySelector('.post-preview');
     const text = modalInput.value.trim();
     const audience = modalAudience.value;
     const sport = modalSport ? modalSport.value : modal.dataset.sport;
-    console.log('Modal sport for posting:', sport);
+    const odds = oddsInput.value.trim();
+    const oddsFormat = oddsType.value;
+    const bet = betType.value;
+    const conditions = {
+        eachWay: eachWay.checked,
+        rule4: rule4.checked,
+        deadHeat: deadHeat.checked
+    };
+    const stake = stakeInput.value.trim();
 
     if (!text) {
         alert('Please enter a tip before posting.');
+        return;
+    }
+
+    if (!validateOdds(odds, oddsFormat)) {
+        alert('Please enter valid odds in the correct format (e.g., 2.5 for decimal, 3/2 for fractional).');
         return;
     }
 
@@ -725,6 +823,11 @@ function handleModalPostSubmit() {
     formData.append('text', text);
     formData.append('audience', audience);
     formData.append('sport', sport);
+    formData.append('odds', odds);
+    formData.append('odds_format', oddsFormat);
+    formData.append('bet_type', bet);
+    formData.append('conditions', JSON.stringify(conditions));
+    if (stake) formData.append('stake', stake);
 
     const modalImageInput = document.querySelectorAll('input[type="file"]')[1];
     if (modalInput.dataset.imageFile && modalImageInput && modalImageInput.files[0]) {
@@ -733,11 +836,7 @@ function handleModalPostSubmit() {
     if (modalInput.dataset.gifUrl) {
         formData.append('gif', modalInput.dataset.gifUrl);
     }
-    const modalLocationBtn = document.querySelector('.post-modal .post-action-btn.location');
-    let modalLocationData = '';
-    if (modalLocationBtn) {
-        modalLocationData = modalInput.value.match(/\[Location: ([\d.,]+)\]/)?.[1] || '';
-    }
+    let modalLocationData = modalInput.value.match(/\[Location: ([\d.,]+)\]/)?.[1] || '';
     if (modalLocationData) {
         formData.append('location', modalLocationData);
     }
@@ -756,6 +855,12 @@ function handleModalPostSubmit() {
         if (data.success) {
             showSuccessPopup();
             modalInput.value = '';
+            oddsInput.value = '';
+            betType.value = 'single';
+            eachWay.checked = false;
+            rule4.checked = false;
+            deadHeat.checked = false;
+            stakeInput.value = '';
             modalInput.dataset.gifUrl = '';
             modalInput.dataset.imageFile = '';
             if (modalImageInput) modalImageInput.value = '';
@@ -772,6 +877,7 @@ function handleModalPostSubmit() {
         alert('An error occurred while posting the tip.');
     });
 }
+
 
 export { 
     applyFormatting, 

@@ -159,11 +159,9 @@
         {% endblock %}
     </div>
 
-    <!-- Modal for posting tips -->
     <div class="post-modal" id="post-modal">
         <div class="post-modal-content">
             <div class="post-user">
-                <!-- User info and post options -->
                 {% if request.user.is_authenticated and request.user.userprofile.avatar %}
                     <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
                 {% else %}
@@ -185,12 +183,58 @@
                     {% endif %}
                 </div>
             </div>
-            <textarea placeholder="Post a Tip..." class="post-input"></textarea>
+            <textarea placeholder="Post a Tip (e.g., Team A to win)..." class="post-input"></textarea>
+            <!-- New Tip-Specific Fields -->
+            <div class="tip-details">
+                <div class="tip-odds">
+                    <label for="odds-type">Odds Format:</label>
+                    <select class="odds-type" name="odds-type">
+                        <option value="decimal">Decimal</option>
+                        <option value="fractional">Fractional</option>
+                    </select>
+                    <input type="text" class="odds-input" placeholder="Enter odds (e.g., 2.5 or 3/2)" name="odds">
+                </div>
+                <div class="tip-bet-type">
+                    <label for="bet-type">Bet Type:</label>
+                    <select class="bet-type" name="bet-type">
+                        <option value="single">Single</option>
+                        <option value="double">Double</option>
+                        <option value="treble">Treble</option>
+                        <option value="fourfold">Fourfold</option>
+                        <option value="fivefold">Fivefold</option>
+                        <option value="sixfold">Sixfold</option>
+                        <option value="sevenfold">Sevenfold</option>
+                        <option value="eightfold">Eightfold</option>
+                        <option value="accumulator">Accumulator</option>
+                        <option value="trixie">Trixie</option>
+                        <option value="yankee">Yankee</option>
+                        <option value="canadian">Canadian / Super Yankee</option>
+                        <option value="patent">Patent</option>
+                        <option value="lucky15">Lucky 15</option>
+                        <option value="lucky31">Lucky 31</option>
+                        <option value="lucky63">Lucky 63</option>
+                        <option value="heinz">Heinz</option>
+                        <option value="super_heinz">Super Heinz</option>
+                        <option value="goliath">Goliath</option>
+                        <option value="super_heinz_singles">Super Heinz with Singles</option>
+                        <option value="super_goliath">Super Goliath</option>
+                    </select>
+                </div>
+                <div class="tip-conditions">
+                    <label>Conditions:</label>
+                    <label><input type="checkbox" name="each-way"> Each Way</label>
+                    <label><input type="checkbox" name="rule4"> Rule 4</label>
+                    <label><input type="checkbox" name="dead-heat"> Dead Heat</label>
+                </div>
+                <div class="tip-stake">
+                    <label for="stake">Stake (Optional):</label>
+                    <input type="number" class="stake-input" name="stake" placeholder="Enter stake (e.g., 10)" step="0.01" min="0">
+                </div>
+            </div>
             <div class="post-preview" style="display: none;">
                 <img src="" alt="Preview" class="preview-media">
                 <button class="remove-preview">×</button>
             </div>
-            <!-- Post formatting and media options -->
             <div class="post-actions">
                 <button class="post-action-btn image" aria-label="Add image"><i class="fas fa-image"></i></button>
                 <button class="post-action-btn gif" aria-label="Add GIF"><i class="far fa-file-image"></i></button>

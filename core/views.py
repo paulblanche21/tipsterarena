@@ -12,11 +12,14 @@ from django.conf import settings
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework import generics
+from rest_framework.views import APIView  # Added for VerifyTipView
+from rest_framework.response import Response  # Added for VerifyTipView
+from rest_framework import generics, status  # Updated to include status
 from rest_framework.serializers import ModelSerializer
 from datetime import datetime
 import json
 from django.template.loader import render_to_string  # For AJAX rendering
+from django.utils import timezone
 
 import logging
 import bleach
@@ -191,6 +194,11 @@ def profile(request, username):
     form = UserProfileForm(instance=user_profile) if is_owner else None
     is_following = False if is_owner else Follow.objects.filter(follower=request.user, followed=user).exists()
 
+     # Fetch user metrics
+    win_rate = user_profile.win_rate
+    total_tips = user_profile.total_tips
+    wins = user_profile.wins
+
     return render(request, 'core/profile.html', {
         'user': user,
         'user_profile': user_profile,
@@ -200,7 +208,10 @@ def profile(request, username):
         'form': form,
         'is_owner': is_owner,
         'is_following': is_following,
-    })
+        'win_rate': win_rate,
+        'total_tips': total_tips,
+        'wins': wins,
+        })
 
 # View to handle profile editing
 @login_required
@@ -584,6 +595,18 @@ def suggested_users_api(request):
 
     return JsonResponse({'users': users_data})
 
+# Serializer for Tip model (updated to include new fields)
+class TipSerializer(ModelSerializer):
+    class Meta:
+        model = Tip
+        fields = [
+            'id', 'user', 'sport', 'text', 'image', 'gif_url', 'gif_width', 'gif_height',
+            'poll', 'emojis', 'location', 'scheduled_at', 'audience', 'created_at',
+            'odds', 'odds_format', 'bet_type', 'conditions', 'stake', 'status',
+            'resolution_note', 'verified_at'
+        ]
+
+
 # View to post a new tip
 @csrf_exempt
 def post_tip(request):
@@ -599,11 +622,30 @@ def post_tip(request):
             poll = request.POST.get('poll', '{}')
             emojis = request.POST.get('emojis', '{}')
 
+            # New fields
+            odds = request.POST.get('odds')
+            odds_format = request.POST.get('odds_format')
+            bet_type = request.POST.get('bet_type')
+            conditions = request.POST.get('conditions', '{}')  # JSON string
+            stake = request.POST.get('stake')
+
             if not text:
                 return JsonResponse({'success': False, 'error': 'Tip text cannot be empty.'}, status=400)
+            if not odds:
+                return JsonResponse({'success': False, 'error': 'Odds are required.'}, status=400)
+            if not odds_format:
+                return JsonResponse({'success': False, 'error': 'Odds format is required.'}, status=400)
+            if not bet_type:
+                return JsonResponse({'success': False, 'error': 'Bet type is required.'}, status=400)
 
             allowed_tags = ['b', 'i']
             sanitized_text = bleach.clean(text, tags=allowed_tags, strip=True)
+
+            # Parse conditions JSON
+            try:
+                conditions_dict = json.loads(conditions)
+            except json.JSONDecodeError:
+                conditions_dict = {}
 
             tip = Tip.objects.create(
                 user=request.user,
@@ -614,9 +656,14 @@ def post_tip(request):
                 gif_url=gif_url,
                 location=location,
                 poll=poll,
-                emojis=emojis
+                emojis=emojis,
+                odds=odds,
+                odds_format=odds_format,
+                bet_type=bet_type,
+                conditions=conditions_dict,
+                stake=float(stake) if stake else None
             )
-
+            
             response_data = {
                 'success': True,
                 'message': 'Tip posted successfully!',
@@ -629,12 +676,74 @@ def post_tip(request):
                     'username': tip.user.username,
                     'handle': tip.user.userprofile.handle or f"@{tip.user.username}",
                     'avatar': tip.user.userprofile.avatar.url if tip.user.userprofile.avatar else settings.STATIC_URL + 'img/default-avatar.png',
+                    'sport': tip.sport,
+                    'odds': tip.odds,
+                    'odds_format': tip.odds_format,
+                    'bet_type': tip.bet_type,
+                    'conditions': tip.conditions,
+                    'stake': tip.stake,
+                    'status': tip.status,
                 }
             }
             return JsonResponse(response_data)
         except Exception as e:
+            logger.error(f"Error posting tip: {str(e)}")
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
     return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
+
+
+# View to verify a tip and update user metrics
+@csrf_exempt
+@login_required
+def verify_tip(request):
+    """Handle verification of a tip and update user metrics via POST request."""
+    if request.method == 'POST':
+        try:
+            tip_id = request.POST.get('tip_id')
+            status = request.POST.get('status')  # 'won' or 'lost'
+            resolution_note = request.POST.get('resolution_note', '')
+
+            if not tip_id:
+                return JsonResponse({'success': False, 'error': 'Tip ID is required'}, status=400)
+            if not status:
+                return JsonResponse({'success': False, 'error': 'Status is required'}, status=400)
+            if status not in ['won', 'lost']:
+                return JsonResponse({'success': False, 'error': 'Invalid status value'}, status=400)
+
+            tip = get_object_or_404(Tip, id=tip_id)
+            tip.status = status
+            tip.resolution_note = resolution_note
+            tip.verified_at = timezone.now()
+            tip.save()
+
+            # Update user metrics
+            user = tip.user
+            user_tips = Tip.objects.filter(user=user, status__in=['won', 'lost'])
+            total_tips = user_tips.count()
+            wins = user_tips.filter(status='won').count()
+            win_rate = (wins / total_tips * 100) if total_tips > 0 else 0
+
+            # Update user profile
+            user_profile = user.userprofile
+            user_profile.win_rate = win_rate
+            user_profile.total_tips = total_tips
+            user_profile.wins = wins
+            user_profile.save()
+
+            return JsonResponse({
+                'success': True,
+                'message': 'Tip verified successfully',
+                'win_rate': win_rate,
+                'total_tips': total_tips,
+                'wins': wins,
+            })
+        except Tip.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Tip not found'}, status=404)
+        except Exception as e:
+            logger.error(f"Error verifying tip: {str(e)}")
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
+
 
 # Serializer for RaceMeeting model
 class RaceMeetingSerializer(ModelSerializer):
@@ -696,6 +805,37 @@ def trending_tips_api(request):
         })
 
     return JsonResponse({'trending_tips': tips_data})
+
+# Class-based view to verify a tip and update user metrics
+class VerifyTipView(APIView):
+    def post(self, request):
+        tip_id = request.POST.get('tip_id')
+        status = request.POST.get('status')  # 'won' or 'lost'
+        resolution_note = request.POST.get('resolution_note', '')
+
+        try:
+            tip = Tip.objects.get(id=tip_id)
+            tip.status = status
+            tip.resolution_note = resolution_note
+            tip.verified_at = timezone.now()
+            tip.save()
+
+            # Update user metrics
+            user = tip.user
+            user_tips = Tip.objects.filter(user=user, status__in=['won', 'lost'])
+            total_tips = user_tips.count()
+            wins = user_tips.filter(status='won').count()
+            win_rate = (wins / total_tips * 100) if total_tips > 0 else 0
+
+            # Update user profile (assuming a UserProfile model)
+            user.userprofile.win_rate = win_rate
+            user.userprofile.total_tips = total_tips
+            user.userprofile.wins = wins
+            user.userprofile.save()
+
+            return Response({'success': True, 'win_rate': win_rate}, status=status.HTTP_200_OK)
+        except Tip.DoesNotExist:
+            return Response({'success': False, 'error': 'Tip not found'}, status=status.HTTP_404_NOT_FOUND)
 
 # API view for current user info
 @login_required
@@ -792,6 +932,12 @@ def search(request):
             'avatar_url': avatar_url,
             'profile_url': f"/profile/{tip.user.username}/",
             'created_at': tip.created_at.isoformat(),
+            'odds': tip.odds,
+            'odds_format': tip.odds_format,
+            'bet_type': tip.bet_type,
+            'conditions': tip.conditions,
+            'stake': tip.stake,
+            'status': tip.status,
         })
 
     return JsonResponse({

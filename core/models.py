@@ -2,6 +2,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import Max
+from django.utils import timezone
 
 # Model representing a user's tip
 class Tip(models.Model):
@@ -34,6 +35,55 @@ class Tip(models.Model):
         default='everyone'
     )  # Visibility setting
     created_at = models.DateTimeField(auto_now_add=True)  # Timestamp of tip creation
+    # New fields for tip details
+    odds = models.CharField(max_length=20)  # Store odds as a string (e.g., "2.5" or "3/2")
+    odds_format = models.CharField(
+        max_length=20,
+        choices=[
+            ('decimal', 'Decimal'),
+            ('fractional', 'Fractional'),
+        ]
+    )  # Format of the odds
+    bet_type = models.CharField(
+        max_length=50,
+        choices=[
+            ('single', 'Single'),
+            ('double', 'Double'),
+            ('treble', 'Treble'),
+            ('fourfold', 'Fourfold'),
+            ('fivefold', 'Fivefold'),
+            ('sixfold', 'Sixfold'),
+            ('sevenfold', 'Sevenfold'),
+            ('eightfold', 'Eightfold'),
+            ('accumulator', 'Accumulator'),
+            ('trixie', 'Trixie'),
+            ('yankee', 'Yankee'),
+            ('canadian', 'Canadian / Super Yankee'),
+            ('patent', 'Patent'),
+            ('lucky15', 'Lucky 15'),
+            ('lucky31', 'Lucky 31'),
+            ('lucky63', 'Lucky 63'),
+            ('heinz', 'Heinz'),
+            ('super_heinz', 'Super Heinz'),
+            ('goliath', 'Goliath'),
+            ('super_heinz_singles', 'Super Heinz with Singles'),
+            ('super_goliath', 'Super Goliath'),
+        ]
+    )  # Type of bet
+    conditions = models.JSONField(default=dict)  # Store conditions as JSON (e.g., {"eachWay": true, "rule4": false, "deadHeat": false})
+    stake = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Optional stake amount
+    # Fields for backend verification
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ('pending', 'Pending'),
+            ('won', 'Won'),
+            ('lost', 'Lost'),
+        ],
+        default='pending'
+    )  # Status of the tip after verification
+    resolution_note = models.TextField(blank=True, null=True)  # Optional note explaining the verification result
+    verified_at = models.DateTimeField(blank=True, null=True)  # Timestamp of verification
 
     def __str__(self):
         return f"{self.user.username} - {self.sport}: {self.text[:20]}"  # String representation for admin/debugging
@@ -62,6 +112,10 @@ class UserProfile(models.Model):
         default='everyone',
         help_text="Who can send you message requests"
     )  # Message permission setting
+    # New fields for user metrics
+    win_rate = models.FloatField(default=0.0)  # Percentage of tips won
+    total_tips = models.PositiveIntegerField(default=0)  # Total number of tips (won or lost)
+    wins = models.PositiveIntegerField(default=0)  # Number of tips won
 
     @property
     def followers_count(self):

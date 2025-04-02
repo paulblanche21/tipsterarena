@@ -49,6 +49,7 @@ urlpatterns = [
     path('api/share-comment/', views.share_comment, name='share_comment'),  # Share a comment
     path('toggle-bookmark/', views.toggle_bookmark, name='toggle_bookmark'),  # Toggle bookmark on a tip
     path('send-message/', views.send_message, name='send_message'),  # Send a message
+    path('api/verify-tip/', views.VerifyTipView.as_view(), name='verify_tip'),
 
     # API routes for data retrieval
     path('api/horse-racing-fixtures/', views.horse_racing_fixtures, name='horse_racing_fixtures'),  # Horse racing fixtures

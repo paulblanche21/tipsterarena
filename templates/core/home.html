@@ -10,7 +10,6 @@
         <!-- Tip posting interface -->
         <div class="post-box">
             <div class="post-user">
-                <!-- User avatar and posting options -->
                 {% if request.user.is_authenticated and request.user.userprofile.avatar %}
                     <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar">
                 {% else %}
@@ -20,7 +19,7 @@
                     <span class="post-username">{{ request.user.username|default:"Guest" }}</span>
                     <select class="post-audience">
                         <option value="everyone">Everyone</option>
-                        <option value="邀请码="followers">Followers</option>
+                        <option value="followers">Followers</option>
                     </select>
                     <select class="post-sport" {% if sport %}disabled{% endif %}>
                         <option value="football" {% if sport == 'football' %}selected{% endif %}>Football</option>
@@ -30,13 +29,59 @@
                     </select>
                 </div>
             </div>
-            <textarea placeholder="Post a Tip..." class="post-input" maxlength="280"></textarea>
+            <textarea placeholder="Post a Tip (e.g., Team A to win)..." class="post-input" maxlength="280"></textarea>
+            <!-- New Tip-Specific Fields -->
+            <div class="tip-details">
+                <div class="tip-odds">
+                    <label for="odds-type">Odds Format:</label>
+                    <select class="odds-type" name="odds-type">
+                        <option value="decimal">Decimal</option>
+                        <option value="fractional">Fractional</option>
+                    </select>
+                    <input type="text" class="odds-input" placeholder="Enter odds (e.g., 2.5 or 3/2)" name="odds">
+                </div>
+                <div class="tip-bet-type">
+                    <label for="bet-type">Bet Type:</label>
+                    <select class="bet-type" name="bet-type">
+                        <option value="single">Single</option>
+                        <option value="double">Double</option>
+                        <option value="treble">Treble</option>
+                        <option value="fourfold">Fourfold</option>
+                        <option value="fivefold">Fivefold</option>
+                        <option value="sixfold">Sixfold</option>
+                        <option value="sevenfold">Sevenfold</option>
+                        <option value="eightfold">Eightfold</option>
+                        <option value="accumulator">Accumulator</option>
+                        <option value="trixie">Trixie</option>
+                        <option value="yankee">Yankee</option>
+                        <option value="canadian">Canadian / Super Yankee</option>
+                        <option value="patent">Patent</option>
+                        <option value="lucky15">Lucky 15</option>
+                        <option value="lucky31">Lucky 31</option>
+                        <option value="lucky63">Lucky 63</option>
+                        <option value="heinz">Heinz</option>
+                        <option value="super_heinz">Super Heinz</option>
+                        <option value="goliath">Goliath</option>
+                        <option value="super_heinz_singles">Super Heinz with Singles</option>
+                        <option value="super_goliath">Super Goliath</option>
+                    </select>
+                </div>
+                <div class="tip-conditions">
+                    <label>Conditions:</label>
+                    <label><input type="checkbox" name="each-way"> Each Way</label>
+                    <label><input type="checkbox" name="rule4"> Rule 4</label>
+                    <label><input type="checkbox" name="dead-heat"> Dead Heat</label>
+                </div>
+                <div class="tip-stake">
+                    <label for="stake">Stake (Optional):</label>
+                    <input type="number" class="stake-input" name="stake" placeholder="Enter stake (e.g., 10)" step="0.01" min="0">
+                </div>
+            </div>
             <div class="post-preview" style="display: none;">
                 <img src="" alt="Preview" class="preview-media">
                 <button class="remove-preview">×</button>
             </div>
             <div class="post-footer">
-                <!-- Post action buttons and submission controls -->
                 <div class="post-actions">
                     <button class="post-action-btn image" aria-label="Add image"><i class="fas fa-image"></i></button>
                     <button class="post-action-btn gif" aria-label="Add GIF"><i class="far fa-file-image"></i></button>
@@ -58,7 +103,6 @@
         <div class="tip-feed">
             {% for tip in tips %}
             <div class="tip" data-tip-id="{{ tip.id }}">
-                <!-- Tip author avatar -->
                 {% if tip.user.userprofile.avatar %}
                     <img src="{{ tip.user.userprofile.avatar.url }}" alt="{{ tip.user.username }} Avatar" class="tip-avatar">
                 {% else %}
@@ -70,7 +114,6 @@
                             <strong>{{ tip.user.username }}</strong>
                             <span class="user-handle">{{ tip.user.userprofile.handle }}</span>
                         </a>
-                        <!-- Sport-specific emoji -->
                         {% if tip.sport == 'football' %}⚽{% endif %}
                         {% if tip.sport == 'golf' %}⛳{% endif %}
                         {% if tip.sport == 'tennis' %}🎾{% endif %}
@@ -78,16 +121,29 @@
                     </div>
                     <div class="tip-body">
                         <p>{{ tip.text|safe }}</p>
+                        <div class="tip-meta">
+                            <span>Odds: {{ tip.odds }} ({{ tip.odds_format }})</span>
+                            <span>Bet Type: {{ tip.bet_type }}</span>
+                            {% if tip.conditions.eachWay or tip.conditions.rule4 or tip.conditions.deadHeat %}
+                                <span>Conditions: 
+                                    {% if tip.conditions.eachWay %}Each Way{% endif %}
+                                    {% if tip.conditions.rule4 %}{% if tip.conditions.eachWay %}, {% endif %}Rule 4{% endif %}
+                                    {% if tip.conditions.deadHeat %}{% if tip.conditions.eachWay or tip.conditions.rule4 %}, {% endif %}Dead Heat{% endif %}
+                                </span>
+                            {% endif %}
+                            {% if tip.stake %}
+                                <span>Stake: {{ tip.stake }}</span>
+                            {% endif %}
+                            <span>Status: {{ tip.status }}</span>
+                        </div>
                         {% if tip.image %}
-                            <img src="{{ tip.image.url }}" alt="Tip Image" class="tip-image"
-                                width="{{ tip.gif_width|default:582 }}" height="{{tip.gif_height|default:300 }}">
+                            <img src="{{ tip.image.url }}" alt="Tip Image" class="tip-image" width="{{ tip.gif_width|default:582 }}" height="{{tip.gif_height|default:300 }}">
                         {% endif %}
                         {% if tip.gif_url %}
                             <img src="{{ tip.gif_url }}" alt="Tip GIF" class="tip-image" width="582" height="300">
                         {% endif %}
                     </div>
                     <small class="tip-timestamp">{{ tip.created_at|date:"F j, Y, g:i a" }}</small>
-                    <!-- Interaction buttons and counts -->
                     <div class="tip-actions">
                         <div class="tip-action-group">
                             <a href="#" class="tip-action tip-action-like" data-action="like"><i class="fas fa-heart"></i></a>
