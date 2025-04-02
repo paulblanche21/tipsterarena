@@ -607,12 +607,20 @@ i {
     height: 100%;              /* Full height */
     background-color: rgba(0, 31, 63, 0.5);  /* Dark blue with transparency */
     z-index: 1004;             /* Above comment-modal */
+    opacity: 0;                /* Start fully transparent for fade-in */
+    transition: opacity 0.3s ease-in-out; /* Smooth fade transition */
+}
+
+/* When active, fade in */
+.success-popup.active {
+    display: block;            /* Show when active */
+    opacity: 1;                /* Fully visible */
 }
 
 /* Content within success popup */
 .success-popup-content {
     background-color: var(--secondary-bg);  /* White background */
-    border: 3px solid var(--red-accent);  /* Red border */
+    border: 3px solid #28a745;  /* Green border for success (replace with your green variable if available) */
     border-radius: var(--border-radius);  /* Rounded corners */
     padding: var(--padding-small);  /* Consistent padding */
     width: 300px;              /* Fixed width */
@@ -624,6 +632,13 @@ i {
     transform: translate(-50%, -50%);  /* Center precisely */
     box-shadow: var(--shadow-light);  /* Subtle shadow */
     color: var(--primary-bg);  /* Dark blue text */
+    opacity: 0;                /* Start transparent for fade-in */
+    transition: opacity 0.3s ease-in-out; /* Smooth fade transition */
+}
+
+/* When parent is active, fade in content */
+.success-popup.active .success-popup-content {
+    opacity: 1;                /* Fully visible */
 }
 
 /* Paragraph within success popup content */
@@ -632,23 +647,6 @@ i {
     font-size: var(--font-size-base);  /* Base font size */
     font-weight: 600;          /* Bold text */
     color: var(--primary-bg);  /* Dark blue text */
-}
-
-/* Close button within success popup */
-.success-popup-close {
-    position: absolute;        /* Positioned in top-right */
-    top: 10px;                 /* Offset from top */
-    right: 10px;               /* Offset from right */
-    font-size: 24px;           /* Larger font */
-    color: var(--gray-light);  /* Gray color */
-    cursor: pointer;           /* Indicate clickability */
-    border: none;              /* No border */
-    background: none;          /* No background */
-}
-
-/* Hover state for success popup close button */
-.success-popup-close:hover {
-    color: var(--red-accent);  /* Red on hover */
 }
 
 /* Styles for images within tips (duplicate definition) */

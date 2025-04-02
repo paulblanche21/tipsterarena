@@ -3,28 +3,23 @@ import { getCSRFToken } from './utils.js';
 // Giphy API Key
 const GIPHY_API_KEY = 'Lpfo7GvcccncunU2gvf0Cy9N3NCzrg35';
 
-// Function to show the success popup
+// Function to show the success popup with fade animation and auto-hide after 3 seconds
 function showSuccessPopup() {
     const popup = document.getElementById('success-popup');
     if (popup) {
-        popup.style.display = 'block';
-        
-        const closeBtn = popup.querySelector('.success-popup-close');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
-                popup.style.display = 'none';
-            });
-        }
-        
-        popup.addEventListener('click', (event) => {
-            if (event.target === popup) {
-                popup.style.display = 'none';
-            }
-        });
-        
+        popup.style.display = 'block'; // Make visible initially
         setTimeout(() => {
-            popup.style.display = 'none';
-        }, 3000);
+            popup.classList.add('active'); // Trigger fade-in after a tiny delay for transition to work
+        }, 10); // Small delay ensures transition kicks in
+
+        // Auto-hide after 3 seconds
+        setTimeout(() => {
+            popup.classList.remove('active'); // Start fade-out
+            // Hide completely after fade-out transition (300ms)
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, 300);
+        }, 3000); // Display for 3 seconds
     }
 }
 

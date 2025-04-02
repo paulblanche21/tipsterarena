@@ -9,15 +9,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const page = getCurrentPage();
 
-  // Wrap everything in an async IIFE to allow await usage
   (async () => {
     // Shared utilities loaded on all pages
     const sharedModules = await Promise.all([
       import('./config.js'),
       import('./pages/nav.js').then(module => module.setupNavigation()),
-      import('./pages/carousel.js').then(module => module.initCarousel()),
-      import('./pages/feed.js').then(module => module.attachFollowButtonListeners()),
-      import('./pages/search.js').then(module => module.setupSearch()), // Add search module
+      import('./pages/upcoming-events.js').then(module => module.initCarousel()), // Updated from carousel.js
+      import('./pages/upcoming-events.js').then(module => module.attachFollowButtonListeners()), // Updated from feed.js
+      import('./pages/search.js').then(module => module.setupSearch()),
     ]).catch(error => console.error('Error loading shared modules:', error));
 
     // Page-specific script loading
@@ -28,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function () {
           module.setupPostModal();
         }),
         import('./pages/trending-tips.js').then(module => module.init()),
-        import('./pages/feed.js').then(module => module.setupShowMoreButtons()),
+        import('./pages/upcoming-events.js').then(module => module.setupShowMoreButtons()), // Updated from feed.js
         import('./tips.js').then(module => {
           module.setupTipInteractions();
           module.setupReplyModal();
@@ -76,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function () {
           module.setupPostModal();
         }),
         import('./pages/trending-tips.js').then(module => module.init()),
-        import('./pages/feed.js').then(module => module.setupShowMoreButtons()),
+        import('./pages/upcoming-events.js').then(module => module.setupShowMoreButtons()), // Updated from feed.js
         import('./tips.js').then(module => {
           module.setupTipInteractions();
           module.setupReplyModal();
@@ -123,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function () {
         import('./pages/post.js').then(module => {
           module.setupPostModal();
         }),
-        import('./pages/feed.js').then(module => module.setupShowMoreButtons()),
+        import('./pages/upcoming-events.js').then(module => module.setupShowMoreButtons()), // Updated from feed.js
         import('./tips.js').then(module => {
           module.setupTipInteractions();
           module.setupReplyModal();
@@ -170,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function () {
           module.setupCentralFeedPost();
           module.setupPostModal();
         }),
-        import('./pages/feed.js').then(module => module.setupShowMoreButtons()),
+        import('./pages/upcoming-events.js').then(module => module.setupShowMoreButtons()), // Updated from feed.js
         import('./tips.js').then(module => {
           module.setupTipInteractions();
           module.setupReplyModal();
@@ -224,7 +223,7 @@ document.addEventListener('DOMContentLoaded', function () {
           const footballEventsElement = document.getElementById('football-events');
           if (footballEventsElement) {
             const footballEvents = dynamicEvents.football || [];
-            const football去看EventsHtml = await module.formatFootballList(footballEvents, 'football', false);
+            const footballEventsHtml = await module.formatFootballList(footballEvents, 'football', false);
             footballEventsElement.innerHTML = footballEventsHtml || '<p>No upcoming events available.</p>';
           }
 
@@ -297,7 +296,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Who to Follow (shared across pages)
+   // Who to Follow (shared across pages, including home)
     const followList = document.querySelector('.follow-list');
     if (followList) {
       fetch('/api/suggested-users/', {
@@ -306,31 +305,35 @@ document.addEventListener('DOMContentLoaded', function () {
           'Content-Type': 'application/json',
         },
       })
-        .then(response => response.json())
-        .then(data => {
-          followList.innerHTML = '';
-          if (data.users && data.users.length > 0) {
-            data.users.forEach(user => {
-              followList.innerHTML += `
-                <div class="follow-item">
-                  <img src="${user.avatar_url}" alt="${user.username}" class="follow-avatar">
-                  <div class="follow-details">
-                    <a href="${user.profile_url}" class="follow-username">@${user.username}</a>
-                    <p class="follow-bio">${user.bio}</p>
-                  </div>
-                  <button class="follow-btn" data-username="${user.username}">Follow</button>
+      .then(response => response.json())
+      .then(data => {
+        followList.innerHTML = '';
+        if (data.users && data.users.length > 0) {
+          // Limit to 3 users initially
+          const limitedUsers = data.users.slice(0, 3);
+          limitedUsers.forEach(user => {
+            followList.innerHTML += `
+              <div class="follow-item">
+                <img src="${user.avatar_url}" alt="${user.username}" class="follow-avatar">
+                <div class="follow-details">
+                  <a href="${user.profile_url}" class="follow-username">@${user.username}</a>
+                  <p class="follow-bio">${user.bio}</p>
                 </div>
-              `;
-            });
-            import('./pages/feed.js').then(module => module.attachFollowButtonListeners());
-          } else {
-            followList.innerHTML = '<p>No suggested tipsters available.</p>';
-          }
-        })
-        .catch(error => {
-          console.error('Error fetching suggested users:', error);
-          followList.innerHTML = '<p>Error loading suggestions.</p>';
-        });
+                <button class="follow-btn" data-username="${user.username}">Follow</button>
+              </div>
+            `;
+          });
+          import('./pages/upcoming-events.js').then(module => module.attachFollowButtonListeners());
+        } else {
+          followList.innerHTML = '<p>No suggested tipsters available.</p>';
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching suggested users:', error);
+        followList.innerHTML = '<p>Error loading suggestions.</p>';
+      });
     }
+
+    // Rest of the page-specific logic (unchanged, omitted for brevity)
   })().catch(error => console.error('Error in async IIFE:', error));
-});
+  });
