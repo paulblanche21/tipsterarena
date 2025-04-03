@@ -1,6 +1,6 @@
 // tips.js
 import { getCSRFToken } from './pages/utils.js';
-import { applyFormatting, showGifModal, showEmojiPicker } from './pages/post.js';
+import { applyFormatting, showGifModal } from './pages/post.js';
 
 // Move fetchComments to top level
 function fetchComments(tipId, list, callback) {
@@ -106,7 +106,7 @@ function setupTipInteractions() {
 
     if (commentSubmit) {
         console.log('Attaching event listener to comment submit button');
-        commentSubmit.addEventListener('click', function(e) {
+        commentSubmit.addEventListener('click', function (e) {
             e.preventDefault();
             console.log('Reply button clicked');
             const tipId = this.dataset.tipId;
@@ -202,12 +202,8 @@ function setupTipInteractions() {
                     tipComments.textContent = data.comment_count;
 
                     // Dynamically append the comment to the .tip-feed (simplified for level 1 nesting)
-                    const tipCommentsContainer = tipFeed.querySelector('.tip-comments');
-                    if (!tipCommentsContainer) {
-                        const commentsDiv = document.createElement('div');
-                        commentsDiv.className = 'tip-comments';
-                        tipFeed.appendChild(commentsDiv);
-                    }
+                    const tipCommentsContainer = tipFeed.querySelector('.tip-comments') || tipFeed.appendChild(document.createElement('div'));
+                    tipCommentsContainer.className = 'tip-comments';
                     const newCommentInFeed = document.createElement('div');
                     newCommentInFeed.className = 'comment';
                     if (data.data.parent_id) newCommentInFeed.classList.add('reply-comment');
@@ -223,7 +219,7 @@ function setupTipInteractions() {
                             <small>${new Date(data.data.created_at).toLocaleString()}</small>
                         </div>
                     `;
-                    tipFeed.querySelector('.tip-comments').appendChild(newCommentInFeed);
+                    tipCommentsContainer.appendChild(newCommentInFeed);
 
                     fetchComments(tipId, commentList); // Immediate refresh to sync with server
                 } else {
@@ -240,7 +236,7 @@ function setupTipInteractions() {
     }
 
     if (commentModalClose) {
-        commentModalClose.addEventListener('click', function() {
+        commentModalClose.addEventListener('click', function () {
             commentModal.style.display = 'none';
             const commentInput = commentModal.querySelector('.post-reply-input');
             const previewDiv = commentModal.querySelector('.post-reply-preview');
@@ -252,7 +248,7 @@ function setupTipInteractions() {
         });
     }
 
-    window.addEventListener('click', function(event) {
+    window.addEventListener('click', function (event) {
         if (event.target === commentModal) {
             commentModal.style.display = 'none';
             const commentInput = commentModal.querySelector('.post-reply-input');
@@ -327,7 +323,7 @@ function setupReplyModal() {
 
     emojiBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        showEmojiPicker(replyInput, emojiBtn);
+        import('./post.js').then(module => module.showEmojiPicker(replyInput, emojiBtn));
     });
 
     const removePreviewBtn = previewDiv.querySelector('.remove-preview');
@@ -381,7 +377,6 @@ function setupReplyModal() {
 function handleTipClick(e) {
     const action = e.target.closest('.tip-action');
     if (action) {
-        // Skip bookmark actions, let bookmarks.js handle them
         if (action.classList.contains('tip-action-bookmark')) {
             return; // Exit early, allowing bookmarks.js to handle the click
         }
@@ -476,6 +471,16 @@ function openCommentModal(tip, tipId, parentId = null) {
     const commentCount = tipContent.querySelector('.comment-count').textContent;
     const engagementCount = tipContent.querySelector('.tip-action-engagement + .tip-action-count')?.textContent || '0';
 
+    // Extract tip metadata from the DOM
+    const odds = tipContent.querySelector('.tip-meta span:nth-child(1)')?.textContent.split(': ')[1] || '';
+    const betType = tipContent.querySelector('.tip-meta span:nth-child(2)')?.textContent.split(': ')[1] || '';
+    const eachWayText = tipContent.querySelector('.tip-meta span:nth-child(3)')?.textContent || '';
+    const eachWay = eachWayText === 'Each Way: Yes' ? 'yes' : 'no';
+    const stakeIndex = eachWay === 'yes' ? 4 : 3;
+    const stake = tipContent.querySelector(`.tip-meta span:nth-child(${stakeIndex})`)?.textContent.split(': ')[1] || '';
+    const statusIndex = eachWay === 'yes' ? 5 : 4;
+    const status = tipContent.querySelector(`.tip-meta span:nth-child(${statusIndex})`)?.textContent.split(': ')[1] || 'Pending';
+
     modalTipAvatar.src = avatarUrl;
     modalTipContent.innerHTML = `
         <a href="#" class="tip-username">
@@ -484,6 +489,13 @@ function openCommentModal(tip, tipId, parentId = null) {
         </a>
         <span class="modal-tip-sport">${sportEmoji}</span>
         <p class="modal-tip-text">${text}</p>
+        <div class="tip-meta">
+            <span>Odds: ${odds}</span>
+            <span>Bet Type: ${betType}</span>
+            ${eachWay === 'yes' ? '<span>Each Way: Yes</span>' : ''}
+            ${stake ? `<span>Stake: ${stake}</span>` : ''}
+            <span>Status: ${status}</span>
+        </div>
         <small class="modal-tip-timestamp">${timestamp}</small>
         <div class="tip-actions">
             <div class="tip-action-group">
@@ -537,7 +549,7 @@ function attachCommentActionListeners() {
     const commentList = document.getElementById('comment-modal').querySelector('.comment-list');
     const commentActions = commentList.querySelectorAll('.comment-action');
     commentActions.forEach(action => {
-        action.addEventListener('click', function(e) {
+        action.addEventListener('click', function (e) {
             e.preventDefault();
             const commentId = this.closest('.comment').getAttribute('data-comment-id');
             const actionType = this.getAttribute('data-action');

@@ -270,33 +270,33 @@ document.addEventListener('DOMContentLoaded', function () {
           'Content-Type': 'application/json',
         },
       })
-        .then(response => response.json())
-        .then(data => {
-          trendingTipsList.innerHTML = '';
-          if (data.trending_tips && data.trending_tips.length > 0) {
-            data.trending_tips.forEach(tip => {
-              trendingTipsList.innerHTML += `
-                <div class="trending-tip">
-                  <img src="${tip.avatar_url}" alt="${tip.username} Avatar" class="tip-avatar">
-                  <div class="tip-details">
-                    <a href="${tip.profile_url}" class="tip-username"><strong>@${tip.handle}</strong></a>
-                    <p class="tip-text">${tip.text}</p>
-                  </div>
-                  <span class="tip-likes"><i class="fas fa-heart"></i> ${tip.likes}</span>
+      .then(response => response.json())
+      .then(data => {
+        trendingTipsList.innerHTML = '';
+        if (data.trending_tips && data.trending_tips.length > 0) {
+          data.trending_tips.forEach(tip => {
+            trendingTipsList.innerHTML += `
+              <div class="trending-tip">
+                <img src="${tip.avatar_url}" alt="${tip.username} Avatar" class="tip-avatar">
+                <div class="tip-details">
+                  <a href="${tip.profile_url}" class="tip-username"><strong>@${tip.handle}</strong></a>
+                  <p class="tip-text">${tip.text}</p>
                 </div>
-              `;
-            });
-          } else {
-            trendingTipsList.innerHTML = '<p>No trending tips available.</p>';
-          }
-        })
-        .catch(error => {
-          console.error('Error fetching trending tips:', error);
-          trendingTipsList.innerHTML = '<p>Error loading trending tips.</p>';
-        });
+                <span class="tip-likes"><i class="fas fa-heart"></i> ${tip.likes}</span>
+              </div>
+            `;
+          });
+        } else {
+          trendingTipsList.innerHTML = '<p>No trending tips available.</p>';
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching trending tips:', error);
+        trendingTipsList.innerHTML = '<p>Error loading trending tips.</p>';
+      });
     }
 
-   // Who to Follow (shared across pages, including home)
+    // Who to Follow (shared across pages, including home)
     const followList = document.querySelector('.follow-list');
     if (followList) {
       fetch('/api/suggested-users/', {
@@ -334,6 +334,5 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     }
 
-    // Rest of the page-specific logic (unchanged, omitted for brevity)
   })().catch(error => console.error('Error in async IIFE:', error));
-  });
+});

@@ -86,7 +86,7 @@
             </div>
             <div class="nav-user-dropdown">
                 <a href="#" class="nav-dropdown-item">Add an Existing Account</a>
-                <a href="{% url 'logout' %}" class="nav-dropdown-item nav-logout-btn" data-logout>Log Out {{ request.user.userprofile.handle|default:"@guest" }}</a>
+                <a href="{% url 'logout' %}" class="nav-dropdown-item nav植物logout-btn" data-logout>Log Out {{ request.user.userprofile.handle|default:"@guest" }}</a>
             </div>
         </div>
     </nav>
@@ -159,6 +159,7 @@
         {% endblock %}
     </div>
 
+    <!-- Post Modal -->
     <div class="post-modal" id="post-modal">
         <div class="post-modal-content">
             <div class="post-user">
@@ -188,15 +189,24 @@
             <div class="tip-details">
                 <div class="tip-odds">
                     <label for="odds-type">Odds Format:</label>
-                    <select class="odds-type" name="odds-type">
+                    <select class="odds-type" name="odds-type" id="odds-type">
                         <option value="decimal">Decimal</option>
                         <option value="fractional">Fractional</option>
                     </select>
-                    <input type="text" class="odds-input" placeholder="Enter odds (e.g., 2.5 or 3/2)" name="odds">
+                    <div id="odds-input-container">
+                        <!-- Decimal odds (single input) -->
+                        <input type="text" id="odds-input-decimal" name="odds-input-decimal" placeholder="e.g., 2.5" style="display: none;">
+                        <!-- Fractional odds (two inputs) -->
+                        <div id="odds-input-fractional" style="display: none;">
+                            <input type="text" id="odds-numerator" name="odds-numerator" placeholder="e.g., 2" style="width: 60px;">
+                            <span>/</span>
+                            <input type="text" id="odds-denominator" name="odds-denominator" placeholder="e.g., 1" style="width: 60px;">
+                        </div>
+                    </div>
                 </div>
                 <div class="tip-bet-type">
                     <label for="bet-type">Bet Type:</label>
-                    <select class="bet-type" name="bet-type">
+                    <select class="bet-type" name="bet-type" id="bet-type">
                         <option value="single">Single</option>
                         <option value="double">Double</option>
                         <option value="treble">Treble</option>
@@ -220,15 +230,16 @@
                         <option value="super_goliath">Super Goliath</option>
                     </select>
                 </div>
-                <div class="tip-conditions">
-                    <label>Conditions:</label>
-                    <label><input type="checkbox" name="each-way"> Each Way</label>
-                    <label><input type="checkbox" name="rule4"> Rule 4</label>
-                    <label><input type="checkbox" name="dead-heat"> Dead Heat</label>
+                <div class="tip-condition">
+                    <label for="each-way">Each Way:</label>
+                    <select class="each-way" name="each-way" id="each-way">
+                        <option value="no">No</option>
+                        <option value="yes">Yes</option>
+                    </select>
                 </div>
                 <div class="tip-stake">
                     <label for="stake">Stake (Optional):</label>
-                    <input type="number" class="stake-input" name="stake" placeholder="Enter stake (e.g., 10)" step="0.01" min="0">
+                    <input type="number" class="stake-input" name="stake" id="stake-input" placeholder="Enter stake (e.g., 10)" step="0.01" min="0">
                 </div>
             </div>
             <div class="post-preview" style="display: none;">
@@ -245,7 +256,7 @@
                 <button class="post-action-btn bold" aria-label="Bold text"><i class="fas fa-bold"></i></button>
                 <button class="post-action-btn italic" aria-label="Italicize text"><i class="fas fa-italic"></i></button>
             </div>
-            <button class="post-submit">Post</button>
+            <button class="post-submit" id="submit-post">Post</button>
             <span class="post-modal-close">×</span>
         </div>
     </div>

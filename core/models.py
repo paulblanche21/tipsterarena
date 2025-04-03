@@ -35,8 +35,8 @@ class Tip(models.Model):
         default='everyone'
     )  # Visibility setting
     created_at = models.DateTimeField(auto_now_add=True)  # Timestamp of tip creation
-    # New fields for tip details
-    odds = models.CharField(max_length=20)  # Store odds as a string (e.g., "2.5" or "3/2")
+    # Updated fields for tip details
+    odds = models.CharField(max_length=20)  # Store odds as a string (e.g., "2.5" or "2/1")
     odds_format = models.CharField(
         max_length=20,
         choices=[
@@ -70,18 +70,27 @@ class Tip(models.Model):
             ('super_goliath', 'Super Goliath'),
         ]
     )  # Type of bet
-    conditions = models.JSONField(default=dict)  # Store conditions as JSON (e.g., {"eachWay": true, "rule4": false, "deadHeat": false})
+    each_way = models.CharField(
+        max_length=3,
+        choices=[
+            ('yes', 'Yes'),
+            ('no', 'No'),
+        ],
+        default='no'
+    )  # Single condition: Each Way (Yes/No)
     stake = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Optional stake amount
-    # Fields for backend verification
+    # Updated fields for backend verification
     status = models.CharField(
         max_length=20,
         choices=[
             ('pending', 'Pending'),
-            ('won', 'Won'),
-            ('lost', 'Lost'),
+            ('win', 'Win'),
+            ('loss', 'Loss'),
+            ('dead_heat', 'Dead Heat'),
+            ('void_non_runner', 'Void/Non Runner'),
         ],
         default='pending'
-    )  # Status of the tip after verification
+    )  # Updated status options
     resolution_note = models.TextField(blank=True, null=True)  # Optional note explaining the verification result
     verified_at = models.DateTimeField(blank=True, null=True)  # Timestamp of verification
 
@@ -125,119 +134,109 @@ class UserProfile(models.Model):
     def __str__(self):
         return f"{self.user.username}'s profile"  # String representation for admin/debugging
 
-# Model for tracking likes on tips or comments
+# (Remaining models - Like, Follow, Share, Comment, MessageThread, Message, RaceMeeting, RaceResult - unchanged)
 class Like(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='likes')  # User who liked
-    tip = models.ForeignKey(Tip, on_delete=models.CASCADE, related_name='likes', null=True, blank=True)  # Liked tip
-    comment = models.ForeignKey('Comment', on_delete=models.CASCADE, related_name='likes', null=True, blank=True)  # Liked comment
-    created_at = models.DateTimeField(auto_now_add=True)  # Timestamp of like
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='likes')
+    tip = models.ForeignKey(Tip, on_delete=models.CASCADE, related_name='likes', null=True, blank=True)
+    comment = models.ForeignKey('Comment', on_delete=models.CASCADE, related_name='likes', null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'tip', 'comment')  # Ensure a user can like a tip or comment only once
+        unique_together = ('user', 'tip', 'comment')
 
     def __str__(self):
         if self.tip:
             return f"{self.user.username} liked {self.tip.user.username}'s tip"
-        return f"{self.user.username} liked a comment"  # String representation for admin/debugging
+        return f"{self.user.username} liked a comment"
 
-# Model for tracking follow relationships between users
 class Follow(models.Model):
-    follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following')  # User following
-    followed = models.ForeignKey(User, on_delete=models.CASCADE, related_name='followers')  # User being followed
-    created_at = models.DateTimeField(auto_now_add=True)  # Timestamp of follow action
+    follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following')
+    followed = models.ForeignKey(User, on_delete=models.CASCADE, related_name='followers')
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('follower', 'followed')  # Prevent duplicate follows
+        unique_together = ('follower', 'followed')
 
     def __str__(self):
-        return f"{self.follower.username} follows {self.followed.username}"  # String representation for admin/debugging
+        return f"{self.follower.username} follows {self.followed.username}"
 
-# Model for tracking shares of tips or comments
 class Share(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='shares')  # User who shared
-    tip = models.ForeignKey(Tip, on_delete=models.CASCADE, related_name='shares', null=True, blank=True)  # Shared tip
-    comment = models.ForeignKey('Comment', on_delete=models.CASCADE, related_name='shares', null=True, blank=True)  # Shared comment
-    created_at = models.DateTimeField(auto_now_add=True)  # Timestamp of share
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='shares')
+    tip = models.ForeignKey(Tip, on_delete=models.CASCADE, related_name='shares', null=True, blank=True)
+    comment = models.ForeignKey('Comment', on_delete=models.CASCADE, related_name='shares', null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'tip', 'comment')  # Ensure a user can share a tip or comment only once
+        unique_together = ('user', 'tip', 'comment')
 
     def __str__(self):
         if self.tip:
             return f"{self.user.username} shared {self.tip.user.username}'s tip"
-        return f"{self.user.username} shared a comment"  # String representation for admin/debugging
+        return f"{self.user.username} shared a comment"
 
-# Model for comments on tips
 class Comment(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')  # Comment author
-    tip = models.ForeignKey(Tip, on_delete=models.CASCADE, related_name='comments')  # Associated tip
-    content = models.TextField(max_length=280)  # Comment text
-    created_at = models.DateTimeField(auto_now_add=True)  # Timestamp of comment
-    parent_comment = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')  # Support for nested replies
-    image = models.ImageField(upload_to='comments/', blank=True, null=True)  # Optional image attachment
-    gif_url = models.URLField(blank=True, null=True)  # Optional GIF URL
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
+    tip = models.ForeignKey(Tip, on_delete=models.CASCADE, related_name='comments')
+    content = models.TextField(max_length=280)
+    created_at = models.DateTimeField(auto_now_add=True)
+    parent_comment = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
+    image = models.ImageField(upload_to='comments/', blank=True, null=True)
+    gif_url = models.URLField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.user.username} commented on {self.tip.user.username}'s tip: {self.content[:20]}"  # String representation
+        return f"{self.user.username} commented on {self.tip.user.username}'s tip: {self.content[:20]}"
 
-# Model for message threads between users
 class MessageThread(models.Model):
-    participants = models.ManyToManyField(User, related_name='message_threads')  # Users in the thread
-    last_message = models.TextField(blank=True)  # Preview of the latest message
-    updated_at = models.DateTimeField(auto_now=True)  # Last update timestamp
+    participants = models.ManyToManyField(User, related_name='message_threads')
+    last_message = models.TextField(blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"Thread with {', '.join(p.username for p in self.participants.all()[:2])}"  # String representation
+        return f"Thread with {', '.join(p.username for p in self.participants.all()[:2])}"
 
     def get_other_participant(self, current_user):
-        """Retrieve the other participant in a two-user thread."""
         return self.participants.exclude(id=current_user.id).first()
 
     def update_last_message(self):
-        """Update the last_message field with the latest message content."""
         latest_message = self.messages.order_by('-created_at').first()
         if latest_message:
-            self.last_message = latest_message.content[:30]  # Truncate for brevity
+            self.last_message = latest_message.content[:30]
             self.updated_at = latest_message.created_at
             self.save()
 
-# Model for individual messages within a thread
 class Message(models.Model):
-    thread = models.ForeignKey(MessageThread, on_delete=models.CASCADE, related_name='messages')  # Associated thread
-    sender = models.ForeignKey(User, on_delete=models.CASCADE)  # Message sender
-    content = models.TextField()  # Message text
-    created_at = models.DateTimeField(auto_now_add=True)  # Timestamp of message
-    image = models.ImageField(upload_to='messages/', blank=True, null=True)  # Optional image attachment
-    gif_url = models.URLField(blank=True, null=True)  # Optional GIF URL
+    thread = models.ForeignKey(MessageThread, on_delete=models.CASCADE, related_name='messages')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    image = models.ImageField(upload_to='messages/', blank=True, null=True)
+    gif_url = models.URLField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.sender.username} in {self.thread}: {self.content[:20]}"  # String representation
+        return f"{self.sender.username} in {self.thread}: {self.content[:20]}"
 
     def save(self, *args, **kwargs):
-        """Override save to update thread's last_message after saving."""
         super().save(*args, **kwargs)
         self.thread.update_last_message()
 
-# Model for horse racing meetings
 class RaceMeeting(models.Model):
-    date = models.DateField()  # Date of the meeting
-    venue = models.CharField(max_length=100)  # Location of the meeting
-    url = models.URLField(unique=True)  # Unique URL for the meeting
+    date = models.DateField()
+    venue = models.CharField(max_length=100)
+    url = models.URLField(unique=True)
 
     def __str__(self):
-        return f"{self.venue} - {self.date}"  # String representation
+        return f"{self.venue} - {self.date}"
 
     class Meta:
-        unique_together = ('date', 'venue')  # Prevent duplicate meetings by date and venue
+        unique_together = ('date', 'venue')
 
-# Model for race results within a meeting
 class RaceResult(models.Model):
-    meeting = models.ForeignKey(RaceMeeting, on_delete=models.CASCADE, related_name='results')  # Associated meeting
-    time = models.CharField(max_length=10)  # Race time (e.g., "14:30")
-    name = models.CharField(max_length=200)  # Race name
-    position = models.CharField(max_length=10)  # Finishing position
-    horse = models.CharField(max_length=100)  # Horse name
-    jockey = models.CharField(max_length=100)  # Jockey name
+    meeting = models.ForeignKey(RaceMeeting, on_delete=models.CASCADE, related_name='results')
+    time = models.CharField(max_length=10)
+    name = models.CharField(max_length=200)
+    position = models.CharField(max_length=10)
+    horse = models.CharField(max_length=100)
+    jockey = models.CharField(max_length=100)
 
     def __str__(self):
-        return f"{self.name} - {self.horse} (Position: {self.position})"  # String representation
+        return f"{self.name} - {self.horse} (Position: {self.position})"

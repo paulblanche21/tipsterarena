@@ -12,47 +12,44 @@ from django.conf import settings
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.views import APIView  # Added for VerifyTipView
-from rest_framework.response import Response  # Added for VerifyTipView
-from rest_framework import generics, status  # Updated to include status
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import generics, status
 from rest_framework.serializers import ModelSerializer
 from datetime import datetime
 import json
-from django.template.loader import render_to_string  # For AJAX rendering
+from django.template.loader import render_to_string
 from django.utils import timezone
 
 import logging
 import bleach
 
-logger = logging.getLogger(__name__)  # Logger for debugging and error tracking
+logger = logging.getLogger(__name__)
 
 # View for the landing page
 def landing(request):
-    """Render the landing page or redirect authenticated users to home."""
     if request.user.is_authenticated:
-        return redirect('home')  # Redirect logged-in users
-    return render(request, 'core/landing.html')  # Display landing page for anonymous users
+        return redirect('home')
+    return render(request, 'core/landing.html')
 
 # View for user signup
 def signup(request):
-    """Handle user signup and auto-login."""
     if request.user.is_authenticated:
-        return redirect('home')  # Redirect if already logged in
+        return redirect('home')
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()  # Create new user
-            login(request, user)  # Log them in
-            return redirect('home')  # Redirect to home page
+            user = form.save()
+            login(request, user)
+            return redirect('home')
     else:
-        form = CustomUserCreationForm()  # Empty form for GET requests
+        form = CustomUserCreationForm()
     return render(request, 'core/signup.html', {'form': form})
 
 # View for user login
 def login_view(request):
-    """Handle user login and redirect to home on success."""
     if request.user.is_authenticated:
-        return redirect('home')  # Redirect if already logged in
+        return redirect('home')
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
@@ -60,25 +57,20 @@ def login_view(request):
             password = form.cleaned_data.get('password')
             user = authenticate(username=username, password=password)
             if user is not None:
-                login(request, user)  # Log in the user
-                return redirect('home')  # Redirect to home page
+                login(request, user)
+                return redirect('home')
     else:
-        form = AuthenticationForm()  # Empty form for GET requests
+        form = AuthenticationForm()
     return render(request, 'core/login.html', {'form': form})
 
-# View for the home page (authenticated users only)
+# View for the home page
 @login_required
 def home(request):
-    """Display the user's home feed with tips, trending tips, and suggested tipsters."""
-    # Fetch latest tips for the main feed
     tips = Tip.objects.all().order_by('-created_at')[:20]
-
-    # Ensure UserProfile exists for all tip authors
     for tip in tips:
         if not hasattr(tip.user, 'userprofile'):
             UserProfile.objects.get_or_create(user=tip.user)
 
-    # Fetch trending tips based on engagement
     trending_tips = Tip.objects.annotate(
         total_likes=Count('likes'),
         total_shares=Count('shares')
@@ -86,12 +78,10 @@ def home(request):
         total_engagement=F('total_likes') + F('total_shares')
     ).order_by('-total_engagement')[:4]
 
-    # Ensure UserProfile exists for trending tip authors
     for tip in trending_tips:
         if not hasattr(tip.user, 'userprofile'):
             UserProfile.objects.get_or_create(user=tip.user)
 
-    # Fetch suggested tipsters excluding current user and followed users
     current_user = request.user
     followed_users = Follow.objects.filter(follower=current_user).values_list('followed_id', flat=True)
     suggested_users = User.objects.filter(
@@ -100,7 +90,7 @@ def home(request):
         id__in=followed_users
     ).exclude(
         id=current_user.id
-    ).distinct()[:2]  # Limit to 2 suggestions
+    ).distinct()[:2]
 
     suggested_tipsters = []
     for user in suggested_users:
@@ -126,28 +116,19 @@ def home(request):
 
 # View for sport-specific pages
 def sport_view(request, sport):
-    """Display tips and a posting interface for a specific sport."""
     valid_sports = ['football', 'golf', 'tennis', 'horse_racing']
     if sport not in valid_sports:
-        return render(request, 'core/404.html', status=404)  # Invalid sport returns 404
+        return render(request, 'core/404.html', status=404)
 
-    # Fetch tips for the specified sport
     tips = Tip.objects.filter(sport=sport).order_by('-created_at')[:20]
-    print(f"Sport: {sport}, Tip count: {tips.count()}")  # Debug output
-    for tip in tips:
-        print(f" - {tip.sport}: {tip.text}")  # Debug output
-
     return render(request, 'core/sport.html', {
         'tips': tips,
-        'sport': sport,  # Pass sport to template for pre-selection
+        'sport': sport,
     })
 
 # View for the explore page
 def explore(request):
-    """Display a broad feed of latest tips from all users."""
     tips = Tip.objects.all().order_by('-created_at')[:20]
-
-    # Ensure UserProfile exists for all tip authors
     for tip in tips:
         if not hasattr(tip.user, 'userprofile'):
             UserProfile.objects.get_or_create(user=tip.user)
@@ -161,7 +142,6 @@ def explore(request):
 @login_required
 @require_POST
 def follow_user(request):
-    """Allow a user to follow another user via POST request."""
     follower = request.user
     followed_username = request.POST.get('username')
     if not followed_username:
@@ -179,7 +159,6 @@ def follow_user(request):
 # View for user profiles
 @login_required
 def profile(request, username):
-    """Display a user's profile with their tips and follow stats."""
     user = get_object_or_404(User, username=username)
     try:
         user_profile = user.userprofile
@@ -194,7 +173,6 @@ def profile(request, username):
     form = UserProfileForm(instance=user_profile) if is_owner else None
     is_following = False if is_owner else Follow.objects.filter(follower=request.user, followed=user).exists()
 
-     # Fetch user metrics
     win_rate = user_profile.win_rate
     total_tips = user_profile.total_tips
     wins = user_profile.wins
@@ -211,12 +189,11 @@ def profile(request, username):
         'win_rate': win_rate,
         'total_tips': total_tips,
         'wins': wins,
-        })
+    })
 
 # View to handle profile editing
 @login_required
 def profile_edit(request, username):
-    """Handle profile editing for the authenticated user."""
     user = get_object_or_404(User, username=username)
     user_profile = user.userprofile
 
@@ -234,7 +211,6 @@ def profile_edit(request, username):
 @login_required
 @require_POST
 def like_tip(request):
-    """Toggle a like on a tip via POST request."""
     tip_id = request.POST.get('tip_id')
     tip = get_object_or_404(Tip, id=tip_id)
     user = request.user
@@ -250,7 +226,6 @@ def like_tip(request):
 @login_required
 @require_POST
 def share_tip(request):
-    """Toggle a share on a tip via POST request."""
     tip_id = request.POST.get('tip_id')
     tip = get_object_or_404(Tip, id=tip_id)
     user = request.user
@@ -266,7 +241,6 @@ def share_tip(request):
 @login_required
 @require_POST
 def comment_tip(request):
-    """Add a comment to a tip via POST request."""
     tip_id = request.POST.get('tip_id')
     comment_text = request.POST.get('comment_text', '')
     parent_id = request.POST.get('parent_id')
@@ -327,7 +301,6 @@ def comment_tip(request):
 # View to fetch comments for a tip
 @login_required
 def get_tip_comments(request, tip_id):
-    """Retrieve all comments for a specific tip via GET request."""
     logger.info(f"Fetching comments for tip_id: {tip_id}")
     try:
         tip = Tip.objects.get(id=tip_id)
@@ -363,7 +336,6 @@ def get_tip_comments(request, tip_id):
 @login_required
 @require_POST
 def like_comment(request):
-    """Toggle a like on a comment via POST request."""
     comment_id = request.POST.get('comment_id')
     comment = get_object_or_404(Comment, id=comment_id)
     user = request.user
@@ -379,7 +351,6 @@ def like_comment(request):
 @login_required
 @require_POST
 def share_comment(request):
-    """Toggle a share on a comment via POST request."""
     comment_id = request.POST.get('comment_id')
     comment = get_object_or_404(Comment, id=comment_id)
     user = request.user
@@ -394,14 +365,12 @@ def share_comment(request):
 # View for the bookmarks page
 @login_required
 def bookmarks(request):
-    """Display a user's bookmarked tips."""
     bookmarked_tips = Tip.objects.filter(bookmarks=request.user).select_related('user__userprofile')
     return render(request, 'core/bookmarks.html', {'tips': bookmarked_tips})
 
 # View to toggle bookmark status on a tip
 @login_required
 def toggle_bookmark(request):
-    """Toggle bookmark status for a tip via POST request."""
     if request.method == 'POST':
         tip_id = request.POST.get('tip_id')
         try:
@@ -425,7 +394,6 @@ def toggle_bookmark(request):
 # View for the messages page
 @login_required
 def messages_view(request, thread_id=None):
-    """Display message threads and selected thread messages."""
     user = request.user
     message_threads = (MessageThread.objects.filter(participants=user)
                       .order_by('-updated_at')[:20]
@@ -465,7 +433,6 @@ def messages_view(request, thread_id=None):
 @require_POST
 @csrf_exempt
 def send_message(request):
-    """Send a new message in an existing thread or create a new thread."""
     thread_id = request.POST.get('thread_id')
     recipient_username = request.POST.get('recipient_username')
     content = request.POST.get('content')
@@ -511,7 +478,6 @@ def send_message(request):
 # View to fetch messages for a thread
 @login_required
 def get_thread_messages(request, thread_id):
-    """Fetch all messages for a specific thread via GET request."""
     thread = get_object_or_404(MessageThread, id=thread_id, participants=request.user)
     messages = thread.messages.all().order_by('created_at')
     messages_data = [
@@ -528,7 +494,6 @@ def get_thread_messages(request, thread_id):
 # View for the notifications page
 @login_required
 def notifications(request):
-    """Display user notifications for likes, follows, and shares."""
     user = request.user
     like_notifications = (Like.objects.filter(tip__user=user)
                          .order_by('-created_at')[:20]
@@ -548,25 +513,20 @@ def notifications(request):
 
 # Policy page views
 def terms_of_service(request):
-    """Render the Terms of Service page."""
     return render(request, 'core/terms_of_service.html')
 
 def privacy_policy(request):
-    """Render the Privacy Policy page."""
     return render(request, 'core/privacy_policy.html')
 
 def cookie_policy(request):
-    """Render the Cookie Policy page."""
     return render(request, 'core/cookie_policy.html')
 
 def accessibility(request):
-    """Render the Accessibility page."""
     return render(request, 'core/accessibility.html')
 
 # API view for suggested users
 @login_required
 def suggested_users_api(request):
-    """Return a list of suggested users for the current user to follow."""
     current_user = request.user
     followed_users = Follow.objects.filter(follower=current_user).values_list('followed_id', flat=True)
     suggested_users = User.objects.filter(
@@ -595,25 +555,23 @@ def suggested_users_api(request):
 
     return JsonResponse({'users': users_data})
 
-# Serializer for Tip model (updated to include new fields)
+# Updated TipSerializer
 class TipSerializer(ModelSerializer):
     class Meta:
         model = Tip
         fields = [
             'id', 'user', 'sport', 'text', 'image', 'gif_url', 'gif_width', 'gif_height',
             'poll', 'emojis', 'location', 'scheduled_at', 'audience', 'created_at',
-            'odds', 'odds_format', 'bet_type', 'conditions', 'stake', 'status',
+            'odds', 'odds_format', 'bet_type', 'each_way', 'stake', 'status',
             'resolution_note', 'verified_at'
         ]
 
-
-# View to post a new tip
+# Updated view to post a new tip
 @csrf_exempt
 def post_tip(request):
-    """Handle posting a new tip via POST request."""
     if request.method == 'POST':
         try:
-            text = request.POST.get('text')
+            text = request.POST.get('tip_text')
             audience = request.POST.get('audience', 'everyone')
             sport = request.POST.get('sport', 'golf')
             image = request.FILES.get('image')
@@ -623,29 +581,34 @@ def post_tip(request):
             emojis = request.POST.get('emojis', '{}')
 
             # New fields
-            odds = request.POST.get('odds')
-            odds_format = request.POST.get('odds_format')
+            odds_type = request.POST.get('odds_type')
             bet_type = request.POST.get('bet_type')
-            conditions = request.POST.get('conditions', '{}')  # JSON string
+            each_way = request.POST.get('each_way', 'no')
             stake = request.POST.get('stake')
 
+            # Handle odds based on format
+            if odds_type == 'decimal':
+                odds = request.POST.get('odds-input-decimal')
+            elif odds_type == 'fractional':
+                numerator = request.POST.get('odds-numerator')
+                denominator = request.POST.get('odds-denominator')
+                if not numerator or not denominator:
+                    return JsonResponse({'success': False, 'error': 'Both numerator and denominator are required for fractional odds'}, status=400)
+                odds = f"{numerator}/{denominator}"
+            else:
+                return JsonResponse({'success': False, 'error': 'Invalid odds type'}, status=400)
+
             if not text:
-                return JsonResponse({'success': False, 'error': 'Tip text cannot be empty.'}, status=400)
+                return JsonResponse({'success': False, 'error': 'Tip text cannot be empty'}, status=400)
             if not odds:
-                return JsonResponse({'success': False, 'error': 'Odds are required.'}, status=400)
-            if not odds_format:
-                return JsonResponse({'success': False, 'error': 'Odds format is required.'}, status=400)
+                return JsonResponse({'success': False, 'error': 'Odds are required'}, status=400)
+            if not odds_type:
+                return JsonResponse({'success': False, 'error': 'Odds format is required'}, status=400)
             if not bet_type:
-                return JsonResponse({'success': False, 'error': 'Bet type is required.'}, status=400)
+                return JsonResponse({'success': False, 'error': 'Bet type is required'}, status=400)
 
             allowed_tags = ['b', 'i']
             sanitized_text = bleach.clean(text, tags=allowed_tags, strip=True)
-
-            # Parse conditions JSON
-            try:
-                conditions_dict = json.loads(conditions)
-            except json.JSONDecodeError:
-                conditions_dict = {}
 
             tip = Tip.objects.create(
                 user=request.user,
@@ -658,9 +621,9 @@ def post_tip(request):
                 poll=poll,
                 emojis=emojis,
                 odds=odds,
-                odds_format=odds_format,
+                odds_format=odds_type,
                 bet_type=bet_type,
-                conditions=conditions_dict,
+                each_way=each_way,
                 stake=float(stake) if stake else None
             )
             
@@ -680,7 +643,7 @@ def post_tip(request):
                     'odds': tip.odds,
                     'odds_format': tip.odds_format,
                     'bet_type': tip.bet_type,
-                    'conditions': tip.conditions,
+                    'each_way': tip.each_way,
                     'stake': tip.stake,
                     'status': tip.status,
                 }
@@ -689,25 +652,23 @@ def post_tip(request):
         except Exception as e:
             logger.error(f"Error posting tip: {str(e)}")
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
-    return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
 
-
-# View to verify a tip and update user metrics
+# Updated view to verify a tip (function-based)
 @csrf_exempt
 @login_required
 def verify_tip(request):
-    """Handle verification of a tip and update user metrics via POST request."""
     if request.method == 'POST':
         try:
             tip_id = request.POST.get('tip_id')
-            status = request.POST.get('status')  # 'won' or 'lost'
+            status = request.POST.get('status')
             resolution_note = request.POST.get('resolution_note', '')
 
             if not tip_id:
                 return JsonResponse({'success': False, 'error': 'Tip ID is required'}, status=400)
             if not status:
                 return JsonResponse({'success': False, 'error': 'Status is required'}, status=400)
-            if status not in ['won', 'lost']:
+            if status not in ['win', 'loss', 'dead_heat', 'void_non_runner']:
                 return JsonResponse({'success': False, 'error': 'Invalid status value'}, status=400)
 
             tip = get_object_or_404(Tip, id=tip_id)
@@ -718,12 +679,11 @@ def verify_tip(request):
 
             # Update user metrics
             user = tip.user
-            user_tips = Tip.objects.filter(user=user, status__in=['won', 'lost'])
+            user_tips = Tip.objects.filter(user=user, status__in=['win', 'loss', 'dead_heat', 'void_non_runner'])
             total_tips = user_tips.count()
-            wins = user_tips.filter(status='won').count()
+            wins = user_tips.filter(status='win').count()
             win_rate = (wins / total_tips * 100) if total_tips > 0 else 0
 
-            # Update user profile
             user_profile = user.userprofile
             user_profile.win_rate = win_rate
             user_profile.total_tips = total_tips
@@ -744,6 +704,34 @@ def verify_tip(request):
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
     return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
 
+# Updated class-based view to verify a tip
+class VerifyTipView(APIView):
+    def post(self, request):
+        tip_id = request.POST.get('tip_id')
+        status = request.POST.get('status')
+        resolution_note = request.POST.get('resolution_note', '')
+
+        try:
+            tip = Tip.objects.get(id=tip_id)
+            tip.status = status
+            tip.resolution_note = resolution_note
+            tip.verified_at = timezone.now()
+            tip.save()
+
+            user = tip.user
+            user_tips = Tip.objects.filter(user=user, status__in=['win', 'loss', 'dead_heat', 'void_non_runner'])
+            total_tips = user_tips.count()
+            wins = user_tips.filter(status='win').count()
+            win_rate = (wins / total_tips * 100) if total_tips > 0 else 0
+
+            user.userprofile.win_rate = win_rate
+            user.userprofile.total_tips = total_tips
+            user.userprofile.wins = wins
+            user.userprofile.save()
+
+            return Response({'success': True, 'win_rate': win_rate}, status=status.HTTP_200_OK)
+        except Tip.DoesNotExist:
+            return Response({'success': False, 'error': 'Tip not found'}, status=status.HTTP_404_NOT_FOUND)
 
 # Serializer for RaceMeeting model
 class RaceMeetingSerializer(ModelSerializer):
@@ -753,13 +741,11 @@ class RaceMeetingSerializer(ModelSerializer):
 
 # API view for listing race meetings
 class RaceMeetingList(generics.ListAPIView):
-    """List all race meetings via REST API."""
     queryset = RaceMeeting.objects.all()
     serializer_class = RaceMeetingSerializer
 
 # View for horse racing fixtures
 def horse_racing_fixtures(request):
-    """Return upcoming horse racing meetings as JSON."""
     today = datetime.now().date()
     meetings = RaceMeeting.objects.filter(date__gte=today).order_by('date')
 
@@ -778,7 +764,6 @@ def horse_racing_fixtures(request):
 # API view for trending tips
 @login_required
 def trending_tips_api(request):
-    """Return the top trending tips based on engagement."""
     trending_tips = Tip.objects.annotate(
         total_likes=Count('likes'),
         total_shares=Count('shares')
@@ -806,41 +791,9 @@ def trending_tips_api(request):
 
     return JsonResponse({'trending_tips': tips_data})
 
-# Class-based view to verify a tip and update user metrics
-class VerifyTipView(APIView):
-    def post(self, request):
-        tip_id = request.POST.get('tip_id')
-        status = request.POST.get('status')  # 'won' or 'lost'
-        resolution_note = request.POST.get('resolution_note', '')
-
-        try:
-            tip = Tip.objects.get(id=tip_id)
-            tip.status = status
-            tip.resolution_note = resolution_note
-            tip.verified_at = timezone.now()
-            tip.save()
-
-            # Update user metrics
-            user = tip.user
-            user_tips = Tip.objects.filter(user=user, status__in=['won', 'lost'])
-            total_tips = user_tips.count()
-            wins = user_tips.filter(status='won').count()
-            win_rate = (wins / total_tips * 100) if total_tips > 0 else 0
-
-            # Update user profile (assuming a UserProfile model)
-            user.userprofile.win_rate = win_rate
-            user.userprofile.total_tips = total_tips
-            user.userprofile.wins = wins
-            user.userprofile.save()
-
-            return Response({'success': True, 'win_rate': win_rate}, status=status.HTTP_200_OK)
-        except Tip.DoesNotExist:
-            return Response({'success': False, 'error': 'Tip not found'}, status=status.HTTP_404_NOT_FOUND)
-
 # API view for current user info
 @login_required
 def current_user_api(request):
-    """Return the current user's profile information."""
     user = request.user
     try:
         profile = user.userprofile
@@ -860,17 +813,15 @@ def current_user_api(request):
 # View to handle CSP violation reports
 @csrf_exempt
 def csp_report(request):
-    """Receive and log CSP violation reports."""
     if request.method == "POST":
         report = json.loads(request.body.decode("utf-8"))
-        print("CSP Violation:", report)  # Log for debugging
+        print("CSP Violation:", report)
         return HttpResponse(status=204)
     return HttpResponse(status=400)
 
 # View to render message settings
 @login_required
 def message_settings_view(request):
-    """Render the message settings panel for the messages page."""
     user = request.user
     if not hasattr(user, 'userprofile'):
         UserProfile.objects.get_or_create(user=user)
@@ -885,7 +836,6 @@ def message_settings_view(request):
 # View for search functionality
 @login_required
 def search(request):
-    """Search for users and tips based on a query string."""
     query = request.GET.get('q', '').strip()
     if not query:
         return JsonResponse({'success': False, 'error': 'Query parameter is required'}, status=400)
@@ -935,7 +885,7 @@ def search(request):
             'odds': tip.odds,
             'odds_format': tip.odds_format,
             'bet_type': tip.bet_type,
-            'conditions': tip.conditions,
+            'each_way': tip.each_way,
             'stake': tip.stake,
             'status': tip.status,
         })

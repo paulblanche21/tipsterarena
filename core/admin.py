@@ -10,26 +10,26 @@ class UserProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'handle', 'description', 'location')  # Columns shown in the list view
     search_fields = ('user__username', 'handle')  # Enable search by username or handle
     list_filter = ('handle',)  # Filter options to identify profiles with specific handles
-    actions = ['verify_as_won', 'verify_as_lost']
 
 # Custom admin configuration for Tip model
 @admin.register(Tip)
 class TipAdmin(admin.ModelAdmin):
     """Admin interface for managing Tip instances."""
-    list_display = ('user', 'sport', 'text', 'created_at')  # Columns shown in the list view
+    list_display = ('user', 'sport', 'text', 'odds', 'odds_format', 'bet_type', 'each_way', 'stake', 'status', 'created_at')  # Updated columns
     search_fields = ('user__username', 'text')  # Enable search by username or tip text
-    list_filter = ('sport',)  # Filter tips by sport category
-    actions = ['verify_as_won', 'verify_as_lost']
+    list_filter = ('sport', 'each_way', 'status')  # Updated filters
+    actions = ['verify_as_win', 'verify_as_loss', 'verify_as_dead_heat', 'verify_as_void_non_runner']
 
-    def verify_as_won(self, request, queryset):
+    def verify_as_win(self, request, queryset):
+        """Verify selected tips as 'win' via API."""
         for tip in queryset:
             if tip.status == 'pending':
                 response = requests.post(
                     f"{settings.SITE_URL}/api/verify-tip/",
                     data={
                         'tip_id': tip.id,
-                        'status': 'won',
-                        'resolution_note': 'Verified as won via admin action'
+                        'status': 'win',  # Updated to match new status
+                        'resolution_note': 'Verified as win via admin action'
                     },
                     headers={
                         'X-CSRFToken': request.COOKIES.get('csrftoken'),
@@ -37,20 +37,21 @@ class TipAdmin(admin.ModelAdmin):
                     }
                 )
                 if response.status_code == 200:
-                    self.message_user(request, f"Tip {tip.id} verified as won.")
+                    self.message_user(request, f"Tip {tip.id} verified as win.")
                 else:
                     self.message_user(request, f"Error verifying tip {tip.id}: {response.json().get('error')}")
-    verify_as_won.short_description = "Verify selected tips as won"
+    verify_as_win.short_description = "Verify selected tips as Win"
 
-    def verify_as_lost(self, request, queryset):
+    def verify_as_loss(self, request, queryset):
+        """Verify selected tips as 'loss' via API."""
         for tip in queryset:
             if tip.status == 'pending':
                 response = requests.post(
                     f"{settings.SITE_URL}/api/verify-tip/",
                     data={
                         'tip_id': tip.id,
-                        'status': 'lost',
-                        'resolution_note': 'Verified as lost via admin action'
+                        'status': 'loss',  # Updated to match new status
+                        'resolution_note': 'Verified as loss via admin action'
                     },
                     headers={
                         'X-CSRFToken': request.COOKIES.get('csrftoken'),
@@ -58,10 +59,54 @@ class TipAdmin(admin.ModelAdmin):
                     }
                 )
                 if response.status_code == 200:
-                    self.message_user(request, f"Tip {tip.id} verified as lost.")
+                    self.message_user(request, f"Tip {tip.id} verified as loss.")
                 else:
                     self.message_user(request, f"Error verifying tip {tip.id}: {response.json().get('error')}")
-    verify_as_lost.short_description = "Verify selected tips as lost"
+    verify_as_loss.short_description = "Verify selected tips as Loss"
+
+    def verify_as_dead_heat(self, request, queryset):
+        """Verify selected tips as 'dead_heat' via API."""
+        for tip in queryset:
+            if tip.status == 'pending':
+                response = requests.post(
+                    f"{settings.SITE_URL}/api/verify-tip/",
+                    data={
+                        'tip_id': tip.id,
+                        'status': 'dead_heat',  # New status
+                        'resolution_note': 'Verified as dead heat via admin action'
+                    },
+                    headers={
+                        'X-CSRFToken': request.COOKIES.get('csrftoken'),
+                        'Cookie': f"sessionid={request.COOKIES.get('sessionid')}"
+                    }
+                )
+                if response.status_code == 200:
+                    self.message_user(request, f"Tip {tip.id} verified as dead heat.")
+                else:
+                    self.message_user(request, f"Error verifying tip {tip.id}: {response.json().get('error')}")
+    verify_as_dead_heat.short_description = "Verify selected tips as Dead Heat"
+
+    def verify_as_void_non_runner(self, request, queryset):
+        """Verify selected tips as 'void_non_runner' via API."""
+        for tip in queryset:
+            if tip.status == 'pending':
+                response = requests.post(
+                    f"{settings.SITE_URL}/api/verify-tip/",
+                    data={
+                        'tip_id': tip.id,
+                        'status': 'void_non_runner',  # New status
+                        'resolution_note': 'Verified as void/non runner via admin action'
+                    },
+                    headers={
+                        'X-CSRFToken': request.COOKIES.get('csrftoken'),
+                        'Cookie': f"sessionid={request.COOKIES.get('sessionid')}"
+                    }
+                )
+                if response.status_code == 200:
+                    self.message_user(request, f"Tip {tip.id} verified as void/non runner.")
+                else:
+                    self.message_user(request, f"Error verifying tip {tip.id}: {response.json().get('error')}")
+    verify_as_void_non_runner.short_description = "Verify selected tips as Void/Non Runner"
 
 # Basic admin registrations for other models with default settings
 admin.site.register(Like)       # Admin interface for Like model

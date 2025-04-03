@@ -130,7 +130,7 @@
 
 /* Styles for the user handle */
 .user-handle {
-    color: var(white);         /* Incorrect: should be #666666 or var(--gray-light) */
+    color: #666666;            /* Corrected from var(white) to gray */
     font-size: 14px;           /* Base font size */
     margin-left: 5px;          /* Space to the left */
 }
@@ -363,14 +363,19 @@
     color: #ff4d4f;            /* Red heart */
 }
 
-/* tip.css */
+/* Updated styles for tip metadata */
 .tip-meta {
-    margin-top: 10px;
-    font-size: 14px;
-    color: #666;
+    margin-top: 8px;           /* Space above */
+    display: flex;             /* Flex layout for inline display */
+    flex-wrap: wrap;           /* Allow wrapping on small screens */
+    gap: 10px;                 /* Space between spans */
+    font-size: 14px;           /* Consistent font size */
+    color: #666;               /* Gray text */
 }
 
 .tip-meta span {
-    display: block;
-    margin-bottom: 5px;
+    background: #f5f8fa;       /* Light gray background */
+    padding: 4px 8px;          /* Internal padding */
+    border-radius: 4px;        /* Rounded corners */
+    white-space: nowrap;       /* Prevent text wrapping */
 }
