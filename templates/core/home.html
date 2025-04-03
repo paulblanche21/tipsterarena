@@ -82,9 +82,15 @@
                         <option value="yes">Yes</option>
                     </select>
                 </div>
-                <div class="tip-stake">
-                    <label for="stake">Stake (Optional):</label>
-                    <input type="number" class="stake-input" name="stake" id="stake-input" placeholder="Enter stake (e.g., 10)" step="0.01" min="0">
+                <div class="tip-confidence">
+                    <label for="confidence">Confidence (1 Star = Very Low  5 Star = Very High ):</label>
+                    <select class="confidence" name="confidence" id="confidence">
+                        <option value="1">1 Star</option>
+                        <option value="2">2 Stars</option>
+                        <option value="3" selected>3 Stars</option>
+                        <option value="4">4 Stars</option>
+                        <option value="5">5 Stars</option>
+                    </select>
                 </div>
             </div>
             <div class="post-preview" style="display: none;">
@@ -109,7 +115,6 @@
             </div>
         </div>
 
-        <!-- Feed displaying user tips -->
         <!-- Feed displaying user tips -->
         <div class="tip-feed">
             {% for tip in tips %}
@@ -138,13 +143,13 @@
                             {% if tip.each_way == 'yes' %}
                                 <span>Each Way: Yes</span>
                             {% endif %}
-                            {% if tip.stake %}
-                                <span>Stake: {{ tip.stake }}</span>
+                            {% if tip.confidence %}
+                                <span>Confidence: {{ tip.confidence }} Stars</span>
                             {% endif %}
                             <span>Status: {{ tip.get_status_display }}</span>
                         </div>
                         {% if tip.image %}
-                            <img src="{{ tip.image.url }}" alt="Tip Image" class="tip-image" width="{{ tip.gif_width|default:582 }}" height="{{tip.gif_height|default:300 }}">
+                            <img src="{{ tip.image.url }}" alt="Tip Image" class="tip-image" width="{{ tip.gif_width|default:582 }}" height="{{ tip.gif_height|default:300 }}">
                         {% endif %}
                         {% if tip.gif_url %}
                             <img src="{{ tip.gif_url }}" alt="Tip GIF" class="tip-image" width="582" height="300">
@@ -203,8 +208,6 @@
                         <div class="tip-actions">
                             <div class="tip-action-group">
                                 <a href="#" class="tip-action tip-action-like" data-action="like" aria-label="Like this tip"><i class="fas fa-heart"></i></a>
-整理
-
                                 <span class="tip-action-count like-count">{{ tip.likes.count }}</span>
                             </div>
                             <div class="tip-action-group">

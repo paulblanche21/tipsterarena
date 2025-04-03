@@ -59,16 +59,14 @@ function debounce(func, wait) {
 }
 
 // Function to validate odds based on the selected format (decimal or fractional)
-function validateOdds(odds, format) {
-    if (!odds) return false;
-    if (format === 'decimal') {
-        return /^\d*\.?\d+$/.test(odds) && parseFloat(odds) > 1; // e.g., 2.5
-    } else if (format === 'fractional') {
-        return /^\d+\/\d+$/.test(odds) && parseInt(odds.split('/')[1]) !== 0; // e.g., 3/2
+function validateOdds(oddsType, decimalOdds, numerator, denominator) {
+    if (oddsType === 'decimal') {
+        return decimalOdds && /^\d*\.?\d+$/.test(decimalOdds) && parseFloat(decimalOdds) > 1; // e.g., 2.5
+    } else if (oddsType === 'fractional') {
+        return numerator && denominator && /^\d+$/.test(numerator) && /^\d+$/.test(denominator) && parseInt(denominator) !== 0; // e.g., 3 and 2
     }
     return false;
 }
-
 
 // Function to show the GIF search modal
 function showGifModal(textarea, previewDiv) {
@@ -366,7 +364,7 @@ function setupCentralFeedPost() {
     const oddsDenominator = postBox.querySelector('#odds-denominator');
     const betType = postBox.querySelector('#bet-type');
     const eachWay = postBox.querySelector('#each-way');
-    const stakeInput = document.querySelector('.post-box .stake-input');
+    const confidence = postBox.querySelector('#confidence'); // Replaced stakeInput with confidence
     const emojiBtn = document.querySelector('.post-box .post-action-btn.emoji');
     const gifBtn = document.querySelector('.post-box .post-action-btn.gif');
     const imageBtn = document.querySelector('.post-box .post-action-btn.image');
@@ -377,7 +375,7 @@ function setupCentralFeedPost() {
     const scheduleBtn = document.querySelector('.post-box .post-action-btn.schedule');
     const previewDiv = document.querySelector('.post-box .post-preview');
 
-    if (!postSubmitBtn || !postInput || !postAudience || !oddsType || !oddsInputDecimal || !oddsNumerator || !oddsDenominator || !betType || !eachWay || !stakeInput || !emojiBtn || !gifBtn || !imageBtn || !locationBtn || !boldBtn || !italicBtn || !pollBtn || !scheduleBtn || !previewDiv) {
+    if (!postSubmitBtn || !postInput || !postAudience || !oddsType || !oddsInputDecimal || !oddsNumerator || !oddsDenominator || !betType || !eachWay || !confidence || !emojiBtn || !gifBtn || !imageBtn || !locationBtn || !boldBtn || !italicBtn || !pollBtn || !scheduleBtn || !previewDiv) {
         console.warn('setupCentralFeedPost: One or more required DOM elements are missing.');
         console.log({
             postSubmitBtn: !!postSubmitBtn,
@@ -390,7 +388,7 @@ function setupCentralFeedPost() {
             oddsDenominator: !!oddsDenominator,
             betType: !!betType,
             eachWay: !!eachWay,
-            stakeInput: !!stakeInput,
+            confidence: !!confidence, // Updated to confidence
             emojiBtn: !!emojiBtn,
             gifBtn: !!gifBtn,
             imageBtn: !!imageBtn,
@@ -417,7 +415,7 @@ function setupCentralFeedPost() {
     });
     oddsType.dispatchEvent(new Event('change')); // Initial toggle
 
-    // Enable/disable button based on input and odds
+    // Enable/disable button based on input and odds (no change needed here)
     function updateSubmitButton() {
         const textValid = postInput.value.trim().length > 0;
         const oddsValid = validateOdds(oddsType.value, oddsInputDecimal.value.trim(), oddsNumerator.value.trim(), oddsDenominator.value.trim());
@@ -535,7 +533,7 @@ function setupCentralFeedPost() {
         const oddsTypeValue = oddsType.value;
         const bet = betType.value;
         const eachWayValue = eachWay.value;
-        const stake = stakeInput.value.trim();
+        const confidenceValue = confidence.value; // Replaced stake with confidenceValue
 
         let odds;
         if (oddsTypeValue === 'decimal') {
@@ -574,7 +572,7 @@ function setupCentralFeedPost() {
         }
         formData.append('bet_type', bet);
         formData.append('each_way', eachWayValue);
-        if (stake) formData.append('stake', stake);
+        if (confidenceValue) formData.append('confidence', confidenceValue); // Replaced stake with confidence
 
         if (postInput.dataset.imageFile && imageInput.files[0]) {
             formData.append('image', imageInput.files[0]);
@@ -605,7 +603,7 @@ function setupCentralFeedPost() {
                 oddsDenominator.value = '';
                 betType.value = 'single';
                 eachWay.value = 'no';
-                stakeInput.value = '';
+                confidence.value = '3'; // Reset to default (3 stars)
                 postInput.dataset.gifUrl = '';
                 postInput.dataset.imageFile = '';
                 imageInput.value = '';
@@ -633,7 +631,7 @@ function setupCentralFeedPost() {
                                 <span>Odds: ${data.tip.odds} (${data.tip.odds_format})</span>
                                 <span>Bet Type: ${data.tip.bet_type}</span>
                                 ${data.tip.each_way === 'yes' ? '<span>Each Way: Yes</span>' : ''}
-                                ${data.tip.stake ? `<span>Stake: ${data.tip.stake}</span>` : ''}
+                                ${data.tip.confidence ? `<span>Confidence: ${data.tip.confidence} Stars</span>` : ''} <!-- Replaced stake with confidence -->
                                 <span>Status: ${data.tip.status}</span>
                             </div>
                             ${data.tip.image ? `<img src="${data.tip.image}" alt="Tip Image" class="tip-image">` : ''}
@@ -674,7 +672,7 @@ function setupPostModal() {
             const oddsDenominator = postModal.querySelector('#odds-denominator');
             const betType = postModal.querySelector('#bet-type');
             const eachWay = postModal.querySelector('#each-way');
-            const stakeInput = postModal.querySelector('#stake-input');
+            const confidence = postModal.querySelector('#confidence'); // Replaced stakeInput with confidence
             const modalBoldBtn = postModal.querySelector('.post-action-btn.bold');
             const modalItalicBtn = postModal.querySelector('.post-action-btn.italic');
             const modalImageBtn = postModal.querySelector('.post-action-btn.image');
@@ -683,7 +681,7 @@ function setupPostModal() {
             const modalPreviewDiv = postModal.querySelector('.post-preview');
             const modalEmojiBtn = postModal.querySelector('.post-action-btn.emoji');
 
-            if (!modalSubmitBtn || !modalInput || !modalAudience || !oddsType || !oddsInputDecimal || !oddsNumerator || !oddsDenominator || !betType || !eachWay || !stakeInput || !modalBoldBtn || !modalItalicBtn || !modalImageBtn || !modalGifBtn || !modalLocationBtn || !modalPreviewDiv || !modalEmojiBtn) {
+            if (!modalSubmitBtn || !modalInput || !modalAudience || !oddsType || !oddsInputDecimal || !oddsNumerator || !oddsDenominator || !betType || !eachWay || !confidence || !modalBoldBtn || !modalItalicBtn || !modalImageBtn || !modalGifBtn || !modalLocationBtn || !modalPreviewDiv || !modalEmojiBtn) {
                 console.warn('setupPostModal: One or more required DOM elements are missing.');
                 console.log({
                     modalSubmitBtn: !!modalSubmitBtn,
@@ -696,7 +694,7 @@ function setupPostModal() {
                     oddsDenominator: !!oddsDenominator,
                     betType: !!betType,
                     eachWay: !!eachWay,
-                    stakeInput: !!stakeInput,
+                    confidence: !!confidence, // Updated to confidence
                     modalBoldBtn: !!modalBoldBtn,
                     modalItalicBtn: !!modalItalicBtn,
                     modalImageBtn: !!modalImageBtn,
@@ -749,7 +747,7 @@ function setupPostModal() {
             // Emoji button functionality for modal
             modalEmojiBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                import('./post.js').then(module => module.showEmojiPicker(modalInput, modalEmojiBtn));
+                showEmojiPicker(modalInput, modalEmojiBtn);
             });
 
             // Image functionality for modal
@@ -832,7 +830,6 @@ function setupPostModal() {
     }
 }
 
-
 // Handle modal post submission
 function handleModalPostSubmit() {
     const modal = this.closest('.post-modal');
@@ -845,7 +842,7 @@ function handleModalPostSubmit() {
     const oddsDenominator = this.closest('.post-modal-content').querySelector('#odds-denominator');
     const betType = this.closest('.post-modal-content').querySelector('#bet-type');
     const eachWay = this.closest('.post-modal-content').querySelector('#each-way');
-    const stakeInput = this.closest('.post-modal-content').querySelector('#stake-input');
+    const confidence = this.closest('.post-modal-content').querySelector('#confidence'); // Replaced stakeInput with confidence
     const modalPreviewDiv = this.closest('.post-modal-content').querySelector('.post-preview');
 
     const text = modalInput.value.trim();
@@ -854,7 +851,7 @@ function handleModalPostSubmit() {
     const oddsTypeValue = oddsType.value;
     const bet = betType.value;
     const eachWayValue = eachWay.value;
-    const stake = stakeInput.value.trim();
+    const confidenceValue = confidence.value; // Replaced stake with confidenceValue
 
     let odds;
     if (oddsTypeValue === 'decimal') {
@@ -893,7 +890,7 @@ function handleModalPostSubmit() {
     }
     formData.append('bet_type', bet);
     formData.append('each_way', eachWayValue);
-    if (stake) formData.append('stake', stake);
+    if (confidenceValue) formData.append('confidence', confidenceValue); // Replaced stake with confidence
 
     const modalImageInput = document.querySelectorAll('input[type="file"]')[1];
     if (modalInput.dataset.imageFile && modalImageInput && modalImageInput.files[0]) {
@@ -926,7 +923,7 @@ function handleModalPostSubmit() {
             oddsDenominator.value = '';
             betType.value = 'single';
             eachWay.value = 'no';
-            stakeInput.value = '';
+            confidence.value = '3'; // Reset to default (3 stars)
             modalInput.dataset.gifUrl = '';
             modalInput.dataset.imageFile = '';
             if (modalImageInput) modalImageInput.value = '';
@@ -944,11 +941,10 @@ function handleModalPostSubmit() {
     });
 }
 
-
 export { 
     applyFormatting, 
     showGifModal, 
     setupCentralFeedPost, 
-    setupPostModal,
+    setupPostModal
     /*showEmojiPicker*/
 };

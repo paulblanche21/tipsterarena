@@ -86,7 +86,7 @@
             </div>
             <div class="nav-user-dropdown">
                 <a href="#" class="nav-dropdown-item">Add an Existing Account</a>
-                <a href="{% url 'logout' %}" class="nav-dropdown-item nav植物logout-btn" data-logout>Log Out {{ request.user.userprofile.handle|default:"@guest" }}</a>
+                <a href="{% url 'logout' %}" class="nav-dropdown-item nav-logout-btn" data-logout>Log Out {{ request.user.userprofile.handle|default:"@guest" }}</a>
             </div>
         </div>
     </nav>
@@ -237,9 +237,15 @@
                         <option value="yes">Yes</option>
                     </select>
                 </div>
-                <div class="tip-stake">
-                    <label for="stake">Stake (Optional):</label>
-                    <input type="number" class="stake-input" name="stake" id="stake-input" placeholder="Enter stake (e.g., 10)" step="0.01" min="0">
+                <div class="tip-confidence">
+                    <label for="confidence">Confidence (1 Star = Very Low  5 Star = Very High ):</label>
+                    <select class="confidence" name="confidence" id="confidence">
+                        <option value="1">1 Star</option>
+                        <option value="2">2 Stars</option>
+                        <option value="3" selected>3 Stars</option>
+                        <option value="4">4 Stars</option>
+                        <option value="5">5 Stars</option>
+                    </select>
                 </div>
             </div>
             <div class="post-preview" style="display: none;">

@@ -241,7 +241,7 @@ i {
     display: flex;             /* Flex layout */
     align-items: center;       /* Center vertically */
     justify-content: center;   /* Center horizontally */
-    outline: 2px solid;         /*focus*/
+    outline: 2px solid;        /* Focus outline */
 }
 
 /* Hover states for specific post action buttons */
@@ -649,7 +649,7 @@ i {
     color: var(--primary-bg);  /* Dark blue text */
 }
 
-/* Styles for images within tips (duplicate definition) */
+/* Styles for images within tips */
 .tip-image {
     border-radius: 8px;        /* Rounded corners */
     max-height: 300px;         /* Limit height */
@@ -717,13 +717,13 @@ i {
     gap: 10px;                 /* Space between child elements */
 }
 
-.tip-odds, .tip-bet-type, .tip-condition, .tip-stake {
+.tip-odds, .tip-bet-type, .tip-condition, .tip-confidence {
     flex: 1 1 100%;            /* Full width on small screens */
 }
 
 /* Responsive layout for larger screens */
 @media (min-width: 600px) {
-    .tip-odds, .tip-bet-type, .tip-stake {
+    .tip-odds, .tip-bet-type, .tip-confidence {
         flex: 1 1 30%;         /* Three columns on larger screens */
     }
     .tip-condition {
@@ -731,14 +731,14 @@ i {
     }
 }
 
-.tip-odds label, .tip-bet-type label, .tip-condition label, .tip-stake label {
+.tip-odds label, .tip-bet-type label, .tip-condition label, .tip-confidence label {
     display: block;            /* Labels on their own line */
     font-size: 14px;           /* Consistent font size with other elements */
     color: #333;               /* Dark gray for readability */
     margin-bottom: 5px;        /* Space below label */
 }
 
-.odds-type, .bet-type, .each-way, .stake-input, #odds-input-decimal, #odds-numerator, #odds-denominator {
+.odds-type, .bet-type, .each-way, .confidence, #odds-input-decimal, #odds-numerator, #odds-denominator {
     width: 100%;               /* Full width of parent */
     padding: 8px;              /* Consistent padding with other inputs */
     border: 1px solid var(--border-color);  /* Light gray border */
@@ -750,13 +750,13 @@ i {
 }
 
 /* Focus state for input fields */
-.odds-type:focus, .bet-type:focus, .each-way:focus, .stake-input:focus, #odds-input-decimal:focus, #odds-numerator:focus, #odds-denominator:focus {
+.odds-type:focus, .bet-type:focus, .each-way:focus, .confidence:focus, #odds-input-decimal:focus, #odds-numerator:focus, #odds-denominator:focus {
     outline: none;             /* Remove default outline */
     border-color: var(--red-accent);  /* Red border on focus */
 }
 
 /* Hover state for dropdowns */
-.odds-type:hover, .bet-type:hover, .each-way:hover {
+.odds-type:hover, .bet-type:hover, .each-way:hover, .confidence:hover {
     border-color: #003087;     /* Lighter blue on hover, matching post-sport */
 }
 

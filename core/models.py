@@ -78,7 +78,15 @@ class Tip(models.Model):
         ],
         default='no'
     )  # Single condition: Each Way (Yes/No)
-    stake = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Optional stake amount
+    
+    confidence = models.PositiveSmallIntegerField(
+        choices=[(1, '1 Star'), (2, '2 Stars'), (3, '3 Stars'), (4, '4 Stars'), (5, '5 Stars')],
+        null=True,
+        blank=True,
+        help_text="Confidence level (1-5 stars, optional)"
+    )
+
+    
     # Updated fields for backend verification
     status = models.CharField(
         max_length=20,

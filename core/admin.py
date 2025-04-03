@@ -15,7 +15,7 @@ class UserProfileAdmin(admin.ModelAdmin):
 @admin.register(Tip)
 class TipAdmin(admin.ModelAdmin):
     """Admin interface for managing Tip instances."""
-    list_display = ('user', 'sport', 'text', 'odds', 'odds_format', 'bet_type', 'each_way', 'stake', 'status', 'created_at')  # Updated columns
+    list_display = ('user', 'sport', 'text', 'odds', 'odds_format', 'bet_type', 'each_way', 'confidence', 'status', 'created_at')  # Updated columns
     search_fields = ('user__username', 'text')  # Enable search by username or tip text
     list_filter = ('sport', 'each_way', 'status')  # Updated filters
     actions = ['verify_as_win', 'verify_as_loss', 'verify_as_dead_heat', 'verify_as_void_non_runner']

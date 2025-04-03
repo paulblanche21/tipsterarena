@@ -1,4 +1,3 @@
-// main.js
 function getCurrentPage() {
   return window.location.pathname;
 }
@@ -14,8 +13,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const sharedModules = await Promise.all([
       import('./config.js'),
       import('./pages/nav.js').then(module => module.setupNavigation()),
-      import('./pages/upcoming-events.js').then(module => module.initCarousel()), // Updated from carousel.js
-      import('./pages/upcoming-events.js').then(module => module.attachFollowButtonListeners()), // Updated from feed.js
+      import('./pages/upcoming-events.js').then(module => {
+        module.initCarousel();
+        module.attachFollowButtonListeners();
+        return module; // Return for potential reuse
+      }),
       import('./pages/search.js').then(module => module.setupSearch()),
     ]).catch(error => console.error('Error loading shared modules:', error));
 
@@ -27,13 +29,13 @@ document.addEventListener('DOMContentLoaded', function () {
           module.setupPostModal();
         }),
         import('./pages/trending-tips.js').then(module => module.init()),
-        import('./pages/upcoming-events.js').then(module => module.setupShowMoreButtons()), // Updated from feed.js
         import('./tips.js').then(module => {
           module.setupTipInteractions();
           module.setupReplyModal();
         }),
         import('./pages/bookmarks.js').then(module => module.setupBookmarkInteractions()),
         import('./pages/upcoming-events.js').then(async module => {
+          module.setupShowMoreButtons();
           const dynamicEvents = await module.getDynamicEvents();
 
           const footballEventsElement = document.getElementById('football-events');
@@ -75,13 +77,13 @@ document.addEventListener('DOMContentLoaded', function () {
           module.setupPostModal();
         }),
         import('./pages/trending-tips.js').then(module => module.init()),
-        import('./pages/upcoming-events.js').then(module => module.setupShowMoreButtons()), // Updated from feed.js
         import('./tips.js').then(module => {
           module.setupTipInteractions();
           module.setupReplyModal();
         }),
         import('./pages/bookmarks.js').then(module => module.setupBookmarkInteractions()),
         import('./pages/upcoming-events.js').then(async module => {
+          module.setupShowMoreButtons();
           const dynamicEvents = await module.getDynamicEvents();
 
           const footballEventsElement = document.getElementById('football-events');
@@ -122,13 +124,13 @@ document.addEventListener('DOMContentLoaded', function () {
         import('./pages/post.js').then(module => {
           module.setupPostModal();
         }),
-        import('./pages/upcoming-events.js').then(module => module.setupShowMoreButtons()), // Updated from feed.js
         import('./tips.js').then(module => {
           module.setupTipInteractions();
           module.setupReplyModal();
         }),
         import('./pages/bookmarks.js').then(module => module.setupBookmarkInteractions()),
         import('./pages/upcoming-events.js').then(async module => {
+          module.setupShowMoreButtons();
           const dynamicEvents = await module.getDynamicEvents();
 
           const footballEventsElement = document.getElementById('football-events');
@@ -169,13 +171,13 @@ document.addEventListener('DOMContentLoaded', function () {
           module.setupCentralFeedPost();
           module.setupPostModal();
         }),
-        import('./pages/upcoming-events.js').then(module => module.setupShowMoreButtons()), // Updated from feed.js
         import('./tips.js').then(module => {
           module.setupTipInteractions();
           module.setupReplyModal();
         }),
         import('./pages/bookmarks.js').then(module => module.setupBookmarkInteractions()),
         import('./pages/upcoming-events.js').then(async module => {
+          module.setupShowMoreButtons();
           const dynamicEvents = await module.getDynamicEvents();
 
           const footballEventsElement = document.getElementById('football-events');
@@ -223,8 +225,8 @@ document.addEventListener('DOMContentLoaded', function () {
           const footballEventsElement = document.getElementById('football-events');
           if (footballEventsElement) {
             const footballEvents = dynamicEvents.football || [];
-            const footballEventsHtml = await module.formatFootballList(footballEvents, 'football', false);
-            footballEventsElement.innerHTML = footballEventsHtml || '<p>No upcoming events available.</p>';
+            const footballHtml = await module.formatFootballList(footballEvents, 'football', false);
+            footballEventsElement.innerHTML = footballHtml || '<p>No upcoming events available.</p>';
           }
 
           const golfEventsElement = document.getElementById('golf-events');
@@ -253,7 +255,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (page === '/messages/') {
       console.log('Importing messages.js for messages page');
-      import('./pages/messages.js')
+      await import('./pages/messages.js')
         .then(module => {
           console.log('messages.js loaded successfully');
           module.init();
@@ -309,7 +311,6 @@ document.addEventListener('DOMContentLoaded', function () {
       .then(data => {
         followList.innerHTML = '';
         if (data.users && data.users.length > 0) {
-          // Limit to 3 users initially
           const limitedUsers = data.users.slice(0, 3);
           limitedUsers.forEach(user => {
             followList.innerHTML += `

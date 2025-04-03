@@ -562,7 +562,7 @@ class TipSerializer(ModelSerializer):
         fields = [
             'id', 'user', 'sport', 'text', 'image', 'gif_url', 'gif_width', 'gif_height',
             'poll', 'emojis', 'location', 'scheduled_at', 'audience', 'created_at',
-            'odds', 'odds_format', 'bet_type', 'each_way', 'stake', 'status',
+            'odds', 'odds_format', 'bet_type', 'each_way', 'confidence', 'status',
             'resolution_note', 'verified_at'
         ]
 
@@ -584,7 +584,7 @@ def post_tip(request):
             odds_type = request.POST.get('odds_type')
             bet_type = request.POST.get('bet_type')
             each_way = request.POST.get('each_way', 'no')
-            stake = request.POST.get('stake')
+            confidence = request.POST.get('confidence')  
 
             # Handle odds based on format
             if odds_type == 'decimal':
@@ -624,7 +624,7 @@ def post_tip(request):
                 odds_format=odds_type,
                 bet_type=bet_type,
                 each_way=each_way,
-                stake=float(stake) if stake else None
+                confidence=int(confidence) if confidence else None  # Store as integer or None
             )
             
             response_data = {
@@ -644,7 +644,7 @@ def post_tip(request):
                     'odds_format': tip.odds_format,
                     'bet_type': tip.bet_type,
                     'each_way': tip.each_way,
-                    'stake': tip.stake,
+                    'confidence': tip.confidence, 
                     'status': tip.status,
                 }
             }
@@ -886,7 +886,7 @@ def search(request):
             'odds_format': tip.odds_format,
             'bet_type': tip.bet_type,
             'each_way': tip.each_way,
-            'stake': tip.stake,
+            'confidence': tip.confidence,  
             'status': tip.status,
         })
 

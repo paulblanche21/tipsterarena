@@ -1,4 +1,3 @@
-// tips.js
 import { getCSRFToken } from './pages/utils.js';
 import { applyFormatting, showGifModal } from './pages/post.js';
 
@@ -323,7 +322,7 @@ function setupReplyModal() {
 
     emojiBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        import('./post.js').then(module => module.showEmojiPicker(replyInput, emojiBtn));
+        import('./pages/post.js').then(module => module.showEmojiPicker(replyInput, emojiBtn));
     });
 
     const removePreviewBtn = previewDiv.querySelector('.remove-preview');
@@ -471,13 +470,13 @@ function openCommentModal(tip, tipId, parentId = null) {
     const commentCount = tipContent.querySelector('.comment-count').textContent;
     const engagementCount = tipContent.querySelector('.tip-action-engagement + .tip-action-count')?.textContent || '0';
 
-    // Extract tip metadata from the DOM
+    // Extract tip metadata from the DOM with "Confidence" instead of "Stake"
     const odds = tipContent.querySelector('.tip-meta span:nth-child(1)')?.textContent.split(': ')[1] || '';
     const betType = tipContent.querySelector('.tip-meta span:nth-child(2)')?.textContent.split(': ')[1] || '';
     const eachWayText = tipContent.querySelector('.tip-meta span:nth-child(3)')?.textContent || '';
     const eachWay = eachWayText === 'Each Way: Yes' ? 'yes' : 'no';
-    const stakeIndex = eachWay === 'yes' ? 4 : 3;
-    const stake = tipContent.querySelector(`.tip-meta span:nth-child(${stakeIndex})`)?.textContent.split(': ')[1] || '';
+    const confidenceIndex = eachWay === 'yes' ? 4 : 3; // Adjusted index for Confidence
+    const confidence = tipContent.querySelector(`.tip-meta span:nth-child(${confidenceIndex})`)?.textContent.split(': ')[1] || '';
     const statusIndex = eachWay === 'yes' ? 5 : 4;
     const status = tipContent.querySelector(`.tip-meta span:nth-child(${statusIndex})`)?.textContent.split(': ')[1] || 'Pending';
 
@@ -493,7 +492,7 @@ function openCommentModal(tip, tipId, parentId = null) {
             <span>Odds: ${odds}</span>
             <span>Bet Type: ${betType}</span>
             ${eachWay === 'yes' ? '<span>Each Way: Yes</span>' : ''}
-            ${stake ? `<span>Stake: ${stake}</span>` : ''}
+            ${confidence ? `<span>Confidence: ${confidence}</span>` : ''}
             <span>Status: ${status}</span>
         </div>
         <small class="modal-tip-timestamp">${timestamp}</small>
