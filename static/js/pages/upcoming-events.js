@@ -457,6 +457,7 @@ export function setupShowMoreButtons() {
  * Initializes carousels on the page with event data and navigation
  * Called on DOMContentLoaded to set up all carousel containers
  */
+// In upcoming-events.js, modify initCarousel
 export async function initCarousel() {
   const carouselContainers = document.querySelectorAll('.carousel-container');
   for (const container of carouselContainers) {
@@ -465,11 +466,22 @@ export async function initCarousel() {
       await populateCarousel(container);
       setupDotNavigation(container);
       startAutoRotation(container);
-    } else {
-      console.warn("No slides found in carousel container:", container);
+      // Add live update polling for football
+      const footballSlide = container.querySelector('.carousel-slide[data-sport="football"]');
+      if (footballSlide) {
+        setInterval(async () => {
+          const dynamicEvents = await getDynamicEvents();
+          const eventList = footballSlide.querySelector('.event-list');
+          if (eventList) {
+            eventList.innerHTML = await FORMATTERS.football(dynamicEvents.football || [], 'football', false);
+          }
+        }, 30000); // Refresh every 30 seconds
+      }
     }
   }
 }
+
+
 
 /**
  * Populates carousel slides with sport-specific event data
