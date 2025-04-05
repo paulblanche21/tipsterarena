@@ -6,8 +6,6 @@
     overflow: hidden;
 }
 
-
-
 .carousel-container.expanded {
     max-height: 400px; /* Adjust based on content */
 }
@@ -29,11 +27,6 @@
     to { opacity: 1; }
 }
 
-
-.carousel-slide.active {
-    display: block;
-  }
-  
 .carousel-prev, .carousel-next {
     position: absolute;
     top: 50%;
@@ -44,10 +37,10 @@
     padding: 10px;
     cursor: pointer;
     z-index: 10;
-  }
-  
-  .carousel-prev { left: 0; }
-  .carousel-next { right: 0; }
+}
+
+.carousel-prev { left: 0; }
+.carousel-next { right: 0; }
 
 .carousel-prev:hover, .carousel-next:hover {
     background-color: rgba(0, 0, 0, 0.8);
@@ -96,6 +89,20 @@
     flex-shrink: 0; /* Prevent crest from shrinking */
 }
 
+.events-popup .team-crest {
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+.team-crest {
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
 .carousel-slide .league-group {
     margin-bottom: 8px;
 }
@@ -121,19 +128,18 @@
     border-top: 1px solid #e1e8ed; /* Light border to visually separate */
 }
 
-  /* Event List Styling */
+/* Event List Styling */
 .event-list {
     margin: 0;
     padding: 0;
-    height:100%;
+    height: 100%;
 }
 
 .event-item {
     margin: 3px 0;
     padding: 8px 0; /* Increased padding for better spacing */
-    display: flex;
-    align-items: center; /* Align items vertically */
-    flex-wrap: wrap; /* Allow wrapping for long content */
+    /* Removed display: flex to avoid breaking table layout */
+    /* align-items and flex-wrap are removed as they only apply with display: flex */
 }
 
 .event-item.hidden {
@@ -144,73 +150,37 @@
     display: flex;
 }
 
-
-/* Refine Existing Events Popup Styles */
-.events-popup {
-    max-width: 700px;
-    width: calc(100% - 20px);
-    margin: 0 10px;
-    padding: 12px;
-    background-color: #ffffff; /* White background */
-    border: 1px solid #e1e8ed;
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    position: relative;
-    z-index: 1000;
-    overflow: hidden;
-    box-sizing: border-box;
+/* Ensure flex layout for event items in list views (e.g., sidebar carousel) */
+.event-list .event-item,
+.carousel-slide .event-item {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
-.events-popup h2 {
-    font-size: 18px;
-    font-weight: 700;
-    color: #001f3f;
-    margin-bottom: 10px;
-}
-
-.events-popup p {
-    font-size: 14px;
-    color: #666666;
-    margin-bottom: 15px;
-}
-
-.events-popup .event-list {
-    max-height: 70vh; /* Scrollable height, adjust as needed */
-    overflow-y: auto; /* Enable vertical scrolling */
-    padding-right: 10px; /* Space for scrollbar, unchanged */
-    margin: 0; /* Ensure no extra margins */
-}
-
-.events-popup .event-item {
-    padding: 12px 0; /* Match the padding style of tip-feed items */
+/* Specific styles for event items in the popup list view */
+.events-popup .event-list .event-item {
+    padding: 12px 0;
     border-bottom: 1px solid #e1e8ed;
-    flex-wrap: nowrap; /* Prevent wrapping in popup for cleaner look */
+    flex-wrap: nowrap;
 }
 
-.events-popup .event-item:last-child {
+.events-popup .event-list .event-item:last-child {
     border-bottom: none;
-    
 }
 
-.events-popup .event-item p {
+.events-popup .event-list .event-item p {
     margin: 0;
     font-size: 14px;
     color: #333;
     display: flex;
-    justify-content: space-between; /* Space out match info and venue */
+    justify-content: space-between;
     align-items: center;
     width: 100%;
 }
 
 .events-popup .event-item .sport-icon {
     margin-right: 5px;
-}
-
-.events-popup .team-crest {
-    width: 20px;
-    height: 20px;
-    margin-right: 5px;
-    vertical-align: middle;
 }
 
 .events-popup .event-location {
@@ -221,7 +191,10 @@
     flex-shrink: 0; /* Prevent shrinking */
 }
 
-
+.event-location {
+    font-size: 12px;
+    color: #666;
+}
 
 /* Style the Show Less Button */
 .events-popup .show-less {
@@ -241,41 +214,171 @@
     color: #ff4136; /* Maintain red on hover */
 }
 
-/* Table Styling for Football Events in the Center Feed */
-.events-popup table {
+/* Table Styling for Football Events */
+.events-popup .event-table {
     width: 100%;
+    max-width: 100%; /* Ensures table doesn't exceed popup width */
     border-collapse: collapse;
     margin-bottom: 15px;
-    font-size: 14px; /* Match existing event-item text size */
+    font-size: 14px; /* Matches event-item */
+    background-color: #ffffff;
+    border: 1px solid #e1e8ed; /* Matches popup border */
+    border-radius: 8px; /* Slightly less than popup's 12px */
+    overflow: hidden; /* Clips content to rounded corners */
+    table-layout: auto; /* Allows columns to adjust based on content */
 }
 
-/* Table Headers */
-.events-popup th {
-    background-color: #001f3f; /* Navy */
-    color: #ffffff; /* White */
+.events-popup .event-table th {
+    background-color: #001f3f; /* Navy header */
+    color: #ffffff;
     font-weight: 600;
     padding: 12px 10px;
     text-align: left;
-    border-bottom: 2px solid #e1e8ed; /* Slightly thicker border for header */
+    border-bottom: 2px solid #e1e8ed;
+    white-space: nowrap; /* Prevents header text from wrapping */
 }
 
-/* Table Cells */
-.events-popup td {
+.events-popup .event-table td {
     padding: 12px 10px;
     text-align: left;
-    border-bottom: 1px solid #e1e8ed; /* Light gray border */
-    color: #333; /* Dark gray for readability */
+    border-bottom: 1px solid #e1e8ed;
+    color: #333;
+    vertical-align: middle; /* Aligns content in the middle */
+    word-break: break-word; /* Allows long text to wrap */
+    max-width: 200px; /* Limits column width to prevent overflow */
+    overflow: hidden; /* Hides overflow if needed */
 }
 
-/* Alternating Row Colors */
-.events-popup tr:nth-child(even) {
-    background-color: #f9f9f9; /* Light gray for even rows */
+.events-popup .event-table .league-group {
+    background-color: #f2f2f2; /* Light gray for league headers */
 }
 
-/* Hover Effect */
-.events-popup tr:hover {
-    background-color: #e1e8ed; /* Light gray-blue on hover */
-    transition: background-color 0.2s ease-in-out; /* Smooth transition */
+.events-popup .event-table .league-header {
+    padding: 8px 10px;
+    font-weight: bold;
+    color: #001f3f;
+}
+
+.events-popup .event-table .event-item:hover {
+    background-color: #e1e8ed; /* Hover effect matches your tr:hover */
+    transition: background-color 0.2s ease-in-out;
+}
+
+.events-popup .event-table .event-item.live-match {
+    cursor: pointer; /* Indicates the row is clickable */
+}
+
+.events-popup .event-table .event-item.live-match::after {
+    content: '▼'; /* Down arrow to indicate dropdown */
+    font-size: 12px;
+    color: #666;
+    margin-left: 5px;
+    transition: transform 0.3s ease;
+}
+
+.events-popup .event-table .event-item.live-match.active::after {
+    transform: rotate(180deg); /* Rotate arrow when dropdown is open */
+}
+
+.events-popup .event-table .event-item.live-match.active {
+    background-color: #f0f4f8; /* Slightly different background when dropdown is open */
+}
+
+.events-popup .event-table .event-name {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap; /* Allows team names to wrap */
+    gap: 5px; /* Adds spacing between crests and text */
+}
+
+.events-popup .event-table .event-time {
+    white-space: nowrap; /* Keeps time/score on one line */
+}
+
+.events-popup .event-table .event-time .live-score {
+    display: inline-block;
+}
+
+.events-popup .event-table .event-location {
+    max-width: 150px; /* Limits the width of the location column */
+    white-space: normal; /* Allows venue names to wrap */
+}
+
+/* Dropdown styling for match details */
+.events-popup .event-table .match-details-dropdown {
+    display: none; /* Hidden by default */
+    background-color: #f9f9f9; /* Light gray background */
+    padding: 10px 15px; /* Slightly more padding for readability */
+    border-top: 1px solid #e1e8ed;
+    border-bottom: 1px solid #e1e8ed;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05); /* Subtle inset shadow */
+}
+
+.events-popup .event-table .match-details-dropdown .detailed-stats {
+    font-size: 12px; /* Slightly smaller than main text */
+    color: #555; /* Darker gray for contrast */
+    line-height: 1.5; /* Improved readability */
+}
+
+.events-popup .event-table .match-details-dropdown .goal-list {
+    margin: 5px 0;
+    padding-left: 20px;
+    list-style-type: disc;
+}
+
+.events-popup .event-table .match-details-dropdown .goal-list li {
+    margin-bottom: 3px;
+    white-space: normal; /* Allows goal details to wrap */
+}
+
+.events-popup .event-table .match-details-dropdown .no-goals {
+    color: #666; /* Matches event-location */
+}
+
+/* Responsive adjustments for table */
+@media (max-width: 768px) {
+    .events-popup {
+        max-width: 100%; /* Ensures popup fits smaller screens */
+        margin: 0 5px;
+        padding: 8px;
+    }
+
+    .events-popup .event-table {
+        display: block;
+        overflow-x: auto; /* Horizontal scroll for small screens */
+        white-space: nowrap; /* Prevents wrapping in table */
+        max-width: 100%; /* Ensures table doesn't exceed popup */
+    }
+
+    .events-popup .event-table th,
+    .events-popup .event-table td {
+        min-width: 120px; /* Ensures readability on scroll */
+        max-width: 150px; /* Limits column width on small screens */
+        word-break: break-word; /* Forces wrapping within limited width */
+    }
+
+    .events-popup .event-table .event-name {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .events-popup .event-table .team-crest {
+        margin-bottom: 5px;
+    }
+
+    .events-popup .event-table .event-location {
+        max-width: 120px; /* Smaller max-width on mobile */
+    }
+}
+
+/* General styles reused */
+.live-score {
+    color: #e63946; /* Your red accent */
+    font-weight: bold;
+}
+
+.sport-icon {
+    margin-right: 5px;
 }
 
 .league-group {
@@ -288,7 +391,6 @@
     color: #001f3f;
     margin: 10px 0 5px;
 }
-
 
 .leaderboard-table {
     width: 100%;
@@ -336,7 +438,6 @@
     background-color: #999;
 }
 
-  /* Policy Page Styles */
 /* Policy Page Styles */
 .policy-body {
     background-color: #ffffff; /* White background */
@@ -429,7 +530,7 @@
     color: #b32d39; /* Darker red on hover */
 }
 
-/* Responsive Design */
+/* Responsive Design for Policy */
 @media (max-width: 768px) {
     .policy-container {
         margin: 20px;
@@ -465,28 +566,26 @@
 .search-wrapper {
     position: relative; /* Positioning context for .search-results */
     padding: 0 10px; /* Match sidebar padding */
-  }
+}
 
 /* Fixed Search Input (at the top) */
-
 .search-input {
     width: 100%;
-    margin:10px auto;
+    margin: 10px auto;
     padding: 8px;
     border: 1px solid var(--border-color);
     border-radius: 20px;
     background-color: var(--secondary-bg);
     color: var(--black);
     display: block;
-  }
+}
 
 .search-input:focus {
     outline: none;
     border-color: #ff4136;
 }
 
-/* Suggested Search Results Styling (add this if not already present) */
-
+/* Suggested Search Results Styling */
 .search-results {
     position: absolute;
     top: calc(100% + 10px); /* Below the input with a small gap */
@@ -501,7 +600,7 @@
     z-index: 10002;
     padding: 10px;
     display: none;
-  }
+}
 
 .search-result-item {
     display: flex;
@@ -545,8 +644,6 @@
     text-overflow: ellipsis;
 }
 
-
-
 /* Show more button styling (Tipster Arena blue) */
 .show-more {
     display: block;
@@ -557,7 +654,6 @@
     font-size: 0.9em;
     text-align: center; /* Center the button */
     flex-shrink: 0; /* Prevent button from shrinking */
-
 }
 
 .show-more:hover {
@@ -568,7 +664,6 @@
     max-height: 200px; /* Adjust this value to fit your design */
     overflow-y: auto;
 }
-
 
 /* Show less button styling (Tipster Arena red, Twitter/X-like layout) */
 .show-less {
@@ -612,7 +707,6 @@
     margin-bottom: 8px;
 }
 
-
 /* Adjust padding or height if needed to accommodate "Show more" */
 .sidebar-card p {
     color: #666666;
@@ -632,7 +726,6 @@
     min-height: 350px; /* Increased height for more content */
 }
 
-
 /* Specific Heights for Trending Tips (updated) */
 .sidebar-card[data-card="trending-tips"] {
     min-height: 450px; /* Increased from 350px to allow more content */
@@ -642,7 +735,7 @@
     overflow-y: auto; /* Add scroll if content exceeds height */
 }
 
-/* Specific Heights for Who to Follow */
+/* Specific Heights for Upcoming Events */
 .sidebar-card[data-card="upcoming-events"] {
     min-height: 350px; /* Increased height for more content */
 }
@@ -722,7 +815,6 @@
     margin-bottom: 15px;
 }
 
-
 /* Trending Tips List */
 .trending-tips-list {
     display: flex;
@@ -764,4 +856,3 @@
     color: #000000;
     margin-bottom: 12px;
 }
-

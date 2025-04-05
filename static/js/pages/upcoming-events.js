@@ -118,6 +118,24 @@ export async function getDynamicEvents() {
 }
 
 /**
+ * Adds dropdown toggle functionality for live football matches
+ */
+export function setupMatchDetailsDropdown() {
+  const liveMatches = document.querySelectorAll('.live-match');
+  liveMatches.forEach(match => {
+    match.addEventListener('click', function() {
+      const matchId = this.getAttribute('data-match-id');
+      const dropdown = document.getElementById(matchId);
+      if (dropdown) {
+        const isVisible = dropdown.style.display === 'block';
+        dropdown.style.display = isVisible ? 'none' : 'block';
+        this.classList.toggle('active', !isVisible);
+      }
+    });
+  });
+}
+
+/**
  * Generates HTML for event lists based on the current path and target
  * @param {string} currentPath - Current URL path (e.g., "/sport/football/")
  * @param {string} target - Target content type (e.g., "upcoming-events")
@@ -172,7 +190,7 @@ export async function getEventList(currentPath, target, activeSport = 'football'
       title = "Upcoming Football Fixtures";
       description = "Here are the latest football fixtures in Tipster Arena:";
       const events = dynamicEvents.football || [];
-      eventList = events.length ? `<div class="event-table">${formatEventTable(events)}</div>` : `<p>No upcoming football fixtures available.</p>`;
+      eventList = events.length ? formatEventTable(events) : `<p>No upcoming football fixtures available.</p>`;
     } 
     // Golf-specific page: Show leaderboard for current or recent PGA event
     else if (path.includes("/sport/golf/")) {
@@ -268,8 +286,7 @@ export async function getEventList(currentPath, target, activeSport = 'football'
     }
   }
 
-  // Return the formatted popup HTML
-  return `
+  const popupHtml = `
     <div class="events-popup">
       <h2>${title}</h2>
       <p>${description}</p>
@@ -277,6 +294,13 @@ export async function getEventList(currentPath, target, activeSport = 'football'
       <a href="#" class="show-less" data-target="${target}">Show less</a>
     </div>
   `;
+
+  // Setup dropdown after rendering
+  setTimeout(() => {
+    setupMatchDetailsDropdown();
+  }, 0);
+
+  return popupHtml;
 }
 
 /**
@@ -457,7 +481,6 @@ export function setupShowMoreButtons() {
  * Initializes carousels on the page with event data and navigation
  * Called on DOMContentLoaded to set up all carousel containers
  */
-// In upcoming-events.js, modify initCarousel
 export async function initCarousel() {
   const carouselContainers = document.querySelectorAll('.carousel-container');
   for (const container of carouselContainers) {
@@ -480,8 +503,6 @@ export async function initCarousel() {
     }
   }
 }
-
-
 
 /**
  * Populates carousel slides with sport-specific event data
