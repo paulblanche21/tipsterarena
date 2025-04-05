@@ -19,6 +19,8 @@ from django.conf import settings
 # Define the base directory of the project
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+SITE_URL = 'http://localhost:8000'  # For development; adjust for production
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-or8ih)*8^-c_@9h4r&sojeg#*5841-k%f9s+$tj##9n=&thm)4"  # Replace with a secure key in production
 
@@ -36,6 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",     # Static file handling
     'core.apps.CoreConfig',           # Custom core app for Tipster Arena
     'rest_framework',                 # Django REST framework for API support
+    'rest_framework.authtoken',       # Token authentication for REST framework
     "csp",                            # Content Security Policy enforcement
     "django_vite",                    # Integration with Vite for frontend assets
 ]
@@ -115,11 +118,13 @@ LOGIN_REDIRECT_URL = '/home/'  # Redirect after successful login
 LOGOUT_REDIRECT_URL = '/'      # Redirect after logout
 LOGIN_URL = '/'                # Redirect to landing page if not authenticated
 
-# Content Security Policy (CSP) settings
-CSP_DEFAULT_SRC = ("'self'",)  # Restrict default sources to same origin
-CSP_SCRIPT_SRC = (
-    "'unsafe-inline'",  # Allow inline scripts (consider removing in production for security)
-)
+# Security settings
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "https://*.twimg.com", "https://js.intercomcdn.com")
+CSP_SCRIPT_SRC = ("'self'", "https://*.twimg.com", "https://js.intercomcdn.com")
+CSP_FONT_SRC = ("'self'", "https://*.twimg.com", "https://js.intercomcdn.com", "https://fonts.intercomcdn.com", "'data:'")  # Added 'data:'
+CSP_IMG_SRC = ("'self'", "data:", "https://*.twimg.com")
+CSP_CONNECT_SRC = ("'self'", "https://*.twimg.com", "https://api.x.com")
 CSP_STYLE_SRC = (
     "'self'",                  # Allow styles from same origin
     "https://cdnjs.cloudflare.com",  # Font Awesome
@@ -157,3 +162,12 @@ VITE_APP_DIR = BASE_DIR  # Directory containing vite.config.mjs (root of project
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"  # Default auto-incrementing field type
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAdminUser',
+    ],
+}

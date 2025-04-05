@@ -200,7 +200,6 @@ function setupTipInteractions() {
                     const tipComments = tipFeed.querySelector('.tip-actions .comment-count');
                     tipComments.textContent = data.comment_count;
 
-                    // Dynamically append the comment to the .tip-feed (simplified for level 1 nesting)
                     const tipCommentsContainer = tipFeed.querySelector('.tip-comments') || tipFeed.appendChild(document.createElement('div'));
                     tipCommentsContainer.className = 'tip-comments';
                     const newCommentInFeed = document.createElement('div');
@@ -470,52 +469,69 @@ function openCommentModal(tip, tipId, parentId = null) {
     const commentCount = tipContent.querySelector('.comment-count').textContent;
     const engagementCount = tipContent.querySelector('.tip-action-engagement + .tip-action-count')?.textContent || '0';
 
-    // Extract tip metadata from the DOM with "Confidence" instead of "Stake"
-    const odds = tipContent.querySelector('.tip-meta span:nth-child(1)')?.textContent.split(': ')[1] || '';
-    const betType = tipContent.querySelector('.tip-meta span:nth-child(2)')?.textContent.split(': ')[1] || '';
-    const eachWayText = tipContent.querySelector('.tip-meta span:nth-child(3)')?.textContent || '';
-    const eachWay = eachWayText === 'Each Way: Yes' ? 'yes' : 'no';
-    const confidenceIndex = eachWay === 'yes' ? 4 : 3; // Adjusted index for Confidence
-    const confidence = tipContent.querySelector(`.tip-meta span:nth-child(${confidenceIndex})`)?.textContent.split(': ')[1] || '';
-    const statusIndex = eachWay === 'yes' ? 5 : 4;
-    const status = tipContent.querySelector(`.tip-meta span:nth-child(${statusIndex})`)?.textContent.split(': ')[1] || 'Pending';
+    // Function to update tip status dynamically
+    const updateTipStatus = () => {
+        fetch(`/api/tip/${tipId}/`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const status = data.tip.status || 'Pending';
+                const odds = data.tip.odds || '';
+                const betType = data.tip.bet_type || '';
+                const eachWay = data.tip.each_way ? 'yes' : 'no';
+                const confidence = data.tip.confidence || '';
 
-    modalTipAvatar.src = avatarUrl;
-    modalTipContent.innerHTML = `
-        <a href="#" class="tip-username">
-            <strong class="modal-tip-username">${usernameElement ? usernameElement.textContent : 'Unknown'}</strong>
-            <span class="user-handle modal-tip-handle">${handleElement ? handleElement.textContent : ''}</span>
-        </a>
-        <span class="modal-tip-sport">${sportEmoji}</span>
-        <p class="modal-tip-text">${text}</p>
-        <div class="tip-meta">
-            <span>Odds: ${odds}</span>
-            <span>Bet Type: ${betType}</span>
-            ${eachWay === 'yes' ? '<span>Each Way: Yes</span>' : ''}
-            ${confidence ? `<span>Confidence: ${confidence}</span>` : ''}
-            <span>Status: ${status}</span>
-        </div>
-        <small class="modal-tip-timestamp">${timestamp}</small>
-        <div class="tip-actions">
-            <div class="tip-action-group">
-                <a href="#" class="tip-action tip-action-like" data-action="like"><i class="fas fa-heart"></i></a>
-                <span class="tip-action-count like-count">${likeCount}</span>
-            </div>
-            <div class="tip-action-group">
-                <a href="#" class="tip-action tip-action-share" data-action="share"><i class="fas fa-retweet"></i></a>
-                <span class="tip-action-count share-count">${shareCount}</span>
-            </div>
-            <div class="tip-action-group">
-                <a href="#" class="tip-action tip-action-comment" data-action="comment"><i class="fas fa-comment-dots"></i></a>
-                <span class="tip-action-count comment-count">${commentCount}</span>
-            </div>
-            <div class="tip-action-group">
-                <a href="#" class="tip-action tip-action-engagement"><i class="fas fa-users"></i></a>
-                <span class="tip-action-count">${engagementCount}</span>
-            </div>
-        </div>
-    `;
+                modalTipAvatar.src = avatarUrl;
+                modalTipContent.innerHTML = `
+                    <a href="#" class="tip-username">
+                        <strong class="modal-tip-username">${usernameElement ? usernameElement.textContent : 'Unknown'}</strong>
+                        <span class="user-handle modal-tip-handle">${handleElement ? handleElement.textContent : ''}</span>
+                    </a>
+                    <span class="modal-tip-sport">${sportEmoji}</span>
+                    <p class="modal-tip-text">${text}</p>
+                    <div class="tip-meta">
+                        <span>Odds: ${odds}</span>
+                        <span>Bet Type: ${betType}</span>
+                        ${eachWay === 'yes' ? '<span>Each Way: Yes</span>' : ''}
+                        ${confidence ? `<span>Confidence: ${confidence}</span>` : ''}
+                        <span>Status: ${status}</span>
+                    </div>
+                    <small class="modal-tip-timestamp">${timestamp}</small>
+                    <div class="tip-actions">
+                        <div class="tip-action-group">
+                            <a href="#" class="tip-action tip-action-like" data-action="like"><i class="fas fa-heart"></i></a>
+                            <span class="tip-action-count like-count">${likeCount}</span>
+                        </div>
+                        <div class="tip-action-group">
+                            <a href="#" class="tip-action tip-action-share" data-action="share"><i class="fas fa-retweet"></i></a>
+                            <span class="tip-action-count share-count">${shareCount}</span>
+                        </div>
+                        <div class="tip-action-group">
+                            <a href="#" class="tip-action tip-action-comment" data-action="comment"><i class="fas fa-comment-dots"></i></a>
+                            <span class="tip-action-count comment-count">${commentCount}</span>
+                        </div>
+                        <div class="tip-action-group">
+                            <a href="#" class="tip-action tip-action-engagement"><i class="fas fa-users"></i></a>
+                            <span class="tip-action-count">${engagementCount}</span>
+                        </div>
+                    </div>
+                `;
 
+                // Update the original tip feed
+                const statusIndex = eachWay === 'yes' ? 5 : 4;
+                const tipFeedStatus = tip.querySelector(`.tip-meta span:nth-child(${statusIndex})`);
+                if (tipFeedStatus) tipFeedStatus.textContent = `Status: ${status}`;
+            }
+        })
+        .catch(error => console.error('Error fetching tip status:', error));
+    };
+
+    // Initial load
+    updateTipStatus();
     commentList.innerHTML = '<p>Loading comments...</p>';
 
     if (parentId) {
@@ -528,10 +544,13 @@ function openCommentModal(tip, tipId, parentId = null) {
         replyToHeader.style.display = 'none';
     }
 
-    let pollingInterval;
-    pollingInterval = setInterval(() => fetchComments(tipId, commentList), 30000);
-    const stopPolling = () => clearInterval(pollingInterval);
+    // Polling for updates (every 30 seconds)
+    let pollingInterval = setInterval(() => {
+        updateTipStatus();
+        fetchComments(tipId, commentList);
+    }, 30000);
 
+    const stopPolling = () => clearInterval(pollingInterval);
     window.addEventListener('click', (event) => {
         if (event.target === commentModal) {
             stopPolling();

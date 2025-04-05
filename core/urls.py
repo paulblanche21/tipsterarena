@@ -64,3 +64,8 @@ urlpatterns = [
 # Serve media files in development mode
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)  # Serve media files when DEBUG is True
+
+
+def debug_verify_tip(request):
+    print("URL routing hit for /api/verify-tip/!")
+    return views.VerifyTipView.as_view()(request)

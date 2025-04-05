@@ -13,6 +13,8 @@ from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.views import APIView
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework import generics, status
 from rest_framework.serializers import ModelSerializer
@@ -20,6 +22,9 @@ from datetime import datetime
 import json
 from django.template.loader import render_to_string
 from django.utils import timezone
+from django.core.exceptions import ValidationError
+from django.views.decorators.csrf import csrf_protect
+from django.utils.decorators import method_decorator
 
 import logging
 import bleach
@@ -654,66 +659,31 @@ def post_tip(request):
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
     return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
 
-# Updated view to verify a tip (function-based)
-@csrf_exempt
-@login_required
-def verify_tip(request):
-    if request.method == 'POST':
-        try:
-            tip_id = request.POST.get('tip_id')
-            status = request.POST.get('status')
-            resolution_note = request.POST.get('resolution_note', '')
 
-            if not tip_id:
-                return JsonResponse({'success': False, 'error': 'Tip ID is required'}, status=400)
-            if not status:
-                return JsonResponse({'success': False, 'error': 'Status is required'}, status=400)
-            if status not in ['win', 'loss', 'dead_heat', 'void_non_runner']:
-                return JsonResponse({'success': False, 'error': 'Invalid status value'}, status=400)
-
-            tip = get_object_or_404(Tip, id=tip_id)
-            tip.status = status
-            tip.resolution_note = resolution_note
-            tip.verified_at = timezone.now()
-            tip.save()
-
-            # Update user metrics
-            user = tip.user
-            user_tips = Tip.objects.filter(user=user, status__in=['win', 'loss', 'dead_heat', 'void_non_runner'])
-            total_tips = user_tips.count()
-            wins = user_tips.filter(status='win').count()
-            win_rate = (wins / total_tips * 100) if total_tips > 0 else 0
-
-            user_profile = user.userprofile
-            user_profile.win_rate = win_rate
-            user_profile.total_tips = total_tips
-            user_profile.wins = wins
-            user_profile.save()
-
-            return JsonResponse({
-                'success': True,
-                'message': 'Tip verified successfully',
-                'win_rate': win_rate,
-                'total_tips': total_tips,
-                'wins': wins,
-            })
-        except Tip.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Tip not found'}, status=404)
-        except Exception as e:
-            logger.error(f"Error verifying tip: {str(e)}")
-            return JsonResponse({'success': False, 'error': str(e)}, status=500)
-    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
-
-# Updated class-based view to verify a tip
+@method_decorator(csrf_exempt, name='dispatch')
 class VerifyTipView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAdminUser]
+
     def post(self, request):
-        tip_id = request.POST.get('tip_id')
-        status = request.POST.get('status')
-        resolution_note = request.POST.get('resolution_note', '')
+        print("VerifyTipView hit!")
+        print(f"Request user: {request.user}, Is staff: {request.user.is_staff}")
+        print(f"Request data: {request.data}")
+        
+        tip_id = request.data.get('tip_id')
+        new_status = request.data.get('status')
+        resolution_note = request.data.get('resolution_note', '')
+
+        VALID_STATUSES = ['pending', 'win', 'loss', 'dead_heat', 'void_non_runner']
+        if new_status not in VALID_STATUSES:
+            return Response({'success': False, 'error': f'Invalid status: {new_status}'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             tip = Tip.objects.get(id=tip_id)
-            tip.status = status
+            if tip.status != 'pending':
+                return Response({'success': False, 'error': 'Tip is already verified'}, status=status.HTTP_400_BAD_REQUEST)
+
+            tip.status = new_status
             tip.resolution_note = resolution_note
             tip.verified_at = timezone.now()
             tip.save()
@@ -732,7 +702,9 @@ class VerifyTipView(APIView):
             return Response({'success': True, 'win_rate': win_rate}, status=status.HTTP_200_OK)
         except Tip.DoesNotExist:
             return Response({'success': False, 'error': 'Tip not found'}, status=status.HTTP_404_NOT_FOUND)
-
+        except ValidationError as e:
+            return Response({'success': False, 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
 # Serializer for RaceMeeting model
 class RaceMeetingSerializer(ModelSerializer):
     class Meta:
