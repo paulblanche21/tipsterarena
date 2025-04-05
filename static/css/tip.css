@@ -75,6 +75,7 @@
     margin: 0 10px 10px 10px;  /* Consistent margins */
     padding: 0;                /* No padding */
     box-sizing: border-box;    /* Include margins */
+    overflow: hidden;          /* Prevent overflow */
 }
 
 /* Styles for the tip avatar */
@@ -104,7 +105,9 @@
     flex: 1;                   /* Take remaining space */
     display: flex;             /* Flex layout */
     flex-direction: column;    /* Stack vertically */
-    gap: 5px;                  /* Space between elements */
+    gap: 5px; 
+    width: 100%;               /* Full width */
+    overflow-wrap: break-word;                 /* Space between elements */
 }
 
 /* Styles for the tip header */
@@ -140,6 +143,7 @@
     display: flex;             /* Flex layout */
     flex-direction: column;    /* Stack vertically */
     gap: 5px;                  /* Space between elements */
+    width: 100%;               /* Full width */
 }
 
 /* Paragraph within tip body */
@@ -174,6 +178,8 @@
     display: flex;             /* Flex layout */
     align-items: center;       /* Center vertically */
     gap: 10px;                 /* Space between actions */
+    flex-wrap: wrap;           /* Allow wrapping */
+    width: 100%; 
 }
 
 /* Base styles for tip action buttons */
@@ -370,7 +376,8 @@
     flex-wrap: wrap;           /* Allow wrapping on small screens */
     gap: 10px;                 /* Space between spans */
     font-size: 14px;           /* Consistent font size */
-    color: #666;               /* Gray text */
+    color: #666;            /* Gray text */
+    width: 100%;                
 }
 
 .tip-meta span {
@@ -378,4 +385,36 @@
     padding: 4px 8px;          /* Internal padding */
     border-radius: 4px;        /* Rounded corners */
     white-space: nowrap;       /* Prevent text wrapping */
+}
+
+/* tipsterarena/core/static/css/tip.css */
+.tip-status {
+    font-weight: bold; /* All statuses in bold */
+  }
+  
+  .tip-status.win {
+    color: #28a745; /* Green for Win */
+  }
+  
+  .tip-status.loss {
+    color: #dc3545; /* Red for Loss */
+  }
+  
+  .tip-status.pending {
+    color: #007bff; /* Blue for Pending */
+  }
+  
+  .tip-status.dead_heat {
+    color: #ffc107; /* Yellow for Dead Heat */
+  }
+  
+  .tip-status.void_non_runner {
+    color: #6c757d; /* Gray for Void/Non Runner */
+  }
+
+  /* Ensure other elements don’t overflow */
+.tip-body p,
+.tip-image {
+    max-width: 100%;           /* Limit to container width */
+    overflow-wrap: break-word; /* Break long text */
 }

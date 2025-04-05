@@ -161,7 +161,6 @@ def follow_user(request):
         return JsonResponse({'success': True, 'message': f'Now following {followed_username}'})
     return JsonResponse({'success': True, 'message': f'Already following {followed_username}'})
 
-# View for user profiles
 @login_required
 def profile(request, username):
     user = get_object_or_404(User, username=username)
@@ -170,7 +169,11 @@ def profile(request, username):
     except UserProfile.DoesNotExist:
         user_profile = UserProfile.objects.get_or_create(user=user)[0]
 
-    user_tips = Tip.objects.filter(user=user).order_by('-created_at').select_related('user__userprofile')
+    # Filter user's own tips and retweeted tips
+    user_tips = Tip.objects.filter(
+        Q(user=user) | Q(shares__user=user)
+    ).order_by('-created_at').select_related('user__userprofile').distinct()
+
     following_count = Follow.objects.filter(follower=user).count()
     followers_count = Follow.objects.filter(followed=user).count()
 
@@ -178,9 +181,42 @@ def profile(request, username):
     form = UserProfileForm(instance=user_profile) if is_owner else None
     is_following = False if is_owner else Follow.objects.filter(follower=request.user, followed=user).exists()
 
+    # Existing stats
     win_rate = user_profile.win_rate
     total_tips = user_profile.total_tips
     wins = user_profile.wins
+
+    # Calculate average odds
+    user_own_tips = Tip.objects.filter(user=user)
+    average_odds = None
+    print(f"User tips count: {user_own_tips.count()}")
+    if user_own_tips.exists():
+        total_odds = 0
+        valid_tips = 0
+        for tip in user_own_tips:
+            print(f"Processing tip ID {tip.id}: Odds = {tip.odds}, Format = {tip.odds_format}")
+            try:
+                if tip.odds_format.lower() == 'decimal':
+                    odds_value = float(tip.odds)
+                elif tip.odds_format.lower() == 'fractional':
+                    numerator, denominator = map(float, tip.odds.split('/'))
+                    odds_value = (numerator / denominator) + 1
+                else:
+                    print(f"  Skipping tip ID {tip.id}: Invalid odds format '{tip.odds_format}'")
+                    continue
+                total_odds += odds_value
+                valid_tips += 1
+                print(f"  Valid tip ID {tip.id}: Odds value = {odds_value}, Running total = {total_odds}")
+            except (ValueError, ZeroDivisionError) as e:
+                print(f"  Skipping tip ID {tip.id}: Error parsing odds - {str(e)}")
+                continue
+        if valid_tips > 0:
+            average_odds = total_odds / valid_tips
+            print(f"Average odds calculated: {average_odds} (Total odds: {total_odds}, Valid tips: {valid_tips})")
+        else:
+            print("No valid tips for average odds calculation")
+    else:
+        print("No tips found for user")
 
     return render(request, 'core/profile.html', {
         'user': user,
@@ -194,6 +230,7 @@ def profile(request, username):
         'win_rate': win_rate,
         'total_tips': total_tips,
         'wins': wins,
+        'average_odds': average_odds,  # New stat
     })
 
 # View to handle profile editing

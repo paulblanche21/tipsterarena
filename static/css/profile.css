@@ -265,20 +265,65 @@
 }
 
 /* Container for user details below avatar */
+
 .profile-user-details {
-    align-items: flex-start;   /* Align items at the top */
-    display: flex;             /* Flex layout */
-    flex-direction: column;    /* Stack vertically */
-    margin: 0;                 /* No margins */
-    padding: 0;                /* No padding */
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
 }
 
-/* Styles for the user info section below banner */
+/* Styles for user info section */
 .profile-user-info {
-    background-color: #f5f8fa; /* Light gray background */
-    border-bottom-left-radius: 12px;  /* Rounded bottom-left */
-    border-bottom-right-radius: 12px;  /* Rounded bottom-right */
-    margin: 80px 10px 10px 10px;  /* Space for avatar overlap */
-    padding: 15px;             /* Internal padding */
-    position: relative;        /* Relative positioning */
+    background-color: #f5f8fa;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    margin: 80px 10px 10px 10px;
+    padding: 15px;
+    position: relative;
 }
+
+/* Styles for location */
+.profile-location {
+    color: #666666;
+    font-size: 14px;
+    margin: 5px 0;
+}
+
+/* Container for stats (Win Rate, Total Bets, Average Odds) */
+.profile-stats {
+    display: flex;
+    flex-wrap: wrap;           /* Allow wrapping on small screens */
+    gap: 15px;                 /* Space between stats */
+    margin: 5px 0;             /* Vertical spacing */
+}
+
+/* Styles for win rate */
+.profile-win-rate {
+    color: #28a745; /* Green to match Win status */
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.profile-total-bets {
+    color: #666666;
+    font-size: 14px;
+    font-weight: bold; /* Make bold */
+}
+
+.profile-average-odds {
+    color: #666666;
+    font-size: 14px;
+    font-weight: bold; /* Make bold */
+}
+
+/* Icon spacing within location and win rate */
+.profile-location i,
+.profile-win-rate i,
+.profile-total-bets i,
+.profile-average-odds i{
+    margin-right: 5px; /* Space between icon and text */
+}
+
+
