@@ -1,17 +1,11 @@
 // upcoming-events.js
 
-// Import utility function for CSRF token retrieval, used in follow functionality
 import { getCSRFToken } from './utils.js';
-
-// Import sport-specific event fetching and formatting functions
-// These are used to populate event data and render it in various views
 import { fetchEvents as fetchFootballEvents, formatEventList as formatFootballList, formatEventTable } from './football-events.js';
 import { fetchEvents as fetchTennisEvents, formatEventList as formatTennisList, fetchTournamentMatches } from './tennis-events.js';
 import { fetchEvents as fetchGolfEvents, formatEventList as formatGolfList, fetchLeaderboard } from './golf-events.js';
 import { fetchEvents as fetchHorseRacingEvents, formatEventList as formatHorseRacingList } from './horse-racing-events.js';
 
-// Configuration object defining supported sports, leagues, and their metadata
-// Used in getDynamicEvents to fetch events from ESPN or custom endpoints
 const SPORT_CONFIG = {
   football: [
     { sport: "soccer", league: "eng.1", icon: "⚽", name: "Premier League", priority: 1 },
@@ -40,8 +34,6 @@ const SPORT_CONFIG = {
   ]
 };
 
-// Mapping of sports to their fetch and format functions from sport-specific files
-// Used in getDynamicEvents to fetch events dynamically
 const SPORT_MODULES = {
   football: { fetch: fetchFootballEvents, format: formatFootballList },
   golf: { fetch: fetchGolfEvents, format: formatGolfList },
@@ -49,8 +41,6 @@ const SPORT_MODULES = {
   horse_racing: { fetch: fetchHorseRacingEvents, format: formatHorseRacingList }
 };
 
-// Mapping of sports to their formatting functions for carousel display
-// Used in populateCarousel to render sport-specific event lists
 const FORMATTERS = {
   football: formatFootballList,
   golf: formatGolfList,
@@ -58,31 +48,22 @@ const FORMATTERS = {
   horse_racing: formatHorseRacingList
 };
 
-// Global variable to cache fetched events across sports
-// Populated by getDynamicEvents and used in various rendering functions
 let globalEvents = {};
 
-/**
- * Fetches events for all configured sports and returns them grouped by sport
- * @returns {Promise<Object>} - Object with events keyed by sport (e.g., { football: [], golf: [], ... })
- */
 export async function getDynamicEvents() {
   const events = {};
-  // Iterate over each sport in SPORT_CONFIG
   for (const sportKey of Object.keys(SPORT_CONFIG)) {
     const sportConfigs = SPORT_CONFIG[sportKey];
     const module = SPORT_MODULES[sportKey];
     if (module && sportConfigs.length > 0) {
       let allEvents = [];
-      // Special handling for horse racing, which uses a custom Django endpoint
       if (sportKey === "horse_racing") {
         allEvents = await module.fetch();
         console.log(`Horse Racing: Fetched ${allEvents.length} events`);
       } else {
-        // For ESPN-based sports (football, golf, tennis), fetch events for a date range
         const today = new Date();
         const endDate = new Date();
-        const daysToFetch = sportKey === "football" ? 7 : 90; // 7 days for football, 90 for others
+        const daysToFetch = sportKey === "football" ? 7 : 90;
         endDate.setDate(today.getDate() + daysToFetch);
         const todayStr = today.toISOString().split('T')[0].replace(/-/g, '');
         const endDateStr = endDate.toISOString().split('T')[0].replace(/-/g, '');
@@ -99,7 +80,6 @@ export async function getDynamicEvents() {
           }
         }
       }
-      // Sort non-football events by date (football sorting is handled in football-events.js)
       if (sportKey !== "football") {
         allEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
       }
@@ -107,7 +87,6 @@ export async function getDynamicEvents() {
     }
   }
   globalEvents = events;
-  // Combine all events into a single sorted list for cross-sport views
   events.all = [
     ...(events.football || []),
     ...(events.golf || []),
@@ -118,52 +97,55 @@ export async function getDynamicEvents() {
 }
 
 /**
- * Adds dropdown toggle functionality for live football matches
+ * Adds toggle functionality for expandable football match cards
  */
+export function setupExpandableCards() {
+  console.log('Entering setupExpandableCards');
+  const cards = document.querySelectorAll('.event-card.expandable-card');
+  console.log('Found expandable cards:', cards.length);
 
-export function setupMatchDetailsDropdown() {
-  console.log('Entering setupMatchDetailsDropdown'); // Force log
-  const liveMatches = document.querySelectorAll('.event-item.live-match');
-  console.log('Found live matches:', liveMatches.length);
-  liveMatches.forEach(match => {
-    match.removeEventListener('click', match._dropdownToggleHandler);
+  cards.forEach(card => {
+    const header = card.querySelector('.card-header');
+    const details = card.querySelector('.match-details');
+
+    // Remove any existing listeners to prevent duplicates
+    if (header._toggleHandler) {
+      header.removeEventListener('click', header._toggleHandler);
+    }
+
     const handler = (e) => {
       e.stopPropagation();
-      const card = match.closest('.event-card');
-      const dropdown = card ? card.querySelector('.match-details-dropdown') : null;
-      if (dropdown) {
-        const isVisible = dropdown.style.display === 'block';
-        console.log('Toggling dropdown for', match.textContent.trim(), 'Visible:', isVisible);
-        dropdown.style.display = isVisible ? 'none' : 'block';
+      if (details) {
+        const isVisible = details.style.display === 'block';
+        console.log('Toggling card for', card.dataset.eventId, 'Visible:', isVisible);
+        details.style.display = isVisible ? 'none' : 'block';
+        card.classList.toggle('expanded', !isVisible);
       } else {
-        console.log('No dropdown found for', match.textContent.trim());
+        console.log('No details found for card', card.dataset.eventId);
       }
     };
-    match.addEventListener('click', handler);
-    match._dropdownToggleHandler = handler;
+
+    header.addEventListener('click', handler);
+    header._toggleHandler = handler;
   });
 
-  if (!document._dropdownCloseListener) {
+  if (!document._cardCloseListener) {
     const closeHandler = (e) => {
-      if (!e.target.closest('.event-card')) {
-        console.log('Click outside event card, closing dropdowns');
-        document.querySelectorAll('.match-details-dropdown').forEach(dropdown => {
-          dropdown.style.display = 'none';
+      if (!e.target.closest('.event-card.expandable-card')) {
+        console.log('Click outside, closing all expandable cards');
+        document.querySelectorAll('.match-details').forEach(details => {
+          details.style.display = 'none';
+        });
+        document.querySelectorAll('.expandable-card').forEach(card => {
+          card.classList.remove('expanded');
         });
       }
     };
     document.addEventListener('click', closeHandler);
-    document._dropdownCloseListener = closeHandler;
+    document._cardCloseListener = closeHandler;
   }
 }
 
-/**
- * Generates HTML for event lists based on the current path and target
- * @param {string} currentPath - Current URL path (e.g., "/sport/football/")
- * @param {string} target - Target content type (e.g., "upcoming-events")
- * @param {string} [activeSport='football'] - Default sport if no slide is active
- * @returns {Promise<string>} - HTML string for the event popup
- */
 export async function getEventList(currentPath, target, activeSport = 'football') {
   const path = currentPath.toLowerCase();
   let title = "";
@@ -172,7 +154,6 @@ export async function getEventList(currentPath, target, activeSport = 'football'
   const dynamicEvents = await getDynamicEvents();
 
   if (target === "upcoming-events") {
-    // Home or explore page: Show all sports
     if (path === "/" || path === "/home/" || path === "/explore/") {
       title = "Upcoming Events Across All Sports";
       description = "Here are the latest upcoming events across all sports:";
@@ -206,16 +187,12 @@ export async function getEventList(currentPath, target, activeSport = 'football'
       } else {
         eventList = "<p>No upcoming events available across all sports.</p>";
       }
-    } 
-    // Football-specific page: Show fixtures in a table
-    else if (path.includes("/sport/football/")) {
+    } else if (path.includes("/sport/football/")) {
       title = "Upcoming Football Fixtures";
       description = "Here are the latest football fixtures in Tipster Arena:";
       const events = dynamicEvents.football || [];
       eventList = events.length ? formatEventTable(events) : `<p>No upcoming football fixtures available.</p>`;
-    } 
-    // Golf-specific page: Show leaderboard for current or recent PGA event
-    else if (path.includes("/sport/golf/")) {
+    } else if (path.includes("/sport/golf/")) {
       title = "PGA Tour Leaderboard";
       description = "Leaderboard for the most recent or in-progress PGA Tour event:";
       const pgaEvents = (dynamicEvents.golf || []).filter(event => event.league === "PGA Tour");
@@ -250,9 +227,7 @@ export async function getEventList(currentPath, target, activeSport = 'football'
       } else {
         eventList = `<p>No current or recent PGA Tour events available.</p>`;
       }
-    } 
-    // Tennis-specific page: Show upcoming ATP matches by date
-    else if (path.includes("/sport/tennis/")) {
+    } else if (path.includes("/sport/tennis/")) {
       title = "Upcoming ATP Tournament Matches";
       description = "Here are the latest matches for upcoming ATP tournaments:";
       const tennisEvents = dynamicEvents.tennis || [];
@@ -280,9 +255,7 @@ export async function getEventList(currentPath, target, activeSport = 'football'
       });
       eventList = await Promise.all(eventList).then(results => results.join(""));
       eventList = tennisEvents.length ? `<div class="event-list">${eventList}</div>` : `<p>No upcoming tennis events available.</p>`;
-    } 
-    // Horse racing-specific page: Show meetings for the next 7 days
-    else if (path.includes("/sport/horse_racing/")) {
+    } else if (path.includes("/sport/horse_racing/")) {
       title = "Upcoming Horse Racing Meetings";
       description = "Here are the race meetings for the next 7 days:";
       const horseRacingEvents = dynamicEvents.horse_racing || [];
@@ -317,18 +290,13 @@ export async function getEventList(currentPath, target, activeSport = 'football'
     </div>
   `;
 
-  // Setup dropdown after rendering
   setTimeout(() => {
-    setupMatchDetailsDropdown();
+    setupExpandableCards(); // Updated from setupMatchDetailsDropdown
   }, 0);
 
   return popupHtml;
 }
 
-/**
- * Attaches click event listeners to follow buttons for user following
- * Called after rendering "who-to-follow" content
- */
 function attachFollowButtonListeners() {
   const followButtons = document.querySelectorAll('.follow-btn');
   followButtons.forEach(button => {
@@ -339,11 +307,6 @@ function attachFollowButtonListeners() {
   });
 }
 
-/**
- * Handles the API call to follow a user and updates the button state
- * @param {string} username - The username to follow
- * @param {HTMLElement} button - The follow button element
- */
 function followUser(username, button) {
   const formData = new FormData();
   formData.append('username', username);
@@ -371,10 +334,6 @@ function followUser(username, button) {
   });
 }
 
-/**
- * Sets up "show more" button listeners for trending tips and who-to-follow sections
- * Updates the content area with dynamic data or event lists
- */
 export function setupShowMoreButtons() {
   const showMoreButtons = document.querySelectorAll('.show-more');
   showMoreButtons.forEach(button => {
@@ -391,7 +350,6 @@ export function setupShowMoreButtons() {
 
         switch (target) {
           case 'trending-tips':
-            // Load trending tips from the API
             content.innerHTML = `
               <div class="follow-card">
                 <h2>Trending Tips</h2>
@@ -436,7 +394,6 @@ export function setupShowMoreButtons() {
             break;
 
           case 'who-to-follow':
-            // Load suggested users from the API
             content.innerHTML = `
               <div class="follow-card">
                 <h2>Who to Follow</h2>
@@ -482,7 +439,6 @@ export function setupShowMoreButtons() {
             break;
         }
 
-        // Add listeners to "show less" buttons to revert content
         const showLessButtons = document.querySelectorAll('.show-less');
         showLessButtons.forEach(lessButton => {
           lessButton.addEventListener('click', function(e) {
@@ -499,39 +455,6 @@ export function setupShowMoreButtons() {
   });
 }
 
-/**
- * Initializes carousels on the page with event data and navigation
- * Called on DOMContentLoaded to set up all carousel containers
- */
-export async function initCarousel() {
-  const carouselContainers = document.querySelectorAll('.carousel-container');
-  for (const container of carouselContainers) {
-    const slides = container.querySelectorAll('.carousel-slide');
-    if (slides.length > 0) {
-      await populateCarousel(container);
-      setupDotNavigation(container);
-      startAutoRotation(container);
-      setupMatchDetailsDropdown(); // Add here for carousel events
-      // Add live update polling for football
-      const footballSlide = container.querySelector('.carousel-slide[data-sport="football"]');
-      if (footballSlide) {
-        setInterval(async () => {
-          const dynamicEvents = await getDynamicEvents();
-          const eventList = footballSlide.querySelector('.event-list');
-          if (eventList) {
-            eventList.innerHTML = await FORMATTERS.football(dynamicEvents.football || [], 'football', false);
-            setupMatchDetailsDropdown(); // Re-attach listeners after refresh
-          }
-        }, 30000); // Refresh every 30 seconds
-      }
-    }
-  }
-}
-
-/**
- * Populates carousel slides with sport-specific event data
- * @param {HTMLElement} container - The carousel container element
- */
 async function populateCarousel(container) {
   const dynamicEvents = await getDynamicEvents();
   const slides = container.querySelectorAll('.carousel-slide');
@@ -549,18 +472,15 @@ async function populateCarousel(container) {
       console.warn(`No formatter found for sport: ${sport} in slide:`, slide);
     }
   }
+  setupExpandableCards(); // Updated from setupMatchDetailsDropdown
 }
 
-/**
- * Sets up dot navigation for carousel slides
- * @param {HTMLElement} container - The carousel container element
- */
 function setupDotNavigation(container) {
   const dotsContainer = container.parentElement.querySelector('.carousel-dots');
   const dots = dotsContainer ? dotsContainer.querySelectorAll('.dot') : [];
   const slides = container.querySelectorAll('.carousel-slide');
 
-  if (slides.length <= 1) return; // No navigation needed for single slide
+  if (slides.length <= 1) return;
 
   if (dots.length !== slides.length) {
     console.warn(`Mismatch detected: ${slides.length} slides vs ${dots.length} dots`);
@@ -578,11 +498,6 @@ function setupDotNavigation(container) {
   showSlide(container, activeSlideIndex !== -1 ? activeSlideIndex : 0);
 }
 
-/**
- * Starts automatic rotation of carousel slides
- * Pauses on hover and resumes on mouse leave
- * @param {HTMLElement} container - The carousel container element
- */
 function startAutoRotation(container) {
   const slides = container.querySelectorAll('.carousel-slide');
   if (slides.length <= 1) return;
@@ -598,7 +513,6 @@ function startAutoRotation(container) {
   
   interval = setInterval(rotate, 5000);
 
-  // Remove existing listeners to prevent duplicates
   container.removeEventListener('mouseenter', clearIntervalHandler);
   container.removeEventListener('mouseleave', restartRotationHandler);
   
@@ -609,11 +523,6 @@ function startAutoRotation(container) {
   container.addEventListener('mouseleave', restartRotationHandler);
 }
 
-/**
- * Displays a specific slide in the carousel and updates dot states
- * @param {HTMLElement} container - The carousel container element
- * @param {number} index - Index of the slide to show
- */
 function showSlide(container, index) {
   const slides = container.querySelectorAll('.carousel-slide');
   const dotsContainer = container.parentElement.querySelector('.carousel-dots');
@@ -628,13 +537,34 @@ function showSlide(container, index) {
   });
 }
 
-// Initialize show more buttons and carousel on page load
+export async function initCarousel() {
+  const carouselContainers = document.querySelectorAll('.carousel-container');
+  for (const container of carouselContainers) {
+    const slides = container.querySelectorAll('.carousel-slide');
+    if (slides.length > 0) {
+      await populateCarousel(container);
+      setupDotNavigation(container);
+      startAutoRotation(container);
+      const footballSlide = container.querySelector('.carousel-slide[data-sport="football"]');
+      if (footballSlide) {
+        setInterval(async () => {
+          const dynamicEvents = await getDynamicEvents();
+          const eventList = footballSlide.querySelector('.event-list');
+          if (eventList) {
+            eventList.innerHTML = await FORMATTERS.football(dynamicEvents.football || [], 'football', false);
+            setupExpandableCards(); // Updated from setupMatchDetailsDropdown
+          }
+        }, 30000);
+      }
+    }
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   setupShowMoreButtons();
   initCarousel();
 });
 
-// Export functions for use in main.js and other scripts
 export { 
   attachFollowButtonListeners, 
   formatFootballList, 

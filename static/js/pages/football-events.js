@@ -1,12 +1,12 @@
 // football-events.js
 export async function fetchEvents(data, config) {
+  // This remains unchanged from your previous version
   const events = (data.events || []).map(event => {
     const competitions = event.competitions && event.competitions[0] ? event.competitions[0] : {};
     const competitors = competitions.competitors || [];
     const home = competitors.find(c => c?.homeAway?.toLowerCase() === "home") || competitors[0] || {};
     const away = competitors.find(c => c?.homeAway?.toLowerCase() === "away") || competitors[1] || {};
 
-    // Extract team stats from competitors.statistics
     const getTeamStats = (team) => {
       const stats = team.statistics || [];
       return {
@@ -18,7 +18,6 @@ export async function fetchEvents(data, config) {
       };
     };
 
-    // Extract key events (goals and cards) from details
     const details = competitions.details || [];
     const keyEvents = details.map(detail => ({
       type: detail.type.text || "Unknown",
@@ -60,7 +59,7 @@ export async function fetchEvents(data, config) {
         record: away.records?.[0]?.summary || "N/A",
         stats: getTeamStats(away),
       },
-      keyEvents: keyEvents, // Goals, yellow/red cards
+      keyEvents: keyEvents,
       scores: event.status.type.state === "in" ? {
         homeScore: home.score || "0",
         awayScore: away.score || "0",
@@ -72,7 +71,6 @@ export async function fetchEvents(data, config) {
     };
   });
 
-  // Fetch additional detailed stats for in-progress matches
   const detailedEvents = await Promise.all(events.map(async event => {
     if (event.state === "in") {
       try {
@@ -158,7 +156,7 @@ export function formatEventList(events, sportKey, showLocation = false) {
         event.state === "post" ? `${event.homeTeam.score} - ${event.awayTeam.score} (${event.statusDetail})` :
         `${event.displayDate} ${event.time}`;
 
-      let dropdown = '';
+      let detailsContent = '';
       if ((event.state === "in" && event.detailedStats) || event.state === "post") {
         const goalsList = (event.detailedStats?.goals || event.keyEvents.filter(e => e.isGoal)).length ?
           `<ul class="goal-list">${
@@ -174,26 +172,24 @@ export function formatEventList(events, sportKey, showLocation = false) {
             `).join("")
           }</ul>` : "";
 
-        dropdown = `
-          <div class="match-details-dropdown" id="match-details-${eventId}" style="display: none;">
-            <div class="detailed-stats">
-              <p><strong>${event.homeTeam.name}:</strong> Form: ${event.homeTeam.form} | Record: ${event.homeTeam.record}</p>
-              <p><strong>${event.awayTeam.name}:</strong> Form: ${event.awayTeam.form} | Record: ${event.awayTeam.record}</p>
-              <p>Possession: ${event.detailedStats?.possession || `${event.homeTeam.stats.possession} - ${event.awayTeam.stats.possession}`}</p>
-              <p>Shots (On Target): ${event.detailedStats?.shots.home || event.homeTeam.stats.shots} (${event.homeTeam.stats.shotsOnTarget}) - ${event.detailedStats?.shots.away || event.awayTeam.stats.shots} (${event.awayTeam.stats.shotsOnTarget})</p>
-              <p>Corners: ${event.homeTeam.stats.corners} - ${event.awayTeam.stats.corners}</p>
-              <p>Fouls: ${event.homeTeam.stats.fouls} - ${event.awayTeam.stats.fouls}</p>
-              ${goalsList}
-              ${cardsList}
-              <p>Broadcast: ${event.broadcast}</p>
-            </div>
+        detailsContent = `
+          <div class="match-details" style="display: none;">
+            <p><strong>${event.homeTeam.name}:</strong> Form: ${event.homeTeam.form} | Record: ${event.homeTeam.record}</p>
+            <p><strong>${event.awayTeam.name}:</strong> Form: ${event.awayTeam.form} | Record: ${event.awayTeam.record}</p>
+            <p>Possession: ${event.detailedStats?.possession || `${event.homeTeam.stats.possession} - ${event.awayTeam.stats.possession}`}</p>
+            <p>Shots (On Target): ${event.detailedStats?.shots?.home || event.homeTeam.stats.shots} (${event.homeTeam.stats.shotsOnTarget}) - ${event.detailedStats?.shots?.away || event.awayTeam.stats.shots} (${event.awayTeam.stats.shotsOnTarget})</p>
+            <p>Corners: ${event.homeTeam.stats.corners} - ${event.awayTeam.stats.corners}</p>
+            <p>Fouls: ${event.homeTeam.stats.fouls} - ${event.awayTeam.stats.fouls}</p>
+            ${goalsList}
+            ${cardsList}
+            <p>Broadcast: ${event.broadcast}</p>
           </div>
         `;
       }
 
       return `
-        <div class="event-card" data-event-id="${eventId}">
-          <p class="event-item ${event.state === "in" ? 'live-match' : ''}" style="display: flex; justify-content: ${showLocation ? 'space-between' : 'flex-start'}; align-items: center;">
+        <div class="event-card expandable-card ${event.state === "in" ? 'live-match' : ''}" data-event-id="${eventId}">
+          <div class="card-header" style="display: flex; justify-content: ${showLocation ? 'space-between' : 'flex-start'}; align-items: center; cursor: pointer;">
             <span>
               ${event.homeTeam.logo ? `<img src="${event.homeTeam.logo}" alt="${event.homeTeam.name} Crest" class="team-crest" style="width: 20px; height: 20px; margin-right: 5px;">` : ""}
               ${event.homeTeam.name} vs 
@@ -201,8 +197,8 @@ export function formatEventList(events, sportKey, showLocation = false) {
               ${event.awayTeam.name} - ${displayText}
             </span>
             ${showLocation ? `<span class="event-location">${venue}</span>` : ""}
-          </p>
-          ${dropdown}
+          </div>
+          ${detailsContent}
         </div>
       `;
     }).join("");
@@ -253,7 +249,7 @@ export function formatEventTable(events) {
         event.state === "post" ? `${event.homeTeam.score} - ${event.awayTeam.score} (${event.statusDetail})` :
         `${event.displayDate} ${event.time}`;
 
-      let dropdown = "";
+      let detailsContent = '';
       if ((event.state === "in" && event.detailedStats) || event.state === "post") {
         const goalsList = (event.detailedStats?.goals || event.keyEvents.filter(e => e.isGoal)).length ?
           `<ul class="goal-list">${
@@ -269,19 +265,17 @@ export function formatEventTable(events) {
             `).join("")
           }</ul>` : "";
 
-        dropdown = `
-          <div class="match-details-dropdown" id="match-details-${eventId}" style="display: none;">
-            <div class="detailed-stats">
-              <p><strong>${event.homeTeam.name}:</strong> Form: ${event.homeTeam.form} | Record: ${event.homeTeam.record}</p>
-              <p><strong>${event.awayTeam.name}:</strong> Form: ${event.awayTeam.form} | Record: ${event.awayTeam.record}</p>
-              <p>Possession: ${event.detailedStats?.possession || `${event.homeTeam.stats.possession} - ${event.awayTeam.stats.possession}`}</p>
-              <p>Shots (On Target): ${event.detailedStats?.shots.home || event.homeTeam.stats.shots} (${event.homeTeam.stats.shotsOnTarget}) - ${event.detailedStats?.shots.away || event.awayTeam.stats.shots} (${event.awayTeam.stats.shotsOnTarget})</p>
-              <p>Corners: ${event.homeTeam.stats.corners} - ${event.awayTeam.stats.corners}</p>
-              <p>Fouls: ${event.homeTeam.stats.fouls} - ${event.awayTeam.stats.fouls}</p>
-              ${goalsList}
-              ${cardsList}
-              <p>Broadcast: ${event.broadcast}</p>
-            </div>
+        detailsContent = `
+          <div class="match-details" style="display: none;">
+            <p><strong>${event.homeTeam.name}:</strong> Form: ${event.homeTeam.form} | Record: ${event.homeTeam.record}</p>
+            <p><strong>${event.awayTeam.name}:</strong> Form: ${event.awayTeam.form} | Record: ${event.awayTeam.record}</p>
+            <p>Possession: ${event.detailedStats?.possession || `${event.homeTeam.stats.possession} - ${event.awayTeam.stats.possession}`}</p>
+            <p>Shots (On Target): ${event.detailedStats?.shots?.home || event.homeTeam.stats.shots} (${event.homeTeam.stats.shotsOnTarget}) - ${event.detailedStats?.shots?.away || event.awayTeam.stats.shots} (${event.awayTeam.stats.shotsOnTarget})</p>
+            <p>Corners: ${event.homeTeam.stats.corners} - ${event.awayTeam.stats.corners}</p>
+            <p>Fouls: ${event.homeTeam.stats.fouls} - ${event.awayTeam.stats.fouls}</p>
+            ${goalsList}
+            ${cardsList}
+            <p>Broadcast: ${event.broadcast}</p>
           </div>
         `;
       }
@@ -289,16 +283,16 @@ export function formatEventTable(events) {
       tableHtml += `
         <tr>
           <td class="event-column">
-            <div class="event-card" data-event-id="${eventId}">
-              <p class="event-item ${event.state === "in" ? 'live-match' : ''}">
+            <div class="event-card expandable-card ${event.state === "in" ? 'live-match' : ''}" data-event-id="${eventId}">
+              <div class="card-header" style="cursor: pointer;">
                 <span class="event-name">
                   ${event.homeTeam.logo ? `<img src="${event.homeTeam.logo}" alt="${event.homeTeam.name} Crest" class="team-crest">` : ""}
                   ${event.homeTeam.name} vs 
                   ${event.awayTeam.logo ? `<img src="${event.awayTeam.logo}" alt="${event.awayTeam.name} Crest" class="team-crest">` : ""}
                   ${event.awayTeam.name}
                 </span>
-              </p>
-              ${dropdown}
+              </div>
+              ${detailsContent}
             </div>
           </td>
           <td class="datetime-column">${timeOrScore}</td>
