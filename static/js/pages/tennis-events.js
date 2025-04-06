@@ -1,7 +1,9 @@
 // tennis-events.js
+
+// Fetch tournament events (e.g., list of tournaments)
 export async function fetchEvents(data, config) {
   const events = (data.events || []).map(event => ({
-    id: event.id, // Store event ID for later use
+    id: event.id,
     name: event.shortName || event.name,
     date: event.date,
     displayDate: new Date(event.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
@@ -15,7 +17,7 @@ export async function fetchEvents(data, config) {
   return events;
 }
 
-// New function to fetch matches for a specific tournament
+// Fetch matches for a specific tournament with detailed status and scores
 export async function fetchTournamentMatches(tournamentId) {
   const url = `https://site.api.espn.com/apis/site/v2/sports/tennis/atp/scoreboard?event=${tournamentId}`;
   try {
@@ -31,16 +33,85 @@ export async function fetchTournamentMatches(tournamentId) {
         player1: comp.competitors[0]?.athlete?.displayName || "TBD",
         player2: comp.competitors[1]?.athlete?.displayName || "TBD",
         status: comp.status?.type?.state || "unknown",
-        round: comp.notes?.[0]?.headline || "TBD"
+        score: comp.competitors.length === 2 ? `${comp.competitors[0].score || "0"} - ${comp.competitors[1].score || "0"}` : "TBD",
+        clock: comp.status?.displayClock || "",
+        period: comp.status?.period || 0, // Set number
+        round: comp.notes?.[0]?.headline || "TBD",
+        completed: comp.status?.type?.completed || false
       }))
     );
-    return matches;
+    return {
+      fixtures: matches.filter(m => m.status === "pre"),
+      live: matches.filter(m => m.status === "in"),
+      results: matches.filter(m => m.status === "post" && m.completed)
+    };
   } catch (error) {
     console.error(`Error fetching matches for tournament ${tournamentId}:`, error);
-    return [];
+    return { fixtures: [], live: [], results: [] };
   }
 }
 
+// Fetch detailed stats for a live match
+export async function fetchMatchDetails(matchId) {
+  const url = `https://site.api.espn.com/apis/site/v2/sports/tennis/atp/summary?event=${matchId}`;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const data = await response.json();
+    return {
+      sets: data.sets || [], // Array of set scores
+      stats: data.statistics || {} // e.g., aces, double faults
+    };
+  } catch (error) {
+    console.error(`Error fetching match details for ${matchId}:`, error);
+    return { sets: [], stats: {} };
+  }
+}
+
+// Format the center feed table with fixtures, live matches, and results
+export function formatEventTable(matches, tournamentName) {
+  if (!matches || (!matches.fixtures.length && !matches.live.length && !matches.results.length)) {
+    return `<p>No matches available for ${tournamentName}.</p>`;
+  }
+
+  let html = `<table class="tennis-feed"><thead><tr><th>Match</th><th>Score/Time</th><th>Round</th></tr></thead><tbody>`;
+
+  // Live Matches
+  matches.live.forEach(match => {
+    const score = `${match.score} (Set ${match.period}, ${match.clock})`;
+    html += `
+      <tr class="live-match" data-match-id="${match.id}">
+        <td>${match.player1} vs ${match.player2}</td>
+        <td style="color: #e63946">${score}</td>
+        <td>${match.round}</td>
+      </tr>`;
+  });
+
+  // Upcoming Fixtures
+  matches.fixtures.forEach(match => {
+    html += `
+      <tr class="fixture">
+        <td>${match.player1} vs ${match.player2}</td>
+        <td>${match.time}</td>
+        <td>${match.round}</td>
+      </tr>`;
+  });
+
+  // Full-Time Results
+  matches.results.forEach(match => {
+    html += `
+      <tr class="result">
+        <td>${match.player1} vs ${match.player2}</td>
+        <td>${match.score}</td>
+        <td>${match.round}</td>
+      </tr>`;
+  });
+
+  html += `</tbody></table>`;
+  return html;
+}
+
+// Keep the existing list format for sidebar or other views
 export function formatEventList(events, sportKey, showLocation = false) {
   if (!events || !events.length) {
     return `<p>No upcoming ${sportKey} tournaments available.</p>`;

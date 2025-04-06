@@ -120,19 +120,41 @@ export async function getDynamicEvents() {
 /**
  * Adds dropdown toggle functionality for live football matches
  */
+
 export function setupMatchDetailsDropdown() {
-  const liveMatches = document.querySelectorAll('.live-match');
+  console.log('Entering setupMatchDetailsDropdown'); // Force log
+  const liveMatches = document.querySelectorAll('.event-item.live-match');
+  console.log('Found live matches:', liveMatches.length);
   liveMatches.forEach(match => {
-    match.addEventListener('click', function() {
-      const matchId = this.getAttribute('data-match-id');
-      const dropdown = document.getElementById(matchId);
+    match.removeEventListener('click', match._dropdownToggleHandler);
+    const handler = (e) => {
+      e.stopPropagation();
+      const card = match.closest('.event-card');
+      const dropdown = card ? card.querySelector('.match-details-dropdown') : null;
       if (dropdown) {
         const isVisible = dropdown.style.display === 'block';
+        console.log('Toggling dropdown for', match.textContent.trim(), 'Visible:', isVisible);
         dropdown.style.display = isVisible ? 'none' : 'block';
-        this.classList.toggle('active', !isVisible);
+      } else {
+        console.log('No dropdown found for', match.textContent.trim());
       }
-    });
+    };
+    match.addEventListener('click', handler);
+    match._dropdownToggleHandler = handler;
   });
+
+  if (!document._dropdownCloseListener) {
+    const closeHandler = (e) => {
+      if (!e.target.closest('.event-card')) {
+        console.log('Click outside event card, closing dropdowns');
+        document.querySelectorAll('.match-details-dropdown').forEach(dropdown => {
+          dropdown.style.display = 'none';
+        });
+      }
+    };
+    document.addEventListener('click', closeHandler);
+    document._dropdownCloseListener = closeHandler;
+  }
 }
 
 /**
@@ -489,6 +511,7 @@ export async function initCarousel() {
       await populateCarousel(container);
       setupDotNavigation(container);
       startAutoRotation(container);
+      setupMatchDetailsDropdown(); // Add here for carousel events
       // Add live update polling for football
       const footballSlide = container.querySelector('.carousel-slide[data-sport="football"]');
       if (footballSlide) {
@@ -497,6 +520,7 @@ export async function initCarousel() {
           const eventList = footballSlide.querySelector('.event-list');
           if (eventList) {
             eventList.innerHTML = await FORMATTERS.football(dynamicEvents.football || [], 'football', false);
+            setupMatchDetailsDropdown(); // Re-attach listeners after refresh
           }
         }, 30000); // Refresh every 30 seconds
       }

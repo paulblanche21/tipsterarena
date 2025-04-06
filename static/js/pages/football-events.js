@@ -1,63 +1,113 @@
 // football-events.js
 export async function fetchEvents(data, config) {
   const events = (data.events || []).map(event => {
-    const competitors = (event.competitions && event.competitions[0]?.competitors) || [];
-    const home = competitors.find(c => c?.homeAway?.toLowerCase() === "home") || competitors[0];
-    const away = competitors.find(c => c?.homeAway?.toLowerCase() === "away") || competitors[1];
+    const competitions = event.competitions && event.competitions[0] ? event.competitions[0] : {};
+    const competitors = competitions.competitors || [];
+    const home = competitors.find(c => c?.homeAway?.toLowerCase() === "home") || competitors[0] || {};
+    const away = competitors.find(c => c?.homeAway?.toLowerCase() === "away") || competitors[1] || {};
+
+    // Extract team stats from competitors.statistics
+    const getTeamStats = (team) => {
+      const stats = team.statistics || [];
+      return {
+        possession: stats.find(s => s.name === "possessionPct")?.displayValue || "N/A",
+        shots: stats.find(s => s.name === "totalShots")?.displayValue || "N/A",
+        shotsOnTarget: stats.find(s => s.name === "shotsOnTarget")?.displayValue || "N/A",
+        corners: stats.find(s => s.name === "wonCorners")?.displayValue || "N/A",
+        fouls: stats.find(s => s.name === "foulsCommitted")?.displayValue || "N/A",
+      };
+    };
+
+    // Extract key events (goals and cards) from details
+    const details = competitions.details || [];
+    const keyEvents = details.map(detail => ({
+      type: detail.type.text || "Unknown",
+      time: detail.clock?.displayValue || "N/A",
+      team: detail.team?.displayName || "Unknown",
+      player: detail.athletesInvolved?.[0]?.displayName || "Unknown",
+      isGoal: detail.scoringPlay,
+      isYellowCard: detail.yellowCard,
+      isRedCard: detail.redCard,
+    }));
 
     return {
-      id: event.id, // Add event ID for detailed fetch
+      id: event.id,
       name: event.shortName || event.name,
       date: event.date,
       displayDate: new Date(event.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
       time: new Date(event.date).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "GMT" }),
       state: event.status && event.status.type ? event.status.type.state : "unknown",
+      statusDescription: event.status?.type?.description || "Unknown",
+      statusDetail: event.status?.type?.detail || "N/A",
       competitors: competitors,
-      venue: (event.competitions && event.competitions[0]?.venue) || { fullName: "Location TBD", address: { city: "Unknown", state: "Unknown" } },
+      venue: competitions.venue || { fullName: "Location TBD", address: { city: "Unknown", state: "Unknown" } },
       league: config.name,
       icon: config.icon,
       priority: config.priority || 999,
+      homeTeam: {
+        name: home.team?.displayName || "TBD",
+        logo: home.team?.logo || "",
+        score: home.score || "0",
+        form: home.form || "N/A",
+        record: home.records?.[0]?.summary || "N/A",
+        stats: getTeamStats(home),
+      },
+      awayTeam: {
+        name: away.team?.displayName || "TBD",
+        logo: away.team?.logo || "",
+        score: away.score || "0",
+        form: away.form || "N/A",
+        record: away.records?.[0]?.summary || "N/A",
+        stats: getTeamStats(away),
+      },
+      keyEvents: keyEvents, // Goals, yellow/red cards
       scores: event.status.type.state === "in" ? {
-        homeScore: home?.score || "0",
-        awayScore: away?.score || "0",
+        homeScore: home.score || "0",
+        awayScore: away.score || "0",
         clock: event.status.type.clock || "0:00",
         period: event.status.type.period || 0,
         statusDetail: event.status.type.detail || "In Progress"
-      } : null
+      } : null,
+      broadcast: competitions.geoBroadcasts?.[0]?.media?.shortName || "N/A",
     };
   });
 
-  // Fetch detailed data for in-progress games
+  // Fetch additional detailed stats for in-progress matches
   const detailedEvents = await Promise.all(events.map(async event => {
     if (event.state === "in") {
       try {
         const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${config.league}/summary?event=${event.id}`);
         if (!response.ok) throw new Error(`Failed to fetch summary for event ${event.id}`);
         const summaryData = await response.json();
-        
-        // Extract goal scorers and key stats from play-by-play or box score
+
         const plays = summaryData.plays || [];
-        const goals = plays.filter(play => play.type.text === "Goal").map(play => ({
-          scorer: play.participants?.[0]?.athlete?.displayName || "Unknown",
-          team: play.team?.displayName || "Unknown",
-          time: play.clock?.displayValue || "N/A",
-          assist: play.participants?.[1]?.athlete?.displayName || "Unassisted"
+        const keyEvents = summaryData.keyEvents || [];
+        const goalPlays = plays.filter(play => play.type.text.toLowerCase().includes("goal"));
+        const goalKeyEvents = keyEvents.filter(event => event.type?.text.toLowerCase().includes("goal"));
+
+        const goals = [...goalPlays, ...goalKeyEvents].map(event => ({
+          scorer: event.participants?.[0]?.athlete?.displayName || event.scorer || "Unknown",
+          team: event.team?.displayName || event.team || "Unknown",
+          time: event.clock?.displayValue || event.time || "N/A",
+          assist: event.participants?.[1]?.athlete?.displayName || event.assist || "Unassisted",
         }));
+
+        const detailedStats = {
+          goals: goals,
+          possession: summaryData.header?.competitions?.[0]?.possession?.text || event.homeTeam.stats.possession + " - " + event.awayTeam.stats.possession,
+          shots: {
+            home: summaryData.boxscore?.teams?.[0]?.statistics?.find(stat => stat.name === "shots")?.displayValue || event.homeTeam.stats.shots,
+            away: summaryData.boxscore?.teams?.[1]?.statistics?.find(stat => stat.name === "shots")?.displayValue || event.awayTeam.stats.shots,
+          },
+        };
 
         return {
           ...event,
-          detailedStats: {
-            goals: goals,
-            possession: summaryData.header?.competitions?.[0]?.possession?.text || "N/A",
-            shots: {
-              home: summaryData.boxscore?.teams?.[0]?.statistics?.find(stat => stat.name === "shots")?.displayValue || "N/A",
-              away: summaryData.boxscore?.teams?.[1]?.statistics?.find(stat => stat.name === "shots")?.displayValue || "N/A"
-            }
-          }
+          detailedStats,
         };
       } catch (error) {
         console.error(`Error fetching detailed stats for ${event.name}:`, error);
-        return event; // Return basic event data if detailed fetch fails
+        return event;
       }
     }
     return event;
@@ -85,81 +135,80 @@ export function formatEventList(events, sportKey, showLocation = false) {
   }
 
   let eventItems = '';
-  if (sportKey !== "all") {
-    const eventsByLeague = upcomingEvents.reduce((acc, event) => {
-      const league = event.league || "Other";
-      if (!acc[league]) acc[league] = [];
-      acc[league].push(event);
-      return acc;
-    }, {});
+  const eventsByLeague = upcomingEvents.reduce((acc, event) => {
+    const league = event.league || "Other";
+    if (!acc[league]) acc[league] = [];
+    acc[league].push(event);
+    return acc;
+  }, {});
 
-    let totalEvents = 0;
-    for (const league in eventsByLeague) {
-      if (totalEvents >= 4) break;
-      const leagueEvents = eventsByLeague[league];
-      const eventsToShow = leagueEvents.slice(0, 4 - totalEvents);
-      const icon = leagueEvents[0].icon || "⚽";
-      const leagueItems = eventsToShow.map(event => {
-        const homeTeam = event.competitors.find(c => c?.homeAway?.toLowerCase() === "home")?.team?.displayName || "TBD";
-        const awayTeam = event.competitors.find(c => c?.homeAway?.toLowerCase() === "away")?.team?.displayName || "TBD";
-        const homeCrest = event.competitors.find(c => c?.homeAway?.toLowerCase() === "home")?.team?.logos?.[0]?.href || "";
-        const awayCrest = event.competitors.find(c => c?.homeAway?.toLowerCase() === "away")?.team?.logos?.[0]?.href || "";
-        const venue = event.venue.fullName || `${event.venue.address.city}, ${event.venue.address.state}`;
-        
-        let displayText = event.state === "in" && event.scores ? 
-          `<span class="live-score" style="color: #e63946; font-weight: bold;">${event.scores.homeScore} - ${event.scores.awayScore} (${event.scores.statusDetail})</span>` 
-          : `${event.displayDate} ${event.time}`;
+  let totalEvents = 0;
+  for (const league in eventsByLeague) {
+    if (totalEvents >= 4) break;
+    const leagueEvents = eventsByLeague[league];
+    const eventsToShow = leagueEvents.slice(0, 4 - totalEvents);
+    const icon = leagueEvents[0].icon || "⚽";
 
-        return `
-          <p class="event-item" style="display: flex; justify-content: ${showLocation ? 'space-between' : 'flex-start'}; align-items: center;">
+    const leagueItems = eventsToShow.map((event, index) => {
+      const venue = event.venue.fullName || `${event.venue.address.city}, ${event.venue.address.state}`;
+      const eventId = event.id || `${league}-${index}`;
+
+      let displayText = event.state === "in" && event.scores ?
+        `<span class="live-score" style="color: #e63946; font-weight: bold;">${event.scores.homeScore} - ${event.scores.awayScore} (${event.scores.statusDetail})</span>` :
+        event.state === "post" ? `${event.homeTeam.score} - ${event.awayTeam.score} (${event.statusDetail})` :
+        `${event.displayDate} ${event.time}`;
+
+      let dropdown = '';
+      if ((event.state === "in" && event.detailedStats) || event.state === "post") {
+        const goalsList = (event.detailedStats?.goals || event.keyEvents.filter(e => e.isGoal)).length ?
+          `<ul class="goal-list">${
+            (event.detailedStats?.goals || event.keyEvents.filter(e => e.isGoal)).map(goal => `
+              <li>${goal.scorer} (${goal.team}) - ${goal.time}${goal.assist && goal.assist !== "Unassisted" ? `, Assist: ${goal.assist}` : ""}</li>
+            `).join("")
+          }</ul>` : "<span class='no-goals'>No goals</span>";
+
+        const cardsList = event.keyEvents.filter(e => e.isYellowCard || e.isRedCard).length ?
+          `<ul class="card-list">${
+            event.keyEvents.filter(e => e.isYellowCard || e.isRedCard).map(card => `
+              <li class="${card.isRedCard ? 'red-card' : 'yellow-card'}">${card.player} (${card.team}) - ${card.time} (${card.type})</li>
+            `).join("")
+          }</ul>` : "";
+
+        dropdown = `
+          <div class="match-details-dropdown" id="match-details-${eventId}" style="display: none;">
+            <div class="detailed-stats">
+              <p><strong>${event.homeTeam.name}:</strong> Form: ${event.homeTeam.form} | Record: ${event.homeTeam.record}</p>
+              <p><strong>${event.awayTeam.name}:</strong> Form: ${event.awayTeam.form} | Record: ${event.awayTeam.record}</p>
+              <p>Possession: ${event.detailedStats?.possession || `${event.homeTeam.stats.possession} - ${event.awayTeam.stats.possession}`}</p>
+              <p>Shots (On Target): ${event.detailedStats?.shots.home || event.homeTeam.stats.shots} (${event.homeTeam.stats.shotsOnTarget}) - ${event.detailedStats?.shots.away || event.awayTeam.stats.shots} (${event.awayTeam.stats.shotsOnTarget})</p>
+              <p>Corners: ${event.homeTeam.stats.corners} - ${event.awayTeam.stats.corners}</p>
+              <p>Fouls: ${event.homeTeam.stats.fouls} - ${event.awayTeam.stats.fouls}</p>
+              ${goalsList}
+              ${cardsList}
+              <p>Broadcast: ${event.broadcast}</p>
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="event-card" data-event-id="${eventId}">
+          <p class="event-item ${event.state === "in" ? 'live-match' : ''}" style="display: flex; justify-content: ${showLocation ? 'space-between' : 'flex-start'}; align-items: center;">
             <span>
-              ${homeCrest ? `<img src="${homeCrest}" alt="${homeTeam} Crest" class="team-crest" style="width: 20px; height: 20px; margin-right: 5px;">` : ""}
-              ${homeTeam} vs 
-              ${awayCrest ? `<img src="${awayCrest}" alt="${awayTeam} Crest" class="team-crest" style="width: 20px; height: 20px; margin-right: 5px;">` : ""}
-              ${awayTeam} - ${displayText}
+              ${event.homeTeam.logo ? `<img src="${event.homeTeam.logo}" alt="${event.homeTeam.name} Crest" class="team-crest" style="width: 20px; height: 20px; margin-right: 5px;">` : ""}
+              ${event.homeTeam.name} vs 
+              ${event.awayTeam.logo ? `<img src="${event.awayTeam.logo}" alt="${event.awayTeam.name} Crest" class="team-crest" style="width: 20px; height: 20px; margin-right: 5px;">` : ""}
+              ${event.awayTeam.name} - ${displayText}
             </span>
             ${showLocation ? `<span class="event-location">${venue}</span>` : ""}
           </p>
-        `;
-      }).join("");
-      eventItems += `<div class="league-group"><p class="league-header"><span class="sport-icon">${icon}</span> <strong>${league}</strong></p>${leagueItems}</div>`;
-      totalEvents += eventsToShow.length;
-    }
-  } else {
-    const eventsByLeague = upcomingEvents.reduce((acc, event) => {
-      const league = event.league || "Other";
-      if (!acc[league]) acc[league] = [];
-      acc[league].push(event);
-      return acc;
-    }, {});
+          ${dropdown}
+        </div>
+      `;
+    }).join("");
 
-    for (const league in eventsByLeague) {
-      const leagueEvents = eventsByLeague[league].slice(0, 20).map(event => {
-        const homeTeam = event.competitors.find(c => c?.homeAway?.toLowerCase() === "home")?.team?.displayName || "TBD";
-        const awayTeam = event.competitors.find(c => c?.homeAway?.toLowerCase() === "away")?.team?.displayName || "TBD";
-        const homeCrest = event.competitors.find(c => c?.homeAway?.toLowerCase() === "home")?.team?.logos?.[0]?.href || "";
-        const awayCrest = event.competitors.find(c => c?.homeAway?.toLowerCase() === "away")?.team?.logos?.[0]?.href || "";
-        const venue = event.venue.fullName || `${event.venue.address.city}, ${event.venue.address.state}`;
-        
-        let displayText = event.state === "in" && event.scores ? 
-          `<span class="live-score" style="color: #e63946; font-weight: bold;">${event.scores.homeScore} - ${event.scores.awayScore} (${event.scores.statusDetail})</span>` 
-          : `${event.displayDate} ${event.time}`;
-
-        return `
-          <p class="event-item" style="display: flex; justify-content: ${showLocation ? 'space-between' : 'flex-start'}; align-items: center;">
-            <span>
-              ${homeCrest ? `<img src="${homeCrest}" alt="${homeTeam} Crest" class="team-crest" style="width: 20px; height: 20px; margin-right: 5px;">` : ""}
-              ${homeTeam} vs 
-              ${awayCrest ? `<img src="${awayCrest}" alt="${awayTeam} Crest" class="team-crest" style="width: 20px; height: 20px; margin-right: 5px;">` : ""}
-              ${awayTeam} - ${displayText}
-            </span>
-            ${showLocation ? `<span class="event-location">${venue}</span>` : ""}
-          </p>
-        `;
-      }).join("");
-      const icon = eventsByLeague[league][0].icon || "⚽";
-      eventItems += `<div class="league-group"><p class="league-header"><span class="sport-icon">${icon}</span> <strong>${league}</strong></p>${leagueEvents}</div>`;
-    }
+    eventItems += `<div class="league-group"><p class="league-header"><span class="sport-icon">${icon}</span> <strong>${league}</strong></p>${leagueItems}</div>`;
+    totalEvents += eventsToShow.length;
   }
 
   return eventItems || `<p>No upcoming ${sportKey} fixtures available.</p>`;
@@ -185,7 +234,7 @@ export function formatEventTable(events) {
   }, {});
 
   let tableHtml = '<table class="event-table">';
-  tableHtml += '<thead><tr><th>Event</th><th>Date/Time or Score</th><th>Location</th></tr></thead><tbody>';
+  tableHtml += '<thead><tr><th class="event-column">Event</th><th class="datetime-column">Date/Time or Score</th><th class="location-column">Location</th></tr></thead><tbody>';
 
   for (const league in eventsByLeague) {
     const leagueEvents = eventsByLeague[league];
@@ -197,50 +246,64 @@ export function formatEventTable(events) {
     `;
 
     leagueEvents.forEach((event, index) => {
-      const homeTeam = event.competitors.find(c => c?.homeAway?.toLowerCase() === "home")?.team?.displayName || "TBD";
-      const awayTeam = event.competitors.find(c => c?.homeAway?.toLowerCase() === "away")?.team?.displayName || "TBD";
-      const homeCrest = event.competitors.find(c => c?.homeAway?.toLowerCase() === "home")?.team?.logos?.[0]?.href || "";
-      const awayCrest = event.competitors.find(c => c?.homeAway?.toLowerCase() === "away")?.team?.logos?.[0]?.href || "";
       const venue = event.venue.fullName || `${event.venue.address.city}, ${event.venue.address.state}`;
+      const eventId = event.id || `${league}-${index}`;
       const timeOrScore = event.state === "in" && event.scores ?
         `<span class="live-score">${event.scores.homeScore} - ${event.scores.awayScore} (${event.scores.statusDetail})</span>` :
+        event.state === "post" ? `${event.homeTeam.score} - ${event.awayTeam.score} (${event.statusDetail})` :
         `${event.displayDate} ${event.time}`;
 
-      // Prepare detailed stats for live matches (to be shown in dropdown)
-      let details = "";
-      if (event.state === "in" && event.detailedStats) {
-        const goalsList = event.detailedStats.goals.length ?
-          `<ul class="goal-list">
-            ${event.detailedStats.goals.map(goal => `
-              <li>${goal.scorer} (${goal.team}) - ${goal.time}${goal.assist !== "Unassisted" ? `, Assist: ${goal.assist}` : ""}</li>
-            `).join("")}
-          </ul>` : "<span class='no-goals'>No goals yet</span>";
-        details = `
-          <div class="match-details-dropdown" id="match-details-${league}-${index}">
+      let dropdown = "";
+      if ((event.state === "in" && event.detailedStats) || event.state === "post") {
+        const goalsList = (event.detailedStats?.goals || event.keyEvents.filter(e => e.isGoal)).length ?
+          `<ul class="goal-list">${
+            (event.detailedStats?.goals || event.keyEvents.filter(e => e.isGoal)).map(goal => `
+              <li>${goal.scorer} (${goal.team}) - ${goal.time}${goal.assist && goal.assist !== "Unassisted" ? `, Assist: ${goal.assist}` : ""}</li>
+            `).join("")
+          }</ul>` : "<span class='no-goals'>No goals</span>";
+
+        const cardsList = event.keyEvents.filter(e => e.isYellowCard || e.isRedCard).length ?
+          `<ul class="card-list">${
+            event.keyEvents.filter(e => e.isYellowCard || e.isRedCard).map(card => `
+              <li class="${card.isRedCard ? 'red-card' : 'yellow-card'}">${card.player} (${card.team}) - ${card.time} (${card.type})</li>
+            `).join("")
+          }</ul>` : "";
+
+        dropdown = `
+          <div class="match-details-dropdown" id="match-details-${eventId}" style="display: none;">
             <div class="detailed-stats">
+              <p><strong>${event.homeTeam.name}:</strong> Form: ${event.homeTeam.form} | Record: ${event.homeTeam.record}</p>
+              <p><strong>${event.awayTeam.name}:</strong> Form: ${event.awayTeam.form} | Record: ${event.awayTeam.record}</p>
+              <p>Possession: ${event.detailedStats?.possession || `${event.homeTeam.stats.possession} - ${event.awayTeam.stats.possession}`}</p>
+              <p>Shots (On Target): ${event.detailedStats?.shots.home || event.homeTeam.stats.shots} (${event.homeTeam.stats.shotsOnTarget}) - ${event.detailedStats?.shots.away || event.awayTeam.stats.shots} (${event.awayTeam.stats.shotsOnTarget})</p>
+              <p>Corners: ${event.homeTeam.stats.corners} - ${event.awayTeam.stats.corners}</p>
+              <p>Fouls: ${event.homeTeam.stats.fouls} - ${event.awayTeam.stats.fouls}</p>
               ${goalsList}
-              <p>Poss: ${event.detailedStats.possession}</p>
-              <p>Shots: ${event.detailedStats.shots.home} - ${event.detailedStats.shots.away}</p>
+              ${cardsList}
+              <p>Broadcast: ${event.broadcast}</p>
             </div>
           </div>
         `;
       }
 
-      // Add clickable class for live matches
-      const rowClass = event.state === "in" ? 'event-item live-match' : 'event-item';
-
       tableHtml += `
-        <tr class="${rowClass}" ${event.state === "in" ? `data-match-id="match-details-${league}-${index}"` : ''}>
-          <td class="event-name">
-            ${homeCrest ? `<img src="${homeCrest}" alt="${homeTeam} Crest" class="team-crest">` : ""}
-            ${homeTeam} vs 
-            ${awayCrest ? `<img src="${awayCrest}" alt="${awayTeam} Crest" class="team-crest">` : ""}
-            ${awayTeam}
+        <tr>
+          <td class="event-column">
+            <div class="event-card" data-event-id="${eventId}">
+              <p class="event-item ${event.state === "in" ? 'live-match' : ''}">
+                <span class="event-name">
+                  ${event.homeTeam.logo ? `<img src="${event.homeTeam.logo}" alt="${event.homeTeam.name} Crest" class="team-crest">` : ""}
+                  ${event.homeTeam.name} vs 
+                  ${event.awayTeam.logo ? `<img src="${event.awayTeam.logo}" alt="${event.awayTeam.name} Crest" class="team-crest">` : ""}
+                  ${event.awayTeam.name}
+                </span>
+              </p>
+              ${dropdown}
+            </div>
           </td>
-          <td class="event-time">${timeOrScore}</td>
-          <td class="event-location">${venue}</td>
+          <td class="datetime-column">${timeOrScore}</td>
+          <td class="location-column">${venue}</td>
         </tr>
-        ${event.state === "in" ? details : ''}
       `;
     });
   }
