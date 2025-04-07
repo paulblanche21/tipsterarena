@@ -170,7 +170,7 @@ export function formatEventList(events, sportKey, showLocation = false) {
             <div class="match-stats">
               <div class="team-stats">
                 <p><strong>${event.homeTeam.name}:</strong> Form: ${event.homeTeam.form} | Record: ${event.homeTeam.record}</p>
-                <p><strong>${event.awayTeam.name}:</strong> Form: ${event.awayTeam.form} | Record: ${event.awayTeam.record}</p>
+                <p><strong@${event.awayTeam.name}:</strong> Form: ${event.awayTeam.form} | Record: ${event.awayTeam.record}</p>
               </div>
               <div class="game-stats">
                 <p>Possession: ${event.detailedStats.possession}</p>
@@ -376,10 +376,6 @@ export function formatEventTable(events) {
         detailsContent = `
           <div class="match-details" style="display: none;">
             <div class="match-stats">
-              <div class="key-events">
-                ${goalsList}
-                ${cardsList}
-              </div>
               <div class="team-stats">
                 <p><strong>${event.homeTeam.name}:</strong> Form: ${event.homeTeam.form} | Record: ${event.homeTeam.record}</p>
                 <p><strong>${event.awayTeam.name}:</strong> Form: ${event.awayTeam.form} | Record: ${event.awayTeam.record}</p>
@@ -389,6 +385,10 @@ export function formatEventTable(events) {
                 <p>Shots (On Target): ${event.homeTeam.stats.shots} (${event.homeTeam.stats.shotsOnTarget}) - ${event.awayTeam.stats.shots} (${event.awayTeam.stats.shotsOnTarget})</p>
                 <p>Corners: ${event.homeTeam.stats.corners} - ${event.awayTeam.stats.corners}</p>
                 <p>Fouls: ${event.homeTeam.stats.fouls} - ${event.awayTeam.stats.fouls}</p>
+              </div>
+              <div class="key-events">
+                ${goalsList}
+                ${cardsList}
               </div>
               <div class="broadcast-info">
                 <p>Broadcast: ${event.broadcast}</p>
