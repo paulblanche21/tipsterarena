@@ -104,29 +104,43 @@ export function setupExpandableCards() {
   const cards = document.querySelectorAll('.event-card.expandable-card');
   console.log('Found expandable cards:', cards.length);
 
-  cards.forEach(card => {
+  if (cards.length === 0) {
+    console.warn('No expandable cards found in the DOM. Check if the cards are rendered correctly.');
+    return;
+  }
+
+  cards.forEach((card, index) => {
     const header = card.querySelector('.card-header');
     const details = card.querySelector('.match-details');
 
-    // Remove any existing listeners to prevent duplicates
+    if (!header) {
+      console.error(`Card ${index} (ID: ${card.dataset.eventId}) is missing a .card-header element.`, card);
+      return;
+    }
+
+    if (!details) {
+      console.error(`Card ${index} (ID: ${card.dataset.eventId}) has no .match-details element. This should not happen.`, card);
+      return;
+    }
+
     if (header._toggleHandler) {
-      header.removeEventListener('click', header._toggleHandler);
+      header.removeEventListener('click', header._toggleHandler, true);
+      console.log(`Removed existing listener for card ${index} (ID: ${card.dataset.eventId})`);
     }
 
     const handler = (e) => {
       e.stopPropagation();
-      if (details) {
-        const isVisible = details.style.display === 'block';
-        console.log('Toggling card for', card.dataset.eventId, 'Visible:', isVisible);
-        details.style.display = isVisible ? 'none' : 'block';
-        card.classList.toggle('expanded', !isVisible);
-      } else {
-        console.log('No details found for card', card.dataset.eventId);
-      }
+      console.log(`Card header clicked for card ${index} (ID: ${card.dataset.eventId})`);
+      const isVisible = details.style.display === 'block';
+      console.log(`Toggling card ${index} (ID: ${card.dataset.eventId}), Visible: ${isVisible}`);
+      details.style.display = isVisible ? 'none' : 'block';
+      card.classList.toggle('expanded', !isVisible);
     };
 
-    header.addEventListener('click', handler);
+    // Use capture phase to ensure this listener runs first
+    header.addEventListener('click', handler, { capture: true });
     header._toggleHandler = handler;
+    console.log(`Attached click listener to card ${index} (ID: ${card.dataset.eventId})`);
   });
 
   if (!document._cardCloseListener) {
@@ -141,8 +155,9 @@ export function setupExpandableCards() {
         });
       }
     };
-    document.addEventListener('click', closeHandler);
+    document.addEventListener('click', closeHandler, { capture: true });
     document._cardCloseListener = closeHandler;
+    console.log('Attached outside click listener');
   }
 }
 
@@ -290,8 +305,10 @@ export async function getEventList(currentPath, target, activeSport = 'football'
     </div>
   `;
 
+  console.log('getEventList: About to call setupExpandableCards');
   setTimeout(() => {
-    setupExpandableCards(); // Updated from setupMatchDetailsDropdown
+    setupExpandableCards();
+    console.log('setupExpandableCards called after DOM update in getEventList');
   }, 0);
 
   return popupHtml;
@@ -346,7 +363,31 @@ export function setupShowMoreButtons() {
       try {
         const activeSlide = document.querySelector('.carousel-slide.active');
         const activeSport = activeSlide ? activeSlide.getAttribute('data-sport') : 'football';
-        content.innerHTML = await getEventList(window.location.pathname, target, activeSport);
+        console.log('Calling getEventList for target:', target);
+
+        // Clear the carousel content to avoid duplicate cards
+        const carouselContainer = document.querySelector('.carousel-container');
+        if (carouselContainer) {
+          const eventList = carouselContainer.querySelector('.event-list');
+          if (eventList) {
+            eventList.innerHTML = '';
+            console.log('Cleared carousel event list to prevent duplicate cards');
+          } else {
+            console.warn('Carousel event list not found');
+          }
+        } else {
+          console.warn('Carousel container not found');
+        }
+
+        const popupHtml = await getEventList(window.location.pathname, target, activeSport);
+        console.log('getEventList returned, setting content HTML');
+        content.innerHTML = popupHtml;
+
+        // Fallback: Call setupExpandableCards again after setting HTML
+        setTimeout(() => {
+          setupExpandableCards();
+          console.log('Fallback call to setupExpandableCards after setting content HTML');
+        }, 0);
 
         switch (target) {
           case 'trending-tips':

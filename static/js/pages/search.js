@@ -113,9 +113,14 @@ export function setupSearch() {
   });
 
   document.addEventListener('click', (e) => {
-    if (!searchBar.contains(e.target) && !searchResults.contains(e.target) && !e.target.closest('.event-card')) {
+    const eventCard = e.target.closest('.event-card');
+    console.log('Click event target:', e.target);
+    console.log('Closest event-card:', eventCard);
+    if (!searchBar.contains(e.target) && !searchResults.contains(e.target) && !eventCard) {
       console.log('Click outside search bar and event card, hiding results');
       searchResults.style.display = 'none';
+    } else {
+      console.log('Click inside search bar, results, or event card, allowing event to propagate');
     }
   });
 

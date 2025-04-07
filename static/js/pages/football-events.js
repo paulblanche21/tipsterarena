@@ -157,11 +157,42 @@ export function formatEventList(events, sportKey, showLocation = false) {
         `${event.displayDate} ${event.time}`;
 
       let detailsContent = '';
-      if ((event.state === "in" && event.detailedStats) || event.state === "post") {
-        const goalsList = (event.detailedStats?.goals || event.keyEvents.filter(e => e.isGoal)).length ?
+      if (event.state === "in" && event.detailedStats) {
+        const goalsList = event.detailedStats.goals.length ?
           `<ul class="goal-list">${
-            (event.detailedStats?.goals || event.keyEvents.filter(e => e.isGoal)).map(goal => `
+            event.detailedStats.goals.map(goal => `
               <li>${goal.scorer} (${goal.team}) - ${goal.time}${goal.assist && goal.assist !== "Unassisted" ? `, Assist: ${goal.assist}` : ""}</li>
+            `).join("")
+          }</ul>` : "<span class='no-goals'>No goals</span>";
+
+        detailsContent = `
+          <div class="match-details" style="display: none;">
+            <div class="match-stats">
+              <div class="team-stats">
+                <p><strong>${event.homeTeam.name}:</strong> Form: ${event.homeTeam.form} | Record: ${event.homeTeam.record}</p>
+                <p><strong>${event.awayTeam.name}:</strong> Form: ${event.awayTeam.form} | Record: ${event.awayTeam.record}</p>
+              </div>
+              <div class="game-stats">
+                <p>Possession: ${event.detailedStats.possession}</p>
+                <p>Shots (On Target): ${event.detailedStats.shots.home} (${event.homeTeam.stats.shotsOnTarget}) - ${event.detailedStats.shots.away} (${event.awayTeam.stats.shotsOnTarget})</p>
+                <p>Corners: ${event.homeTeam.stats.corners} - ${event.awayTeam.stats.corners}</p>
+                <p>Fouls: ${event.homeTeam.stats.fouls} - ${event.awayTeam.stats.fouls}</p>
+              </div>
+              <div class="key-events">
+                ${goalsList}
+              </div>
+              <div class="broadcast-info">
+                <p>Broadcast: ${event.broadcast}</p>
+              </div>
+            </div>
+          </div>
+        `;
+        console.log(`formatEventList: Added .match-details for in-progress match (ID: ${eventId})`);
+      } else if (event.state === "post") {
+        const goalsList = event.keyEvents.filter(e => e.isGoal).length ?
+          `<ul class="goal-list">${
+            event.keyEvents.filter(e => e.isGoal).map(goal => `
+              <li>${goal.player} (${goal.team}) - ${goal.time}</li>
             `).join("")
           }</ul>` : "<span class='no-goals'>No goals</span>";
 
@@ -174,17 +205,46 @@ export function formatEventList(events, sportKey, showLocation = false) {
 
         detailsContent = `
           <div class="match-details" style="display: none;">
-            <p><strong>${event.homeTeam.name}:</strong> Form: ${event.homeTeam.form} | Record: ${event.homeTeam.record}</p>
-            <p><strong>${event.awayTeam.name}:</strong> Form: ${event.awayTeam.form} | Record: ${event.awayTeam.record}</p>
-            <p>Possession: ${event.detailedStats?.possession || `${event.homeTeam.stats.possession} - ${event.awayTeam.stats.possession}`}</p>
-            <p>Shots (On Target): ${event.detailedStats?.shots?.home || event.homeTeam.stats.shots} (${event.homeTeam.stats.shotsOnTarget}) - ${event.detailedStats?.shots?.away || event.awayTeam.stats.shots} (${event.awayTeam.stats.shotsOnTarget})</p>
-            <p>Corners: ${event.homeTeam.stats.corners} - ${event.awayTeam.stats.corners}</p>
-            <p>Fouls: ${event.homeTeam.stats.fouls} - ${event.awayTeam.stats.fouls}</p>
-            ${goalsList}
-            ${cardsList}
-            <p>Broadcast: ${event.broadcast}</p>
+            <div class="match-stats">
+              <div class="team-stats">
+                <p><strong>${event.homeTeam.name}:</strong> Form: ${event.homeTeam.form} | Record: ${event.homeTeam.record}</p>
+                <p><strong>${event.awayTeam.name}:</strong> Form: ${event.awayTeam.form} | Record: ${event.awayTeam.record}</p>
+              </div>
+              <div class="game-stats">
+                <p>Possession: ${event.homeTeam.stats.possession} - ${event.awayTeam.stats.possession}</p>
+                <p>Shots (On Target): ${event.homeTeam.stats.shots} (${event.homeTeam.stats.shotsOnTarget}) - ${event.awayTeam.stats.shots} (${event.awayTeam.stats.shotsOnTarget})</p>
+                <p>Corners: ${event.homeTeam.stats.corners} - ${event.awayTeam.stats.corners}</p>
+                <p>Fouls: ${event.homeTeam.stats.fouls} - ${event.awayTeam.stats.fouls}</p>
+              </div>
+              <div class="key-events">
+                ${goalsList}
+                ${cardsList}
+              </div>
+              <div class="broadcast-info">
+                <p>Broadcast: ${event.broadcast}</p>
+              </div>
+            </div>
           </div>
         `;
+        console.log(`formatEventList: Added .match-details for completed match (ID: ${eventId})`);
+      } else {
+        detailsContent = `
+          <div class="match-details" style="display: none;">
+            <div class="match-stats">
+              <div class="team-stats">
+                <p><strong>${event.homeTeam.name}:</strong> Form: ${event.homeTeam.form} | Record: ${event.homeTeam.record}</p>
+                <p><strong>${event.awayTeam.name}:</strong> Form: ${event.awayTeam.form} | Record: ${event.awayTeam.record}</p>
+              </div>
+              <div class="game-stats">
+                <p>Match stats will be available once the game starts.</p>
+              </div>
+              <div class="broadcast-info">
+                <p>Broadcast: ${event.broadcast}</p>
+              </div>
+            </div>
+          </div>
+        `;
+        console.log(`formatEventList: Added .match-details for pre-state match (ID: ${eventId})`);
       }
 
       return `
@@ -229,16 +289,15 @@ export function formatEventTable(events) {
     return acc;
   }, {});
 
-  let tableHtml = '<table class="event-table">';
-  tableHtml += '<thead><tr><th class="event-column">Event</th><th class="datetime-column">Date/Time or Score</th><th class="location-column">Location</th></tr></thead><tbody>';
+  let eventHtml = '<div class="event-feed">';
 
   for (const league in eventsByLeague) {
     const leagueEvents = eventsByLeague[league];
 
-    tableHtml += `
-      <tr class="league-group">
-        <td colspan="3" class="league-header"><span class="sport-icon">⚽</span> ${league}</td>
-      </tr>
+    eventHtml += `
+      <div class="league-group">
+        <p class="league-header"><span class="sport-icon">⚽</span> ${league}</p>
+      </div>
     `;
 
     leagueEvents.forEach((event, index) => {
@@ -250,11 +309,42 @@ export function formatEventTable(events) {
         `${event.displayDate} ${event.time}`;
 
       let detailsContent = '';
-      if ((event.state === "in" && event.detailedStats) || event.state === "post") {
-        const goalsList = (event.detailedStats?.goals || event.keyEvents.filter(e => e.isGoal)).length ?
+      if (event.state === "in" && event.detailedStats) {
+        const goalsList = event.detailedStats.goals.length ?
           `<ul class="goal-list">${
-            (event.detailedStats?.goals || event.keyEvents.filter(e => e.isGoal)).map(goal => `
+            event.detailedStats.goals.map(goal => `
               <li>${goal.scorer} (${goal.team}) - ${goal.time}${goal.assist && goal.assist !== "Unassisted" ? `, Assist: ${goal.assist}` : ""}</li>
+            `).join("")
+          }</ul>` : "<span class='no-goals'>No goals</span>";
+
+        detailsContent = `
+          <div class="match-details" style="display: none;">
+            <div class="match-stats">
+              <div class="team-stats">
+                <p><strong>${event.homeTeam.name}:</strong> Form: ${event.homeTeam.form} | Record: ${event.homeTeam.record}</p>
+                <p><strong>${event.awayTeam.name}:</strong> Form: ${event.awayTeam.form} | Record: ${event.awayTeam.record}</p>
+              </div>
+              <div class="game-stats">
+                <p>Possession: ${event.detailedStats.possession}</p>
+                <p>Shots (On Target): ${event.detailedStats.shots.home} (${event.homeTeam.stats.shotsOnTarget}) - ${event.detailedStats.shots.away} (${event.awayTeam.stats.shotsOnTarget})</p>
+                <p>Corners: ${event.homeTeam.stats.corners} - ${event.awayTeam.stats.corners}</p>
+                <p>Fouls: ${event.homeTeam.stats.fouls} - ${event.awayTeam.stats.fouls}</p>
+              </div>
+              <div class="key-events">
+                ${goalsList}
+              </div>
+              <div class="broadcast-info">
+                <p>Broadcast: ${event.broadcast}</p>
+              </div>
+            </div>
+          </div>
+        `;
+        console.log(`Added .match-details for in-progress match (ID: ${eventId})`);
+      } else if (event.state === "post") {
+        const goalsList = event.keyEvents.filter(e => e.isGoal).length ?
+          `<ul class="goal-list">${
+            event.keyEvents.filter(e => e.isGoal).map(goal => `
+              <li>${goal.player} (${goal.team}) - ${goal.time}</li>
             `).join("")
           }</ul>` : "<span class='no-goals'>No goals</span>";
 
@@ -267,41 +357,69 @@ export function formatEventTable(events) {
 
         detailsContent = `
           <div class="match-details" style="display: none;">
-            <p><strong>${event.homeTeam.name}:</strong> Form: ${event.homeTeam.form} | Record: ${event.homeTeam.record}</p>
-            <p><strong>${event.awayTeam.name}:</strong> Form: ${event.awayTeam.form} | Record: ${event.awayTeam.record}</p>
-            <p>Possession: ${event.detailedStats?.possession || `${event.homeTeam.stats.possession} - ${event.awayTeam.stats.possession}`}</p>
-            <p>Shots (On Target): ${event.detailedStats?.shots?.home || event.homeTeam.stats.shots} (${event.homeTeam.stats.shotsOnTarget}) - ${event.detailedStats?.shots?.away || event.awayTeam.stats.shots} (${event.awayTeam.stats.shotsOnTarget})</p>
-            <p>Corners: ${event.homeTeam.stats.corners} - ${event.awayTeam.stats.corners}</p>
-            <p>Fouls: ${event.homeTeam.stats.fouls} - ${event.awayTeam.stats.fouls}</p>
-            ${goalsList}
-            ${cardsList}
-            <p>Broadcast: ${event.broadcast}</p>
+            <div class="match-stats">
+              <div class="team-stats">
+                <p><strong>${event.homeTeam.name}:</strong> Form: ${event.homeTeam.form} | Record: ${event.homeTeam.record}</p>
+                <p><strong>${event.awayTeam.name}:</strong> Form: ${event.awayTeam.form} | Record: ${event.awayTeam.record}</p>
+              </div>
+              <div class="game-stats">
+                <p>Possession: ${event.homeTeam.stats.possession} - ${event.awayTeam.stats.possession}</p>
+                <p>Shots (On Target): ${event.homeTeam.stats.shots} (${event.homeTeam.stats.shotsOnTarget}) - ${event.awayTeam.stats.shots} (${event.awayTeam.stats.shotsOnTarget})</p>
+                <p>Corners: ${event.homeTeam.stats.corners} - ${event.awayTeam.stats.corners}</p>
+                <p>Fouls: ${event.homeTeam.stats.fouls} - ${event.awayTeam.stats.fouls}</p>
+              </div>
+              <div class="key-events">
+                ${goalsList}
+                ${cardsList}
+              </div>
+              <div class="broadcast-info">
+                <p>Broadcast: ${event.broadcast}</p>
+              </div>
+            </div>
           </div>
         `;
+        console.log(`Added .match-details for completed match (ID: ${eventId})`);
+      } else {
+        // For pre-state matches, add a placeholder .match-details
+        detailsContent = `
+          <div class="match-details" style="display: none;">
+            <div class="match-stats">
+              <div class="team-stats">
+                <p><strong>${event.homeTeam.name}:</strong> Form: ${event.homeTeam.form} | Record: ${event.homeTeam.record}</p>
+                <p><strong>${event.awayTeam.name}:</strong> Form: ${event.awayTeam.form} | Record: ${event.awayTeam.record}</p>
+              </div>
+              <div class="game-stats">
+                <p>Match stats will be available once the game starts.</p>
+              </div>
+              <div class="broadcast-info">
+                <p>Broadcast: ${event.broadcast}</p>
+              </div>
+            </div>
+          </div>
+        `;
+        console.log(`Added .match-details for pre-state match (ID: ${eventId})`);
       }
 
-      tableHtml += `
-        <tr>
-          <td class="event-column">
-            <div class="event-card expandable-card ${event.state === "in" ? 'live-match' : ''}" data-event-id="${eventId}">
-              <div class="card-header" style="cursor: pointer;">
-                <span class="event-name">
-                  ${event.homeTeam.logo ? `<img src="${event.homeTeam.logo}" alt="${event.homeTeam.name} Crest" class="team-crest">` : ""}
-                  ${event.homeTeam.name} vs 
-                  ${event.awayTeam.logo ? `<img src="${event.awayTeam.logo}" alt="${event.awayTeam.name} Crest" class="team-crest">` : ""}
-                  ${event.awayTeam.name}
-                </span>
+      eventHtml += `
+        <div class="event-card expandable-card ${event.state === "in" ? 'live-match' : ''}" data-event-id="${eventId}">
+          <div class="card-header" style="cursor: pointer;">
+            <div class="match-info">
+              <div class="teams">
+                ${event.homeTeam.logo ? `<img src="${event.homeTeam.logo}" alt="${event.homeTeam.name} Crest" class="team-crest">` : ""}
+                ${event.homeTeam.name} vs 
+                ${event.awayTeam.logo ? `<img src="${event.awayTeam.logo}" alt="${event.awayTeam.name} Crest" class="team-crest">` : ""}
+                ${event.awayTeam.name}
               </div>
-              ${detailsContent}
+              <div class="datetime">${timeOrScore}</div>
+              <div class="location">${venue}</div>
             </div>
-          </td>
-          <td class="datetime-column">${timeOrScore}</td>
-          <td class="location-column">${venue}</td>
-        </tr>
+          </div>
+          ${detailsContent}
+        </div>
       `;
     });
   }
 
-  tableHtml += '</tbody></table>';
-  return tableHtml;
+  eventHtml += '</div>';
+  return eventHtml;
 }

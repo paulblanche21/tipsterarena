@@ -68,7 +68,6 @@ function fetchComments(tipId, list, callback) {
 }
 
 function setupTipInteractions() {
-    console.log('Setting up tip interactions');
     const tips = document.querySelectorAll('.tip');
     const commentModal = document.getElementById('comment-modal');
     const commentSubmit = commentModal ? commentModal.querySelector('.post-reply-submit') : null;
@@ -104,7 +103,6 @@ function setupTipInteractions() {
     setupReplyModal();
 
     if (commentSubmit) {
-        console.log('Attaching event listener to comment submit button');
         commentSubmit.addEventListener('click', function (e) {
             e.preventDefault();
             console.log('Reply button clicked');
@@ -261,7 +259,6 @@ function setupTipInteractions() {
 }
 
 function setupReplyModal() {
-    console.log('Setting up reply modal');
     const commentModal = document.getElementById('comment-modal');
     if (!commentModal) {
         console.warn('Comment modal not found in setupReplyModal');
