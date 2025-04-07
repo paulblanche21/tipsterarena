@@ -91,4 +91,5 @@ body {
     display: flex;      /* Use flexbox for layout */
     flex-direction: column;  /* Stack children vertically */
     z-index: 1001;      /* Ensure sidebar sits above most content */
+    overflow-x: hidden; /* Prevent horizontal overflow */
 }

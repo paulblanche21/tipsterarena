@@ -1,6 +1,6 @@
 // football-events.js
+
 export async function fetchEvents(data, config) {
-  // This remains unchanged from your previous version
   const events = (data.events || []).map(event => {
     const competitions = event.competitions && event.competitions[0] ? event.competitions[0] : {};
     const competitors = competitions.competitors || [];
@@ -248,7 +248,7 @@ export function formatEventList(events, sportKey, showLocation = false) {
       }
 
       return `
-        <div class="event-card expandable-card ${event.state === "in" ? 'live-match' : ''}" data-event-id="${eventId}">
+        <div class="carousel-event-card expandable-card ${event.state === "in" ? 'live-match' : ''}" data-event-id="${eventId}">
           <div class="card-header" style="display: flex; justify-content: ${showLocation ? 'space-between' : 'flex-start'}; align-items: center; cursor: pointer;">
             <span>
               ${event.homeTeam.logo ? `<img src="${event.homeTeam.logo}" alt="${event.homeTeam.name} Crest" class="team-crest" style="width: 20px; height: 20px; margin-right: 5px;">` : ""}
@@ -380,7 +380,6 @@ export function formatEventTable(events) {
         `;
         console.log(`Added .match-details for completed match (ID: ${eventId})`);
       } else {
-        // For pre-state matches, add a placeholder .match-details
         detailsContent = `
           <div class="match-details" style="display: none;">
             <div class="match-stats">

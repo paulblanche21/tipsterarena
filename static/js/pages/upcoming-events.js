@@ -101,7 +101,7 @@ export async function getDynamicEvents() {
  */
 export function setupExpandableCards() {
   console.log('Entering setupExpandableCards');
-  const cards = document.querySelectorAll('.event-card.expandable-card');
+  const cards = document.querySelectorAll('.event-card.expandable-card, .carousel-event-card.expandable-card');
   console.log('Found expandable cards:', cards.length);
 
   if (cards.length === 0) {
@@ -137,7 +137,6 @@ export function setupExpandableCards() {
       card.classList.toggle('expanded', !isVisible);
     };
 
-    // Use capture phase to ensure this listener runs first
     header.addEventListener('click', handler, { capture: true });
     header._toggleHandler = handler;
     console.log(`Attached click listener to card ${index} (ID: ${card.dataset.eventId})`);
@@ -145,7 +144,7 @@ export function setupExpandableCards() {
 
   if (!document._cardCloseListener) {
     const closeHandler = (e) => {
-      if (!e.target.closest('.event-card.expandable-card')) {
+      if (!e.target.closest('.event-card.expandable-card') && !e.target.closest('.carousel-event-card.expandable-card')) {
         console.log('Click outside, closing all expandable cards');
         document.querySelectorAll('.match-details').forEach(details => {
           details.style.display = 'none';
@@ -365,25 +364,10 @@ export function setupShowMoreButtons() {
         const activeSport = activeSlide ? activeSlide.getAttribute('data-sport') : 'football';
         console.log('Calling getEventList for target:', target);
 
-        // Clear the carousel content to avoid duplicate cards
-        const carouselContainer = document.querySelector('.carousel-container');
-        if (carouselContainer) {
-          const eventList = carouselContainer.querySelector('.event-list');
-          if (eventList) {
-            eventList.innerHTML = '';
-            console.log('Cleared carousel event list to prevent duplicate cards');
-          } else {
-            console.warn('Carousel event list not found');
-          }
-        } else {
-          console.warn('Carousel container not found');
-        }
-
         const popupHtml = await getEventList(window.location.pathname, target, activeSport);
         console.log('getEventList returned, setting content HTML');
         content.innerHTML = popupHtml;
 
-        // Fallback: Call setupExpandableCards again after setting HTML
         setTimeout(() => {
           setupExpandableCards();
           console.log('Fallback call to setupExpandableCards after setting content HTML');
@@ -513,7 +497,7 @@ async function populateCarousel(container) {
       console.warn(`No formatter found for sport: ${sport} in slide:`, slide);
     }
   }
-  setupExpandableCards(); // Updated from setupMatchDetailsDropdown
+  setupExpandableCards();
 }
 
 function setupDotNavigation(container) {
@@ -521,7 +505,10 @@ function setupDotNavigation(container) {
   const dots = dotsContainer ? dotsContainer.querySelectorAll('.dot') : [];
   const slides = container.querySelectorAll('.carousel-slide');
 
-  if (slides.length <= 1) return;
+  if (slides.length <= 1) {
+    if (dotsContainer) dotsContainer.style.display = 'none'; // Hide dots if only one slide
+    return;
+  }
 
   if (dots.length !== slides.length) {
     console.warn(`Mismatch detected: ${slides.length} slides vs ${dots.length} dots`);
@@ -593,10 +580,21 @@ export async function initCarousel() {
           const eventList = footballSlide.querySelector('.event-list');
           if (eventList) {
             eventList.innerHTML = await FORMATTERS.football(dynamicEvents.football || [], 'football', false);
-            setupExpandableCards(); // Updated from setupMatchDetailsDropdown
+            setupExpandableCards();
           }
         }, 30000);
       }
+    }
+  }
+
+  // Fallback: Populate event lists that aren't in a carousel (e.g., if HTML structure is missing carousel)
+  const eventLists = document.querySelectorAll('.event-list[id$="-events"]');
+  for (const eventList of eventLists) {
+    const sport = eventList.id.replace('-events', '');
+    if (sport && FORMATTERS[sport] && !eventList.closest('.carousel-container')) {
+      const events = globalEvents[sport] || [];
+      eventList.innerHTML = await FORMATTERS[sport](events, sport, false) || `<p>No upcoming ${sport} events available.</p>`;
+      setupExpandableCards();
     }
   }
 }

@@ -1,426 +1,114 @@
-.carousel-container {
-    position: relative;
-    flex: 1; /* Take up available space within the fixed-height card */
+/* sidebar.css */
+
+/* Upcoming Events Card Styling */
+.upcoming-events-card {
+    padding: 10px;
+    background-color: var(--secondary-bg);
+    border-radius: var(--border-radius);
+    margin-bottom: 15px;
+    height: 400px;
     display: flex;
     flex-direction: column;
+    position: relative;
     overflow: hidden;
+    max-width: 350px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.carousel-container.expanded {
-    max-height: 400px; /* Adjust based on content */
+/* Ensure sidebar cards don't interfere */
+.sidebar-card {
+    background-color: var(--secondary-bg);
+    border: 1px solid #e1e8ed;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    min-height: 200px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
-.carousel-slide {
-    display: none;
-    padding: 5px 0;
-    height: 100%; /* Ensure slide fills the container */
-    overflow: hidden; /* Prevent overflow within slide */
+.sidebar-card h3 {
+    color: #001f3f;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
 }
 
-.carousel-slide.active {
-    display: block;
-    animation: fadeIn 0.5s ease-in-out;
+/* Adjust padding or height if needed to accommodate "Show more" */
+.sidebar-card p {
+    color: #666666;
+    font-size: 14px;
+    line-height: 1.4;
+    margin-bottom: 0;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+/* Ensure Sidebar Card Fits Policy Links */
+.sidebar-card[data-card="policy-links"] {
+    min-height: auto;
+    padding: 12px;
 }
 
-.carousel-prev, .carousel-next {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(0, 0, 0, 0.5);
-    color: white;
-    border: none;
+/* Specific Heights for Who to Follow */
+.sidebar-card[data-card="who-to-follow"] {
+    min-height: 350px;
+}
+
+/* Specific Heights for Trending Tips (updated) */
+.sidebar-card[data-card="trending-tips"] {
+    min-height: 450px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow-y: auto;
+}
+
+.sidebar-message-content {
+    position: fixed;
+    width: 200px;
+    right: 0;
+    top: 0;
+    height: 100vh;
     padding: 10px;
-    cursor: pointer;
-    z-index: 10;
+    background-color: #f5f5f5;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
 }
 
-.carousel-prev { left: 0; }
-.carousel-next { right: 0; }
-
-.carousel-prev:hover, .carousel-next:hover {
-    background-color: rgba(0, 0, 0, 0.8);
+.sidebar-message-content h3 {
+    color: #001f3f;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
 }
 
+.sidebar-message-content p {
+    color: #666666;
+    font-size: 14px;
+    line-height: 1.4;
+    margin-bottom: 12px;
+}
+
+.sidebar-scrollable {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 10px;
+}
+
+/* Carousel dots (minimal styling, as most carousel styles are in football-events.css) */
 .carousel-dots {
     text-align: center;
     padding: 10px 0;
 }
 
-/* Adjustments for event items within carousel */
-.carousel-slide .event-list {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    max-height: 280px;
-    overflow-y: auto; /* Allow scrolling if content exceeds height */
-    max-width: 100%; /* Ensure list respects card width */
-}
-
-.carousel-slide .event-item {
-    margin: 3px 0; /* Reduced from 20px margin-left to fit more content */
-    padding: 5px 10px; /* Adjusted padding for compactness */
-    display: flex;
-    align-items: flex-start; /* Align content at the top */
-    flex-wrap: wrap; /* Allow wrapping for long content */
-    max-width: 100%; /* Ensure items don't overflow */
-    overflow: hidden;
-}
-
-.carousel-slide .event-item p {
-    margin: 0;
-    font-size: 13px; /* Slightly smaller font to fit more info */
-    color: #333;
-    display: flex;
-    flex-wrap: wrap; /* Allow wrapping for long content */
-    align-items: center;
-    width: 100%;
-    word-break: break-word; /* Ensure words break if needed */
-}
-
-.carousel-slide .team-crest {
-    width: 20px;
-    height: 20px;
-    margin-right: 5px;
-    flex-shrink: 0; /* Prevent crest from shrinking */
-}
-
-.events-popup .team-crest {
-    width: 20px;
-    height: 20px;
-    margin-right: 5px;
-    vertical-align: middle;
-}
-
-.team-crest {
-    width: 20px;
-    height: 20px;
-    margin-right: 5px;
-    vertical-align: middle;
-}
-
-.carousel-slide .league-group {
-    margin-bottom: 8px;
-}
-
-.carousel-slide .league-header {
-    font-weight: bold;
-    margin: 5px 10px;
-    font-size: 14px;
-    color: #001f3f;
-}
-
 /* Hide carousel dots when there's only one slide */
 .carousel-dots:has(.dot:nth-child(1):last-child) {
     display: none;
-}
-
-/* Copyright Notice */
-.copyright-notice {
-    color: #666666; /* Gray, like X */
-    font-size: 11px; /* Even smaller font, matching X */
-    margin: 0; /* Remove margin to align with links */
-    padding-top: 4px; /* Small padding above to separate from links */
-    border-top: 1px solid #e1e8ed; /* Light border to visually separate */
-}
-
-/* Event List Styling */
-.event-list {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-}
-
-.event-item {
-    margin: 3px 0;
-    padding: 8px 0; /* Increased padding for better spacing */
-    /* Removed display: flex to avoid breaking table layout */
-    /* align-items and flex-wrap are removed as they only apply with display: flex */
-}
-
-.event-item.hidden {
-    display: none;
-}
-
-.event-item.hidden.visible {
-    display: flex;
-}
-
-/* Ensure flex layout for event items in list views (e.g., sidebar carousel) */
-.event-list .event-item,
-.carousel-slide .event-item {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-/* Specific styles for event items in the popup list view */
-.events-popup .event-list .event-item {
-    padding: 12px 0;
-    border-bottom: 1px solid #e1e8ed;
-    flex-wrap: nowrap;
-}
-
-.events-popup .event-list .event-item:last-child {
-    border-bottom: none;
-}
-
-.events-popup .event-list .event-item p {
-    margin: 0;
-    font-size: 14px;
-    color: #333;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-}
-
-.events-popup .event-item .sport-icon {
-    margin-right: 5px;
-}
-
-.events-popup .event-location {
-    font-size: 12px;
-    color: #666;
-    margin-left: 10px;
-    white-space: nowrap; /* Keep venue on one line */
-    flex-shrink: 0; /* Prevent shrinking */
-}
-
-.event-location {
-    font-size: 12px;
-    color: #666;
-}
-
-.event-card {
-    position: relative; /* Allows absolute positioning of dropdown relative to this */
-  }
-
-/* Style the Show Less Button */
-.events-popup .show-less {
-    display: inline-block;
-    margin-top: 15px;
-    color: #ff4136; /* Red */
-    text-decoration: none;
-    font-size: 14px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-}
-
-.events-popup .show-less:hover {
-    text-decoration: underline;
-    color: #ff4136; /* Maintain red on hover */
-}
-
-/* Table Styling for Football Events */
-.events-popup .event-table {
-    width: 100%;
-    max-width: 100%; /* Ensures table doesn't exceed popup width */
-    border-collapse: collapse;
-    margin-bottom: 15px;
-    font-size: 14px; /* Matches event-item */
-    background-color: #ffffff;
-    border: 1px solid #e1e8ed; /* Matches popup border */
-    border-radius: 8px; /* Slightly less than popup's 12px */
-    table-layout: auto; /* Allows columns to adjust based on content */
-}
-
-.events-popup .event-table th {
-    background-color: #001f3f; /* Navy header */
-    color: #ffffff;
-    font-weight: 600;
-    padding: 12px 10px;
-    text-align: left;
-    border-bottom: 2px solid #e1e8ed;
-    white-space: nowrap; /* Prevents header text from wrapping */
-}
-
-.events-popup .event-table td {
-    padding: 12px 10px;
-    text-align: left;
-    border-bottom: 1px solid #e1e8ed;
-    color: #333;
-    vertical-align: middle; /* Aligns content in the middle */
-    word-break: break-word; /* Allows long text to wrap */
-    max-width: 200px; /* Limits column width to prevent overflow */
-    
-}
-
-.events-popup .event-table .league-group {
-    background-color: #f2f2f2; /* Light gray for league headers */
-}
-
-.events-popup .event-table .league-header {
-    padding: 8px 10px;
-    font-weight: bold;
-    color: #001f3f;
-}
-
-.events-popup .event-table .event-item:hover {
-    background-color: #e1e8ed; /* Hover effect matches your tr:hover */
-    transition: background-color 0.2s ease-in-out;
-}
-
-.events-popup .event-table .event-item.live-match {
-    cursor: pointer; /* Indicates the row is clickable */
-}
-
-.events-popup .event-table .event-item.live-match::after {
-    content: '▼'; /* Down arrow to indicate dropdown */
-    font-size: 12px;
-    color: #666;
-    margin-left: 5px;
-    transition: transform 0.3s ease;
-}
-
-.events-popup .event-table .event-item.live-match.active::after {
-    transform: rotate(180deg); /* Rotate arrow when dropdown is open */
-}
-
-.events-popup .event-table .event-item.live-match.active {
-    background-color: #f0f4f8; /* Slightly different background when dropdown is open */
-}
-
-.events-popup .event-table .event-name {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap; /* Allows team names to wrap */
-    gap: 5px; /* Adds spacing between crests and text */
-}
-
-.events-popup .event-table .event-time {
-    white-space: nowrap; /* Keeps time/score on one line */
-}
-
-.events-popup .event-table .event-time .live-score {
-    display: inline-block;
-}
-
-.events-popup .event-table .event-location {
-    max-width: 150px; /* Limits the width of the location column */
-    white-space: normal; /* Allows venue names to wrap */
-}
-
-/* Dropdown styling for match details */
-.events-popup .event-table .match-details-dropdown {
-    display: none; /* Hidden by default */
-    background-color: #f9f9f9; /* Light gray background */
-    padding: 10px 15px; /* Slightly more padding for readability */
-    border-top: 1px solid #e1e8ed;
-    border-bottom: 1px solid #e1e8ed;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05); /* Subtle inset shadow */
-}
-
-.events-popup .event-table .match-details-dropdown .detailed-stats {
-    font-size: 12px; /* Slightly smaller than main text */
-    color: #555; /* Darker gray for contrast */
-    line-height: 1.5; /* Improved readability */
-}
-
-.events-popup .event-table .match-details-dropdown .goal-list {
-    margin: 5px 0;
-    padding-left: 20px;
-    list-style-type: disc;
-}
-
-.events-popup .event-table .match-details-dropdown .goal-list li {
-    margin-bottom: 3px;
-    white-space: normal; /* Allows goal details to wrap */
-}
-
-.events-popup .event-table .match-details-dropdown .no-goals {
-    color: #666; /* Matches event-location */
-}
-
-/* Responsive adjustments for table */
-@media (max-width: 768px) {
-    .events-popup {
-        max-width: 100%; /* Ensures popup fits smaller screens */
-        margin: 0 5px;
-        padding: 8px;
-    }
-
-    .events-popup .event-table {
-        display: block;
-        overflow-x: auto; /* Horizontal scroll for small screens */
-        white-space: nowrap; /* Prevents wrapping in table */
-        max-width: 100%; /* Ensures table doesn't exceed popup */
-    }
-
-    .events-popup .event-table th,
-    .events-popup .event-table td {
-        min-width: 120px; /* Ensures readability on scroll */
-        max-width: 150px; /* Limits column width on small screens */
-        word-break: break-word; /* Forces wrapping within limited width */
-    }
-
-    .events-popup .event-table .event-name {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .events-popup .event-table .team-crest {
-        margin-bottom: 5px;
-    }
-
-    .events-popup .event-table .event-location {
-        max-width: 120px; /* Smaller max-width on mobile */
-    }
-}
-
-/* General styles reused */
-.live-score {
-    color: #e63946; /* Your red accent */
-    font-weight: bold;
-}
-
-.sport-icon {
-    margin-right: 5px;
-}
-
-.league-group {
-    margin-bottom: 15px;
-}
-
-.league-header {
-    font-size: 16px;
-    font-weight: 600;
-    color: #001f3f;
-    margin: 10px 0 5px;
-}
-
-.leaderboard-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-    font-size: 14px;
-}
-
-.leaderboard-table th,
-.leaderboard-table td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-}
-
-.leaderboard-table th {
-    background-color: #001f3f; /* Navy */
-    color: #ffffff; /* White */
-    font-weight: 600;
-}
-
-.leaderboard-table tr:nth-child(even) {
-    background-color: #f9f9f9; /* Light gray for even rows */
-}
-
-.leaderboard-table tr:hover {
-    background-color: #e1e8ed; /* Hover effect */
 }
 
 .dot {
@@ -441,253 +129,122 @@
     background-color: #999;
 }
 
-/* Policy Page Styles */
-.policy-body {
-    background-color: #ffffff; /* White background */
-    color: #1a2526; /* Navy text */
+/* Copyright Notice */
+.copyright-notice {
+    color: #666666;
+    font-size: 11px;
     margin: 0;
-    padding: 0;
-    line-height: 1.6;
-    font-family: 'Roboto', sans-serif;
+    padding-top: 4px;
+    border-top: 1px solid #e1e8ed;
 }
 
-.policy-container {
-    max-width: 900px;
-    margin: 40px auto;
-    padding: 30px;
-    background-color: #ffffff; /* White content background */
-    border: 1px solid #1a2526; /* Navy border */
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    position: relative;
-}
-
-.policy-close-btn {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    color: #e63946; /* Red close button */
-    font-size: 28px;
-    text-decoration: none;
-    background-color: #ffffff;
-    border: 2px solid #e63946;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
+/* Policy Links Container */
+.policy-links {
+    padding: 12px;
+    background-color: transparent;
+    color: #666666;
+    font-size: 12px;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
+    flex-direction: column;
+    gap: 8px;
+    justify-content: flex-start;
 }
 
-.policy-close-btn:hover {
-    background-color: #e63946;
-    color: #ffffff;
+/* New wrapper for the links to create two columns */
+.policy-links-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 12px;
+    width: 100%;
 }
 
-.policy-content h1 {
-    font-size: 2.5em;
-    color: #1a2526; /* Navy heading */
-    margin-bottom: 20px;
-    border-bottom: 3px solid #e63946; /* Red underline */
-    padding-bottom: 10px;
+/* Individual Policy Links */
+.policy-link {
+    color: #666666;
+    text-decoration: none;
+    font-size: 12px;
 }
 
-.policy-content h2 {
-    font-size: 1.8em;
-    color: #1a2526; /* Navy subheading */
-    margin-top: 40px;
+.policy-link:hover {
+    text-decoration: underline;
+    color: #ff4136;
+}
+
+/* Trending Tips Card */
+.trending-tips-card {
+    background-color: white;
+    border-radius: 10px;
+    padding: 15px;
     margin-bottom: 15px;
 }
 
-.policy-content h3 {
-    font-size: 1.4em;
-    color: #1a2526; /* Navy sub-subheading */
-    margin-top: 30px;
-    margin-bottom: 10px;
+/* Trending Tips List */
+.trending-tips-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    overflow: hidden;
 }
 
-.policy-content p {
-    margin-bottom: 20px;
-    font-size: 1.1em;
+/* Trending Tip Row */
+.trending-tip {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+    overflow: hidden;
 }
 
-.policy-content ul {
-    margin-bottom: 20px;
-    padding-left: 25px;
-}
-
-.policy-content ul li {
+/* Who to Follow Header */
+.who-to-follow-header {
+    font-size: 18px;
+    font-weight: 700;
+    color: #000000;
     margin-bottom: 12px;
-    font-size: 1.1em;
 }
 
-.policy-content a {
-    color: #e63946; /* Red links */
+/* Show more button styling */
+.show-more {
+    display: block;
+    margin-top: 10px;
+    padding-bottom: 5px;
+    color: #4a90e2;
     text-decoration: none;
-    font-weight: 500;
+    font-size: 0.9em;
+    text-align: center;
+    flex-shrink: 0;
 }
 
-.policy-content a:hover {
+.show-more:hover {
     text-decoration: underline;
-    color: #b32d39; /* Darker red on hover */
 }
 
-
-.event-table {
-    width: 100%;
-    border-collapse: collapse;
-    overflow: visible;
-  }
-  
-  .event-table th, .event-table td {
-    padding: 8px;
-    text-align: left;
-    vertical-align: top;
-  }
-  
-  .event-table th.event-column,
-  .event-table td.event-column {
-    width: 40%; /* Fixed width for the Event column */
-    max-width: 300px; /* Prevent overly long names from stretching too far */
-    word-wrap: break-word; /* Allow long team names to wrap */
-    white-space: normal; /* Ensure wrapping happens */
-  }
-  
-  .event-table th.datetime-column,
-  .event-table td.datetime-column {
-    width: 30%; /* Fixed width for Date/Time or Score */
-    white-space: nowrap; /* Prevent wrapping to keep dates aligned */
-  }
-  
-  .event-table th.location-column,
-  .event-table td.location-column {
-    width: 30%; /* Fixed width for Location */
-    white-space: normal; /* Allow wrapping for long venue names */
-  }
-  
-  .event-table .event-card {
-    position: relative;
-    min-height: 40px;
-  }
-  
-  .event-table .event-item {
-    margin: 0;
-    padding: 0;
-  }
-  
-  .event-table .event-item.live-match {
-    cursor: pointer;
-  }
-  
-  .match-details-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
-    background-color: #fff;
-    border: 1px solid #ddd;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    z-index: 10;
-    padding: 10px;
-    min-height: 50px;
-    height: auto;
-  }
-  
-  .detailed-stats {
-    height: auto;
-  }
-  
-  .goal-list {
-    list-style: none;
-    padding: 0;
-    margin: 5px 0;
-  }
-  
-  .goal-list li {
-    margin: 5px 0;
+/* Show less button styling */
+.show-less {
+    display: block;
+    color: var(--red-accent);
+    text-decoration: none;
     font-size: 14px;
-  }
-  
-  .no-goals {
-    font-style: italic;
-    color: #666;
-  }
-  
-  .carousel-slide, .event-list {
-    overflow: visible;
-  }
-  
-  .event-table td {
-    position: relative;
-    overflow: visible;
+    margin-top: 15px;
+    cursor: pointer;
     padding: 0;
-  }
-
-  .yellow-card {
-    color: #ffcc00;
-    font-weight: bold;
-  }
-
-  .red-card {
-    color: #ff0000;
-    font-weight: bold;
-  }
-  
-  .goal-list, .card-list {
-    margin: 5px 0;
-    padding-left: 20px;
-  }
-  
-  .match-details-dropdown p {
-    margin: 5px 0;
-  }
-  
-  .team-crest {
-    width: 20px;
-    height: 20px;
-    vertical-align: middle;
-  }
-
-/* Responsive Design for Policy */
-@media (max-width: 768px) {
-    .policy-container {
-        margin: 20px;
-        padding: 20px;
-    }
-
-    .policy-content h1 {
-        font-size: 2em;
-    }
-
-    .policy-content h2 {
-        font-size: 1.5em;
-    }
-
-    .policy-content h3 {
-        font-size: 1.2em;
-    }
-
-    .policy-content p,
-    .policy-content ul li {
-        font-size: 1em;
-    }
-
-    .policy-close-btn {
-        top: 15px;
-        right: 15px;
-        font-size: 24px;
-        width: 36px;
-        height: 36px;
-    }
+    background: none;
+    border: none;
+    width: fit-content;
 }
 
+.show-less:hover {
+    text-decoration: underline;
+    color: var(--red-accent);
+}
+
+/* Search Input and Results */
 .search-wrapper {
-    position: relative; /* Positioning context for .search-results */
-    padding: 0 10px; /* Match sidebar padding */
+    position: relative;
+    padding: 0 10px;
 }
 
-/* Fixed Search Input (at the top) */
 .search-input {
     width: 100%;
     margin: 10px auto;
@@ -704,12 +261,11 @@
     border-color: #ff4136;
 }
 
-/* Suggested Search Results Styling */
 .search-results {
     position: absolute;
-    top: calc(100% + 10px); /* Below the input with a small gap */
-    left: 10px; /* Align with sidebar padding */
-    width: calc(100% - 20px); /* Account for padding */
+    top: calc(100% + 10px);
+    left: 10px;
+    width: calc(100% - 20px);
     max-height: 300px;
     overflow-y: auto;
     background-color: #ffffff;
@@ -763,430 +319,127 @@
     text-overflow: ellipsis;
 }
 
-/* Show more button styling (Tipster Arena blue) */
-.show-more {
-    display: block;
-    margin-top: 10px;
-    padding-bottom: 5px;
-    color: #4a90e2;
-    text-decoration: none;
-    font-size: 0.9em;
-    text-align: center; /* Center the button */
-    flex-shrink: 0; /* Prevent button from shrinking */
-}
-
-.show-more:hover {
-    text-decoration: underline;
-}
-
-.sidebar-card .event-list {
-    max-height: 200px; /* Adjust this value to fit your design */
-    overflow-y: auto;
-}
-
-/* Show less button styling (Tipster Arena red, Twitter/X-like layout) */
-.show-less {
-    display: block;
-    color: var(--red-accent); /* Use your red accent (#ff4136) */
-    text-decoration: none;
-    font-size: 14px;
-    margin-top: 15px;
-    cursor: pointer;
-    padding: 0; /* No padding for minimalism */
-    background: none;
-    border: none;
-    width: fit-content;
-}
-
-.show-less:hover {
-    text-decoration: underline; /* Optional: Minimal hover effect, like Twitter/X */
-    color: var(--red-accent); /* No color change on hover */
-}
-
-/* Ensure sidebar cards don't interfere */
-.sidebar-card {
-    background-color: var(--secondary-bg);
-    border: 1px solid #e1e8ed;
-    border-radius: 12px;
-    padding: 12px;
-    margin-bottom: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    min-height: 200px;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    width: 100%;
-}
-
-.sidebar-card h3 {
-    color: #001f3f;
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 8px;
-}
-
-/* Adjust padding or height if needed to accommodate "Show more" */
-.sidebar-card p {
-    color: #666666;
-    font-size: 14px;
-    line-height: 1.4;
-    margin-bottom: 0; /* Remove bottom margin to let flex handle spacing */
-}
-
-/* Ensure Sidebar Card Fits Policy Links */
-.sidebar-card[data-card="policy-links"] {
-    min-height: auto; /* Allow card to shrink to content height */
-    padding: 12px; /* Match other cards */
-}
-
-/* Specific Heights for Who to Follow */
-.sidebar-card[data-card="who-to-follow"] {
-    min-height: 350px; /* Increased height for more content */
-}
-
-/* Specific Heights for Trending Tips (updated) */
-.sidebar-card[data-card="trending-tips"] {
-    min-height: 450px; /* Increased from 350px to allow more content */
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    overflow-y: auto; /* Add scroll if content exceeds height */
-}
-
-/* Specific Heights for Upcoming Events */
-.sidebar-card[data-card="upcoming-events"] {
-    min-height: 350px; /* Increased height for more content */
-}
-
-.sidebar-message-content {
-    position: fixed;
-    width: 200px;
-    right: 0;
-    top: 0;
-    height: 100vh;
-    padding: 10px;
-    background-color: #f5f5f5;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-}
-
-.sidebar-message-content h3 {
-    color: #001f3f;
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 8px;
-}
-
-.sidebar-message-content p {
-    color: #666666;
-    font-size: 14px;
-    line-height: 1.4;
-    margin-bottom: 12px;
-}
-
-.sidebar-scrollable {
-    flex: 1;
-    overflow-y: auto;
-    padding-bottom: 60px;
-}
-
-/* Policy Links Container (updated) */
-.policy-links {
-    padding: 12px;
-    background-color: transparent; /* No background to match X's layout */
-    color: #666666; /* Gray text, like X */
-    font-size: 12px; /* Smaller font, matching X */
-    display: flex;
-    flex-direction: column; /* Keep column for overall layout */
-    gap: 8px; /* Space between sections */
-    justify-content: flex-start; /* Align to the left */
-}
-
-/* New wrapper for the links to create two columns */
-.policy-links-columns {
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* Two equal columns */
-    gap: 8px 12px; /* Vertical and horizontal spacing between links */
-    width: 100%; /* Ensure it fits within the card */
-}
-
-/* Individual Policy Links (unchanged) */
-.policy-link {
-    color: #666666; /* Gray, like X */
-    text-decoration: none; /* No underline by default */
-    font-size: 12px; /* Small font, matching X */
-}
-
-.policy-link:hover {
-    text-decoration: underline; /* Underline on hover, like X */
-    color: #ff4136; /* Red on hover, matching your theme */
-}
-
-/* Trending Tips Card */
-.trending-tips-card {
-    background-color: white;
-    border-radius: 10px;
-    padding: 15px;
-    margin-bottom: 15px;
-}
-
-/* Trending Tips List */
-.trending-tips-list {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    width: 100%;
-    overflow: hidden;
-}
-
-/* Trending Tip Row */
-.trending-tip {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    width: 100%;
-    overflow: hidden;
-}
-
-/* Upcoming Events Card Styling */
-.upcoming-events-card {
-    padding: 10px;
-    background-color: var(--secondary-bg);
-    border-radius: var(--border-radius);
-    margin-bottom: 15px;
-    height: 350px; /* Fixed height to prevent resizing */
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    overflow: hidden;
-    max-width: 350px; /* Slightly reduced to account for padding and borders, aligning with sidebar */
-    width: 100%; /* Ensure it respects the container */
-    box-sizing: border-box; /* Include padding and border in width calculation */
-}
-
-/* Who to Follow Header */
-.who-to-follow-header {
-    font-size: 18px; /* Larger font size like X */
-    font-weight: 700; /* Bolder text */
-    color: #000000;
-    margin-bottom: 12px;
-}
-
-.event-item {
+/* Policy Page Styles */
+.policy-body {
+    background-color: #ffffff;
+    color: #1a2526;
     margin: 0;
-    padding: 5px 0;
-    cursor: pointer; /* Indicates clickability for live matches */
-  }
-
-  .event-item.live-match {
-    cursor: pointer;
-  }
-  
-  .live-match:hover {
-    background-color: #f5f5f5; /* Visual feedback */
-  }
-  
-  .match-details-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
-    background-color: #fff;
-    border: 1px solid #ddd;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    z-index: 10;
-    padding: 10px;
-  }
-  
-  .goal-list {
-    list-style: none;
     padding: 0;
-    margin: 5px 0;
-  }
-  
-  .goal-list li {
-    font-size: 0.9em;
-  }
-  
-  .no-goals {
-    font-style: italic;
-    color: #666;
-  }
+    line-height: 1.6;
+    font-family: 'Roboto', sans-serif;
+}
 
-
-/* League header */
-.league-group .league-header {
-    background-color: #f0f0f0;
-    padding: 10px 15px;
-    font-weight: bold;
-    font-size: 1.1em;
-    border-radius: 5px 5px 0 0;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-  
-  .league-group .sport-icon {
-    font-size: 1.2em;
-  }
-  
-/* Expandable card */
-/* Expandable card */
-.expandable-card {
-    width: 100%;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: #fff;
-    margin-bottom: 10px;
-    transition: all 0.3s ease;
-    box-sizing: border-box;
-  }
-  
-  /* Enhance expanded state */
-.expandable-card.expanded {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    border-color: #007bff;
-    background-color: #f0f8ff; /* Light blue background when expanded */
-  }
-  
-  .expandable-card.expanded .card-header::after {
-    transform: rotate(180deg);
-  }
-
-
- /* Ensure the card header is clearly clickable */
-.card-header {
-    padding: 15px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+.policy-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: #ffffff;
+    border: 1px solid #1a2526;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     position: relative;
-    z-index: 1;
-    pointer-events: auto;
-    transition: background-color 0.3s ease;
-  }
+}
 
-  .card-header:hover {
-    background-color: #f5f5f5;
-  }
-
-  .card-header::after {
-    content: '▼';
-    font-size: 0.8em;
-    margin-left: 10px;
-    transition: transform 0.3s ease;
-  }
-  
-
-.match-details {
-    padding: 15px;
-    border-top: 1px solid #eee;
-    background-color: #f9f9f9;
-  }
-
-/* Match info layout in header */
-.match-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    gap: 10px;
-    pointer-events: none;
-  }
-
-  .match-info > * {
-    pointer-events: auto; /* Allow interaction with child elements if needed */
-  }
-
-
-.match-info .teams {
-    flex: 1;
-    font-weight: bold;
+.policy-close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: #e63946;
+    font-size: 28px;
+    text-decoration: none;
+    background-color: #ffffff;
+    border: 2px solid #e63946;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
-    gap: 5px;
-  }
-  
-  
-  .match-info .datetime {
-    flex: 0 0 auto;
-    color: #555;
-  }
-  
-  .match-info .location {
-    flex: 0 0 auto;
-    color: #666;
-    font-size: 0.9em;
-  }
+    justify-content: center;
+    transition: all 0.3s ease;
+}
 
-  /* Structure for match stats */
-.match-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-  }
-  
-  .team-stats, .game-stats, .key-events, .broadcast-info {
+.policy-close-btn:hover {
+    background-color: #e63946;
+    color: #ffffff;
+}
+
+.policy-content h1 {
+    font-size: 2.5em;
+    color: #1a2526;
+    margin-bottom: 20px;
+    border-bottom: 3px solid #e63946;
+    padding-bottom: 10px;
+}
+
+.policy-content h2 {
+    font-size: 1.8em;
+    color: #1a2526;
+    margin-top: 40px;
+    margin-bottom: 15px;
+}
+
+.policy-content h3 {
+    font-size: 1.4em;
+    color: #1a2526;
+    margin-top: 30px;
     margin-bottom: 10px;
-  }
-  
-  .team-stats p, .game-stats p, .broadcast-info p {
-    margin: 5px 0;
-    font-size: 0.95em;
-  }
-  
-  /* Goal and card lists */
-  .goal-list, .card-list {
-    margin: 5px 0;
-    padding-left: 20px;
-  }
-  
-  
-/* Live match styling */
-.live-match .card-header {
-    background-color: #ffe6e6; /* Light red for live matches */
-  }
+}
 
-  
-  .yellow-card {
-    color: #ffcc00;
-    font-weight: bold;
-  }
-  
-  .red-card {
-    color: #ff0000;
-    font-weight: bold;
-  }
+.policy-content p {
+    margin-bottom: 20px;
+    font-size: 1.1em;
+}
 
-  
-  .team-crest {
-    width: 24px;
-    height: 24px;
-    vertical-align: middle;
-    margin-right: 5px;
-  }
-  
-  .event-table .expandable-card {
-    margin: 0; /* Remove margin in table for cleaner look */
-  }
-  
-  .event-table .card-header {
-    padding: 5px; /* Smaller padding in table */
-  }
+.policy-content ul {
+    margin-bottom: 20px;
+    padding-left: 25px;
+}
 
+.policy-content ul li {
+    margin-bottom: 12px;
+    font-size: 1.1em;
+}
 
-  /* Container for the event feed */
-.event-feed {
-    width: 100%;
-    max-width: 100%; /* Ensure it takes the full width of the parent */
-    margin: 0 auto;
-  }
+.policy-content a {
+    color: #e63946;
+    text-decoration: none;
+    font-weight: 500;
+}
 
+.policy-content a:hover {
+    text-decoration: underline;
+    color: #b32d39;
+}
 
+/* Responsive Design for Policy */
+@media (max-width: 768px) {
+    .policy-container {
+        margin: 20px;
+        padding: 20px;
+    }
 
+    .policy-content h1 {
+        font-size: 2em;
+    }
 
+    .policy-content h2 {
+        font-size: 1.5em;
+    }
+
+    .policy-content h3 {
+        font-size: 1.2em;
+    }
+
+    .policy-content p,
+    .policy-content ul li {
+        font-size: 1em;
+    }
+
+    .policy-close-btn {
+        top: 15px;
+        right: 15px;
+        font-size: 24px;
+        width: 36px;
+        height: 36px;
+    }
+}
