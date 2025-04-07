@@ -1,66 +1,49 @@
 // tennis-events.js
 
-// Fetch tournament events (e.g., list of tournaments)
+// Fetch tournament matches directly from the initial API response
 export async function fetchEvents(data, config) {
-  const events = (data.events || []).map(event => ({
-    id: event.id,
-    name: event.shortName || event.name,
-    date: event.date,
-    displayDate: new Date(event.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-    time: new Date(event.date).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "GMT" }),
-    state: event.status && event.status.type ? event.status.type.state : "unknown",
-    competitors: (event.competitions && event.competitions[0]?.competitors) || [],
-    venue: (event.competitions && event.competitions[0]?.venue) || { fullName: "Location TBD", address: { city: "Unknown", state: "Unknown" } },
-    league: config.name,
-    icon: config.icon
-  }));
+  const events = (data.events || []).flatMap(tournament => {
+    const groupings = tournament.groupings || [];
+    return groupings.flatMap(grouping => {
+      const competitions = grouping.competitions || [];
+      return competitions.map(comp => ({
+        id: comp.id,
+        tournamentId: tournament.id,
+        tournamentName: tournament.name,
+        date: comp.date,
+        displayDate: new Date(comp.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+        time: new Date(comp.date).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "GMT" }),
+        state: comp.status?.type?.state || "unknown",
+        completed: comp.status?.type?.completed || false,
+        player1: comp.competitors[0]?.athlete?.displayName || "TBD",
+        player2: comp.competitors[1]?.athlete?.displayName || "TBD",
+        score: comp.competitors.length === 2 ? 
+          `${comp.competitors[0].linescores?.map(set => set.value).join('-') || "0"} - ${comp.competitors[1].linescores?.map(set => set.value).join('-') || "0"}` : "TBD",
+        clock: comp.status?.displayClock || "",
+        period: comp.status?.period || 0,
+        round: comp.round?.displayName || "TBD",
+        venue: comp.venue?.fullName || "Location TBD",
+        league: config.name,
+        icon: config.icon
+      }));
+    });
+  });
+
+  console.log(`fetchEvents for ${config.name}: Returning ${events.length} matches`);
   return events;
 }
 
-// Fetch matches for a specific tournament with detailed status and scores
-export async function fetchTournamentMatches(tournamentId) {
-  const url = `https://site.api.espn.com/apis/site/v2/sports/tennis/atp/scoreboard?event=${tournamentId}`;
-  try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    const data = await response.json();
-    const matches = (data.events || []).flatMap(event =>
-      (event.competitions || []).map(comp => ({
-        id: comp.id,
-        date: comp.date,
-        displayDate: new Date(comp.date).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "GMT" }),
-        time: new Date(comp.date).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "GMT" }),
-        player1: comp.competitors[0]?.athlete?.displayName || "TBD",
-        player2: comp.competitors[1]?.athlete?.displayName || "TBD",
-        status: comp.status?.type?.state || "unknown",
-        score: comp.competitors.length === 2 ? `${comp.competitors[0].score || "0"} - ${comp.competitors[1].score || "0"}` : "TBD",
-        clock: comp.status?.displayClock || "",
-        period: comp.status?.period || 0, // Set number
-        round: comp.notes?.[0]?.headline || "TBD",
-        completed: comp.status?.type?.completed || false
-      }))
-    );
-    return {
-      fixtures: matches.filter(m => m.status === "pre"),
-      live: matches.filter(m => m.status === "in"),
-      results: matches.filter(m => m.status === "post" && m.completed)
-    };
-  } catch (error) {
-    console.error(`Error fetching matches for tournament ${tournamentId}:`, error);
-    return { fixtures: [], live: [], results: [] };
-  }
-}
-
-// Fetch detailed stats for a live match
+// Fetch detailed stats for a live match (still needed for live match details)
 export async function fetchMatchDetails(matchId) {
   const url = `https://site.api.espn.com/apis/site/v2/sports/tennis/atp/summary?event=${matchId}`;
   try {
     const response = await fetch(url);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     const data = await response.json();
+    console.log(`fetchMatchDetails for match ${matchId}: Fetched sets (${data.sets?.length || 0}) and stats`);
     return {
-      sets: data.sets || [], // Array of set scores
-      stats: data.statistics || {} // e.g., aces, double faults
+      sets: data.sets || [],
+      stats: data.statistics || {}
     };
   } catch (error) {
     console.error(`Error fetching match details for ${matchId}:`, error);
@@ -68,69 +51,147 @@ export async function fetchMatchDetails(matchId) {
   }
 }
 
-// Format the center feed table with fixtures, live matches, and results
-export function formatEventTable(matches, tournamentName) {
-  if (!matches || (!matches.fixtures.length && !matches.live.length && !matches.results.length)) {
+// Format the center feed with cards
+export async function formatEventTable(matches, tournamentName) {
+  if (!matches || !Array.isArray(matches) || !matches.length) {
+    console.log(`formatEventTable for ${tournamentName}: No matches available`);
     return `<p>No matches available for ${tournamentName}.</p>`;
   }
 
-  let html = `<table class="tennis-feed"><thead><tr><th>Match</th><th>Score/Time</th><th>Round</th></tr></thead><tbody>`;
+  let eventHtml = '<div class="tennis-feed">';
 
-  // Live Matches
-  matches.live.forEach(match => {
-    const score = `${match.score} (Set ${match.period}, ${match.clock})`;
-    html += `
-      <tr class="live-match" data-match-id="${match.id}">
-        <td>${match.player1} vs ${match.player2}</td>
-        <td style="color: #e63946">${score}</td>
-        <td>${match.round}</td>
-      </tr>`;
-  });
+  // Live Matches (with expandable details)
+  for (const match of matches.filter(m => m.state === "in")) {
+    const matchId = match.id;
+    const matchDetails = await fetchMatchDetails(matchId);
+    const sets = matchDetails.sets || [];
+    const stats = matchDetails.stats || {};
+
+    const setsList = sets.length ?
+      `<ul class="sets-list">${
+        sets.map(set => `
+          <li>Set ${set.setNumber}: ${set.team1Score || 0} - ${set.team2Score || 0}</li>
+        `).join("")
+      }</ul>` : "<span class='no-sets'>No set data available</span>";
+
+    const statsContent = stats && Object.keys(stats).length ?
+      `<div class="match-stats">
+        <p>Aces: ${stats.aces?.team1 || 0} - ${stats.aces?.team2 || 0}</p>
+        <p>Double Faults: ${stats.doubleFaults?.team1 || 0} - ${stats.doubleFaults?.team2 || 0}</p>
+        <p>Service Points Won: ${stats.servicePointsWon?.team1 || 0} - ${stats.servicePointsWon?.team2 || 0}</p>
+      </div>` : "<p>No stats available</p>";
+
+    const detailsContent = `
+      <div class="match-details" style="display: none;">
+        <div class="match-stats">
+          <div class="sets">
+            <p><strong>Sets:</strong></p>
+            ${setsList}
+          </div>
+          ${statsContent}
+        </div>
+      </div>
+    `;
+
+    eventHtml += `
+      <div class="tennis-card expandable-card live-match" data-match-id="${matchId}">
+        <div class="card-header" style="cursor: pointer;">
+          <div class="match-info">
+            <div class="players">
+              <span class="player-name">${match.player1}</span>
+              <span class="score">${match.score} (Set ${match.period}, ${match.clock})</span>
+              <span class="player-name">${match.player2}</span>
+            </div>
+          </div>
+          <div class="match-meta">
+            <span class="tournament">${match.tournamentName}, ${match.round}</span>
+            <span class="datetime">${match.displayDate} ${match.time}</span>
+          </div>
+        </div>
+        ${detailsContent}
+      </div>
+    `;
+  }
 
   // Upcoming Fixtures
-  matches.fixtures.forEach(match => {
-    html += `
-      <tr class="fixture">
-        <td>${match.player1} vs ${match.player2}</td>
-        <td>${match.time}</td>
-        <td>${match.round}</td>
-      </tr>`;
+  matches.filter(m => m.state === "pre").forEach(match => {
+    eventHtml += `
+      <div class="tennis-card expandable-card fixture" data-match-id="${match.id}">
+        <div class="card-header" style="cursor: pointer;">
+          <div class="match-info">
+            <div class="players">
+              <span class="player-name">${match.player1}</span>
+              <span class="score">vs</span>
+              <span class="player-name">${match.player2}</span>
+            </div>
+          </div>
+          <div class="match-meta">
+            <span class="tournament">${match.tournamentName}, ${match.round}</span>
+            <span class="datetime">${match.displayDate} ${match.time}</span>
+          </div>
+        </div>
+      </div>
+    `;
   });
 
   // Full-Time Results
-  matches.results.forEach(match => {
-    html += `
-      <tr class="result">
-        <td>${match.player1} vs ${match.player2}</td>
-        <td>${match.score}</td>
-        <td>${match.round}</td>
-      </tr>`;
+  matches.filter(m => m.state === "post" && m.completed).forEach(match => {
+    eventHtml += `
+      <div class="tennis-card expandable-card result" data-match-id="${match.id}">
+        <div class="card-header" style="cursor: pointer;">
+          <div class="match-info">
+            <div class="players">
+              <span class="player-name">${match.player1}</span>
+              <span class="score">${match.score}</span>
+              <span class="player-name">${match.player2}</span>
+            </div>
+          </div>
+          <div class="match-meta">
+            <span class="tournament">${match.tournamentName}, ${match.round}</span>
+            <span class="datetime">${match.displayDate}</span>
+          </div>
+        </div>
+      </div>
+    `;
   });
 
-  html += `</tbody></table>`;
-  return html;
+  eventHtml += '</div>';
+  console.log(`formatEventTable for ${tournamentName}: Generated ${matches.length} cards (Live: ${matches.filter(m => m.state === "in").length}, Fixtures: ${matches.filter(m => m.state === "pre").length}, Results: ${matches.filter(m => m.state === "post" && m.completed).length})`);
+  return eventHtml;
 }
 
-// Keep the existing list format for sidebar or other views
+// Format the sidebar list
 export function formatEventList(events, sportKey, showLocation = false) {
   if (!events || !events.length) {
     return `<p>No upcoming ${sportKey} tournaments available.</p>`;
   }
   const currentTime = new Date();
-  const upcomingEvents = events
-    .filter(event => new Date(event.date) > currentTime)
+  const tournaments = events.reduce((acc, match) => {
+    if (!acc[match.tournamentId]) {
+      acc[match.tournamentId] = {
+        id: match.tournamentId,
+        name: match.tournamentName,
+        date: match.date,
+        displayDate: match.displayDate,
+        venue: match.venue
+      };
+    }
+    return acc;
+  }, {});
+  const upcomingTournaments = Object.values(tournaments)
+    .filter(tournament => new Date(tournament.date) > currentTime)
     .sort((a, b) => new Date(a.date) - new Date(b.date))
-    .slice(0, 3); // Limit to next 3 events
-  if (!upcomingEvents.length) {
+    .slice(0, 3);
+  if (!upcomingTournaments.length) {
     return `<p>No upcoming ${sportKey} tournaments available.</p>`;
   }
 
-  const eventItems = upcomingEvents
-    .map(event => {
-      const venue = event.venue.fullName || `${event.venue.address.city}, ${event.venue.address.state}`;
+  const eventItems = upcomingTournaments
+    .map(tournament => {
+      const venue = tournament.venue || "Location TBD";
       return `
-        <p class="event-item" style="display: flex; justify-content: ${showLocation ? 'space-between' : 'flex-start'}; align-items: center;" data-tournament-id="${event.id}">
-          <span>${event.name} - ${event.displayDate}</span>
+        <p class="event-item" style="display: flex; justify-content: ${showLocation ? 'space-between' : 'flex-start'}; align-items: center;" data-tournament-id="${tournament.id}">
+          <span>${tournament.name} - ${tournament.displayDate}</span>
           ${showLocation ? `<span class="event-location">${venue}</span>` : ""}
         </p>
       `;
