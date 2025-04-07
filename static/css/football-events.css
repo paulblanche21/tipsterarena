@@ -5,7 +5,7 @@
     width: 24px;
     height: 24px;
     vertical-align: middle;
-    margin-right: 5px;
+    margin: 0 5px;
   }
   
   .league-group {
@@ -43,7 +43,8 @@
   .goal-list li,
   .card-list li {
     margin-bottom: 3px;
-    font-size: 0.9em;
+    font-size: 1em; /* Slightly larger for prominence */
+    font-weight: 500; /* Inspired by ha-teamtracker */
   }
   
   .no-goals {
@@ -67,9 +68,10 @@
     border: 1px solid #ddd;
     border-radius: 5px;
     background-color: #fff;
-    margin-bottom: 10px;
+    margin-bottom: 15px; /* Increased spacing between cards */
     transition: all 0.3s ease;
     box-sizing: border-box;
+    min-height: 120px; /* Increased height for better visibility, inspired by ha-teamtracker */
   }
   
   .event-card.expanded {
@@ -86,8 +88,7 @@
     padding: 15px;
     cursor: pointer;
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column; /* Stack match-info and match-meta vertically */
     position: relative;
     z-index: 1;
     pointer-events: auto;
@@ -101,12 +102,71 @@
   .event-card .card-header::after {
     content: '▼';
     font-size: 0.8em;
-    margin-left: 10px;
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
     transition: transform 0.3s ease;
   }
   
   .event-card.live-match .card-header {
     background-color: #ffe6e6;
+  }
+  
+  .event-card .match-info {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    gap: 8px;
+    pointer-events: none;
+    flex-wrap: wrap; /* Allow wrapping if needed */
+  }
+  
+  .event-card .match-info > * {
+    pointer-events: auto;
+  }
+  
+  .event-card .match-info .teams {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: bold;
+    text-align: center;
+    flex-wrap: wrap;
+  }
+  
+  .event-card .match-info .team-name {
+    font-size: 1.1em; /* Inspired by ha-teamtracker */
+  }
+  
+  .event-card .match-info .score {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #333;
+  }
+
+  .match-details .team-goals {
+    background-color: #f0f8ff;
+    padding: 10px;
+    border-radius: 5px;
+  }
+  
+  .event-card .match-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 5px;
+    font-size: 0.85em; /* Smaller font for date and venue */
+    color: #666;
+  }
+  
+  .event-card .match-meta .datetime {
+    flex: 0 0 auto;
+  }
+  
+  .event-card .match-meta .location {
+    flex: 0 0 auto;
   }
   
   .event-card .match-details {
@@ -115,39 +175,42 @@
     background-color: #f9f9f9;
   }
   
-  .event-card .match-info {
+  /* Shared match-details content styles */
+  .match-details .match-stats {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    gap: 10px;
-    pointer-events: none;
+    flex-direction: column;
+    gap: 15px;
   }
   
-  .event-card .match-info > * {
-    pointer-events: auto;
+  .match-details .team-goals {
+    margin-bottom: 10px;
   }
   
-  .event-card .match-info .teams {
-    flex: 1;
+  .match-details .team-goals p {
+    font-size: 1em;
     font-weight: bold;
-    display: flex;
-    align-items: center;
-    gap: 5px;
+    margin-bottom: 5px;
   }
   
-  .event-card .match-info .datetime {
-    flex: 0 0 auto;
-    color: #555;
+  .match-details .key-events {
+    margin-bottom: 10px;
   }
   
-  .event-card .match-info .location {
-    flex: 0 0 auto;
-    color: #666;
+  .match-details .team-stats,
+  .match-details .game-stats,
+  .match-details .broadcast-info {
+    margin-bottom: 10px;
+  }
+  
+  .match-details .team-stats p,
+  .match-details .game-stats p,
+  .match-details .broadcast-info p {
+    margin: 5px 0;
     font-size: 0.9em;
+    color: #555; /* Less prominent, inspired by ha-teamtracker */
   }
   
-  /* Styles for carousel event cards (e.g., sidebar carousel) */
+  /* Carousel event cards (for home.html) */
   .carousel-event-card.expandable-card {
     width: 100%;
     border: 1px solid #ddd;
@@ -225,28 +288,7 @@
     position: relative;
   }
   
-  /* Shared match-details content styles */
-  .match-details .match-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-  }
-  
-  .match-details .team-stats,
-  .match-details .game-stats,
-  .match-details .key-events,
-  .match-details .broadcast-info {
-    margin-bottom: 10px;
-  }
-  
-  .match-details .team-stats p,
-  .match-details .game-stats p,
-  .match-details .broadcast-info p {
-    margin: 5px 0;
-    font-size: 0.95em;
-  }
-  
-  /* Carousel container and slide styles */
+  /* Carousel container and slide styles (for home.html) */
   .carousel-container {
     position: relative;
     flex: 1;
