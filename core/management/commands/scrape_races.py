@@ -1,4 +1,4 @@
-# horse_racing_scraper.py
+# core/management/commands/horse_racing_scraper.py
 
 from django.core.management.base import BaseCommand
 from bs4 import BeautifulSoup
@@ -79,8 +79,8 @@ class Command(BaseCommand):
                     continue
 
                 today = datetime.now().date()
-                seven_days_later = today + timedelta(days=7)
-                if today <= meeting_date <= seven_days_later:
+                three_days_later = today + timedelta(days=3)
+                if today <= meeting_date <= three_days_later:
                     self.stdout.write(f"Saving - URL: {meeting_url}, Date: {date_str}, Venue: {venue}")
                     meeting, created = RaceMeeting.objects.get_or_create(
                         url=meeting_url,
@@ -92,12 +92,12 @@ class Command(BaseCommand):
                         meeting.save()
                     meetings.append(meeting)
                 else:
-                    self.stdout.write(f"Skipping - URL: {meeting_url}, Date: {date_str} (outside 7-day window)")
+                    self.stdout.write(f"Skipping - URL: {meeting_url}, Date: {date_str} (outside 3-day window)")
         
         return meetings
 
     def scrape_race_details(self, meeting):
-        """Scrape race times and horses for a given meeting."""
+        """Scrape race times, horses, jockeys, odds, trainers, and owners for a given meeting."""
         driver = self.fetch_page(meeting.url)
         if not driver:
             return
@@ -133,8 +133,23 @@ class Command(BaseCommand):
                 horse_elems = horses_container.find_all('div', class_='horse')
                 for idx, horse_elem in enumerate(horse_elems, 1):
                     horse_name = horse_elem.find('a', class_='horse-name')
+                    jockey_elem = horse_elem.find('a', class_='toolTip', href=lambda href: href and '/jockey/' in href)
+                    odds_elem = horse_elem.find('span', class_='bkprice')
+                    trainer_elem = horse_elem.find('a', class_='toolTip', href=lambda href: href and '/trainer/' in href)
+                    owner_elem = horse_elem.find('a', href=lambda href: href and '/owner/' in href)
+
                     if horse_name:
-                        horses.append({"number": idx, "name": horse_name.text.strip()})
+                        horse_data = {
+                            "number": idx,
+                            "name": horse_name.text.strip(),
+                            "jockey": jockey_elem.text.strip() if jockey_elem else "Unknown",
+                            "odds": odds_elem.text.strip() if odds_elem else "N/A",
+                            "trainer": trainer_elem.text.strip() if trainer_elem else "Unknown",
+                            "owner": owner_elem.text.strip() if owner_elem else "Unknown"
+                        }
+                        horses.append(horse_data)
+                    else:
+                        self.stdout.write(self.style.WARNING(f"Missing horse name for horse {idx} in race at {race_time} in {meeting.venue}"))
             else:
                 self.stdout.write(self.style.WARNING(f"No horses found for race at {race_time} in {meeting.venue}"))
 
@@ -227,8 +242,8 @@ class Command(BaseCommand):
             return []
 
         today = datetime.now().date()
-        seven_days_later = today + timedelta(days=7)
-        self.stdout.write(f"Scraping meetings from {today} to {seven_days_later}")
+        three_days_later = today + timedelta(days=3)
+        self.stdout.write(f"Scraping meetings from {today} to {three_days_later}")
 
         past_meetings = RaceMeeting.objects.filter(date__lt=today)
         deleted_results = RaceResult.objects.filter(race__meeting__in=past_meetings).delete()[0]
@@ -243,7 +258,7 @@ class Command(BaseCommand):
 
         meetings = ireland_meetings + uk_meetings
         if not meetings:
-            self.stdout.write(self.style.WARNING("No meetings found within the next 7 days."))
+            self.stdout.write(self.style.WARNING("No meetings found within the next 3 days."))
         return meetings
 
     def handle(self, *args, **options):
@@ -251,7 +266,7 @@ class Command(BaseCommand):
         meetings = self.scrape_upcoming_meetings()
         
         if not meetings:
-            self.stdout.write(self.style.WARNING("No upcoming meetings found for the next 7 days."))
+            self.stdout.write(self.style.WARNING("No upcoming meetings found for the next 3 days."))
             return
 
         # Scrape race details and results for each meeting

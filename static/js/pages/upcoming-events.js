@@ -1,8 +1,10 @@
+// upcoming-events.js
+
 import { getCSRFToken } from './utils.js';
 import { fetchEvents as fetchFootballEvents, formatEventList as formatFootballList, formatEventTable as formatFootballTable } from './football-events.js';
 import { fetchEvents as fetchTennisEvents, formatEventList as formatTennisList, formatEventTable as formatTennisTable } from './tennis-events.js';
 import { fetchEvents as fetchGolfEvents, formatEventList as formatGolfList, fetchLeaderboard } from './golf-events.js';
-import { fetchEvents as fetchHorseRacingEvents, formatEventList as formatHorseRacingList } from './horse-racing-events.js';
+import { fetchMeetingList as fetchHorseRacingMeetings, fetchEvents as fetchHorseRacingEvents, formatEventList as formatHorseRacingList, formatMeetingList as formatHorseRacingMeetingList } from './horse-racing-events.js';
 
 const SPORT_CONFIG = {
   football: [
@@ -39,11 +41,12 @@ const SPORT_MODULES = {
   horse_racing: { fetch: fetchHorseRacingEvents, format: formatHorseRacingList }
 };
 
+// Use formatMeetingList for sidebar rendering
 const FORMATTERS = {
   football: formatFootballList,
   golf: formatGolfList,
   tennis: formatTennisList,
-  horse_racing: formatHorseRacingList
+  horse_racing: formatHorseRacingMeetingList
 };
 
 let globalEvents = {};
@@ -56,7 +59,7 @@ export async function getDynamicEvents() {
     if (module && sportConfigs.length > 0) {
       let allEvents = [];
       if (sportKey === "horse_racing") {
-        allEvents = await module.fetch();
+        allEvents = await module.fetch();  // fetchEvents returns detailed racecards for center feed and carousel
         console.log(`Horse Racing: Fetched ${allEvents.length} events`);
       } else {
         const today = new Date();
@@ -162,6 +165,20 @@ export function setupExpandableCards() {
   }
 }
 
+// New function to populate the center feed with detailed racecards
+async function populateCenterFeed(sport) {
+  if (sport !== 'horse_racing') return;  // Only handle horse racing for now
+
+  const centerFeed = document.querySelector('.center-feed');
+  if (!centerFeed) {
+    console.warn('Center feed container not found');
+    return;
+  }
+
+  const events = await fetchHorseRacingEvents();  // Fetch detailed racecards
+  centerFeed.innerHTML = events || '<p>No upcoming horse racing meetings available.</p>';
+}
+
 export async function getEventList(currentPath, target, activeSport = 'football') {
   const path = currentPath.toLowerCase();
   let title = "";
@@ -254,27 +271,14 @@ export async function getEventList(currentPath, target, activeSport = 'football'
       }
     } else if (path.includes("/sport/horse_racing/")) {
       title = "Upcoming Horse Racing Meetings";
-      description = "Here are the race meetings for the next 7 days:";
+      description = "Here are the race meetings for the next 3 days:";
       const horseRacingEvents = dynamicEvents.horse_racing || [];
-      const eventsByDate = horseRacingEvents.reduce((acc, event) => {
-        const dateKey = event.date;
-        if (!acc[dateKey]) acc[dateKey] = [];
-        acc[dateKey].push(event);
-        return acc;
-      }, {});
-      const sortedDates = Object.keys(eventsByDate).sort((a, b) => new Date(a) - new Date(b));
-      eventList = sortedDates.map(date => {
-        const dateEvents = eventsByDate[date];
-        const dateHeader = `<h4>${dateEvents[0].displayDate}</h4>`;
-        const eventItems = dateEvents.map(event => `
-          <p class="event-item" style="display: flex; justify-content: space-between; align-items: center;">
-            <span>${event.name}</span>
-            <span class="event-location">${event.venue}</span>
-          </p>
-        `).join("");
-        return `${dateHeader}<div class="event-list">${eventItems}</div>`;
-      }).join("");
-      eventList = horseRacingEvents.length ? `<div class="event-list">${eventList}</div>` : `<p>No upcoming horse racing meetings available.</p>`;
+      const horseRacingContent = await formatHorseRacingList(horseRacingEvents, "horse_racing", true);
+      eventList = horseRacingEvents.length ? `
+        <div class="racecard-feed">
+          ${horseRacingContent}
+        </div>
+      ` : `<p>No upcoming horse racing meetings available.</p>`;
     }
   }
 
@@ -581,6 +585,11 @@ export async function initCarousel() {
       eventList.innerHTML = await FORMATTERS[sport](events, sport, false) || `<p>No upcoming ${sport} events available.</p>`;
       setupExpandableCards();
     }
+  }
+
+  // Populate the center feed for horse racing
+  if (window.location.pathname.includes('/sport/horse_racing/')) {
+    await populateCenterFeed('horse_racing');
   }
 }
 

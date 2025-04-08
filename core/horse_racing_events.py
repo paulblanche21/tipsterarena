@@ -1,4 +1,5 @@
-# horse_racing_events.py
+# core/horse_racing_events.py
+
 from datetime import datetime, timedelta
 from core.models import RaceMeeting
 
@@ -25,9 +26,9 @@ def format_racecard_list(meetings):
 
         # List races
         for race in races:
-            # Format horses
+            # Format horses with jockeys, odds, trainers, and owners
             horses_list = "".join([
-                f"<li>{horse['number']}. {horse['name']}</li>"
+                f"<li>{horse['number']}. {horse['name']} (Jockey: {horse.get('jockey', 'Unknown')}, Odds: {horse.get('odds', 'N/A')}, Trainer: {horse.get('trainer', 'Unknown')}, Owner: {horse.get('owner', 'Unknown')})</li>"
                 for horse in race.horses
             ]) if race.horses else "<li>No horses available.</li>"
 
@@ -69,9 +70,9 @@ def format_racecard_list(meetings):
 def get_racecards():
     """Fetch and format racecards for upcoming meetings."""
     today = datetime.now().date()
-    seven_days_later = today + timedelta(days=7)
+    three_days_later = today + timedelta(days=3)
     meetings = RaceMeeting.objects.filter(
         date__gte=today,
-        date__lte=seven_days_later
+        date__lte=three_days_later
     ).order_by('date', 'venue')
     return format_racecard_list(meetings)
