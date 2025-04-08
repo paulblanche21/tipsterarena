@@ -119,8 +119,14 @@ export function formatEventList(events, sportKey, showLocation = false) {
     return `<p>No upcoming ${sportKey} fixtures available.</p>`;
   }
   const currentTime = new Date();
+  const sevenDaysFuture = new Date();
+  sevenDaysFuture.setDate(currentTime.getDate() + 7);
+
   const upcomingEvents = events
-    .filter(event => new Date(event.date) > currentTime || event.state === "in")
+    .filter(event => {
+      const eventDate = new Date(event.date);
+      return (eventDate > currentTime && eventDate <= sevenDaysFuture) || event.state === "in";
+    })
     .sort((a, b) => {
       if (a.state === "in" && b.state !== "in") return -1;
       if (a.state !== "in" && b.state === "in") return 1;
@@ -170,7 +176,7 @@ export function formatEventList(events, sportKey, showLocation = false) {
             <div class="match-stats">
               <div class="team-stats">
                 <p><strong>${event.homeTeam.name}:</strong> Form: ${event.homeTeam.form} | Record: ${event.homeTeam.record}</p>
-                <p><strong@${event.awayTeam.name}:</strong> Form: ${event.awayTeam.form} | Record: ${event.awayTeam.record}</p>
+                <p><strong>${event.awayTeam.name}:</strong> Form: ${event.awayTeam.form} | Record: ${event.awayTeam.record}</p>
               </div>
               <div class="game-stats">
                 <p>Possession: ${event.detailedStats.possession}</p>
@@ -275,7 +281,20 @@ export function formatEventTable(events) {
     return `<p class="no-events">No upcoming football fixtures available.</p>`;
   }
 
-  const sortedEvents = events.sort((a, b) => {
+  const currentTime = new Date();
+  const sevenDaysFuture = new Date();
+  sevenDaysFuture.setDate(currentTime.getDate() + 7);
+
+  const filteredEvents = events.filter(event => {
+    const eventDate = new Date(event.date);
+    return (eventDate > currentTime && eventDate <= sevenDaysFuture) || event.state === "in";
+  });
+
+  if (!filteredEvents.length) {
+    return `<p class="no-events">No upcoming football fixtures available.</p>`;
+  }
+
+  const sortedEvents = filteredEvents.sort((a, b) => {
     if (a.state === "in" && b.state !== "in") return -1;
     if (a.state !== "in" && b.state === "in") return 1;
     if (a.priority !== b.priority) return a.priority - b.priority;

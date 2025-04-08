@@ -33,7 +33,7 @@ export async function fetchEvents(data, config) {
   return events;
 }
 
-// Fetch detailed stats for a live match (still needed for live match details)
+// Fetch detailed stats for a live match
 export async function fetchMatchDetails(matchId) {
   const url = `https://site.api.espn.com/apis/site/v2/sports/tennis/atp/summary?event=${matchId}`;
   try {
@@ -51,7 +51,7 @@ export async function fetchMatchDetails(matchId) {
   }
 }
 
-// Format the center feed with cards
+// Format the center feed with cards (no tournament grouping, just render the cards)
 export async function formatEventTable(matches, tournamentName) {
   if (!matches || !Array.isArray(matches) || !matches.length) {
     console.log(`formatEventTable for ${tournamentName}: No matches available`);
@@ -60,7 +60,7 @@ export async function formatEventTable(matches, tournamentName) {
 
   let eventHtml = '<div class="tennis-feed">';
 
-  // Live Matches (with expandable details)
+  // Live Matches
   for (const match of matches.filter(m => m.state === "in")) {
     const matchId = match.id;
     const matchDetails = await fetchMatchDetails(matchId);
@@ -104,7 +104,7 @@ export async function formatEventTable(matches, tournamentName) {
             </div>
           </div>
           <div class="match-meta">
-            <span class="tournament">${match.tournamentName}, ${match.round}</span>
+            <span class="round">${match.round}</span>
             <span class="datetime">${match.displayDate} ${match.time}</span>
           </div>
         </div>
@@ -126,7 +126,7 @@ export async function formatEventTable(matches, tournamentName) {
             </div>
           </div>
           <div class="match-meta">
-            <span class="tournament">${match.tournamentName}, ${match.round}</span>
+            <span class="round">${match.round}</span>
             <span class="datetime">${match.displayDate} ${match.time}</span>
           </div>
         </div>
@@ -147,7 +147,7 @@ export async function formatEventTable(matches, tournamentName) {
             </div>
           </div>
           <div class="match-meta">
-            <span class="tournament">${match.tournamentName}, ${match.round}</span>
+            <span class="round">${match.round}</span>
             <span class="datetime">${match.displayDate}</span>
           </div>
         </div>
@@ -160,7 +160,7 @@ export async function formatEventTable(matches, tournamentName) {
   return eventHtml;
 }
 
-// Format the sidebar list
+// Format the sidebar list (unchanged)
 export function formatEventList(events, sportKey, showLocation = false) {
   if (!events || !events.length) {
     return `<p>No upcoming ${sportKey} tournaments available.</p>`;

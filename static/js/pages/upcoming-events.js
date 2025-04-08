@@ -62,8 +62,8 @@ export async function getDynamicEvents() {
         const today = new Date();
         const startDate = new Date();
         const endDate = new Date();
-        const daysToFetchPast = sportKey === "tennis" ? 7 : 7;
-        const daysToFetchFuture = sportKey === "tennis" ? 7 : 90;
+        const daysToFetchPast = 7; // Keep 7 days in the past for all sports
+        const daysToFetchFuture = 7; // Set to 7 days for all sports (previously 90 for football)
         startDate.setDate(today.getDate() - daysToFetchPast);
         endDate.setDate(today.getDate() + daysToFetchFuture);
         const startDateStr = startDate.toISOString().split('T')[0].replace(/-/g, '');
@@ -261,34 +261,19 @@ export async function getEventList(currentPath, target, activeSport = 'football'
         const sortedTournaments = Object.keys(matchesByTournament).sort();
         eventList = await Promise.all(sortedTournaments.map(async tournament => {
           const tournamentMatches = matchesByTournament[tournament];
-          const matchesByDate = tournamentMatches.reduce((acc, match) => {
-            const dateKey = match.date.split('T')[0];
-            if (!acc[dateKey]) acc[dateKey] = [];
-            acc[dateKey].push(match);
-            return acc;
-          }, {});
-          const sortedDates = Object.keys(matchesByDate).sort((a, b) => new Date(a) - new Date(b));
-          const dateItems = await Promise.all(sortedDates.map(async date => {
-            const dateMatches = matchesByDate[date] || [];
-            if (!dateMatches.length) {
-              return '';
-            }
-            const matchItems = await formatTennisTable(dateMatches, tournament);
-            return `
-              <h4>${dateMatches[0].displayDate}</h4>
-              <div class="event-list">
-                ${matchItems}
-              </div>
-            `;
-          }));
-          const dateItemsHtml = dateItems.filter(item => item).join("");
-          if (!dateItemsHtml) {
-            return '';
-          }
+          // Sort matches by date within the tournament
+          tournamentMatches.sort((a, b) => new Date(a.date) - new Date(b.date));
+          // Render all matches for this tournament
+          const matchItems = await formatTennisTable(tournamentMatches, tournament);
+          // Wrap the header and matches in the .tennis-feed container
           return `
-            <div class="tournament-group">
-              <p class="tournament-header">${tournament}</p>
-              ${dateItemsHtml}
+            <div class="tennis-feed">
+              <div class="tournament-group">
+                <p class="tournament-header"><span class="sport-icon">🎾</span> ${tournament}</p>
+                <div class="event-list">
+                  ${matchItems}
+                </div>
+              </div>
             </div>
           `;
         }));
