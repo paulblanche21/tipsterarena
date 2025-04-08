@@ -52,8 +52,8 @@ urlpatterns = [
     path('api/verify-tip/', views.VerifyTipView.as_view(), name='verify_tip'),
 
     # API routes for data retrieval
-    path('api/horse-racing-fixtures/', views.horse_racing_fixtures, name='horse_racing_fixtures'),  # Horse racing fixtures
-    path('api/race-meetings/', views.RaceMeetingList.as_view(), name='race-meetings'),  # REST API for race meetings
+    path('horse-racing/cards/', views.horse_racing_fixtures, name='horse_racing_fixtures'),  # Updated path
+    path('api/race-meetings/', views.RaceMeetingList.as_view(), name='race-meetings'), 
     path('api/trending-tips/', views.trending_tips_api, name='trending_tips_api'),  # Trending tips
     path('api/current-user/', views.current_user_api, name='current_user_api'),  # Current user info
 

@@ -238,13 +238,22 @@ class RaceMeeting(models.Model):
     class Meta:
         unique_together = ('date', 'venue')
 
-class RaceResult(models.Model):
-    meeting = models.ForeignKey(RaceMeeting, on_delete=models.CASCADE, related_name='results')
-    time = models.CharField(max_length=10)
-    name = models.CharField(max_length=200)
-    position = models.CharField(max_length=10)
-    horse = models.CharField(max_length=100)
-    jockey = models.CharField(max_length=100)
+class Race(models.Model):
+    meeting = models.ForeignKey(RaceMeeting, on_delete=models.CASCADE, related_name="races")
+    race_time = models.TimeField()
+    name = models.CharField(max_length=200, blank=True)
+    horses = models.JSONField()  # Store list of horses as JSON: [{"number": 1, "name": "Horse 1"}, ...]
 
     def __str__(self):
-        return f"{self.name} - {self.horse} (Position: {self.position})"
+        return f"{self.name} at {self.race_time} - {self.meeting.venue}"
+
+    class Meta:
+        unique_together = ('meeting', 'race_time')
+
+class RaceResult(models.Model):
+    race = models.ForeignKey(Race, on_delete=models.CASCADE, related_name="results", null=True)  # Temporarily nullable
+    winner = models.CharField(max_length=100, blank=True)
+    placed_horses = models.JSONField(blank=True, null=True)  # e.g., [{"position": 2, "name": "Horse 2"}, ...]
+
+    def __str__(self):
+        return f"Result for {self.race} - Winner: {self.winner}"
