@@ -1,6 +1,6 @@
 /* sidebar.css */
 
-/* Upcoming Events Card Styling */
+/* Upcoming Events Card Styling (Shared Base Styles) */
 .upcoming-events-card {
     padding: 10px;
     background-color: var(--secondary-bg);
@@ -63,6 +63,54 @@
     flex-direction: column;
     justify-content: space-between;
     overflow-y: auto;
+}
+
+/* Sport-Specific Styling for Non-Football Sports (Tennis, Golf, Horse Racing) */
+.upcoming-events-tennis,
+.upcoming-events-golf,
+.upcoming-events-horse_racing {
+    min-height: 250px; /* Reduced min-height for better flexibility */
+    height: auto; /* Allow the card to grow with content */
+}
+
+.upcoming-events-tennis .league-header,
+.upcoming-events-golf .league-header,
+.upcoming-events-horse_racing .league-header {
+    font-size: 15px; /* Slightly smaller for hierarchy */
+    margin: 0 0 10px; /* Adjusted margin */
+    padding: 8px 12px; /* Slightly less padding */
+}
+
+.upcoming-events-tennis .event-item,
+.upcoming-events-golf .event-item,
+.upcoming-events-horse_racing .event-item {
+    padding: 10px 12px; /* Added padding for breathing room */
+    margin-bottom: 12px; /* Increased spacing between events */
+    background-color: #ffffff; /* White background for contrast */
+    border-radius: 6px; /* Rounded corners for a softer look */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* Subtle shadow for depth */
+    line-height: 1.5;
+    transition: background-color 0.2s ease;
+}
+
+.upcoming-events-tennis .event-item:hover,
+.upcoming-events-golf .event-item:hover,
+.upcoming-events-horse_racing .event-item:hover {
+    background-color: #f8f9fa; /* Light hover effect */
+}
+
+.upcoming-events-tennis .show-more,
+.upcoming-events-golf .show-more,
+.upcoming-events-horse_racing .show-more {
+    margin-top: 12px; /* Slightly more spacing above */
+    padding: 8px 0; /* Increased padding for better click area */
+    transition: color 0.2s ease;
+}
+
+.upcoming-events-tennis .show-more:hover,
+.upcoming-events-golf .show-more:hover,
+.upcoming-events-horse_racing .show-more:hover {
+    color: #2a6db0; /* Darker blue on hover */
 }
 
 .sidebar-message-content {

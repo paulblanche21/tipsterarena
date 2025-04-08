@@ -62,8 +62,8 @@ export async function getDynamicEvents() {
         const today = new Date();
         const startDate = new Date();
         const endDate = new Date();
-        const daysToFetchPast = sportKey === "tennis" ? 7 : 7; // 7 days in the past for tennis, football
-        const daysToFetchFuture = sportKey === "tennis" ? 7 : 90; // 7 days in the future for tennis, 90 for others
+        const daysToFetchPast = sportKey === "tennis" ? 7 : 7;
+        const daysToFetchFuture = sportKey === "tennis" ? 7 : 90;
         startDate.setDate(today.getDate() - daysToFetchPast);
         endDate.setDate(today.getDate() + daysToFetchFuture);
         const startDateStr = startDate.toISOString().split('T')[0].replace(/-/g, '');
@@ -171,8 +171,8 @@ export async function getEventList(currentPath, target, activeSport = 'football'
   const currentTime = new Date();
   const sevenDaysAgo = new Date();
   const sevenDaysFuture = new Date();
-  sevenDaysAgo.setDate(currentTime.getDate() - 7); // For tennis: 7 days historical window
-  sevenDaysFuture.setDate(currentTime.getDate() + 7); // For tennis: 7 days into the future
+  sevenDaysAgo.setDate(currentTime.getDate() - 7);
+  sevenDaysFuture.setDate(currentTime.getDate() + 7);
 
   if (target === "upcoming-events") {
     if (path === "/" || path === "/home/" || path === "/explore/") {
@@ -206,7 +206,7 @@ export async function getEventList(currentPath, target, activeSport = 'football'
     } else if (path.includes("/sport/football/")) {
       title = "Upcoming Football Fixtures";
       description = "Here are the latest football fixtures in Tipster Arena:";
-      const events = (dynamicEvents.football || []).filter(event => new Date(event.date) >= currentTime); // Only upcoming matches
+      const events = (dynamicEvents.football || []).filter(event => new Date(event.date) >= currentTime);
       eventList = events.length ? formatFootballTable(events) : `<p>No upcoming football fixtures available.</p>`;
     } else if (path.includes("/sport/golf/")) {
       title = "PGA Tour Leaderboard";
@@ -248,7 +248,7 @@ export async function getEventList(currentPath, target, activeSport = 'football'
       description = "Here are the latest matches for ATP tournaments (past 7 days to next 7 days):";
       const tennisMatches = (dynamicEvents.tennis || []).filter(match => 
         new Date(match.date) >= sevenDaysAgo && new Date(match.date) <= sevenDaysFuture
-      ); // Matches from 7 days ago to 7 days in the future
+      );
       if (!tennisMatches.length) {
         eventList = `<p>No recent or upcoming tennis matches available.</p>`;
       } else {
@@ -594,6 +594,10 @@ function showSlide(container, index) {
 }
 
 export async function initCarousel() {
+  // First, fetch all dynamic events to ensure globalEvents is populated
+  const dynamicEvents = await getDynamicEvents();
+
+  // Populate carousel containers (for home.html)
   const carouselContainers = document.querySelectorAll('.carousel-container');
   for (const container of carouselContainers) {
     const slides = container.querySelectorAll('.carousel-slide');
@@ -620,7 +624,7 @@ export async function initCarousel() {
   for (const eventList of eventLists) {
     const sport = eventList.id.replace('-events', '');
     if (sport && FORMATTERS[sport] && !eventList.closest('.carousel-container')) {
-      const events = globalEvents[sport] || [];
+      const events = dynamicEvents[sport] || [];
       eventList.innerHTML = await FORMATTERS[sport](events, sport, false) || `<p>No upcoming ${sport} events available.</p>`;
       setupExpandableCards();
     }

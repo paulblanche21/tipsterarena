@@ -265,10 +265,9 @@
         </div>
     </div>
 {% endblock %}
-
 {% block upcoming_events %}
 <!-- Sidebar widget for sport-specific upcoming events -->
-<div class="sidebar-card upcoming-events-card" data-card="upcoming-events" style="background-color: white;">
+<div class="sidebar-card upcoming-events-card upcoming-events-{{ sport }}" data-card="upcoming-events" style="background-color: white;">
     <h3>
         {% if sport == 'horse_racing' %}
             Upcoming Meetings
