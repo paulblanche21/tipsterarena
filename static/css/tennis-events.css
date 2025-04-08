@@ -95,6 +95,7 @@
   gap: 8px;
   pointer-events: none;
   flex-wrap: wrap;
+  color: var(--primary-bg);
 }
 
 .tennis-card .match-info > * {

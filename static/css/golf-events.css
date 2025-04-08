@@ -4,7 +4,8 @@
 .events-popup {
     background-color: transparent; /* Let the .golf-feed background take over */
     padding: 0; /* Remove padding, as .golf-feed will handle it */
-    margin: 0; /* Remove margin to fit snugly within .content */
+    margin: 8px; /* Remove margin to fit snugly within .content */
+    
   }
   
   /* Golf feed container */
