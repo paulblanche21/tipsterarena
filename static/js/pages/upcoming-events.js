@@ -62,8 +62,8 @@ export async function getDynamicEvents() {
         const today = new Date();
         const startDate = new Date();
         const endDate = new Date();
-        const daysToFetchPast = 7; // Keep 7 days in the past for all sports
-        const daysToFetchFuture = 7; // Set to 7 days for all sports (previously 90 for football)
+        const daysToFetchPast = 7;
+        const daysToFetchFuture = 7;
         startDate.setDate(today.getDate() - daysToFetchPast);
         endDate.setDate(today.getDate() + daysToFetchFuture);
         const startDateStr = startDate.toISOString().split('T')[0].replace(/-/g, '');
@@ -209,40 +209,15 @@ export async function getEventList(currentPath, target, activeSport = 'football'
       const events = (dynamicEvents.football || []).filter(event => new Date(event.date) >= currentTime);
       eventList = events.length ? formatFootballTable(events) : `<p>No upcoming football fixtures available.</p>`;
     } else if (path.includes("/sport/golf/")) {
-      title = "PGA Tour Leaderboard";
-      description = "Leaderboard for the most recent or in-progress PGA Tour event:";
-      const pgaEvents = (dynamicEvents.golf || []).filter(event => event.league === "PGA Tour");
-      const currentEvent = pgaEvents.find(event => event.state === "in") || pgaEvents.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
-      if (currentEvent) {
-        const leaderboard = await fetchLeaderboard(currentEvent.id, "golf", "pga");
-        const venue = currentEvent.venue.fullName || "TBD";
-        eventList = leaderboard.length ? `
-          <div class="in-progress-event">
-            <h3>${currentEvent.name} - ${currentEvent.displayDate}</h3>
-            <p class="event-location">${venue}</p>
-            <table class="leaderboard-table">
-              <thead>
-                <tr>
-                  <th>Position</th>
-                  <th>Player</th>
-                  <th>Score</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${leaderboard.map(player => `
-                  <tr>
-                    <td>${player.position}</td>
-                    <td>${player.playerName}</td>
-                    <td>${player.score}</td>
-                  </tr>
-                `).join("")}
-              </tbody>
-            </table>
-          </div>
-        ` : `<p>No leaderboard data available for ${currentEvent.name}.</p>`;
-      } else {
-        eventList = `<p>No current or recent PGA Tour events available.</p>`;
-      }
+      title = "PGA Tour Events";
+      description = "Here are the latest PGA Tour events (in-progress, recently completed, or upcoming):";
+      const golfEvents = dynamicEvents.golf || [];
+      const golfContent = await formatGolfList(golfEvents, "all", true);
+      eventList = `
+        <div class="golf-feed">
+          ${golfContent}
+        </div>
+      `;
     } else if (path.includes("/sport/tennis/")) {
       title = "ATP Tournament Matches";
       description = "Here are the latest matches for ATP tournaments (past 7 days to next 7 days):";
@@ -261,11 +236,8 @@ export async function getEventList(currentPath, target, activeSport = 'football'
         const sortedTournaments = Object.keys(matchesByTournament).sort();
         eventList = await Promise.all(sortedTournaments.map(async tournament => {
           const tournamentMatches = matchesByTournament[tournament];
-          // Sort matches by date within the tournament
           tournamentMatches.sort((a, b) => new Date(a.date) - new Date(b.date));
-          // Render all matches for this tournament
           const matchItems = await formatTennisTable(tournamentMatches, tournament);
-          // Wrap the header and matches in the .tennis-feed container
           return `
             <div class="tennis-feed">
               <div class="tournament-group">
@@ -579,10 +551,7 @@ function showSlide(container, index) {
 }
 
 export async function initCarousel() {
-  // First, fetch all dynamic events to ensure globalEvents is populated
   const dynamicEvents = await getDynamicEvents();
-
-  // Populate carousel containers (for home.html)
   const carouselContainers = document.querySelectorAll('.carousel-container');
   for (const container of carouselContainers) {
     const slides = container.querySelectorAll('.carousel-slide');
@@ -604,7 +573,6 @@ export async function initCarousel() {
     }
   }
 
-  // Fallback: Populate event lists that aren't in a carousel (e.g., sport.html)
   const eventLists = document.querySelectorAll('.event-list[id$="-events"]');
   for (const eventList of eventLists) {
     const sport = eventList.id.replace('-events', '');

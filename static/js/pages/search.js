@@ -113,7 +113,7 @@ export function setupSearch() {
   });
 
   document.addEventListener('click', (e) => {
-    const eventCard = e.target.closest('.event-card') || e.target.closest('.tennis-card'); // Recognize both football and tennis cards
+    const eventCard = e.target.closest('.event-card') || e.target.closest('.tennis-card') || e.target.closest('.golf-card');
     console.log('Click event target:', e.target);
     console.log('Closest event-card:', eventCard);
     if (!searchBar.contains(e.target) && !searchResults.contains(e.target) && !eventCard) {

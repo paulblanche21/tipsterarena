@@ -72,43 +72,50 @@ export async function fetchEvents(data, config) {
   });
 
   const detailedEvents = await Promise.all(events.map(async event => {
-    if (event.state === "in") {
-      try {
-        const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${config.league}/summary?event=${event.id}`);
-        if (!response.ok) throw new Error(`Failed to fetch summary for event ${event.id}`);
-        const summaryData = await response.json();
+    try {
+      const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${config.league}/summary?event=${event.id}`);
+      if (!response.ok) throw new Error(`Failed to fetch summary for event ${event.id}`);
+      const summaryData = await response.json();
 
-        const plays = summaryData.plays || [];
-        const keyEvents = summaryData.keyEvents || [];
-        const goalPlays = plays.filter(play => play.type.text.toLowerCase().includes("goal"));
-        const goalKeyEvents = keyEvents.filter(event => event.type?.text.toLowerCase().includes("goal"));
+      const plays = summaryData.plays || [];
+      const keyEvents = summaryData.keyEvents || [];
+      const goalPlays = plays.filter(play => play.type.text.toLowerCase().includes("goal"));
+      const goalKeyEvents = keyEvents.filter(event => event.type?.text.toLowerCase().includes("goal"));
 
-        const goals = [...goalPlays, ...goalKeyEvents].map(event => ({
-          scorer: event.participants?.[0]?.athlete?.displayName || event.scorer || "Unknown",
-          team: event.team?.displayName || event.team || "Unknown",
-          time: event.clock?.displayValue || event.time || "N/A",
-          assist: event.participants?.[1]?.athlete?.displayName || event.assist || "Unassisted",
-        }));
+      const goals = [...goalPlays, ...goalKeyEvents].map(event => ({
+        scorer: event.participants?.[0]?.athlete?.displayName || event.scorer || "Unknown",
+        team: event.team?.displayName || event.team || "Unknown",
+        time: event.clock?.displayValue || event.time || "N/A",
+        assist: event.participants?.[1]?.athlete?.displayName || event.assist || "Unassisted",
+      }));
 
-        const detailedStats = {
-          goals: goals,
-          possession: summaryData.header?.competitions?.[0]?.possession?.text || event.homeTeam.stats.possession + " - " + event.awayTeam.stats.possession,
-          shots: {
-            home: summaryData.boxscore?.teams?.[0]?.statistics?.find(stat => stat.name === "shots")?.displayValue || event.homeTeam.stats.shots,
-            away: summaryData.boxscore?.teams?.[1]?.statistics?.find(stat => stat.name === "shots")?.displayValue || event.awayTeam.stats.shots,
-          },
-        };
+      // Extract odds from summaryData
+      const oddsData = summaryData.header?.competitions?.[0]?.odds?.[0] || {};
+      const odds = {
+        homeOdds: oddsData.homeTeamOdds?.moneyLine || "N/A",
+        awayOdds: oddsData.awayTeamOdds?.moneyLine || "N/A",
+        drawOdds: oddsData.drawOdds?.moneyLine || "N/A",
+        provider: oddsData.provider?.name || "Unknown Provider",
+      };
 
-        return {
-          ...event,
-          detailedStats,
-        };
-      } catch (error) {
-        console.error(`Error fetching detailed stats for ${event.name}:`, error);
-        return event;
-      }
+      const detailedStats = {
+        goals: goals,
+        possession: summaryData.header?.competitions?.[0]?.possession?.text || event.homeTeam.stats.possession + " - " + event.awayTeam.stats.possession,
+        shots: {
+          home: summaryData.boxscore?.teams?.[0]?.statistics?.find(stat => stat.name === "shots")?.displayValue || event.homeTeam.stats.shots,
+          away: summaryData.boxscore?.teams?.[1]?.statistics?.find(stat => stat.name === "shots")?.displayValue || event.awayTeam.stats.shots,
+        },
+      };
+
+      return {
+        ...event,
+        odds, // Add odds to the event object
+        detailedStats,
+      };
+    } catch (error) {
+      console.error(`Error fetching detailed stats for ${event.name}:`, error);
+      return event;
     }
-    return event;
   }));
 
   return detailedEvents;
@@ -162,6 +169,16 @@ export function formatEventList(events, sportKey, showLocation = false) {
         event.state === "post" ? `${event.homeTeam.score} - ${event.awayTeam.score} (${event.statusDetail})` :
         `${event.displayDate} ${event.time}`;
 
+      // Add odds display for all match states
+      const oddsContent = event.odds ? `
+        <div class="betting-odds">
+          <p><strong>Betting Odds (${event.odds.provider}):</strong></p>
+          <p>${event.homeTeam.name}: ${event.odds.homeOdds}</p>
+          <p>${event.awayTeam.name}: ${event.odds.awayOdds}</p>
+          <p>Draw: ${event.odds.drawOdds}</p>
+        </div>
+      ` : "<p>Betting odds not available.</p>";
+
       let detailsContent = '';
       if (event.state === "in" && event.detailedStats) {
         const goalsList = event.detailedStats.goals.length ?
@@ -190,6 +207,7 @@ export function formatEventList(events, sportKey, showLocation = false) {
               <div class="broadcast-info">
                 <p>Broadcast: ${event.broadcast}</p>
               </div>
+              ${oddsContent}
             </div>
           </div>
         `;
@@ -229,6 +247,7 @@ export function formatEventList(events, sportKey, showLocation = false) {
               <div class="broadcast-info">
                 <p>Broadcast: ${event.broadcast}</p>
               </div>
+              ${oddsContent}
             </div>
           </div>
         `;
@@ -247,6 +266,7 @@ export function formatEventList(events, sportKey, showLocation = false) {
               <div class="broadcast-info">
                 <p>Broadcast: ${event.broadcast}</p>
               </div>
+              ${oddsContent}
             </div>
           </div>
         `;
@@ -327,6 +347,16 @@ export function formatEventTable(events) {
         event.state === "post" ? `${event.homeTeam.score} vs ${event.awayTeam.score}` :
         `${event.displayDate} ${event.time}`;
 
+      // Add odds display for all match states
+      const oddsContent = event.odds ? `
+        <div class="betting-odds">
+          <p><strong>Betting Odds (${event.odds.provider}):</strong></p>
+          <p>${event.homeTeam.name}: ${event.odds.homeOdds}</p>
+          <p>${event.awayTeam.name}: ${event.odds.awayOdds}</p>
+          <p>Draw: ${event.odds.drawOdds}</p>
+        </div>
+      ` : "<p>Betting odds not available.</p>";
+
       let detailsContent = '';
       if (event.state === "in" && event.detailedStats) {
         // Separate goals by team
@@ -373,6 +403,7 @@ export function formatEventTable(events) {
               <div class="broadcast-info">
                 <p>Broadcast: ${event.broadcast}</p>
               </div>
+              ${oddsContent}
             </div>
           </div>
         `;
@@ -412,6 +443,7 @@ export function formatEventTable(events) {
               <div class="broadcast-info">
                 <p>Broadcast: ${event.broadcast}</p>
               </div>
+              ${oddsContent}
             </div>
           </div>
         `;
@@ -430,6 +462,7 @@ export function formatEventTable(events) {
               <div class="broadcast-info">
                 <p>Broadcast: ${event.broadcast}</p>
               </div>
+              ${oddsContent}
             </div>
           </div>
         `;

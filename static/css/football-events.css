@@ -134,6 +134,7 @@
     font-weight: bold;
     text-align: center;
     flex-wrap: wrap;
+    color: #001f3f; /* Dark blue for team names */
   }
   
   .event-card .match-info .team-name {
@@ -159,6 +160,7 @@
     margin-top: 5px;
     font-size: 0.85em; /* Smaller font for date and venue */
     color: #666;
+    gap:10px;
   }
   
   .event-card .match-meta .datetime {

@@ -59,9 +59,10 @@ body {
 .content {
     max-width: 700px;  /* Constrain content width for readability (increased from 650px) */
     margin: 0 auto;    /* Center the content horizontally */
-    color: #001f3f;    /* Dark text for readability on white sections */
     min-height: 100vh; /* Ensure content area spans full height */
     box-sizing: border-box;  /* Include padding/borders in dimensions */
+    background-attachment: var(--primary-bg);
+    color: #ffffff;  /* White text for contrast on dark background */
 }
 
 /* Adjust text colors for lists and links within content areas */
