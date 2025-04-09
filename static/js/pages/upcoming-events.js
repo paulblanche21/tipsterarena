@@ -60,7 +60,7 @@ export async function getDynamicEvents() {
       let allEvents = [];
       if (sportKey === "horse_racing") {
         allEvents = await module.fetch();  // fetchEvents returns detailed racecards for center feed and carousel
-        console.log(`Horse Racing: Fetched ${allEvents.length} events`);
+        console.log(`Horse Racing: Fetched ${allEvents.length} meetings`, allEvents);
       } else {
         const today = new Date();
         const startDate = new Date();
@@ -176,7 +176,8 @@ async function populateCenterFeed(sport) {
   }
 
   const events = await fetchHorseRacingEvents();  // Fetch detailed racecards
-  centerFeed.innerHTML = events || '<p>No upcoming horse racing meetings available.</p>';
+  console.log('Populating center feed with events:', events); // Debug
+  centerFeed.innerHTML = await formatHorseRacingList(events, 'horse_racing') || '<p>No upcoming horse racing meetings available.</p>';
 }
 
 export async function getEventList(currentPath, target, activeSport = 'football') {

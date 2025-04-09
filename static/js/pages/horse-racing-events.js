@@ -1,6 +1,6 @@
 // horse-racing-events.js
 async function fetchEvents() {
-  const url = '/horse-racing/cards-json/';  // New JSON endpoint
+  const url = '/horse-racing/cards-json/';  // JSON endpoint for center feed
   try {
     const response = await fetch(url);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -13,15 +13,15 @@ async function fetchEvents() {
 }
 
 async function fetchMeetingList() {
-  const url = '/horse-racing/meetings/';  // Keep this for sidebar if still needed
+  const url = '/horse-racing/cards-json/';  // Use same JSON endpoint for sidebar
   try {
     const response = await fetch(url);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    const data = await response.text();  // Still HTML for sidebar
-    return data;
+    const data = await response.json();  // Parse as JSON
+    return data;  // Array of meeting objects
   } catch (error) {
     console.error('Error fetching horse racing meeting list:', error);
-    return '';
+    return [];
   }
 }
 
@@ -76,10 +76,19 @@ async function formatEventList(events, sportKey, showLocation = false) {
 }
 
 async function formatMeetingList(events, sportKey) {
-  if (!events) {
+  if (!events || !events.length) {
     return `<p>No upcoming ${sportKey} meetings available.</p>`;
   }
-  return events;  // Still HTML for sidebar
+  let meeting_html = '<ul class="meeting-list">';
+  for (const meeting of events) {
+    meeting_html += `
+      <li>
+        <span class="meeting-item">${meeting.venue} - ${new Date(meeting.date).toLocaleDateString('en-US', { weekday: 'short', day: '2-digit', month: 'short' })}</span>
+      </li>
+    `;
+  }
+  meeting_html += '</ul>';
+  return meeting_html;
 }
 
 export { fetchMeetingList, fetchEvents, formatEventList, formatMeetingList };
