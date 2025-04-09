@@ -19,6 +19,7 @@ from rest_framework.response import Response
 from rest_framework import generics, status
 from rest_framework.serializers import ModelSerializer
 from datetime import datetime
+from .horse_racing_events import get_racecards_json
 import json
 from django.template.loader import render_to_string
 from django.utils import timezone
@@ -904,3 +905,9 @@ def search(request):
         'users': user_results,
         'tips': tip_results,
     })
+
+# New view for JSON racecards
+def racecards_json_view(request):
+    """Return JSON data for horse racing racecards."""
+    data = get_racecards_json()
+    return JsonResponse(data, safe=False)  # safe=False allows non-dict data (list)

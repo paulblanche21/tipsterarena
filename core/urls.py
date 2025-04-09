@@ -56,6 +56,7 @@ urlpatterns = [
     path('api/race-meetings/', views.RaceMeetingList.as_view(), name='race-meetings'), 
     path('api/trending-tips/', views.trending_tips_api, name='trending_tips_api'),  # Trending tips
     path('api/current-user/', views.current_user_api, name='current_user_api'),  # Current user info
+    path('horse-racing/cards-json/', views.racecards_json_view, name='racecards_json'),
 
     # CSP reporting route
     path('csp-report/', views.csp_report, name='csp_report'),  # Endpoint for CSP violation reports
