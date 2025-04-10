@@ -1,4 +1,3 @@
-// search.js
 function debounce(func, wait) {
   let timeout;
   return function (...args) {
@@ -112,29 +111,30 @@ export function setupSearch() {
     performSearch(query);
   });
 
-  // Updated click event listener for the document
   document.addEventListener('click', (e) => {
     const eventCard = e.target.closest('.event-card') || 
                      e.target.closest('.tennis-card') || 
                      e.target.closest('.golf-card') || 
                      e.target.closest('.horse-racing-card');
+    const tipAction = e.target.closest('.tip-action'); // New check for tip actions
     
     console.log('Click event target:', e.target);
     console.log('Closest card:', eventCard ? eventCard.className : 'None');
+    console.log('Closest tip action:', tipAction ? tipAction.className : 'None');
     
-    if (!searchBar.contains(e.target) && !searchResults.contains(e.target) && !eventCard) {
-      console.log('Click outside search bar, results, and cards, hiding results');
+    if (!searchBar.contains(e.target) && !searchResults.contains(e.target) && !eventCard && !tipAction) {
+      console.log('Click outside search bar, results, cards, and tip actions, hiding results');
       searchResults.style.display = 'none';
     } else {
-      console.log('Click inside search bar, results, or card, keeping results visible');
+      console.log('Click inside search bar, results, card, or tip action, keeping results visible');
     }
   });
-  // Add event delegation for expandable cards to ensure they toggle correctly
+
+  // Add event delegation for expandable cards
   document.addEventListener('click', (e) => {
     const card = e.target.closest('.event-card, .tennis-card, .golf-card, .horse-racing-card');
     if (card) {
       console.log('Expandable card clicked:', card.className);
-      // Toggle the expanded state (assuming the card has a class or attribute to track this)
       const isExpanded = card.classList.contains('expanded');
       if (isExpanded) {
         card.classList.remove('expanded');
@@ -143,11 +143,9 @@ export function setupSearch() {
         card.classList.add('expanded');
         console.log('Card expanded');
       }
-      // Stop propagation to prevent the document click handler from hiding the search results
       e.stopPropagation();
     }
   });
-
 
   searchBar.addEventListener('focus', () => {
     if (searchBar.value.trim()) {

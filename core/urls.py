@@ -47,6 +47,7 @@ urlpatterns = [
     path('api/tip/<int:tip_id>/comments/', views.get_tip_comments, name='get_tip_comments'),  # Get comments for a tip
     path('api/like-comment/', views.like_comment, name='like_comment'),  # Like a comment
     path('api/share-comment/', views.share_comment, name='share_comment'),  # Share a comment
+    path('api/tip/<int:tip_id>/', views.tip_detail, name='tip_detail'),  # New endpoint for tip details
     path('toggle-bookmark/', views.toggle_bookmark, name='toggle_bookmark'),  # Toggle bookmark on a tip
     path('send-message/', views.send_message, name='send_message'),  # Send a message
     path('api/verify-tip/', views.VerifyTipView.as_view(), name='verify_tip'),
@@ -65,8 +66,3 @@ urlpatterns = [
 # Serve media files in development mode
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)  # Serve media files when DEBUG is True
-
-
-def debug_verify_tip(request):
-    print("URL routing hit for /api/verify-tip/!")
-    return views.VerifyTipView.as_view()(request)
