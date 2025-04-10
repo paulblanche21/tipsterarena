@@ -1,15 +1,15 @@
-# core/horse_racing_events.py
 from datetime import datetime, timedelta
 from core.models import RaceMeeting
 from django.http import JsonResponse
 
 def get_racecards_json():
-    """Fetch racecards as JSON for upcoming meetings."""
+    """Fetch racecards as JSON for past and upcoming meetings."""
     today = datetime.now().date()
+    yesterday = today - timedelta(days=1)  # Include yesterday
     three_days_later = today + timedelta(days=3)
     meetings = RaceMeeting.objects.filter(
-        date__gte=today,
-        date__lte=three_days_later
+        date__gte=yesterday,  # From yesterday
+        date__lte=three_days_later  # To 3 days ahead
     ).order_by('date', 'venue')
     
     meetings_data = [
@@ -30,4 +30,3 @@ def get_racecards_json():
         } for meeting in meetings
     ]
     return meetings_data
-

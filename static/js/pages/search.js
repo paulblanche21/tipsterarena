@@ -112,17 +112,42 @@ export function setupSearch() {
     performSearch(query);
   });
 
+  // Updated click event listener for the document
   document.addEventListener('click', (e) => {
-    const eventCard = e.target.closest('.event-card') || e.target.closest('.tennis-card') || e.target.closest('.golf-card')|| e.target.closest('.horse-racing-card');
+    const eventCard = e.target.closest('.event-card') || 
+                     e.target.closest('.tennis-card') || 
+                     e.target.closest('.golf-card') || 
+                     e.target.closest('.horse-racing-card');
+    
     console.log('Click event target:', e.target);
-    console.log('Closest event-card:', eventCard);
+    console.log('Closest card:', eventCard ? eventCard.className : 'None');
+    
     if (!searchBar.contains(e.target) && !searchResults.contains(e.target) && !eventCard) {
-      console.log('Click outside search bar and event card, hiding results');
+      console.log('Click outside search bar, results, and cards, hiding results');
       searchResults.style.display = 'none';
     } else {
-      console.log('Click inside search bar, results, or event card, allowing event to propagate');
+      console.log('Click inside search bar, results, or card, keeping results visible');
     }
   });
+  // Add event delegation for expandable cards to ensure they toggle correctly
+  document.addEventListener('click', (e) => {
+    const card = e.target.closest('.event-card, .tennis-card, .golf-card, .horse-racing-card');
+    if (card) {
+      console.log('Expandable card clicked:', card.className);
+      // Toggle the expanded state (assuming the card has a class or attribute to track this)
+      const isExpanded = card.classList.contains('expanded');
+      if (isExpanded) {
+        card.classList.remove('expanded');
+        console.log('Card collapsed');
+      } else {
+        card.classList.add('expanded');
+        console.log('Card expanded');
+      }
+      // Stop propagation to prevent the document click handler from hiding the search results
+      e.stopPropagation();
+    }
+  });
+
 
   searchBar.addEventListener('focus', () => {
     if (searchBar.value.trim()) {
