@@ -19,7 +19,6 @@ from rest_framework.response import Response
 from rest_framework import generics, status
 from rest_framework.serializers import ModelSerializer
 from datetime import datetime
-from .horse_racing_events import get_racecards_json
 import json
 from django.template.loader import render_to_string
 from django.utils import timezone
@@ -697,6 +696,7 @@ def post_tip(request):
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
     return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
 
+
 @method_decorator(csrf_exempt, name='dispatch')
 class VerifyTipView(APIView):
     authentication_classes = [TokenAuthentication]
@@ -741,7 +741,7 @@ class VerifyTipView(APIView):
             return Response({'success': False, 'error': 'Tip not found'}, status=status.HTTP_404_NOT_FOUND)
         except ValidationError as e:
             return Response({'success': False, 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
+        
 # Serializer for RaceMeeting model
 class RaceMeetingSerializer(ModelSerializer):
     class Meta:
@@ -800,7 +800,7 @@ def trending_tips_api(request):
 
     return JsonResponse({'trending_tips': tips_data})
 
-# API view for current user info (Updated)
+# API view for current user info
 @login_required
 def current_user_api(request):
     user = request.user
@@ -816,28 +816,8 @@ def current_user_api(request):
         'success': True,
         'avatar_url': avatar_url,
         'handle': handle,
-        'username': user.username,
-        'is_admin': user.is_staff or user.is_superuser  # Added is_admin field
+        'username': user.username
     })
-
-# New API view to fetch tip details
-@login_required
-def tip_detail(request, tip_id):
-    try:
-        tip = Tip.objects.get(id=tip_id)
-        return JsonResponse({
-            'success': True,
-            'tip': {
-                'id': tip.id,
-                'status': tip.status,
-                'odds': tip.odds,
-                'bet_type': tip.bet_type,
-                'each_way': tip.each_way,
-                'confidence': tip.confidence
-            }
-        })
-    except Tip.DoesNotExist:
-        return JsonResponse({'success': False, 'error': 'Tip not found'}, status=404)
 
 # View to handle CSP violation reports
 @csrf_exempt
@@ -924,9 +904,3 @@ def search(request):
         'users': user_results,
         'tips': tip_results,
     })
-
-# New view for JSON racecards
-def racecards_json_view(request):
-    """Return JSON data for horse racing racecards."""
-    data = get_racecards_json()
-    return JsonResponse(data, safe=False)  # safe=False allows non-dict data (list)

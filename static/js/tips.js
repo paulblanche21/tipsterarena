@@ -1,9 +1,7 @@
 import { getCSRFToken } from './pages/utils.js';
 import { applyFormatting, showGifModal } from './pages/post.js';
 
-// Global user data to avoid scope issues
-let currentUserData = { avatarUrl: window.default_avatar_url, handle: window.currentUser || 'You', isAdmin: false };
-
+// Move fetchComments to top level
 function fetchComments(tipId, list, callback) {
     console.log(`Fetching comments for tipId: ${tipId}`);
     fetch(`/api/tip/${tipId}/comments/`, {
@@ -85,7 +83,7 @@ function setupTipInteractions() {
         tip.addEventListener('click', handleTipClick);
     });
 
-    // Fetch user data once
+    let currentUserData = { avatarUrl: window.default_avatar_url, handle: window.currentUser || 'You' };
     fetch('/api/current-user/', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
@@ -96,10 +94,8 @@ function setupTipInteractions() {
         if (data.success) {
             currentUserData = {
                 avatarUrl: data.avatar_url || window.default_avatar_url,
-                handle: data.handle || window.currentUser || 'You',
-                isAdmin: data.is_admin || false
+                handle: data.handle || window.currentUser || 'You'
             };
-            console.log('Current user data:', currentUserData);
         }
     })
     .catch(error => console.error('Error fetching current user data:', error));
@@ -197,6 +193,7 @@ function setupTipInteractions() {
                     commentList.insertBefore(newComment, commentList.firstChild);
                     attachCommentActionListeners();
 
+                    // Update the .tip-feed under the original post
                     const tipFeed = document.querySelector(`.tip[data-tip-id="${tipId}"] .tip-content`);
                     const tipComments = tipFeed.querySelector('.tip-actions .comment-count');
                     tipComments.textContent = data.comment_count;
@@ -219,7 +216,8 @@ function setupTipInteractions() {
                         </div>
                     `;
                     tipCommentsContainer.appendChild(newCommentInFeed);
-                    console.log('Updated tip feed HTML:', tipCommentsContainer.innerHTML);
+
+                    fetchComments(tipId, commentList); // Immediate refresh to sync with server
                 } else {
                     showCustomAlert('Error: ' + data.error);
                 }
@@ -235,8 +233,7 @@ function setupTipInteractions() {
 
     if (commentModalClose) {
         commentModalClose.addEventListener('click', function () {
-            commentModal.classList.add('hidden');
-            commentModal.classList.remove('active');
+            commentModal.style.display = 'none';
             const commentInput = commentModal.querySelector('.post-reply-input');
             const previewDiv = commentModal.querySelector('.post-reply-preview');
             commentInput.value = '';
@@ -249,8 +246,7 @@ function setupTipInteractions() {
 
     window.addEventListener('click', function (event) {
         if (event.target === commentModal) {
-            commentModal.classList.add('hidden');
-            commentModal.classList.remove('active');
+            commentModal.style.display = 'none';
             const commentInput = commentModal.querySelector('.post-reply-input');
             const previewDiv = commentModal.querySelector('.post-reply-preview');
             commentInput.value = '';
@@ -377,7 +373,7 @@ function handleTipClick(e) {
     const action = e.target.closest('.tip-action');
     if (action) {
         if (action.classList.contains('tip-action-bookmark')) {
-            return;
+            return; // Exit early, allowing bookmarks.js to handle the click
         }
         e.preventDefault();
         const tipId = this.getAttribute('data-tip-id');
@@ -438,35 +434,17 @@ function handleTipClick(e) {
                 showCustomAlert('An error occurred while sharing the tip.');
             });
         } else if (actionType === 'comment') {
-            // Toggle inline comments in the central feed
-            const tipContent = this.querySelector('.tip-content');
-            const tipCommentsContainer = tipContent.querySelector('.tip-comments') || tipContent.appendChild(document.createElement('div'));
-            tipCommentsContainer.className = 'tip-comments';
-
-            const isExpanded = tipCommentsContainer.classList.contains('expanded');
-            if (!isExpanded) {
-                tipCommentsContainer.classList.add('expanded');
-                tipCommentsContainer.innerHTML = '<p>Loading comments...</p>';
-                fetchComments(tipId, tipCommentsContainer);
-            } else {
-                tipCommentsContainer.classList.remove('expanded');
-                tipCommentsContainer.innerHTML = '';
-            }
+            openCommentModal(this, tipId);
         }
         return;
     }
 
-    // Remove this to prevent opening the modal when clicking the tip itself
-    // const tipId = this.getAttribute('data-tip-id');
-    // openCommentModal(this, tipId);
+    const tipId = this.getAttribute('data-tip-id');
+    openCommentModal(this, tipId);
 }
 
 function openCommentModal(tip, tipId, parentId = null) {
     const commentModal = document.getElementById('comment-modal');
-    if (!commentModal) {
-        console.error('Comment modal element not found');
-        return;
-    }
     const modalTip = commentModal.querySelector('.modal-tip');
     const modalTipAvatar = modalTip.querySelector('.modal-tip-avatar');
     const modalTipContent = modalTip.querySelector('.modal-tip-content');
@@ -487,40 +465,18 @@ function openCommentModal(tip, tipId, parentId = null) {
     const shareCount = tipContent.querySelector('.share-count').textContent;
     const commentCount = tipContent.querySelector('.comment-count').textContent;
     const engagementCount = tipContent.querySelector('.tip-action-engagement + .tip-action-count')?.textContent || '0';
-    const currentStatus = tip.querySelector('.tip-meta .status')?.textContent?.split(': ')[1] || 'Unknown';
 
+    // Function to update tip status dynamically
     const updateTipStatus = () => {
-        // Set fallback content immediately to ensure the modal has content
-        modalTipContent.innerHTML = `
-            <a href="#" class="tip-username">
-                <strong class="modal-tip-username">${usernameElement ? usernameElement.textContent : 'Unknown'}</strong>
-                <span class="user-handle modal-tip-handle">${handleElement ? handleElement.textContent : ''}</span>
-            </a>
-            <span class="modal-tip-sport">${sportEmoji}</span>
-            <p class="modal-tip-text">${text}</p>
-            <div class="tip-meta">
-                <span>Status: ${currentStatus}</span>
-            </div>
-            <small class="modal-tip-timestamp">${timestamp}</small>
-        `;
-        modalTipAvatar.src = avatarUrl;
-
         fetch(`/api/tip/${tipId}/`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include'
         })
-        .then(response => {
-            console.log(`Fetch response for tip ${tipId}:`, response.status);
-            if (!response.ok) {
-                console.warn(`Tip ${tipId} not found, using current status: ${currentStatus}`);
-                return { success: true, tip: { status: currentStatus, odds: '', bet_type: '', each_way: false, confidence: '' }, responseOk: false };
-            }
-            return response.json().then(data => ({ ...data, responseOk: true }));
-        })
+        .then(response => response.json())
         .then(data => {
             if (data.success) {
-                const status = data.tip.status || currentStatus;
+                const status = data.tip.status || 'Pending';
                 const odds = data.tip.odds || '';
                 const betType = data.tip.bet_type || '';
                 const eachWay = data.tip.each_way ? 'yes' : 'no';
@@ -539,7 +495,7 @@ function openCommentModal(tip, tipId, parentId = null) {
                         <span>Bet Type: ${betType}</span>
                         ${eachWay === 'yes' ? '<span>Each Way: Yes</span>' : ''}
                         ${confidence ? `<span>Confidence: ${confidence}</span>` : ''}
-                        <span class="status">Status: ${status}</span>
+                        <span>Status: ${status}</span>
                     </div>
                     <small class="modal-tip-timestamp">${timestamp}</small>
                     <div class="tip-actions">
@@ -562,79 +518,46 @@ function openCommentModal(tip, tipId, parentId = null) {
                     </div>
                 `;
 
-                if (currentUserData.isAdmin && data.responseOk) {
-                    const statusIndex = eachWay === 'yes' ? 5 : 4;
-                    const tipFeedStatus = tip.querySelector(`.tip-meta span:nth-child(${statusIndex})`);
-                    if (tipFeedStatus) tipFeedStatus.textContent = `Status: ${status}`;
-                }
+                // Update the original tip feed
+                const statusIndex = eachWay === 'yes' ? 5 : 4;
+                const tipFeedStatus = tip.querySelector(`.tip-meta span:nth-child(${statusIndex})`);
+                if (tipFeedStatus) tipFeedStatus.textContent = `Status: ${status}`;
             }
         })
-        .catch(error => {
-            console.error('Error fetching tip status:', error);
-            // Fallback content is already set above
-        });
+        .catch(error => console.error('Error fetching tip status:', error));
     };
 
-    try {
-        if (commentModal.parentElement !== document.body) {
-            document.body.appendChild(commentModal);
-            console.log('Modal reattached to body');
-        }
+    // Initial load
+    updateTipStatus();
+    commentList.innerHTML = '<p>Loading comments...</p>';
 
-        updateTipStatus();
-        commentList.innerHTML = '<p>Loading comments...</p>';
-
-        if (parentId) {
-            replyToHeader.style.display = 'block';
-            fetchComments(tipId, commentList, () => {
-                const parentComment = commentList.querySelector(`.comment[data-comment-id="${parentId}"]`);
-                if (parentComment) replyToUsername.textContent = parentComment.querySelector('.comment-username strong').textContent;
-            });
-        } else {
-            replyToHeader.style.display = 'none';
-        }
-
-        let pollingInterval = setInterval(() => {
-            updateTipStatus();
-            fetchComments(tipId, commentList);
-        }, 30000);
-
-        const stopPolling = () => clearInterval(pollingInterval);
-        window.addEventListener('click', (event) => {
-            if (event.target === commentModal) {
-                stopPolling();
-                commentModal.classList.add('hidden');
-                commentModal.classList.remove('active');
-            }
+    if (parentId) {
+        replyToHeader.style.display = 'block';
+        fetchComments(tipId, commentList, () => {
+            const parentComment = commentList.querySelector(`.comment[data-comment-id="${parentId}"]`);
+            if (parentComment) replyToUsername.textContent = parentComment.querySelector('.comment-username strong').textContent;
         });
-
-        console.log('Opening modal for tipId:', tipId);
-        commentModal.classList.remove('hidden');
-        commentModal.classList.add('active');
-        commentModal.style.display = 'block';
-        commentModal.style.position = 'fixed';
-        commentModal.style.top = '50%';
-        commentModal.style.left = '50%';
-        commentModal.style.transform = 'translate(-50%, -50%)';
-        commentModal.style.width = '600px';
-        commentModal.style.minHeight = '400px';
-        commentModal.style.zIndex = '10000';
-        commentModal.style.background = 'white';
-        commentModal.style.border = '2px solid red'; // Visual cue
-        console.log('Modal styles:', window.getComputedStyle(commentModal));
-        console.log('Modal position:', commentModal.getBoundingClientRect());
-        console.log('Modal visible:', commentModal.offsetParent !== null);
-        console.log('Modal parent styles:', window.getComputedStyle(commentModal.parentElement));
-        commentSubmit.dataset.tipId = tipId;
-        if (parentId) commentSubmit.dataset.parentId = parentId;
-    } catch (error) {
-        console.error('Error in openCommentModal:', error);
-        commentModal.classList.remove('hidden');
-        commentModal.classList.add('active');
-        commentModal.style.display = 'block';
-        commentModal.style.zIndex = '10000';
-        modalTipContent.innerHTML = '<p>Error loading tip data</p>';
+    } else {
+        replyToHeader.style.display = 'none';
     }
+
+    // Polling for updates (every 30 seconds)
+    let pollingInterval = setInterval(() => {
+        updateTipStatus();
+        fetchComments(tipId, commentList);
+    }, 30000);
+
+    const stopPolling = () => clearInterval(pollingInterval);
+    window.addEventListener('click', (event) => {
+        if (event.target === commentModal) {
+            stopPolling();
+            commentModal.style.display = 'none';
+        }
+    });
+
+    commentModal.style.display = 'block';
+    commentSubmit.dataset.tipId = tipId;
+    if (parentId) commentSubmit.dataset.parentId = parentId;
 }
 
 function attachCommentActionListeners() {
