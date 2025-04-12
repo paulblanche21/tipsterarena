@@ -4,36 +4,36 @@
 .tennis-feed {
   display: flex;
   flex-direction: column;
-  gap: 20px; /* Space between tournament groups */
-  background-color: #fff; /* White background to match football's .event-feed */
-  padding: 20px; /* Add padding to match football feed's spacing */
-  border-radius: 5px; /* Optional: subtle rounding to match card style */
+  gap: 20px;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 5px;
 }
 
-/* Tournament group styling (similar to football's .league-group) */
+/* Tournament group styling */
 .tournament-group {
   display: flex;
   flex-direction: column;
-  gap: 15px; /* Space between header and cards */
-  margin-bottom: 20px; /* Matches football's league-group spacing */
+  gap: 15px;
+  margin-bottom: 20px;
 }
 
-/* Tournament header styling (similar to football's .league-header) */
+/* Tournament header styling */
 .tournament-header {
   font-size: 1.2em;
   font-weight: bold;
-  color: #333; /* Ensure text is dark for readability on white background */
-  margin-bottom: 10px; /* Space below header */
+  color: #333;
+  margin-bottom: 10px;
   display: flex;
   align-items: center;
 }
 
 .tournament-header .sport-icon {
-  margin-right: 8px; /* Consistent with football styling */
-  font-size: 1.1em; /* Slightly larger for visibility */
+  margin-right: 8px;
+  font-size: 1.1em;
 }
 
-/* Center feed tennis cards (existing styles) */
+/* Center feed tennis cards */
 .tennis-card.expandable-card {
   width: 100%;
   border: 1px solid #ddd;
@@ -42,7 +42,7 @@
   margin-bottom: 15px;
   transition: all 0.3s ease;
   box-sizing: border-box;
-  min-height: 120px; /* Matches football card height */
+  min-height: 120px;
 }
 
 /* Expanded card state */
@@ -83,18 +83,17 @@
 }
 
 .tennis-card.live-match .card-header {
-  background-color: #ffe6e6; /* Matches football live match styling */
+  background-color: #ffe6e6;
 }
 
 /* Match info */
 .tennis-card .match-info {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   width: 100%;
   gap: 8px;
   pointer-events: none;
-  flex-wrap: wrap;
   color: var(--primary-bg);
 }
 
@@ -104,25 +103,35 @@
 
 .tennis-card .match-info .players {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
   font-weight: bold;
-  text-align: center;
-  flex-wrap: wrap;
+}
+
+.tennis-card .match-info .players.vertical {
+  align-items: flex-start;
 }
 
 .tennis-card .match-info .player-name {
-  font-size: 1.1em; /* Matches football team-name */
+  font-size: 1.1em;
 }
 
 .tennis-card .match-info .score {
-  font-size: 1.2em;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
   font-weight: bold;
   color: #333;
 }
 
+.tennis-card .match-info .score.vertical {
+  align-items: flex-end;
+}
+
 .tennis-card.live-match .match-info .score {
-  color: #e63946; /* Red for live scores, matches football live-score */
+  color: #e63946;
 }
 
 /* Match meta */
@@ -189,10 +198,22 @@
   color: #555;
 }
 
+/* Load stats button */
+.match-details .load-stats {
+  cursor: pointer;
+  color: #007bff;
+  font-size: 0.9em;
+  margin-top: 5px;
+}
+
+.match-details .load-stats:hover {
+  text-decoration: underline;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .tennis-feed {
-    padding: 10px; /* Reduce padding on mobile */
+    padding: 10px;
   }
 
   .tennis-card.expandable-card {
@@ -212,6 +233,6 @@
   }
 
   .tournament-header {
-    font-size: 1.1em; /* Slightly smaller on mobile */
+    font-size: 1.1em;
   }
 }

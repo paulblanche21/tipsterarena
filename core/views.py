@@ -16,7 +16,8 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework import generics, status
 from rest_framework.serializers import ModelSerializer
-from datetime import datetime, timedelta
+from datetime import datetime
+from .horse_racing_events import get_racecards_json  # Re-enabled
 import json
 from django.template.loader import render_to_string
 from django.utils import timezone
@@ -623,7 +624,7 @@ def post_tip(request):
             odds_type = request.POST.get('odds_type')
             bet_type = request.POST.get('bet_type')
             each_way = request.POST.get('each_way', 'no')
-            confidence = request.POST.get('confidence')  
+            confidence = request.POST.get('confidence')
 
             # Handle odds based on format
             if odds_type == 'decimal':
@@ -663,9 +664,9 @@ def post_tip(request):
                 odds_format=odds_type,
                 bet_type=bet_type,
                 each_way=each_way,
-                confidence=int(confidence) if confidence else None  # Store as integer or None
+                confidence=int(confidence) if confidence else None
             )
-            
+
             response_data = {
                 'success': True,
                 'message': 'Tip posted successfully!',
@@ -683,7 +684,7 @@ def post_tip(request):
                     'odds_format': tip.odds_format,
                     'bet_type': tip.bet_type,
                     'each_way': tip.each_way,
-                    'confidence': tip.confidence, 
+                    'confidence': tip.confidence,
                     'status': tip.status,
                 }
             }
@@ -692,7 +693,6 @@ def post_tip(request):
             logger.error(f"Error posting tip: {str(e)}")
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
     return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
-
 
 @method_decorator(csrf_exempt, name='dispatch')
 class VerifyTipView(APIView):
@@ -703,7 +703,7 @@ class VerifyTipView(APIView):
         print("VerifyTipView hit!")
         print(f"Request user: {request.user}, Is staff: {request.user.is_staff}")
         print(f"Request data: {request.data}")
-        
+
         tip_id = request.data.get('tip_id')
         new_status = request.data.get('status')
         resolution_note = request.data.get('resolution_note', '')
@@ -738,7 +738,7 @@ class VerifyTipView(APIView):
             return Response({'success': False, 'error': 'Tip not found'}, status=status.HTTP_404_NOT_FOUND)
         except ValidationError as e:
             return Response({'success': False, 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        
+
 # Serializer for RaceMeeting model
 class RaceMeetingSerializer(ModelSerializer):
     class Meta:
@@ -766,51 +766,6 @@ def horse_racing_fixtures(request):
     ]
 
     return JsonResponse({'fixtures': fixtures})
-
-def get_racecards_json(request):
-    """Return race meeting data as JSON for the next 3 days."""
-    today = datetime.now().date()
-    three_days_later = today + timedelta(days=3)
-    meetings = RaceMeeting.objects.filter(
-        date__gte=today,
-        date__lte=three_days_later
-    ).order_by('date', 'venue')
-
-    # Serialize meetings to JSON-compatible format
-    meetings_data = []
-    for meeting in meetings:
-        races = meeting.races.all().order_by('race_time')
-        races_data = []
-        for race in races:
-            result = race.results.first()
-            races_data.append({
-                'race_time': race.race_time.strftime('%H:%M'),
-                'name': race.name or 'Unnamed Race',
-                'horses': [
-                    {
-                        'number': horse['number'],
-                        'name': horse['name'],
-                        'jockey': horse.get('jockey', 'Unknown'),
-                        'odds': horse.get('odds', 'N/A'),
-                        'trainer': horse.get('trainer', 'Unknown'),
-                        'owner': horse.get('owner', 'Unknown'),
-                    } for horse in race.horses
-                ],
-                'result': {
-                    'winner': result.winner if result and result.winner else None,
-                    'placed_horses': [
-                        {'position': horse['position'], 'name': horse['name']}
-                        for horse in result.placed_horses
-                    ] if result and result.placed_horses else []
-                } if result else None
-            })
-        meetings_data.append({
-            'venue': meeting.venue,
-            'date': meeting.date.strftime('%Y-%m-%d'),
-            'races': races_data
-        })
-
-    return JsonResponse({'meetings': meetings_data})
 
 # API view for trending tips
 @login_required
@@ -858,8 +813,28 @@ def current_user_api(request):
         'success': True,
         'avatar_url': avatar_url,
         'handle': handle,
-        'username': user.username
+        'username': user.username,
+        'is_admin': user.is_staff or user.is_superuser
     })
+
+# New API view to fetch tip details
+@login_required
+def tip_detail(request, tip_id):
+    try:
+        tip = Tip.objects.get(id=tip_id)
+        return JsonResponse({
+            'success': True,
+            'tip': {
+                'id': tip.id,
+                'status': tip.status,
+                'odds': tip.odds,
+                'bet_type': tip.bet_type,
+                'each_way': tip.each_way,
+                'confidence': tip.confidence
+            }
+        })
+    except Tip.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Tip not found'}, status=404)
 
 # View to handle CSP violation reports
 @csrf_exempt
@@ -937,7 +912,7 @@ def search(request):
             'odds_format': tip.odds_format,
             'bet_type': tip.bet_type,
             'each_way': tip.each_way,
-            'confidence': tip.confidence,  
+            'confidence': tip.confidence,
             'status': tip.status,
         })
 
@@ -946,7 +921,9 @@ def search(request):
         'users': user_results,
         'tips': tip_results,
     })
-    
-def debug_racecards_json(request):
-    data = get_racecards_json(request)
-    return HttpResponse(json.dumps(data.json(), indent=2), content_type="application/json")
+
+# View for JSON racecards
+def racecards_json_view(request):
+    """Return JSON data for horse racing racecards."""
+    data = get_racecards_json()
+    return JsonResponse(data, safe=False)  # safe=False allows non-dict data (list)

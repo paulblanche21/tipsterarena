@@ -7,6 +7,8 @@ export async function fetchEvents(data, config) {
     const home = competitors.find(c => c?.homeAway?.toLowerCase() === "home") || competitors[0] || {};
     const away = competitors.find(c => c?.homeAway?.toLowerCase() === "away") || competitors[1] || {};
 
+    console.log(`Parsing event: ${event.shortName || event.name}, State: ${event.status?.type?.state}, Home Score: ${home.score}, Away Score: ${away.score}`);
+
     const getTeamStats = (team) => {
       const stats = team.statistics || [];
       return {
@@ -66,6 +68,10 @@ export async function fetchEvents(data, config) {
         clock: event.status.type.clock || "0:00",
         period: event.status.type.period || 0,
         statusDetail: event.status.type.detail || "In Progress"
+      } : event.status.type.state === "post" ? {
+        homeScore: home.score || "0",
+        awayScore: away.score || "0",
+        statusDetail: event.status.type.detail || "Final"
       } : null,
       broadcast: competitions.geoBroadcasts?.[0]?.media?.shortName || "N/A",
     };
@@ -78,18 +84,26 @@ export async function fetchEvents(data, config) {
       const summaryData = await response.json();
 
       const plays = summaryData.plays || [];
-      const keyEvents = summaryData.keyEvents || [];
-      const goalPlays = plays.filter(play => play.type.text.toLowerCase().includes("goal"));
-      const goalKeyEvents = keyEvents.filter(event => event.type?.text.toLowerCase().includes("goal"));
+      const keyEventsFallback = plays.filter(play => play.type.text.toLowerCase().includes("goal") || play.yellowCard || play.redCard).map(play => ({
+        type: play.type.text || "Unknown",
+        time: play.clock?.displayValue || "N/A",
+        team: play.team?.displayName || "Unknown",
+        player: play.participants?.[0]?.athlete?.displayName || "Unknown",
+        isGoal: play.type.text.toLowerCase().includes("goal"),
+        isYellowCard: play.yellowCard,
+        isRedCard: play.redCard,
+      }));
 
-      const goals = [...goalPlays, ...goalKeyEvents].map(event => ({
+      const keyEvents = event.keyEvents.length ? event.keyEvents : keyEventsFallback;
+      console.log(`Event ${event.name}: Using ${keyEvents.length} key events (${event.keyEvents.length} from details, ${keyEventsFallback.length} from plays)`);
+
+      const goals = plays.filter(play => play.type.text.toLowerCase().includes("goal")).map(event => ({
         scorer: event.participants?.[0]?.athlete?.displayName || event.scorer || "Unknown",
         team: event.team?.displayName || event.team || "Unknown",
         time: event.clock?.displayValue || event.time || "N/A",
         assist: event.participants?.[1]?.athlete?.displayName || event.assist || "Unassisted",
       }));
 
-      // Extract odds from summaryData
       const oddsData = summaryData.header?.competitions?.[0]?.odds?.[0] || {};
       const odds = {
         homeOdds: oddsData.homeTeamOdds?.moneyLine || "N/A",
@@ -109,7 +123,8 @@ export async function fetchEvents(data, config) {
 
       return {
         ...event,
-        odds, // Add odds to the event object
+        keyEvents,
+        odds,
         detailedStats,
       };
     } catch (error) {
@@ -123,6 +138,7 @@ export async function fetchEvents(data, config) {
 
 export function formatEventList(events, sportKey, showLocation = false) {
   if (!events || !events.length) {
+    console.log(`No events to format for ${sportKey} event list`);
     return `<p>No upcoming ${sportKey} fixtures available.</p>`;
   }
   const currentTime = new Date();
@@ -142,6 +158,7 @@ export function formatEventList(events, sportKey, showLocation = false) {
     });
 
   if (!upcomingEvents.length) {
+    console.log(`No upcoming events after filtering for ${sportKey}`);
     return `<p>No upcoming ${sportKey} fixtures available.</p>`;
   }
 
@@ -169,7 +186,6 @@ export function formatEventList(events, sportKey, showLocation = false) {
         event.state === "post" ? `${event.homeTeam.score} - ${event.awayTeam.score} (${event.statusDetail})` :
         `${event.displayDate} ${event.time}`;
 
-      // Add odds display for all match states
       const oddsContent = event.odds ? `
         <div class="betting-odds">
           <p><strong>Betting Odds (${event.odds.provider}):</strong></p>
@@ -225,27 +241,30 @@ export function formatEventList(events, sportKey, showLocation = false) {
             event.keyEvents.filter(e => e.isYellowCard || e.isRedCard).map(card => `
               <li class="${card.isRedCard ? 'red-card' : 'yellow-card'}">${card.player} (${card.team}) - ${card.time} (${card.type})</li>
             `).join("")
-          }</ul>` : "";
+          }</ul>` : "<span class='no-cards'>No cards</span>";
 
         detailsContent = `
           <div class="match-details" style="display: none;">
             <div class="match-stats">
+              <div class="game-stats">
+                <p><strong>Final Score:</strong> ${event.homeTeam.score} - ${event.awayTeam.score} (${event.statusDetail})</p>
+                <p><strong>Possession:</strong> ${event.homeTeam.stats.possession} - ${event.awayTeam.stats.possession}</p>
+                <p><strong>Shots (On Target):</strong> ${event.homeTeam.stats.shots} (${event.homeTeam.stats.shotsOnTarget}) - ${event.awayTeam.stats.shots} (${event.awayTeam.stats.shotsOnTarget})</p>
+                <p><strong>Corners:</strong> ${event.homeTeam.stats.corners} - ${event.awayTeam.stats.corners}</p>
+                <p><strong>Fouls:</strong> ${event.homeTeam.stats.fouls} - ${event.awayTeam.stats.fouls}</p>
+              </div>
+              <div class="key-events">
+                <p><strong>Goals:</strong></p>
+                ${goalsList}
+                <p><strong>Cards:</strong></p>
+                ${cardsList}
+              </div>
               <div class="team-stats">
                 <p><strong>${event.homeTeam.name}:</strong> Form: ${event.homeTeam.form} | Record: ${event.homeTeam.record}</p>
                 <p><strong>${event.awayTeam.name}:</strong> Form: ${event.awayTeam.form} | Record: ${event.awayTeam.record}</p>
               </div>
-              <div class="game-stats">
-                <p>Possession: ${event.homeTeam.stats.possession} - ${event.awayTeam.stats.possession}</p>
-                <p>Shots (On Target): ${event.homeTeam.stats.shots} (${event.homeTeam.stats.shotsOnTarget}) - ${event.awayTeam.stats.shots} (${event.awayTeam.stats.shotsOnTarget})</p>
-                <p>Corners: ${event.homeTeam.stats.corners} - ${event.awayTeam.stats.corners}</p>
-                <p>Fouls: ${event.homeTeam.stats.fouls} - ${event.awayTeam.stats.fouls}</p>
-              </div>
-              <div class="key-events">
-                ${goalsList}
-                ${cardsList}
-              </div>
               <div class="broadcast-info">
-                <p>Broadcast: ${event.broadcast}</p>
+                <p><strong>Broadcast:</strong> ${event.broadcast}</p>
               </div>
               ${oddsContent}
             </div>
@@ -296,29 +315,17 @@ export function formatEventList(events, sportKey, showLocation = false) {
   return eventItems || `<p>No upcoming ${sportKey} fixtures available.</p>`;
 }
 
-export function formatEventTable(events) {
+export function formatFootballTable(events) {
   if (!events || !events.length) {
-    return `<p class="no-events">No upcoming football fixtures available.</p>`;
+    console.log("No events to format for football table");
+    return `<p class="no-events">No football results available.</p>`;
   }
 
-  const currentTime = new Date();
-  const sevenDaysFuture = new Date();
-  sevenDaysFuture.setDate(currentTime.getDate() + 7);
+  console.log(`Formatting ${events.length} events for football table`);
 
-  const filteredEvents = events.filter(event => {
-    const eventDate = new Date(event.date);
-    return (eventDate > currentTime && eventDate <= sevenDaysFuture) || event.state === "in";
-  });
-
-  if (!filteredEvents.length) {
-    return `<p class="no-events">No upcoming football fixtures available.</p>`;
-  }
-
-  const sortedEvents = filteredEvents.sort((a, b) => {
-    if (a.state === "in" && b.state !== "in") return -1;
-    if (a.state !== "in" && b.state === "in") return 1;
+  const sortedEvents = events.sort((a, b) => {
     if (a.priority !== b.priority) return a.priority - b.priority;
-    return new Date(a.date) - new Date(b.date);
+    return new Date(b.date) - new Date(a.date); // Newest first
   });
 
   const eventsByLeague = sortedEvents.reduce((acc, event) => {
@@ -344,10 +351,10 @@ export function formatEventTable(events) {
       const eventId = event.id || `${league}-${index}`;
       const timeOrScore = event.state === "in" && event.scores ?
         `<span class="live-score">${event.scores.homeScore} vs ${event.scores.awayScore}</span>` :
-        event.state === "post" ? `${event.homeTeam.score} vs ${event.awayTeam.score}` :
+        event.state === "post" ?
+        `<span class="final-score">${event.homeTeam.score} vs ${event.awayTeam.score} (${event.statusDetail})</span>` :
         `${event.displayDate} ${event.time}`;
 
-      // Add odds display for all match states
       const oddsContent = event.odds ? `
         <div class="betting-odds">
           <p><strong>Betting Odds (${event.odds.provider}):</strong></p>
@@ -359,7 +366,6 @@ export function formatEventTable(events) {
 
       let detailsContent = '';
       if (event.state === "in" && event.detailedStats) {
-        // Separate goals by team
         const homeGoals = event.detailedStats.goals.filter(goal => goal.team === event.homeTeam.name);
         const awayGoals = event.detailedStats.goals.filter(goal => goal.team === event.awayTeam.name);
 
@@ -409,6 +415,7 @@ export function formatEventTable(events) {
         `;
         console.log(`Added .match-details for in-progress match (ID: ${eventId})`);
       } else if (event.state === "post") {
+        console.log(`Formatting post event: ${event.name}, Scores: ${event.homeTeam.score} - ${event.awayTeam.score}, KeyEvents: ${event.keyEvents.length}`);
         const goalsList = event.keyEvents.filter(e => e.isGoal).length ?
           `<ul class="goal-list">${
             event.keyEvents.filter(e => e.isGoal).map(goal => `
@@ -421,27 +428,30 @@ export function formatEventTable(events) {
             event.keyEvents.filter(e => e.isYellowCard || e.isRedCard).map(card => `
               <li class="${card.isRedCard ? 'red-card' : 'yellow-card'}">${card.player} (${card.team}) - ${card.time} (${card.type})</li>
             `).join("")
-          }</ul>` : "";
+          }</ul>` : "<span class='no-cards'>No cards</span>";
 
         detailsContent = `
           <div class="match-details" style="display: none;">
             <div class="match-stats">
+              <div class="game-stats">
+                <p><strong>Final Score:</strong> ${event.homeTeam.score} - ${event.awayTeam.score} (${event.statusDetail})</p>
+                <p><strong>Possession:</strong> ${event.homeTeam.stats.possession} - ${event.awayTeam.stats.possession}</p>
+                <p><strong>Shots (On Target):</strong> ${event.homeTeam.stats.shots} (${event.homeTeam.stats.shotsOnTarget}) - ${event.awayTeam.stats.shots} (${event.awayTeam.stats.shotsOnTarget})</p>
+                <p><strong>Corners:</strong> ${event.homeTeam.stats.corners} - ${event.awayTeam.stats.corners}</p>
+                <p><strong>Fouls:</strong> ${event.homeTeam.stats.fouls} - ${event.awayTeam.stats.fouls}</p>
+              </div>
+              <div class="key-events">
+                <p><strong>Goals:</strong></p>
+                ${goalsList}
+                <p><strong>Cards:</strong></p>
+                ${cardsList}
+              </div>
               <div class="team-stats">
                 <p><strong>${event.homeTeam.name}:</strong> Form: ${event.homeTeam.form} | Record: ${event.homeTeam.record}</p>
                 <p><strong>${event.awayTeam.name}:</strong> Form: ${event.awayTeam.form} | Record: ${event.awayTeam.record}</p>
               </div>
-              <div class="game-stats">
-                <p>Possession: ${event.homeTeam.stats.possession} - ${event.awayTeam.stats.possession}</p>
-                <p>Shots (On Target): ${event.homeTeam.stats.shots} (${event.homeTeam.stats.shotsOnTarget}) - ${event.awayTeam.stats.shots} (${event.awayTeam.stats.shotsOnTarget})</p>
-                <p>Corners: ${event.homeTeam.stats.corners} - ${event.awayTeam.stats.corners}</p>
-                <p>Fouls: ${event.homeTeam.stats.fouls} - ${event.awayTeam.stats.fouls}</p>
-              </div>
-              <div class="key-events">
-                ${goalsList}
-                ${cardsList}
-              </div>
               <div class="broadcast-info">
-                <p>Broadcast: ${event.broadcast}</p>
+                <p><strong>Broadcast:</strong> ${event.broadcast}</p>
               </div>
               ${oddsContent}
             </div>
@@ -493,5 +503,5 @@ export function formatEventTable(events) {
   }
 
   eventHtml += '</div>';
-  return eventHtml;
+  return eventHtml || `<p class="no-events">No football results available.</p>`;
 }

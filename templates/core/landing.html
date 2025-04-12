@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Join Tipster Arena: Share sports tips, connect with pros, and take on the bookies in a thriving betting community.">
+    <meta name="description" content="Join Tipster Arena: Share sports tips, connect with pros, and take on the bookies in a thriving betting community. €5/month after your first month free.">
     <meta name="keywords" content="sports tips, betting community, tipsters, football, golf, tennis, horse racing, win ratios, anti-bookie">
     <title>Welcome to Tipster Arena</title>
     {% load static %}
@@ -33,9 +33,9 @@
                 <div class="landing-text">
                     <h2 class="landing-section-title">Your Central Hub for Sports Tips</h2>
                     <p class="landing-section-description">
-                        Sick of chasing tips across dodgy pages that don’t get sports? Tipster Arena is the one-stop community where punters share, snag, and sharpen their betting game. Filter tabs for football, golf, tennis, or horse racing—see only what you want. First month’s free, then it’s just €5/month—cheaper than a pint. No politics, no religion—just sport.
+                        Sick of scouring sketchy sites for tips? Tipster Arena is your no-BS betting community—€5/month gets you in, but the first month’s free. Scroll tips for football, golf, tennis, or horse racing, filter what you want, and ditch the rest. No politics, no fluff—just pure betting gold. Try it free, then pay less than a pint to stay.
                     </p>
-                    <a href="{% url 'signup' %}" class="landing-button landing-button--secondary">Join Tipster Arena Now</a>
+                    <a href="{% url 'signup' %}" class="landing-button landing-button--secondary">Start Free Now</a>
                 </div>
             </div>
 
@@ -44,7 +44,7 @@
                 <div class="landing-text">
                     <h2 class="landing-section-title">Pro Tipsters, Your Stage Awaits</h2>
                     <p class="landing-section-description">
-                        Calling all pros: Build your community here. Soon, you’ll offer exclusive tips via subscriptions—and the best tipsters will earn a cut of the pot. It’s your shot to shine, cash in, and keep the riff raff out.
+                        Pros, this is your turf. Build a following with your €5/month subscription—first month free for all. Soon, you’ll drop exclusive tips and cash in with subscriber cuts. Prove your worth, keep the wannabes out, and own the game.
                     </p>
                     <a href="{% url 'signup' %}" class="landing-button landing-button--secondary">Build Your Empire</a>
                 </div>
@@ -61,13 +61,27 @@
                 <div class="landing-text">
                     <h2 class="landing-section-title">Face Off & Prove Who’s Best</h2>
                     <p class="landing-section-description">
-                        Pros gloating about picking favorites? Time to face the music. Tipster Arena ranks everyone with win ratios and leveraged odds—no hiding behind big egos. Whether you’re a pro or Colin from the pub, step up and show the world who’s the real deal.
+                        Tired of loudmouths with no stats to back it? For €5/month (first month free), Tipster Arena ranks every tipster with win ratios and leveraged odds. Pros or pub punters, step up—only the best survive here.
                     </p>
                     <a href="{% url 'signup' %}" class="landing-button landing-button--secondary">Prove You’re the Best</a>
                 </div>
             </div>
 
-            <!-- New Section: The Anti-Bookie Revolution -->
+            <!-- Section 4: We Love Gambling -->
+            <div class="landing-section right">
+                <div class="landing-text">
+                    <h2 class="landing-section-title">We Love Gambling—And We’re Not Sorry</h2>
+                    <p class="landing-section-description">
+                        We’re done with the guilt trips. Gambling gets a bad rap, but no one cares when the wife blows €300 on retail therapy—yet a bet raises eyebrows? Not here. We embrace the thrill, no apologies. Gamble big, gamble reckless for all we care—life’s short, and you could be gone by morning.
+                    </p>
+                    <a href="{% url 'signup' %}" class="landing-button landing-button--secondary">Join the Fun</a>
+                </div>
+                <div class="landing-image">
+                    <img src="{% static 'img/sports5.jpg' %}" alt="Gambling Thrill" class="landing-section-image">
+                </div>
+            </div>
+
+            <!-- Section 5: The Anti-Bookie Revolution -->
             <div class="landing-section left">
                 <div class="landing-image">
                     <img src="{% static 'img/sports4.jpg' %}" alt="Anti-Bookie Fight" class="landing-section-image">
@@ -75,53 +89,67 @@
                 <div class="landing-text">
                     <h2 class="landing-section-title">The Anti-Bookie Revolution</h2>
                     <p class="landing-section-description">
-                        Bookies love taking our cash—Tipster Arena says no more. We’re leveling the playing field. If there’s value, our community finds it. €5/month (first month free) keeps the bots and freeloaders out.
+                        Bookies hate us, and we love it. For €5/month—first month free—you’re in the fight. Our community sniffs out value the bookies can’t hide. That small fee keeps the bots and freeloaders out, so we keep winning.
                     </p>
                     <a href="{% url 'signup' %}" class="landing-button landing-button--secondary">Fight Back</a>
                 </div>
             </div>
 
-            <!-- New Mid-Page CTA: Take Back the Edge -->
+            <!-- Mid-Page CTA: Take Back the Edge -->
             <div class="landing-mid-cta">
                 <h2 class="landing-cta-title">Take Back the Edge</h2>
-                <p class="landing-cta-description">Join the community that’s beating the bookies at their own game.</p>
-                <a href="{% url 'signup' %}" class="landing-button landing-button--primary">Claim Your Edge</a>
+                <p class="landing-cta-description">€5/month after a free first month—join the crew beating the bookies senseless.</p>
+                <a href="{% url 'signup' %}" class="landing-button landing-button--primary">Claim Your Edge Free</a>
             </div>
 
-            <!-- New Section: Simple Pricing, Big Value -->
+            <!-- Section 6: Simple Pricing, Big Value -->
             <div class="landing-section pricing">
                 <h2 class="landing-section-title center">Simple Pricing, Big Value</h2>
                 <div class="pricing-grid">
                     <div class="pricing-item">
                         <h3>First Month Free</h3>
-                        <p>Test the waters, no strings attached.</p>
+                        <p>Dive in, test the tips, no risk—see why we’re worth it.</p>
                     </div>
                     <div class="pricing-item">
                         <h3>€5/Month</h3>
-                        <p>The price of a pint keeps you in the game.</p>
+                        <p>Less than a pint to unlock a community that owns the odds.</p>
                     </div>
                     <div class="pricing-item">
                         <h3>€40/Year</h3>
-                        <p>Save more and commit to crushing it.</p>
+                        <p>Save big, lock in, and dominate the betting game all year.</p>
                     </div>
                 </div>
-                <a href="{% url 'signup' %}" class="landing-button landing-button--secondary">Lock In Your Spot</a>
+                <a href="{% url 'signup' %}" class="landing-button landing-button--secondary">Start Free Today</a>
             </div>
 
-            <!-- New Standalone CTA: Smash the Odds -->
+            <!-- Section 7: What You Get for €5/Month -->
+            <div class="landing-section left">
+                <div class="landing-image">
+                    <img src="{% static 'img/sports6.jpg' %}" alt="Community Tips" class="landing-section-image">
+                </div>
+                <div class="landing-text">
+                    <h2 class="landing-section-title">What You Get for €5/Month</h2>
+                    <p class="landing-section-description">
+                        Your €5/month—free for the first month—unlocks the real deal. No overhyped “master overlord” tips here; the best picks come from the trenches. Scroll a social feed of fresh tips, follow users with proven win rates, and cash in on quality. We know some of you would kill your own granny for a decent tip, so €5 is a small ask to give you the platform that delivers. The cream rises to the top—stay in for less than a pint.
+                    </p>
+                    <a href="{% url 'signup' %}" class="landing-button landing-button--secondary">Unlock the Good Stuff</a>
+                </div>
+            </div>
+
+            <!-- Standalone CTA: Smash the Odds -->
             <div class="landing-mid-cta smash-odds">
                 <h2 class="landing-cta-title">Smash the Odds</h2>
-                <p class="landing-cta-description">No bookies, no bullshit—just a community that wins.</p>
-                <a href="{% url 'signup' %}" class="landing-button landing-button--primary">Get In Now</a>
+                <p class="landing-cta-description">First month free, then €5/month—no bookies, just winners.</p>
+                <a href="{% url 'signup' %}" class="landing-button landing-button--primary">Get In Free</a>
             </div>
 
             <!-- Final Call to Action -->
             <div class="landing-cta">
                 <h2 class="landing-cta-title">Bet Smarter. Join Today.</h2>
-                <p class="landing-cta-description">From casual punters to pro tipsters, Tipster Arena is where legends are made. First month’s free, then €5/month or €40/year. Join the fight against the bookies.</p>
+                <p class="landing-cta-description">€5/month after your first month free—or €40/year to save. From casual punters to pro tipsters, Tipster Arena is where the action lives. Sign up now and stick it to the bookies.</p>
                 <div class="landing-buttons">
                     <a href="{% url 'login' %}" class="landing-button landing-button--primary">Login to Win</a>
-                    <a href="{% url 'signup' %}" class="landing-button landing-button--primary">Signup & Strike Back</a>
+                    <a href="{% url 'signup' %}" class="landing-button landing-button--primary">Signup Free</a>
                 </div>
             </div>
         </div>
@@ -131,7 +159,5 @@
     <footer class="landing-footer">
         <p>© 2025 Tipster Arena. All rights reserved.</p>
     </footer>
-
- 
 </body>
 </html>

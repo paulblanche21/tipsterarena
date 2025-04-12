@@ -1,7 +1,7 @@
 // upcoming-events.js: Handles fetching and rendering events in a modal for Tipster Arena
 
 import { getCSRFToken } from './utils.js';
-import { fetchEvents as fetchFootballEvents, formatEventList as formatFootballList, formatEventTable as formatFootballTable } from './football-events.js';
+import { fetchEvents as fetchFootballEvents, formatEventList as formatFootballList, formatFootballTable } from './football-events.js';
 import { fetchEvents as fetchTennisEvents, formatEventList as formatTennisList, formatEventTable as formatTennisTable } from './tennis-events.js';
 import { fetchEvents as fetchGolfEvents, formatEventList as formatGolfList } from './golf-events.js';
 import { fetchEvents as fetchHorseRacingEvents, formatEventList as formatHorseRacingList } from './horse-racing-events.js';
@@ -28,7 +28,7 @@ const SPORT_CONFIG = {
     { sport: "golf", league: "lpga", icon: "⛳", name: "LPGA Tour" }
   ],
   tennis: [
-    { sport: "tennis", league: "atp", icon: "🎾", name: "ATP Tour" }
+    { sport: "tennis", league: "atp", icon: "🎾", name: "ATP Tour", priority: 1 }
   ],
   horse_racing: [
     { sport: "horse_racing", league: "uk_irish", icon: "🏇", name: "UK & Irish Racing" }
@@ -71,8 +71,8 @@ async function fetchEventsForSport(sport) {
     const today = new Date();
     const startDate = new Date();
     const endDate = new Date();
-    const daysToFetchPast = 3;
-    const daysToFetchFuture = 7;
+    const daysToFetchPast = 7; // Go back 7 days for completed games
+    const daysToFetchFuture = 7; // Fetch next 7 days for fixtures
     startDate.setDate(today.getDate() - daysToFetchPast);
     endDate.setDate(today.getDate() + daysToFetchFuture);
     const startDateStr = startDate.toISOString().split('T')[0].replace(/-/g, '');
@@ -84,7 +84,7 @@ async function fetchEventsForSport(sport) {
         if (!response.ok) throw new Error(`HTTP error: ${response.status} for ${config.name}`);
         const data = await response.json();
         const leagueEvents = await module.fetch(data, config);
-        console.log(`${config.name}: Fetched ${leagueEvents.length} events`);
+        console.log(`${config.name}: Fetched ${leagueEvents.length} events, Start: ${startDateStr}, End: ${endDateStr}`);
         allEvents = allEvents.concat(leagueEvents);
       } catch (error) {
         console.error(`Error fetching ${config.name}:`, error);
@@ -92,6 +92,7 @@ async function fetchEventsForSport(sport) {
     }
   }
   globalEvents[sport] = allEvents;
+  console.log(`Total ${sport} events fetched: ${allEvents.length}`);
   return allEvents;
 }
 
@@ -99,8 +100,10 @@ async function fetchEventsForSport(sport) {
 function filterEvents(events, category, sportKey) {
   console.log(`Filtering events for ${sportKey}, category: ${category}`);
   const currentTime = new Date();
-  const threeDaysAgo = new Date();
-  threeDaysAgo.setDate(currentTime.getDate() - 3);
+  const sevenDaysAgo = new Date();
+  const sevenDaysFuture = new Date();
+  sevenDaysAgo.setDate(currentTime.getDate() - 7);
+  sevenDaysFuture.setDate(currentTime.getDate() + 7);
 
   if (sportKey === 'horse_racing') {
     if (category === 'upcoming_meetings') {
@@ -134,7 +137,7 @@ function filterEvents(events, category, sportKey) {
       return events.filter(event => event.state === "in");
     } else if (category === 'results') {
       return events
-        .filter(event => event.state === "post" && event.completed)
+        .filter(event => event.state === "post")
         .sort((a, b) => new Date(b.date) - new Date(a.date))
         .slice(0, 1);
     }
@@ -142,18 +145,25 @@ function filterEvents(events, category, sportKey) {
     return events.filter(event => {
       const eventDate = new Date(event.date);
       if (category === 'fixtures') {
-        return event.state === 'pre' && eventDate > currentTime;
+        return event.state === 'pre' && eventDate > currentTime && eventDate <= sevenDaysFuture;
       } else if (category === 'inplay') {
         return event.state === 'in';
       } else if (category === 'results') {
-        return event.state === 'post' && event.completed && eventDate >= threeDaysAgo && eventDate <= currentTime;
+        console.log(`Results filter - Event: ${event.player1 || event.name} vs ${event.player2 || ''}, State: ${event.state}, Date: ${event.date}`);
+        const isWithinSevenDays = eventDate >= sevenDaysAgo && eventDate <= currentTime;
+        if (!isWithinSevenDays) {
+          console.log(`Excluding event outside 7-day window: ${eventDate}`);
+        }
+        return event.state === 'post' && isWithinSevenDays;
       }
       return false;
     }).sort((a, b) => {
-      if (sportKey === 'football') {
+      if (sportKey === 'tennis') {
+        if (a.priority !== b.priority) return a.priority - b.priority;
+      } else if (sportKey === 'football') {
         if (a.priority !== b.priority) return a.priority - b.priority;
       }
-      return new Date(a.date) - new Date(b.date);
+      return new Date(b.date) - new Date(a.date); // Newest first for results
     });
   }
   return [];
