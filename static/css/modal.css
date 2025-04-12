@@ -27,3 +27,99 @@
     color: var(--twitter-blue);  /* Twitter blue for emphasis */
     font-weight: 600;            /* Bold text for prominence */
 }
+
+/* models.css */
+
+/* Event modal overlay */
+.event-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Modal content */
+.event-modal-content {
+    background: var(--secondary-bg);
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 600px; /* Matches tip-feed width */
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    padding: var(--padding-small);
+    box-sizing: border-box;
+}
+
+/* Close button */
+.event-modal-close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--primary-bg);
+}
+
+/* Modal title */
+#event-modal-title {
+    margin: 0 0 15px;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--primary-bg);
+}
+
+/* Modal body */
+#event-modal-body {
+    font-size: var(--font-size-base);
+    color: var(--primary-bg);
+}
+
+/* Shared modal content styles */
+.event-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.league-group {
+    margin-bottom: 20px;
+}
+
+.league-header {
+    font-size: 1.3rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary-bg);
+    padding: 8px 0;
+}
+
+.sport-icon {
+    font-size: 1.3rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .event-modal-content {
+        width: 90%;
+        margin: 0 5%;
+        padding: 10px;
+    }
+
+    .league-header {
+        font-size: 1.1rem;
+    }
+
+    .sport-icon {
+        font-size: 1.1rem;
+    }
+}

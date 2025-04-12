@@ -45,7 +45,7 @@ const SPORT_MODULES = {
 
 // Formatters for modal rendering
 const FORMATTERS = {
-  football: formatFootballTable, // Use table format for football modal
+  football: formatFootballTable,
   golf: formatGolfList,
   tennis: formatTennisTable,
   horse_racing: formatHorseRacingList
@@ -97,6 +97,7 @@ async function fetchEventsForSport(sport) {
 
 // Filters events by category
 function filterEvents(events, category, sportKey) {
+  console.log(`Filtering events for ${sportKey}, category: ${category}`);
   const currentTime = new Date();
   const threeDaysAgo = new Date();
   threeDaysAgo.setDate(currentTime.getDate() - 3);
@@ -160,11 +161,12 @@ function filterEvents(events, category, sportKey) {
 
 // Populates modal with events
 async function populateModal(sport, category) {
-  const modal = document.getElementById('event-modal'); // Fixed ID
+  console.log(`Populating modal for ${sport}, ${category}`);
+  const modal = document.getElementById('event-modal');
   const modalTitle = document.getElementById('event-modal-title');
   const modalBody = document.getElementById('event-modal-body');
   if (!modal || !modalTitle || !modalBody) {
-    console.warn('Modal elements not found');
+    console.error('Modal elements not found:', { modal, modalTitle, modalBody });
     return;
   }
 
@@ -182,22 +184,27 @@ async function populateModal(sport, category) {
   try {
     // Fetch events if not already loaded
     if (!globalEvents[sport]) {
+      console.log(`No cached events for ${sport}, fetching...`);
       await fetchEventsForSport(sport);
     }
     const events = globalEvents[sport] || [];
+    console.log(`Found ${events.length} events for ${sport}`);
     const filteredEvents = filterEvents(events, category, sport);
+    console.log(`Filtered ${filteredEvents.length} events for ${category}`);
     const formatter = FORMATTERS[sport];
     if (!formatter) {
+      console.warn(`No formatter for ${sport}`);
       modalBody.innerHTML = `<p>No ${categoryName.toLowerCase()} available for ${sportName}.</p>`;
       return;
     }
     const html = await formatter(filteredEvents, sport, category, true);
     modalBody.innerHTML = html || `<p>No ${categoryName.toLowerCase()} available for ${sportName}.</p>`;
+    console.log(`Modal populated with HTML for ${sport} ${category}`);
     setupExpandableCards();
     if (sport === 'golf' && (category === 'inplay' || category === 'results')) {
       setupLeaderboardUpdates();
     }
-    modal.style.display = 'flex'; // Show modal
+    modal.style.display = 'flex';
   } catch (error) {
     console.error(`Error populating modal for ${sport} ${category}:`, error);
     modalBody.innerHTML = '<p>Error loading events.</p>';
@@ -206,7 +213,9 @@ async function populateModal(sport, category) {
 
 // Adds toggle functionality for expandable cards
 export function setupExpandableCards() {
+  console.log('Setting up expandable cards');
   const cards = document.querySelectorAll('.event-item.expandable-card, .tennis-card.expandable-card, .event-card.expandable-card, .golf-card, .meeting-card.expandable-card');
+  console.log(`Found ${cards.length} expandable cards`);
   cards.forEach((card, index) => {
     const header = card.querySelector('.card-header');
     const details = card.querySelector('.card-content, .match-details');
@@ -221,6 +230,7 @@ export function setupExpandableCards() {
       const isVisible = details.style.display === 'block';
       details.style.display = isVisible ? 'none' : 'block';
       card.classList.toggle('expanded', !isVisible);
+      console.log(`Toggled card ${index}, visible: ${!isVisible}`);
     };
 
     header.addEventListener('click', handler, { capture: true });
@@ -236,6 +246,7 @@ export function setupExpandableCards() {
         document.querySelectorAll('.expandable-card, .golf-card').forEach(card => {
           card.classList.remove('expanded');
         });
+        console.log('Closed all expandable cards');
       }
     };
     document.addEventListener('click', closeHandler, { capture: true });
@@ -245,20 +256,25 @@ export function setupExpandableCards() {
 
 // Initializes button-based event navigation
 export async function initButtons() {
+  console.log('Initializing event buttons');
   const sidebar = document.querySelector('.upcoming-events-card');
-  if (!sidebar) return;
+  if (!sidebar) {
+    console.warn('Upcoming events card not found');
+    return;
+  }
 
   const sportSelector = sidebar.querySelector('.sport-selector');
   const buttonsContainer = sidebar.querySelector('.event-buttons');
-  const modal = document.getElementById('event-modal'); // Fixed ID
-  const modalCloseBtn = document.querySelector('.event-modal-close'); // Fixed selector
+  const modal = document.getElementById('event-modal');
+  const modalCloseBtn = document.querySelector('.event-modal-close');
 
   if (!buttonsContainer || !modal || !modalCloseBtn) {
-    console.warn('Event buttons or modal elements not found');
+    console.warn('Event buttons or modal elements not found:', { buttonsContainer, modal, modalCloseBtn });
     return;
   }
 
   let activeSport = sportSelector ? sportSelector.value : buttonsContainer.closest('.upcoming-events-card').classList.contains('upcoming-events-horse_racing') ? 'horse_racing' : buttonsContainer.closest('.upcoming-events-card').classList[1]?.replace('upcoming-events-', '') || 'football';
+  console.log(`Active sport: ${activeSport}`);
 
   // Update button labels based on sport
   const updateButtonLabels = (sport) => {
@@ -280,6 +296,7 @@ export async function initButtons() {
   if (sportSelector) {
     sportSelector.addEventListener('change', () => {
       activeSport = sportSelector.value;
+      console.log(`Sport changed to ${activeSport}`);
       updateButtonLabels(activeSport);
       const buttons = buttonsContainer.querySelectorAll('.event-btn');
       buttons.forEach(btn => btn.classList.remove('active'));
@@ -291,6 +308,7 @@ export async function initButtons() {
     const button = e.target.closest('.event-btn');
     if (!button) return;
 
+    console.log(`Button clicked: ${button.dataset.category || button.dataset.horseRacing}`);
     const buttons = buttonsContainer.querySelectorAll('.event-btn');
     buttons.forEach(btn => btn.classList.remove('active'));
     button.classList.add('active');
@@ -302,29 +320,25 @@ export async function initButtons() {
 
   // Close modal
   modalCloseBtn.addEventListener('click', () => {
+    console.log('Closing modal');
     modal.style.display = 'none';
     const buttons = buttonsContainer.querySelectorAll('.event-btn');
-    buttons.forEach(btn => btn.classList.remove('active')); // Clear active state
+    buttons.forEach(btn => btn.classList.remove('active'));
   });
 
   // Close modal on outside click
   modal.addEventListener('click', (e) => {
     if (e.target === modal) {
+      console.log('Closing modal (outside click)');
       modal.style.display = 'none';
       const buttons = buttonsContainer.querySelectorAll('.event-btn');
-      buttons.forEach(btn => btn.classList.remove('active')); // Clear active state
+      buttons.forEach(btn => btn.classList.remove('active'));
     }
   });
-
-  // Periodic updates for live events
-  const updateInterval = setInterval(() => {
-    if (modal.style.display === 'flex' && ['inplay', 'at_the_post'].includes(activeSport === 'horse_racing' ? button.dataset.horseRacing : button.dataset.category)) {
-      populateModal(activeSport, activeSport === 'horse_racing' ? button.dataset.horseRacing : button.dataset.category);
-    }
-  }, 60000);
 }
 
 // Initialize on page load
 document.addEventListener("DOMContentLoaded", () => {
+  console.log('DOMContentLoaded: Initializing upcoming-events.js');
   initButtons();
 });

@@ -3,6 +3,10 @@
 
 {% block title %}{{ sport|title }} - Tipster Arena{% endblock %}
 
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/modals.css' %}">
+{% endblock %}
+
 {% block content %}
     <div class="content">
         <!-- Tip posting interface -->
@@ -306,5 +310,5 @@
 {% endblock %}
 
 {% block extra_js %}
-    <script src="{% static 'js/eventPopup.js' %}"></script>
+    <script src="{% static 'js/pages/upcoming-events.js' %}"></script>
 {% endblock %}

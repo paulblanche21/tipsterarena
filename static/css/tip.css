@@ -2,419 +2,418 @@
 
 /* Styles for the custom alert overlay */
 .custom-alert {
-    display: none;             /* Hidden by default, shown via JS */
-    position: fixed;           /* Fixed over viewport */
-    top: 0;                    /* Full height from top */
-    left: 0;                   /* Full width from left */
-    width: 100%;               /* Full width */
-    height: 100%;              /* Full height */
-    background: rgba(0, 0, 0, 0.5);  /* Semi-transparent overlay */
-    z-index: 10000;            /* Very high z-index */
-    display: flex;             /* Flex layout (duplicate display overridden) */
-    justify-content: center;   /* Center horizontally */
-    align-items: center;       /* Center vertically */
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;
 }
 
 /* Content within custom alert */
 .custom-alert-content {
-    background: #fff;          /* White background */
-    padding: 20px;             /* Internal padding */
-    border-radius: 8px;        /* Rounded corners */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);  /* Shadow */
-    text-align: center;        /* Center-align text */
-    max-width: 400px;          /* Limit width */
-    width: 90%;                /* Responsive width */
-    font-family: Arial, sans-serif;  /* Font stack */
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    font-family: Arial, sans-serif;
 }
 
 /* Message within custom alert */
 .custom-alert-message {
-    margin: 0 0 15px;          /* Space below */
-    color: #333;               /* Dark gray text */
+    margin: 0 0 15px;
+    color: #333;
 }
 
 /* Close button within custom alert */
 .custom-alert-close {
-    background: #1DA1F2;       /* Twitter blue background */
-    color: #fff;               /* White text */
-    border: none;              /* No border */
-    padding: 8px 16px;         /* Internal padding */
-    border-radius: 4px;        /* Slightly rounded corners */
-    cursor: pointer;           /* Indicate clickability */
-    font-weight: bold;         /* Bold text */
+    background: #1DA1F2;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
 }
 
 /* Hover state for custom alert close button */
 .custom-alert-close:hover {
-    background: #0d8ddb;       /* Darker blue */
+    background: #0d8ddb;
 }
 
 /* Base styles for individual tip cards */
 .tip {
-    background-color: var(--secondary-bg);  /* White background */
-    border: 1px solid var(--border-color);  /* Light gray border */
-    border-radius: var(--border-radius);    /* Rounded corners */
-    padding: var(--padding-small);          /* Consistent padding */
-    margin-bottom: var(--margin-small);     /* Space below */
-    color: var(--primary-bg);               /* Dark blue text */
-    transition: box-shadow 0.2s, background-color 0.2s;  /* Smooth transitions */
-    display: flex;                          /* Flex layout */
-    align-items: flex-start;                /* Align at top */
-    cursor: pointer;                        /* Indicate clickability */
+    background-color: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--padding-small);
+    margin-bottom: var(--margin-small);
+    color: var(--primary-bg);
+    transition: box-shadow 0.2s, background-color 0.2s;
+    display: flex;
+    align-items: flex-start;
+    cursor: pointer;
 }
 
 /* Hover state for tip cards */
 .tip:hover {
-    background-color: #f5f8fa; /* Light gray background */
-    box-shadow: var(--shadow-hover);  /* Enhanced shadow */
+    background-color: #f5f8fa;
+    box-shadow: var(--shadow-hover);
 }
 
 /* Styles for the tip feed container */
 .tip-feed {
-    width: calc(100% - 20px);  /* Full width minus margins */
-    margin: 0 10px 10px 10px;  /* Consistent margins */
-    padding: 0;                /* No padding */
-    box-sizing: border-box;    /* Include margins */
-    overflow: hidden;          /* Prevent overflow */
+    width: calc(100% - 20px);
+    margin: 0 10px 10px 10px;
+    padding: 0;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 /* Styles for the tip avatar */
 .tip-avatar {
-    width: 40px;               /* Fixed width */
-    height: 40px;              /* Fixed height */
-    border-radius: 50%;        /* Circular shape */
-    object-fit: cover;         /* Crop to fit */
-    background-color: #f0f0f0; /* Fallback background */
-    margin-right: 12px;        /* Space to the right */
-    flex-shrink: 0;            /* Prevent shrinking */
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: #f0f0f0;
+    margin-right: 12px;
+    flex-shrink: 0;
 }
 
 /* Styles for tip avatar within modals */
 .tip-avatar.modal-tip-avatar {
-    width: 48px;               /* Larger width */
-    height: 48px;              /* Larger height */
-    border-radius: 50%;        /* Circular shape */
-    margin-right: 12px;        /* Space to the right */
-    flex-shrink: 0;            /* Prevent shrinking */
-    object-fit: cover;         /* Crop to fit */
-    display: block;            /* Block display */
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    margin-right: 12px;
+    flex-shrink: 0;
+    object-fit: cover;
+    display: block;
 }
 
 /* Styles for the tip content container */
 .tip-content {
-    flex: 1;                   /* Take remaining space */
-    display: flex;             /* Flex layout */
-    flex-direction: column;    /* Stack vertically */
-    gap: 5px; 
-    width: 100%;               /* Full width */
-    overflow-wrap: break-word;                 /* Space between elements */
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 100%;
+    overflow-wrap: break-word;
 }
 
 /* Styles for the tip header */
 .tip-header {
-    display: flex;             /* Flex layout */
-    align-items: center;       /* Center vertically */
-    gap: 5px;                  /* Space between elements */
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 /* Styles for the tip username */
 .tip-username {
-    color: var(--primary-bg);  /* Dark blue text */
-    font-weight: 600;          /* Bold text */
-    font-size: 16px;           /* Slightly larger font */
-    text-decoration: none;     /* No underline */
+    color: var(--primary-bg);
+    font-weight: 600;
+    font-size: 16px;
+    text-decoration: none;
 }
 
 /* Hover state for tip username */
 .tip-username:hover {
-    color: var(--red-accent);  /* Red on hover */
-    text-decoration: underline;  /* Underline on hover */
+    color: var(--red-accent);
+    text-decoration: underline;
 }
 
 /* Styles for the user handle */
 .user-handle {
-    color: #666666;            /* Corrected from var(white) to gray */
-    font-size: 14px;           /* Base font size */
-    margin-left: 5px;          /* Space to the left */
+    color: #666666;
+    font-size: 14px;
+    margin-left: 5px;
 }
 
 /* Styles for the tip body */
 .tip-body {
-    display: flex;             /* Flex layout */
-    flex-direction: column;    /* Stack vertically */
-    gap: 5px;                  /* Space between elements */
-    width: 100%;               /* Full width */
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 100%;
 }
 
 /* Paragraph within tip body */
 .tip-body p {
-    margin: 0;                 /* No margins */
-    font-size: var(--font-size-base);  /* Base font size */
-    color: var(--primary-bg);  /* Dark blue text */
-    line-height: 1.4;          /* Comfortable line spacing */
+    margin: 0;
+    font-size: var(--font-size-base);
+    color: var(--primary-bg);
+    line-height: 1.4;
 }
 
 /* Styles for the tip timestamp */
 .tip-timestamp {
-    display: block;            /* Block display */
-    font-size: 12px;           /* Smaller font */
-    color: var(--gray-light);  /* Gray text */
-    margin-top: 5px;           /* Space above */
+    display: block;
+    font-size: 12px;
+    color: var(--gray-light);
+    margin-top: 5px;
 }
 
 /* Styles for the tip image */
 .tip-image {
-    border-radius: 8px;        /* Rounded corners */
-    max-height: 300px;         /* Limit height */
-    object-fit: contain;       /* Fit without cropping */
-    max-width: 582px;          /* Limit width */
-    margin-top: var(--margin-small);  /* Space above */
-    aspect-ratio: 582 / 300;   /* Maintain aspect ratio */
+    border-radius: 8px;
+    max-height: 300px;
+    object-fit: contain;
+    max-width: 582px;
+    margin-top: var(--margin-small);
+    aspect-ratio: 582 / 300;
 }
 
 /* Styles for tip actions container */
 .tip-actions {
-    margin-top: 8px;           /* Space above */
-    display: flex;             /* Flex layout */
-    align-items: center;       /* Center vertically */
-    gap: 10px;                 /* Space between actions */
-    flex-wrap: wrap;           /* Allow wrapping */
-    width: 100%; 
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    width: 100%;
 }
 
 /* Base styles for tip action buttons */
 .tip-action {
-    color: var(--gray-light) !important;  /* Gray text with override */
-    text-decoration: none;     /* No underline */
-    font-size: 1.2rem;         /* Larger font */
-    transition: color 0.2s, background-color 0.2s;  /* Smooth transitions */
-    display: flex;             /* Flex layout */
-    align-items: center;       /* Center vertically */
-    justify-content: center;   /* Center horizontally */
-    width: 32px;               /* Fixed width */
-    height: 32px;              /* Fixed height */
-    border-radius: 50%;        /* Circular shape */
+    color: var(--gray-light) !important;
+    text-decoration: none;
+    font-size: 1.2rem;
+    transition: color 0.2s, background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
 }
 
 /* Hover state for tip actions */
 .tip-action:hover {
-    color: var(--red-accent);  /* Red on hover */
+    color: var(--red-accent);
 }
 
 /* Specific hover states for tip actions */
 .tip-action-like:hover {
-    color: #f91880 !important; /* Pink for like */
-    background-color: rgba(249, 24, 128, 0.1);  /* Light pink spotlight */
+    color: #f91880 !important;
+    background-color: rgba(249, 24, 128, 0.1);
 }
 
 .tip-action-retweet:hover {
-    color: #00ba7c !important; /* Green for retweet */
-    background-color: rgba(0, 186, 124, 0.1);  /* Light green spotlight */
+    color: #00ba7c !important;
+    background-color: rgba(0, 186, 124, 0.1);
 }
 
 .tip-action-comment:hover {
-    color: var(--twitter-blue) !important;  /* Blue for comment */
-    background-color: rgba(29, 161, 242, 0.1);  /* Light blue spotlight */
+    color: var(--twitter-blue) !important;
+    background-color: rgba(29, 161, 242, 0.1);
 }
 
 .tip-action-engagement:hover {
-    color: #ffad1f !important; /* Yellow for engagement */
-    background-color: rgba(255, 173, 31, 0.1);  /* Light yellow spotlight */
+    color: #ffad1f !important;
+    background-color: rgba(255, 173, 31, 0.1);
 }
 
 .tip-action-bookmark:hover {
-    color: #1d9bf0 !important; /* Blue for bookmark */
-    background-color: rgba(29, 155, 240, 0.1);  /* Light blue spotlight */
+    color: #1d9bf0 !important;
+    background-color: rgba(29, 155, 240, 0.1);
 }
 
 .tip-action-share:hover {
-    color: #17bf63 !important; /* Green for share */
-    background-color: rgba(23, 191, 99, 0.1);  /* Light green spotlight */
+    color: #17bf63 !important;
+    background-color: rgba(23, 191, 99, 0.1);
 }
 
 /* Icon within tip actions */
 .tip-action i {
-    vertical-align: middle;    /* Center vertically */
+    vertical-align: middle;
 }
 
 /* Liked state for like action */
 .tip-action-like.liked i {
-    color: #ff4136 !important; /* Red when liked */
+    color: #ff4136 !important;
 }
 
 /* Shared state for share action */
 .tip-action-share.shared i {
-    color: #1da1f2 !important; /* Twitter blue when shared */
+    color: #1da1f2 !important;
 }
 
 /* Styles for tip action counts */
 .tip-action-count {
-    font-size: 0.9rem;         /* Slightly smaller font */
-    color: var(--gray-light);  /* Gray text */
-    margin-right: 0.75rem;     /* Space to the right */
+    font-size: 0.9rem;
+    color: var(--gray-light);
+    margin-right: 0.75rem;
 }
 
 /* Group container for tip action and count */
 .tip-action-group {
-    display: flex;             /* Flex layout */
-    align-items: center;       /* Center vertically */
-    gap: 0.25rem;              /* Small gap */
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
 }
 
 /* Small spacer between tip action groups */
 .tip-action-spacer {
-    flex-grow: 0.5;            /* Moderate growth */
+    flex-grow: 0.5;
 }
 
 /* Large spacer between tip action groups */
 .tip-action-spacer-large {
-    flex-grow: 1;              /* Full growth */
+    flex-grow: 1;
 }
 
 /* Styles for tip details container */
 .tip-details {
-    flex: 1;                   /* Take remaining space */
-    display: flex;             /* Flex layout */
-    flex-direction: column;    /* Stack vertically */
-    gap: 5px;                  /* Space between elements */
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
 }
 
 /* Bold text within tip details */
 .tip-details strong {
-    color: #000000;            /* Black text */
-    font-weight: 600;          /* Bold text */
-    font-size: 16px;           /* Slightly larger font */
-    text-decoration: none;     /* No underline */
-    display: block;            /* Block display */
-    margin-bottom: 4px;        /* Space below */
+    color: #000000;
+    font-weight: 600;
+    font-size: 16px;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 4px;
 }
 
 /* Styles for tip items in lists */
 .tip-item {
-    display: flex;             /* Flex layout */
-    align-items: flex-start;   /* Align at top */
-    gap: 10px;                 /* Space between elements */
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
 }
 
 /* Avatar within tip items */
 .tip-item .tip-avatar {
-    width: 40px;               /* Fixed width */
-    height: 40px;              /* Fixed height */
-    border-radius: 50%;        /* Circular shape */
-    object-fit: cover;         /* Crop to fit */
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
 }
 
 /* Details within tip items */
 .tip-item .tip-details {
-    flex: 1;                   /* Take remaining space */
+    flex: 1;
 }
 
 /* Username within tip items */
 .tip-item .tip-username {
-    color: #000;               /* Black text */
-    font-weight: bold;         /* Bold text */
-    text-decoration: none;     /* No underline */
+    color: #000;
+    font-weight: bold;
+    text-decoration: none;
 }
 
 /* Hover state for username in tip items */
 .tip-item .tip-username:hover {
-    text-decoration: underline;  /* Underline on hover */
+    text-decoration: underline;
 }
 
 /* Likes within tip items */
 .tip-item .tip-likes {
-    display: flex;             /* Flex layout */
-    align-items: center;       /* Center vertically */
-    gap: 5px;                  /* Space between elements */
-    font-size: 14px;           /* Base font size */
-    color: #555;               /* Gray text */
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    color: #555;
 }
 
 /* Icon within tip likes */
 .tip-item .tip-likes i {
-    color: #ff4d4f;            /* Red heart */
+    color: #ff4d4f;
 }
 
 /* Last tip item in list */
 .tip-item:last-child {
-    border-bottom: none;       /* No bottom border */
+    border-bottom: none;
 }
 
 /* Styles for tip list container */
 .tip-list {
-    display: flex;             /* Flex layout */
-    flex-direction: column;    /* Stack vertically */
-    gap: 15px;                 /* Space between items */
-    margin-top: 10px;          /* Space above */
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 10px;
 }
 
 /* Styles for tip text */
 .tip-text {
-    margin: 0;                 /* No margins */
-    font-size: 14px;           /* Base font size */
-    color: #333;               /* Dark gray text */
+    margin: 0;
+    font-size: 14px;
+    color: #333;
 }
 
 /* Styles for tip likes container */
 .tip-likes {
-    display: flex;             /* Flex layout */
-    align-items: center;       /* Center vertically */
-    gap: 5px;                  /* Space between elements */
-    font-size: 14px;           /* Base font size */
-    color: #555;               /* Gray text */
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    color: #555;
 }
 
 /* Icon within tip likes */
 .tip-likes i {
-    color: #ff4d4f;            /* Red heart */
+    color: #ff4d4f;
 }
 
 /* Updated styles for tip metadata */
 .tip-meta {
-    margin-top: 8px;           /* Space above */
-    display: flex;             /* Flex layout for inline display */
-    flex-wrap: wrap;           /* Allow wrapping on small screens */
-    gap: 10px;                 /* Space between spans */
-    font-size: 14px;           /* Consistent font size */
-    color: #666;            /* Gray text */
-    width: 100%;                
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 14px;
+    color: #666;
+    width: 100%;
 }
 
 .tip-meta span {
-    background: #f5f8fa;       /* Light gray background */
-    padding: 4px 8px;          /* Internal padding */
-    border-radius: 4px;        /* Rounded corners */
-    white-space: nowrap;       /* Prevent text wrapping */
+    background: #f5f8fa;
+    padding: 4px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
 }
 
-/* tipsterarena/core/static/css/tip.css */
+/* Tip status styles */
 .tip-status {
-    font-weight: bold; /* All statuses in bold */
-  }
-  
-  .tip-status.win {
-    color: #28a745; /* Green for Win */
-  }
-  
-  .tip-status.loss {
-    color: #dc3545; /* Red for Loss */
-  }
-  
-  .tip-status.pending {
-    color: #007bff; /* Blue for Pending */
-  }
-  
-  .tip-status.dead_heat {
-    color: #ffc107; /* Yellow for Dead Heat */
-  }
-  
-  .tip-status.void_non_runner {
-    color: #6c757d; /* Gray for Void/Non Runner */
-  }
+    font-weight: bold;
+}
 
-  /* Ensure other elements don’t overflow */
+.tip-status.win {
+    color: #28a745;
+}
+
+.tip-status.loss {
+    color: #dc3545;
+}
+
+.tip-status.pending {
+    color: #007bff;
+}
+
+.tip-status.dead_heat {
+    color: #ffc107;
+}
+
+.tip-status.void_non_runner {
+    color: #6c757d;
+}
+
+/* Ensure other elements don’t overflow */
 .tip-body p,
 .tip-image {
-    max-width: 100%;           /* Limit to container width */
-    overflow-wrap: break-word; /* Break long text */
+    max-width: 100%;
+    overflow-wrap: break-word;
 }

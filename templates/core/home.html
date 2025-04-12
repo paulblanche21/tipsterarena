@@ -300,4 +300,18 @@
     </div>
 {% endblock %}
 
-{% block trending
+{% block trending_tips %}
+    <!-- Sidebar widget for trending tips -->
+    <div class="sidebar-card trending-tips-card" data-card="trending-tips" style="background-color: white;">
+        <h3>Trending Tips</h3>
+        <div class="trending-tips-list">
+            <p>Loading trending tips...</p>
+        </div>
+        <a href="#" class="show-more" data-target="trending-tips">Show more</a>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/pages/upcoming-events.js' %}"></script>
+    <!-- Other scripts (comment.js, like.js, etc.) are dynamically imported by main.js -->
+{% endblock %}
