@@ -4,7 +4,7 @@
 {% block title %}{{ sport|title }} - Tipster Arena{% endblock %}
 
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'css/modals.css' %}">
+    <link rel="stylesheet" href="{% static 'css/modal.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -310,5 +310,5 @@
 {% endblock %}
 
 {% block extra_js %}
-    <script src="{% static 'js/pages/upcoming-events.js' %}"></script>
+    <script type="module" src="{% static 'js/pages/upcoming-events.js' %}"></script>
 {% endblock %}

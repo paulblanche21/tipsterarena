@@ -1,4 +1,3 @@
-// search.js
 function debounce(func, wait) {
   let timeout;
   return function (...args) {
@@ -116,15 +115,35 @@ export function setupSearch() {
     const eventCard = e.target.closest('.event-card') || 
                      e.target.closest('.tennis-card') || 
                      e.target.closest('.golf-card') || 
-                     e.target.closest('.horse-racing-card') || 
-                     e.target.closest('.events-modal');
+                     e.target.closest('.horse-racing-card');
+    const tipAction = e.target.closest('.tip-action'); // New check for tip actions
+    
     console.log('Click event target:', e.target);
-    console.log('Closest event-card or modal:', eventCard);
-    if (!searchBar.contains(e.target) && !searchResults.contains(e.target) && !eventCard) {
-      console.log('Click outside search bar, results, and event card/modal, hiding results');
+    console.log('Closest card:', eventCard ? eventCard.className : 'None');
+    console.log('Closest tip action:', tipAction ? tipAction.className : 'None');
+    
+    if (!searchBar.contains(e.target) && !searchResults.contains(e.target) && !eventCard && !tipAction) {
+      console.log('Click outside search bar, results, cards, and tip actions, hiding results');
       searchResults.style.display = 'none';
     } else {
-      console.log('Click inside search bar, results, or event card/modal, allowing event to propagate');
+      console.log('Click inside search bar, results, card, or tip action, keeping results visible');
+    }
+  });
+
+  // Add event delegation for expandable cards
+  document.addEventListener('click', (e) => {
+    const card = e.target.closest('.event-card, .tennis-card, .golf-card, .horse-racing-card');
+    if (card) {
+      console.log('Expandable card clicked:', card.className);
+      const isExpanded = card.classList.contains('expanded');
+      if (isExpanded) {
+        card.classList.remove('expanded');
+        console.log('Card collapsed');
+      } else {
+        card.classList.add('expanded');
+        console.log('Card expanded');
+      }
+      e.stopPropagation();
     }
   });
 

@@ -1,33 +1,3 @@
-/* modals.css */
-
-/* Styles for the tip display within a modal */
-.modal-tip {
-    display: flex;             /* Flex layout for avatar and content */
-    align-items: flex-start;   /* Align items at the top */
-    border-bottom: 1px solid var(--border-color);  /* Light gray border below tip */
-    padding-bottom: 10px;      /* Space below content */
-    margin-bottom: 10px;       /* Space below the entire tip */
-}
-
-/* Styles for the content area within the modal tip */
-.modal-tip-content {
-    flex: 1;                   /* Take remaining space in flex layout */
-    min-width: 0;              /* Allow content to shrink without overflow */
-}
-
-/* Styles for the "Replying to" header above reply input */
-.reply-to-header {
-    color: var(--gray-light);  /* Light gray text for subtlety */
-    font-size: var(--font-size-base);  /* Base font size (14px) */
-    margin-bottom: 5px;        /* Space below header */
-}
-
-/* Styles for the username within the "Replying to" header */
-.reply-to-header .reply-to-username {
-    color: var(--twitter-blue);  /* Twitter blue for emphasis */
-    font-weight: 600;            /* Bold text for prominence */
-}
-
 /* models.css */
 
 /* Event modal overlay */
@@ -35,8 +5,8 @@
     display: none;
     position: fixed;
     top: 0;
-    left: 0;
-    width: 100%;
+    left: 250px; /* Match navbar width from base.css */
+    right: 350px; /* Match sidebar width from base.css */
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
     z-index: 1000;
@@ -49,13 +19,13 @@
     background: var(--secondary-bg);
     border-radius: var(--border-radius);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    width: 100%;
-    max-width: 600px; /* Matches tip-feed width */
+    width: calc(100% - 20px); /* Match .tip-feed */
     max-height: 80vh;
     overflow-y: auto;
     position: relative;
     padding: var(--padding-small);
     box-sizing: border-box;
+    margin: 0 10px 10px 10px; /* Match .tip-feed margins */
 }
 
 /* Close button */
@@ -109,6 +79,11 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+    .event-modal {
+        left: 0; /* Full width on mobile */
+        right: 0;
+    }
+
     .event-modal-content {
         width: 90%;
         margin: 0 5%;

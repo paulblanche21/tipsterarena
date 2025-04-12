@@ -4,6 +4,10 @@
 
 {% block title %}Home - Tipster Arena{% endblock %}
 
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/models.css' %}">
+{% endblock %}
+
 {% block content %}
     <!-- Main content area for the homepage -->
     <div class="content">
@@ -312,6 +316,5 @@
 {% endblock %}
 
 {% block extra_js %}
-    <script src="{% static 'js/pages/upcoming-events.js' %}"></script>
-    <!-- Other scripts (comment.js, like.js, etc.) are dynamically imported by main.js -->
+    <script type="module" src="{% static 'js/pages/upcoming-events.js' %}"></script>
 {% endblock %}

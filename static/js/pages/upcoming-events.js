@@ -273,7 +273,17 @@ export async function initButtons() {
     return;
   }
 
-  let activeSport = sportSelector ? sportSelector.value : buttonsContainer.closest('.upcoming-events-card').classList.contains('upcoming-events-horse_racing') ? 'horse_racing' : buttonsContainer.closest('.upcoming-events-card').classList[1]?.replace('upcoming-events-', '') || 'football';
+  // Determine active sport
+  let activeSport;
+  if (sportSelector) {
+    // Home page: Use sport selector
+    activeSport = sportSelector.value;
+  } else {
+    // Sport page: Extract from class like 'upcoming-events-football'
+    const sportClass = Array.from(buttonsContainer.closest('.upcoming-events-card').classList)
+      .find(cls => cls.startsWith('upcoming-events-') && cls !== 'upcoming-events-card');
+    activeSport = sportClass ? sportClass.replace('upcoming-events-', '') : 'football';
+  }
   console.log(`Active sport: ${activeSport}`);
 
   // Update button labels based on sport
