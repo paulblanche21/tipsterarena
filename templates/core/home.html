@@ -11,9 +11,9 @@
         <div class="post-box">
             <div class="post-user">
                 {% if request.user.is_authenticated and request.user.userprofile.avatar %}
-                    <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar">
+                    <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
                 {% else %}
-                    <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.onerror=null; this.src='/static/img/default-avatar.png';">
+                    <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
                 {% endif %}
                 <div class="post-username-container">
                     <span class="post-username">{{ request.user.username|default:"Guest" }}</span>
@@ -21,16 +21,16 @@
                         <option value="everyone">Everyone</option>
                         <option value="followers">Followers</option>
                     </select>
-                    <select class="post-sport" {% if sport %}disabled{% endif %}>
-                        <option value="football" {% if sport == 'football' %}selected{% endif %}>Football</option>
-                        <option value="golf" {% if sport == 'golf' %}selected{% endif %}>Golf</option>
-                        <option value="tennis" {% if sport == 'tennis' %}selected{% endif %}>Tennis</option>
-                        <option value="horse_racing" {% if sport == 'horse_racing' %}selected{% endif %}>Horse Racing</option>
+                    <select class="post-sport">
+                        <option value="football">Football</option>
+                        <option value="golf">Golf</option>
+                        <option value="tennis">Tennis</option>
+                        <option value="horse_racing">Horse Racing</option>
                     </select>
                 </div>
             </div>
             <textarea placeholder="Post a Tip (e.g., Team A to win)..." class="post-input" maxlength="280"></textarea>
-            <!-- New Tip-Specific Fields -->
+            <!-- Tip-Specific Fields -->
             <div class="tip-details">
                 <div class="tip-odds">
                     <label for="odds-type">Odds Format:</label>
@@ -120,9 +120,9 @@
             {% for tip in tips %}
             <div class="tip" data-tip-id="{{ tip.id }}">
                 {% if tip.user.userprofile.avatar %}
-                    <img src="{{ tip.user.userprofile.avatar.url }}" alt="{{ tip.user.username }} Avatar" class="tip-avatar">
+                    <img src="{{ tip.user.userprofile.avatar.url }}" alt="{{ tip.user.username }} Avatar" class="tip-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
                 {% else %}
-                    <img src="{% static 'img/default-avatar.png' %}" alt="{{ tip.user.username }} Avatar" class="tip-avatar" onerror="this.onerror=null; this.src='/static/img/default-avatar.png';">
+                    <img src="{% static 'img/default-avatar.png' %}" alt="{{ tip.user.username }} Avatar" class="tip-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
                 {% endif %}
                 <div class="tip-content">
                     <div class="tip-header">
@@ -191,12 +191,23 @@
             {% endfor %}
         </div>
 
+        <!-- Event modal -->
+        <div class="event-modal" id="event-modal" style="display: none;">
+            <div class="event-modal-content">
+                <span class="event-modal-close">×</span>
+                <h2 id="event-modal-title">Loading...</h2>
+                <div id="event-modal-body">
+                    <p>Loading events...</p>
+                </div>
+            </div>
+        </div>
+
         <!-- Modal for viewing and posting comments -->
         <div class="comment-modal" id="comment-modal">
             <div class="comment-modal-content">
                 <span class="comment-modal-close">×</span>
                 <div class="modal-tip">
-                    <img src="" alt="User Avatar" class="tip-avatar modal-tip-avatar" onerror="this.onerror=null; this.src='/static/img/default-avatar.png';">
+                    <img src="" alt="User Avatar" class="tip-avatar modal-tip-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
                     <div class="modal-tip-content">
                         <a href="#" class="tip-username">
                             <strong class="modal-tip-username"></strong>
@@ -208,20 +219,20 @@
                         <div class="tip-actions">
                             <div class="tip-action-group">
                                 <a href="#" class="tip-action tip-action-like" data-action="like" aria-label="Like this tip"><i class="fas fa-heart"></i></a>
-                                <span class="tip-action-count like-count">{{ tip.likes.count }}</span>
+                                <span class="tip-action-count like-count">0</span>
                             </div>
                             <div class="tip-action-group">
                                 <a href="#" class="tip-action tip-action-share" data-action="share" aria-label="Share this tip"><i class="fas fa-retweet"></i></a>
-                                <span class="tip-action-count share-count">{{ tip.shares.count }}</span>
+                                <span class="tip-action-count share-count">0</span>
                             </div>
                             <div class="tip-action-group">
                                 <a href="#" class="tip-action tip-action-comment" data-action="comment" aria-label="Comment on this tip"><i class="fas fa-comment-dots"></i></a>
-                                <span class="tip-action-count comment-count">{{ tip.comments.count }}</span>
+                                <span class="tip-action-count comment-count">0</span>
                             </div>
                             <div class="tip-action-spacer"></div>
                             <div class="tip-action-group">
                                 <a href="#" class="tip-action tip-action-engagement" aria-label="View engagement"><i class="fas fa-users"></i></a>
-                                <span class="tip-action-count">{{ tip.engagement|default:"0" }}</span>
+                                <span class="tip-action-count">0</span>
                             </div>
                             <div class="tip-action-spacer-large"></div>
                             <div class="tip-action-group">
@@ -235,11 +246,10 @@
                 </div>
                 <div class="reply-to-header" style="display: none;">Replying to <span class="reply-to-username"></span></div>
                 <div class="post-reply-box">
-                    <!-- Reply input area -->
                     {% if request.user.is_authenticated and request.user.userprofile.avatar %}
-                        <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar">
+                        <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
                     {% else %}
-                        <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.onerror=null; this.src='/static/img/default-avatar.png';">
+                        <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
                     {% endif %}
                     <div class="post-reply-content">
                         <div class="post-username-container">
@@ -272,52 +282,22 @@
 {% endblock %}
 
 {% block upcoming_events %}
-<!-- Sidebar widget for upcoming events with carousel -->
-<div class="sidebar-card upcoming-events-card" data-card="upcoming-events" style="background-color: white;">
-    <h3>Upcoming Events</h3>
-    <div class="carousel-container">
-        <div class="carousel-slide active" data-sport="football">
-            <div class="event-list" id="football-events">
-                <p>Loading football fixtures...</p>
-            </div>
-        </div>
-        <div class="carousel-slide" data-sport="golf">
-            <div class="event-list" id="golf-events">
-                <p>Loading golf fixtures...</p>
-            </div>
-        </div>
-        <div class="carousel-slide" data-sport="tennis">
-            <div class="event-list" id="tennis-events">
-                <p>Loading tennis fixtures...</p>
-            </div>
-        </div>
-        <div class="carousel-slide" data-sport="horse_racing">
-            <div class="event-list" id="horse_racing-events">
-                <p>Loading horse racing fixtures...</p>
+    <div class="sidebar-card upcoming-events-card" data-card="upcoming-events" style="background-color: var(--secondary-bg);">
+        <h3>Upcoming Events</h3>
+        <div class="event-controls">
+            <select class="sport-selector">
+                <option value="football">Football</option>
+                <option value="golf">Golf</option>
+                <option value="tennis">Tennis</option>
+                <option value="horse_racing">Horse Racing</option>
+            </select>
+            <div class="event-buttons">
+                <button class="event-btn" data-category="fixtures" data-horse-racing="upcoming_meetings">Fixtures</button>
+                <button class="event-btn" data-category="inplay" data-horse-racing="at_the_post">In Play</button>
+                <button class="event-btn" data-category="results" data-horse-racing="race_results">Results</button>
             </div>
         </div>
     </div>
-    <div class="carousel-dots">
-        <span class="dot active" data-sport="football"></span>
-        <span class="dot" data-sport="golf"></span>
-        <span class="dot" data-sport="tennis"></span>
-        <span class="dot" data-sport="horse_racing"></span>
-    </div>
-    <a href="#" class="show-more" data-target="upcoming-events">Show more</a>
-</div>
 {% endblock %}
 
-{% block trending_tips %}
-<!-- Sidebar widget for trending tips -->
-<div class="sidebar-card trending-tips-card" data-card="trending-tips" style="background-color: white;">
-    <h3>Trending Tips</h3>
-    <div class="trending-tips-list">
-        <p>Loading trending tips...</p>
-    </div>
-    <a href="#" class="show-more" data-target="trending-tips">Show more</a>
-</div>
-{% endblock %}
-
-{% block extra_js %}
-    <!-- No additional scripts needed, as main.js dynamically imports comment.js, like.js, share.js, post.js, gif.js, poll.js, emoji.js, modal.js, trendingTips.js, eventPopup.js -->
-{% endblock %}
+{% block trending

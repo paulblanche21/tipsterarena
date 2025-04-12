@@ -946,3 +946,7 @@ def search(request):
         'users': user_results,
         'tips': tip_results,
     })
+    
+def debug_racecards_json(request):
+    data = get_racecards_json(request)
+    return HttpResponse(json.dumps(data.json(), indent=2), content_type="application/json")

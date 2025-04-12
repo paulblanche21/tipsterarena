@@ -113,14 +113,18 @@ export function setupSearch() {
   });
 
   document.addEventListener('click', (e) => {
-    const eventCard = e.target.closest('.event-card') || e.target.closest('.tennis-card') || e.target.closest('.golf-card')|| e.target.closest('.horse-racing-card');
+    const eventCard = e.target.closest('.event-card') || 
+                     e.target.closest('.tennis-card') || 
+                     e.target.closest('.golf-card') || 
+                     e.target.closest('.horse-racing-card') || 
+                     e.target.closest('.events-modal');
     console.log('Click event target:', e.target);
-    console.log('Closest event-card:', eventCard);
+    console.log('Closest event-card or modal:', eventCard);
     if (!searchBar.contains(e.target) && !searchResults.contains(e.target) && !eventCard) {
-      console.log('Click outside search bar and event card, hiding results');
+      console.log('Click outside search bar, results, and event card/modal, hiding results');
       searchResults.style.display = 'none';
     } else {
-      console.log('Click inside search bar, results, or event card, allowing event to propagate');
+      console.log('Click inside search bar, results, or event card/modal, allowing event to propagate');
     }
   });
 

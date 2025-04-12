@@ -271,40 +271,24 @@
     </div>
 {% endblock %}
 
+
 {% block upcoming_events %}
-<!-- Sidebar widget for upcoming events with carousel -->
-<div class="sidebar-card upcoming-events-card" data-card="upcoming-events" style="background-color: white;">
+  <div class="sidebar-card upcoming-events-card" data-card="upcoming-events" style="background-color: var(--secondary-bg);">
     <h3>Upcoming Events</h3>
-    <div class="carousel-container">
-        <div class="carousel-slide active" data-sport="football">
-            <div class="event-list" id="football-events">
-                <p>Loading football fixtures...</p>
-            </div>
-        </div>
-        <div class="carousel-slide" data-sport="golf">
-            <div class="event-list" id="golf-events">
-                <p>Loading golf fixtures...</p>
-            </div>
-        </div>
-        <div class="carousel-slide" data-sport="tennis">
-            <div class="event-list" id="tennis-events">
-                <p>Loading tennis fixtures...</p>
-            </div>
-        </div>
-        <div class="carousel-slide" data-sport="horse_racing">
-            <div class="event-list" id="horse_racing-events">
-                <p>Loading horse racing fixtures...</p>
-            </div>
-        </div>
+    <div class="event-controls">
+      <select class="sport-selector">
+        <option value="football">Football</option>
+        <option value="golf">Golf</option>
+        <option value="tennis">Tennis</option>
+        <option value="horse_racing">Horse Racing</option>
+      </select>
+      <div class="event-buttons">
+        <button class="event-btn" data-category="fixtures" data-horse-racing="upcoming_meetings">Fixtures</button>
+        <button class="event-btn" data-category="inplay" data-horse-racing="at_the_post">In Play</button>
+        <button class="event-btn" data-category="results" data-horse-racing="race_results">Results</button>
+      </div>
     </div>
-    <div class="carousel-dots">
-        <span class="dot active" data-sport="football"></span>
-        <span class="dot" data-sport="golf"></span>
-        <span class="dot" data-sport="tennis"></span>
-        <span class="dot" data-sport="horse_racing"></span>
-    </div>
-    <a href="#" class="show-more" data-target="upcoming-events">Show more</a>
-</div>
+  </div>
 {% endblock %}
 
 {% block trending_tips %}

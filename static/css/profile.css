@@ -129,7 +129,6 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);  /* Subtle shadow */
     color: #001f3f;            /* Dark blue text */
     margin: 0 10px 10px 10px;  /* Consistent margins */
-    max-width: 700px;          /* Matches .content in base.css */
     overflow: hidden;          /* Prevent overflow */
     padding-top: 67px;         /* Space for header-top */
     width: calc(100% - 20px);  /* Full width minus margins */

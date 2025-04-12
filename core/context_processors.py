@@ -1,6 +1,6 @@
 # core/context_processors.py
 from django.contrib.auth.models import User
-from .models import UserProfile, Follow
+from .models import  Follow
 
 
 def suggested_tipsters(request):

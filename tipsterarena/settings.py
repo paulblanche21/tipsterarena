@@ -24,7 +24,7 @@ SITE_URL = 'http://localhost:8000'  # For development; adjust for production
 SECRET_KEY = "django-insecure-or8ih)*8^-c_@9h4r&sojeg#*5841-k%f9s+$tj##9n=&thm)4"  # Replace with a secure key in production
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False  # Set to False in production for security
+DEBUG = True  # Set to False in production for security
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']  # Add production hosts here
 
 # Application definition
@@ -46,9 +46,9 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",         # Security enhancements
     "django.contrib.sessions.middleware.SessionMiddleware",   # Session support
+    'corsheaders.middleware.CorsMiddleware',                 # CORS middleware for handling cross-origin requests
     "django.middleware.common.CommonMiddleware",             # Common utilities
     "django.middleware.csrf.CsrfViewMiddleware",             # CSRF protection
-    'corsheaders.middleware.CorsMiddleware',                 # CORS middleware for handling cross-origin requests
     "django.contrib.auth.middleware.AuthenticationMiddleware",  # User authentication
     "django.contrib.messages.middleware.MessageMiddleware",  # Messages support
     "django.middleware.clickjacking.XFrameOptionsMiddleware",  # Clickjacking protection
@@ -111,8 +111,6 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'    # Directory for collected static files
 MEDIA_URL = '/media/'         # URL prefix for media files
 MEDIA_ROOT = BASE_DIR / 'media'  # Directory for storing media files
 
-# Override DEBUG for development to serve media files (remove in production)
-DEBUG = True  # Set to True for development to enable media file serving
 
 # Authentication settings
 LOGIN_REDIRECT_URL = '/home/'  # Redirect after successful login
@@ -120,11 +118,16 @@ LOGOUT_REDIRECT_URL = '/'      # Redirect after logout
 LOGIN_URL = '/'                # Redirect to landing page if not authenticated
 
 
-# Allow specific origins
+# CORS settings
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:8000',
     'http://127.0.0.1:8000',
+    'http://localhost:3000',  # Vite dev server
+    'http://127.0.0.1:3000',
 ]
+CORS_ALLOW_CREDENTIALS = True  # Allow cookies, auth headers
+CORS_ALLOW_METHODS = ['GET', 'POST', 'OPTIONS']  # Explicitly allow methods
+CORS_ALLOW_HEADERS = ['Content-Type', 'X-CSRFToken']  # Allow specific headers
 
 # Security settings
 CSP_DEFAULT_SRC = ("'self'",)

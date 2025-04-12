@@ -6,7 +6,7 @@
     background-color: var(--secondary-bg);
     border-radius: var(--border-radius);
     margin-bottom: 15px;
-    height: 400px;
+    height: auto;
     display: flex;
     flex-direction: column;
     position: relative;
@@ -14,6 +14,7 @@
     max-width: 350px;
     width: 100%;
     box-sizing: border-box;
+    min-height: 250px
 }
 
 /* Ensure sidebar cards don't interfere */
@@ -65,53 +66,209 @@
     overflow-y: auto;
 }
 
-/* Sport-Specific Styling for Non-Football Sports (Tennis, Golf, Horse Racing) */
-.upcoming-events-tennis,
-.upcoming-events-golf,
-.upcoming-events-horse_racing {
-    min-height: 250px; /* Reduced min-height for better flexibility */
-    height: auto; /* Allow the card to grow with content */
-}
+/* Event Controls (Sport Selector and Buttons) */
+.event-controls {
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
 
-.upcoming-events-tennis .league-header,
-.upcoming-events-golf .league-header,
-.upcoming-events-horse_racing .league-header {
-    font-size: 15px; /* Slightly smaller for hierarchy */
-    margin: 0 0 10px; /* Adjusted margin */
-    padding: 8px 12px; /* Slightly less padding */
-}
 
-.upcoming-events-tennis .event-item,
-.upcoming-events-golf .event-item,
-.upcoming-events-horse_racing .event-item {
-    padding: 10px 12px; /* Added padding for breathing room */
-    margin-bottom: 12px; /* Increased spacing between events */
-    background-color: #ffffff; /* White background for contrast */
-    border-radius: 6px; /* Rounded corners for a softer look */
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* Subtle shadow for depth */
-    line-height: 1.5;
-    transition: background-color 0.2s ease;
-}
+  .event-item {
+    padding: 10px;
+    margin-bottom: 8px;
+    background: #ffffff;
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    font-size: 13px;
+  }
+  
+  .event-item h4, .event-item p {
+    margin: 3px 0;
+    color: #001f3f;
+  }
 
-.upcoming-events-tennis .event-item:hover,
-.upcoming-events-golf .event-item:hover,
-.upcoming-events-horse_racing .event-item:hover {
-    background-color: #f8f9fa; /* Light hover effect */
-}
 
-.upcoming-events-tennis .show-more,
-.upcoming-events-golf .show-more,
-.upcoming-events-horse_racing .show-more {
-    margin-top: 12px; /* Slightly more spacing above */
-    padding: 8px 0; /* Increased padding for better click area */
-    transition: color 0.2s ease;
-}
+/* Golf sidebar items */
+.event-item.golf-event {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+  }
+  
+  /* Football sidebar items (match football-events.css) */
+  .event-item.football-event {
+    padding: 8px;
+    border: 1px solid #ddd;
+  }
+  
+  .event-item.football-event .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  
+  .event-item.football-event.live-match .card-header {
+    background-color: #ffe6e6;
+  }
+  
+  .event-item.football-event .match-details {
+    display: none;
+    padding: 8px;
+    background: #f9f9f9;
+    border-top: 1px solid #eee;
+    font-size: 12px;
+  }
 
-.upcoming-events-tennis .show-more:hover,
-.upcoming-events-golf .show-more:hover,
-.upcoming-events-horse_racing .show-more:hover {
-    color: #2a6db0; /* Darker blue on hover */
-}
+
+  .event-item.tennis-event {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background: #fff;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  
+  .event-item.tennis-event .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  
+  .event-item.tennis-event.live-match .card-header {
+    background-color: #ffe6e6;
+  }
+  
+  .event-item.tennis-event .match-details {
+    display: none;
+    padding: 8px;
+    background: #f9f9f9;
+    border-top: 1px solid #eee;
+    font-size: 12px;
+  }
+  
+  .event-item.tennis-event .match-info .players {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: bold;
+  }
+  
+  .event-item.tennis-event .match-info .score {
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .event-item.tennis-event.live-match .match-info .score {
+    color: #e63946;
+  }
+
+  .event-item.horse_racing-event {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background: #fff;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  
+  .event-item.horse_racing-event .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  
+  .event-item.horse_racing-event .card-content {
+    display: none;
+    padding: 8px;
+    background: #f9f9f9;
+    border-top: 1px solid #eee;
+    font-size: 12px;
+  }
+  
+  .carousel-event-card.expandable-card {
+    padding: 8px;
+    margin-bottom: 8px;
+  }
+
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  
+  .match-details {
+    font-size: 12px;
+    color: #666666;
+  }
+
+  
+  .sport-selector {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-color); /* #e1e8ed */
+    border-radius: var(--border-radius); /* 12px */
+    background: var(--secondary-bg); /* #ffffff */
+    color: var(--black);
+    font-family: var(--font-default);
+    font-size: var(--font-size-base); /* 14px */
+  }
+  
+  .sport-selector:focus {
+    outline: none;
+    border-color: var(--red-accent); /* #ff4136 */
+  }
+  
+  .event-buttons {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .event-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: #e1e8ed; /* --border-color */
+    color: var(--black);
+    cursor: pointer;
+    font-family: var(--font-default);
+    font-size: 14px; /* Matches --font-size-base */
+    font-weight: 600;
+    border-radius: var(--border-radius); /* 12px */
+    transition: background 0.3s, color 0.3s;
+  }
+  
+  .event-btn.active {
+    background: var( --primary-bg);        /* Dark blue background used site-wide */ /* #1DA1F2 */
+    color: #ffffff;
+  }
+  
+  .event-btn:hover {
+    background: #d0d7de; /* Darker inactive */
+  }
+  
+  .event-btn.active:hover {
+    background: #0d8ecf; /* Darker --twitter-blue */
+  }
+  
+  .event-list {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 150px; /* Enough for a few events */
+    color: var(--gray-light); /* #666666 */
+  }
 
 .sidebar-message-content {
     position: fixed;
@@ -146,35 +303,6 @@
     flex: 1;
     overflow-y: auto;
     padding-bottom: 10px;
-}
-
-/* Carousel dots (minimal styling, as most carousel styles are in football-events.css) */
-.carousel-dots {
-    text-align: center;
-    padding: 10px 0;
-}
-
-/* Hide carousel dots when there's only one slide */
-.carousel-dots:has(.dot:nth-child(1):last-child) {
-    display: none;
-}
-
-.dot {
-    height: 10px;
-    width: 10px;
-    background-color: #bbb;
-    border-radius: 50%;
-    display: inline-block;
-    margin: 0 5px;
-    cursor: pointer;
-}
-
-.dot.active {
-    background-color: var(--primary-bg);
-}
-
-.dot:hover {
-    background-color: #999;
 }
 
 /* Copyright Notice */
@@ -252,40 +380,6 @@
     margin-bottom: 12px;
 }
 
-/* Show more button styling */
-.show-more {
-    display: block;
-    margin-top: 10px;
-    padding-bottom: 5px;
-    color: #4a90e2;
-    text-decoration: none;
-    font-size: 0.9em;
-    text-align: center;
-    flex-shrink: 0;
-}
-
-.show-more:hover {
-    text-decoration: underline;
-}
-
-/* Show less button styling */
-.show-less {
-    display: block;
-    color: var(--red-accent);
-    text-decoration: none;
-    font-size: 14px;
-    margin-top: 15px;
-    cursor: pointer;
-    padding: 0;
-    background: none;
-    border: none;
-    width: fit-content;
-}
-
-.show-less:hover {
-    text-decoration: underline;
-    color: var(--red-accent);
-}
 
 /* Search Input and Results */
 .search-wrapper {
@@ -491,3 +585,4 @@
         height: 36px;
     }
 }
+

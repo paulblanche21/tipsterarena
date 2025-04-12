@@ -1,320 +1,134 @@
-// main.js: Entry point for Tipster Arena's frontend, handling page-specific and shared module initialization
+// main.js: Entry point for Tipster Arena's frontend
 
-// Utility function to get the current page path
 function getCurrentPage() {
   return window.location.pathname;
 }
 
-// Initialize when DOM is fully loaded
-document.addEventListener('DOMContentLoaded', function () {
-  console.log('DOM fully loaded');
-  console.log('Current page:', getCurrentPage());
-
+document.addEventListener('DOMContentLoaded', async () => {
+  console.log('DOM loaded, page:', getCurrentPage());
   const page = getCurrentPage();
 
-  // Async IIFE to handle module imports and initialization
-  (async () => {
-    // Shared utilities loaded on all pages
-    let upcomingEventsModule;
-    try {
-      const sharedModules = await Promise.all([
-        import('./config.js').catch(error => {
-          console.error('Failed to load config.js:', error);
-          return null;
+  try {
+    const sharedModules = await Promise.all([
+      import('./config.js').catch(error => {
+        console.error('Failed to load config.js:', error);
+        return null;
+      }),
+      import('./pages/nav.js').then(module => {
+        module.setupNavigation();
+        return module;
+      }).catch(error => {
+        console.error('Failed to load nav.js:', error);
+        return null;
+      }),
+      import('./pages/upcoming-events.js').then(module => {
+        console.log('Loaded upcoming-events.js');
+        module.initButtons();
+        return module;
+      }).catch(error => {
+        console.error('Failed to load upcoming-events.js:', error);
+        throw error;
+      }),
+      import('./pages/search.js').then(module => {
+        module.setupSearch();
+        return module;
+      }).catch(error => {
+        console.error('Failed to load search.js:', error);
+        return null;
+      }),
+      import('./follow.js').then(module => {
+        console.log('Loaded follow.js');
+        module.attachFollowButtonListeners();
+        return module;
+      }).catch(error => {
+        console.error('Failed to load follow.js:', error);
+        return null;
+      }),
+    ]);
+
+    const upcomingEventsModule = sharedModules[2]; // Store for reuse
+
+    if (page === '/' || page === '/home/') {
+      await Promise.all([
+        import('./pages/post.js').then(module => {
+          module.setupCentralFeedPost();
+          module.setupPostModal();
         }),
-        import('./pages/nav.js').then(module => {
-          module.setupNavigation();
-          return module;
-        }).catch(error => {
-          console.error('Failed to load nav.js:', error);
-          return null;
+        import('./pages/trending-tips.js').then(module => module.init()),
+        import('./tips.js').then(module => {
+          module.setupTipInteractions();
+          module.setupReplyModal();
         }),
-        import('./pages/upcoming-events.js').then(module => {
-          console.log('Successfully loaded upcoming-events.js for shared modules');
-          module.initCarousel(); // Calls getDynamicEvents
-          module.attachFollowButtonListeners();
-          upcomingEventsModule = module; // Store for reuse
-          return module;
-        }).catch(error => {
-          console.error('Failed to load upcoming-events.js:', error);
-          throw error; // Rethrow to catch in outer block
-        }),
-        import('./pages/search.js').then(module => {
-          module.setupSearch();
-          return module;
-        }).catch(error => {
-          console.error('Failed to load search.js:', error);
-          return null;
-        }),
+        import('./pages/bookmarks.js').then(module => module.setupBookmarkInteractions()),
+        import('./pages/golf-events.js').then(module => module.setupLeaderboardUpdates()),
       ]);
-    } catch (error) {
-      console.error('Error loading shared modules:', error);
-      return; // Exit to prevent further errors
     }
 
-    // Page-specific script loading
-    try {
-      if (page === '/' || page === '/home/') {
-        await Promise.all([
-          import('./pages/post.js').then(module => {
-            module.setupCentralFeedPost();
-            module.setupPostModal();
-          }).catch(error => console.error('Failed to load post.js:', error)),
-          import('./pages/trending-tips.js').then(module => {
-            module.init();
-          }).catch(error => console.error('Failed to load trending-tips.js:', error)),
-          import('./tips.js').then(module => {
-            module.setupTipInteractions();
-            module.setupReplyModal();
-          }).catch(error => console.error('Failed to load tips.js:', error)),
-          import('./pages/bookmarks.js').then(module => {
-            module.setupBookmarkInteractions();
-          }).catch(error => console.error('Failed to load bookmarks.js:', error)),
-          Promise.resolve(upcomingEventsModule).then(async module => {
-            if (!module) throw new Error('upcoming-events.js not loaded');
-            module.setupShowMoreButtons();
-            const dynamicEvents = await module.getDynamicEvents();
+    if (page.includes('/explore/')) {
+      await Promise.all([
+        import('./pages/post.js').then(module => {
+          module.setupCentralFeedPost();
+          module.setupPostModal();
+        }),
+        import('./pages/trending-tips.js').then(module => module.init()),
+        import('./tips.js').then(module => {
+          module.setupTipInteractions();
+          module.setupReplyModal();
+        }),
+        import('./pages/bookmarks.js').then(module => module.setupBookmarkInteractions()),
+        import('./pages/golf-events.js').then(module => module.setupLeaderboardUpdates()),
+      ]);
+    }
 
-            const footballEventsElement = document.getElementById('football-events');
-            if (footballEventsElement) {
-              const footballEvents = dynamicEvents.football || [];
-              const footballHtml = await module.formatFootballList(footballEvents, 'football', false);
-              footballEventsElement.innerHTML = footballHtml || '<p>No upcoming events available.</p>';
-            }
+    if (page.includes('/profile/')) {
+      await Promise.all([
+        import('./pages/profile.js').then(module => module.setupProfileEditing()),
+        import('./pages/post.js').then(module => module.setupPostModal()),
+        import('./tips.js').then(module => {
+          module.setupTipInteractions();
+          module.setupReplyModal();
+        }),
+        import('./pages/bookmarks.js').then(module => module.setupBookmarkInteractions()),
+        import('./pages/golf-events.js').then(module => module.setupLeaderboardUpdates()),
+      ]);
+    }
 
-            const golfEventsElement = document.getElementById('golf-events');
-            if (golfEventsElement) {
-              const golfEvents = dynamicEvents.golf || [];
-              const golfHtml = await module.formatGolfList(golfEvents, 'golf', false);
-              golfEventsElement.innerHTML = golfHtml || '<p>No upcoming events available.</p>';
-            }
+    if (page.includes('/sport/')) {
+      await Promise.all([
+        import('./pages/post.js').then(module => {
+          module.setupCentralFeedPost();
+          module.setupPostModal();
+        }),
+        import('./tips.js').then(module => {
+          module.setupTipInteractions();
+          module.setupReplyModal();
+        }),
+        import('./pages/bookmarks.js').then(module => module.setupBookmarkInteractions()),
+        import('./pages/golf-events.js').then(module => module.setupLeaderboardUpdates()),
+      ]);
+    }
 
-            const tennisEventsElement = document.getElementById('tennis-events');
-            if (tennisEventsElement) {
-              const tennisEvents = dynamicEvents.tennis || [];
-              const tennisHtml = await module.formatTennisList(tennisEvents, 'tennis', false);
-              tennisEventsElement.innerHTML = tennisHtml || '<p>No upcoming tournaments available.</p>';
-            }
+    if (page === '/bookmarks/') {
+      await Promise.all([
+        import('./pages/bookmarks.js').then(module => module.setupBookmarkInteractions()),
+        import('./tips.js').then(module => {
+          module.setupTipInteractions();
+          module.setupReplyModal();
+        }),
+      ]);
+    }
 
-            const horseRacingEventsElement = document.getElementById('horse-racing-events');
-            if (horseRacingEventsElement) {
-              const horseRacingEvents = dynamicEvents.horse_racing || [];
-              const horseRacingHtml = await module.formatHorseRacingList(horseRacingEvents, 'horse_racing', false);
-              horseRacingEventsElement.innerHTML = horseRacingHtml || '<p>No upcoming races available.</p>';
-            }
-          }).catch(error => console.error('Error in upcoming-events for home:', error)),
-          import('./pages/golf-events.js').then(module => {
-            module.setupLeaderboardUpdates();
-          }).catch(error => console.error('Failed to load golf-events.js:', error)),
-        ]);
-      }
+    if (page === '/messages/') {
+      await import('./pages/messages.js').then(module => module.init());
+    }
 
-      if (page.includes('/explore/')) {
-        await Promise.all([
-          import('./pages/post.js').then(module => {
-            module.setupCentralFeedPost();
-            module.setupPostModal();
-          }),
-          import('./pages/trending-tips.js').then(module => module.init()),
-          import('./tips.js').then(module => {
-            module.setupTipInteractions();
-            module.setupReplyModal();
-          }),
-          import('./pages/bookmarks.js').then(module => module.setupBookmarkInteractions()),
-          Promise.resolve(upcomingEventsModule).then(async module => {
-            if (!module) throw new Error('upcoming-events.js not loaded');
-            module.setupShowMoreButtons();
-            const dynamicEvents = await module.getDynamicEvents();
-
-            const footballEventsElement = document.getElementById('football-events');
-            if (footballEventsElement) {
-              const footballEvents = dynamicEvents.football || [];
-              const footballHtml = await module.formatFootballList(footballEvents, 'football', false);
-              footballEventsElement.innerHTML = footballHtml || '<p>No upcoming events available.</p>';
-            }
-
-            const golfEventsElement = document.getElementById('golf-events');
-            if (golfEventsElement) {
-              const golfEvents = dynamicEvents.golf || [];
-              const golfHtml = await module.formatGolfList(golfEvents, 'golf', false);
-              golfEventsElement.innerHTML = golfHtml || '<p>No upcoming events available.</p>';
-            }
-
-            const tennisEventsElement = document.getElementById('tennis-events');
-            if (tennisEventsElement) {
-              const tennisEvents = dynamicEvents.tennis || [];
-              const tennisHtml = await module.formatTennisList(tennisEvents, 'tennis', false);
-              tennisEventsElement.innerHTML = tennisHtml || '<p>No upcoming tournaments available.</p>';
-            }
-
-            const horseRacingEventsElement = document.getElementById('horse-racing-events');
-            if (horseRacingEventsElement) {
-              const horseRacingEvents = dynamicEvents.horse_racing || [];
-              const horseRacingHtml = await module.formatHorseRacingList(horseRacingEvents, 'horse_racing', false);
-              horseRacingEventsElement.innerHTML = horseRacingHtml || '<p>No upcoming races available.</p>';
-            }
-          }),
-          import('./pages/golf-events.js').then(module => module.setupLeaderboardUpdates()),
-        ]).catch(error => console.error('Error loading scripts for explore page:', error));
-      }
-
-      if (page.includes('/profile/')) {
-        await Promise.all([
-          import('./pages/profile.js').then(module => module.setupProfileEditing()),
-          import('./pages/post.js').then(module => {
-            module.setupPostModal();
-          }),
-          import('./tips.js').then(module => {
-            module.setupTipInteractions();
-            module.setupReplyModal();
-          }),
-          import('./pages/bookmarks.js').then(module => module.setupBookmarkInteractions()),
-          Promise.resolve(upcomingEventsModule).then(async module => {
-            if (!module) throw new Error('upcoming-events.js not loaded');
-            module.setupShowMoreButtons();
-            const dynamicEvents = await module.getDynamicEvents();
-
-            const footballEventsElement = document.getElementById('football-events');
-            if (footballEventsElement) {
-              const footballEvents = dynamicEvents.football || [];
-              const footballHtml = await module.formatFootballList(footballEvents, 'football', false);
-              footballEventsElement.innerHTML = footballHtml || '<p>No upcoming events available.</p>';
-            }
-
-            const golfEventsElement = document.getElementById('golf-events');
-            if (golfEventsElement) {
-              const golfEvents = dynamicEvents.golf || [];
-              const golfHtml = await module.formatGolfList(golfEvents, 'golf', false);
-              golfEventsElement.innerHTML = golfHtml || '<p>No upcoming events available.</p>';
-            }
-
-            const tennisEventsElement = document.getElementById('tennis-events');
-            if (tennisEventsElement) {
-              const tennisEvents = dynamicEvents.tennis || [];
-              const tennisHtml = await module.formatTennisList(tennisEvents, 'tennis', false);
-              tennisEventsElement.innerHTML = tennisHtml || '<p>No upcoming tournaments available.</p>';
-            }
-
-            const horseRacingEventsElement = document.getElementById('horse-racing-events');
-            if (horseRacingEventsElement) {
-              const horseRacingEvents = dynamicEvents.horse_racing || [];
-              const horseRacingHtml = await module.formatHorseRacingList(horseRacingEvents, 'horse_racing', false);
-              horseRacingEventsElement.innerHTML = horseRacingHtml || '<p>No upcoming races available.</p>';
-            }
-          }),
-          import('./pages/golf-events.js').then(module => module.setupLeaderboardUpdates()),
-        ]).catch(error => console.error('Error loading scripts for profile page:', error));
-      }
-
-      if (page.includes('/sport/')) {
-        await Promise.all([
-          import('./pages/post.js').then(module => {
-            module.setupCentralFeedPost();
-            module.setupPostModal();
-          }),
-          import('./tips.js').then(module => {
-            module.setupTipInteractions();
-            module.setupReplyModal();
-          }),
-          import('./pages/bookmarks.js').then(module => module.setupBookmarkInteractions()),
-          Promise.resolve(upcomingEventsModule).then(async module => {
-            if (!module) throw new Error('upcoming-events.js not loaded');
-            module.setupShowMoreButtons();
-            const dynamicEvents = await module.getDynamicEvents();
-
-            const footballEventsElement = document.getElementById('football-events');
-            if (footballEventsElement) {
-              const footballEvents = dynamicEvents.football || [];
-              const footballHtml = await module.formatFootballList(footballEvents, 'football', false);
-              footballEventsElement.innerHTML = footballHtml || '<p>No upcoming events available.</p>';
-            }
-
-            const golfEventsElement = document.getElementById('golf-events');
-            if (golfEventsElement) {
-              const golfEvents = dynamicEvents.golf || [];
-              const golfHtml = await module.formatGolfList(golfEvents, 'golf', false);
-              golfEventsElement.innerHTML = golfHtml || '<p>No upcoming events available.</p>';
-            }
-
-            const tennisEventsElement = document.getElementById('tennis-events');
-            if (tennisEventsElement) {
-              const tennisEvents = dynamicEvents.tennis || [];
-              const tennisHtml = await module.formatTennisList(tennisEvents, 'tennis', false);
-              tennisEventsElement.innerHTML = tennisHtml || '<p>No upcoming tournaments available.</p>';
-            }
-
-            const horseRacingEventsElement = document.getElementById('horse-racing-events');
-            if (horseRacingEventsElement) {
-              const horseRacingEvents = dynamicEvents.horse_racing || [];
-              const horseRacingHtml = await module.formatHorseRacingList(horseRacingEvents, 'horse_racing', false);
-              horseRacingEventsElement.innerHTML = horseRacingHtml || '<p>No upcoming races available.</p>';
-            }
-          }),
-          import('./pages/golf-events.js').then(module => module.setupLeaderboardUpdates()),
-        ]).catch(error => console.error('Error loading scripts for sports page:', error));
-      }
-
-      if (page === '/bookmarks/') {
-        await Promise.all([
-          import('./pages/bookmarks.js').then(module => module.setupBookmarkInteractions()),
-          import('./tips.js').then(module => {
-            module.setupTipInteractions();
-            module.setupReplyModal();
-          }),
-          Promise.resolve(upcomingEventsModule).then(async module => {
-            if (!module) throw new Error('upcoming-events.js not loaded');
-            const dynamicEvents = await module.getDynamicEvents();
-
-            const footballEventsElement = document.getElementById('football-events');
-            if (footballEventsElement) {
-              const footballEvents = dynamicEvents.football || [];
-              const footballHtml = await module.formatFootballList(footballEvents, 'football', false);
-              footballEventsElement.innerHTML = footballHtml || '<p>No upcoming events available.</p>';
-            }
-
-            const golfEventsElement = document.getElementById('golf-events');
-            if (golfEventsElement) {
-              const golfEvents = dynamicEvents.golf || [];
-              const golfHtml = await module.formatGolfList(golfEvents, 'golf', false);
-              golfEventsElement.innerHTML = golfHtml || '<p>No upcoming events available.</p>';
-            }
-
-            const tennisEventsElement = document.getElementById('tennis-events');
-            if (tennisEventsElement) {
-              const tennisEvents = dynamicEvents.tennis || [];
-              const tennisHtml = await module.formatTennisList(tennisEvents, 'tennis', false);
-              tennisEventsElement.innerHTML = tennisHtml || '<p>No upcoming tournaments available.</p>';
-            }
-
-            const horseRacingEventsElement = document.getElementById('horse-racing-events');
-            if (horseRacingEventsElement) {
-              const horseRacingEvents = dynamicEvents.horse_racing || [];
-              const horseRacingHtml = await module.formatHorseRacingList(horseRacingEvents, 'horse_racing', false);
-              horseRacingEventsElement.innerHTML = horseRacingHtml || '<p>No upcoming races available.</p>';
-            }
-          }),
-        ]).catch(error => console.error('Error loading scripts for bookmarks page:', error));
-      }
-
-      if (page === '/messages/') {
-        console.log('Importing messages.js for messages page');
-        await import('./pages/messages.js')
-          .then(module => {
-            console.log('messages.js loaded successfully');
-            module.init();
-          })
-          .catch(error => console.error('Error loading scripts for messages page:', error));
-      }
-
-      // Trending Tips (shared across pages)
-      const trendingTipsList = document.querySelector('.trending-tips-list');
-      if (trendingTipsList) {
-        fetch('/api/trending-tips/', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
+    // Trending Tips
+    const trendingTipsList = document.querySelector('.trending-tips-list');
+    if (trendingTipsList) {
+      fetch('/api/trending-tips/', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      })
         .then(response => response.json())
         .then(data => {
           trendingTipsList.innerHTML = '';
@@ -339,17 +153,15 @@ document.addEventListener('DOMContentLoaded', function () {
           console.error('Error fetching trending tips:', error);
           trendingTipsList.innerHTML = '<p>Error loading trending tips.</p>';
         });
-      }
+    }
 
-      // Who to Follow (shared across pages, including home)
-      const followList = document.querySelector('.follow-list');
-      if (followList) {
-        fetch('/api/suggested-users/', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
+    // Who to Follow
+    const followList = document.querySelector('.follow-list');
+    if (followList) {
+      fetch('/api/suggested-users/', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      })
         .then(response => response.json())
         .then(data => {
           followList.innerHTML = '';
@@ -367,9 +179,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>
               `;
             });
-            Promise.resolve(upcomingEventsModule).then(module => {
-              if (module) module.attachFollowButtonListeners();
-            });
           } else {
             followList.innerHTML = '<p>No suggested tipsters available.</p>';
           }
@@ -378,9 +187,8 @@ document.addEventListener('DOMContentLoaded', function () {
           console.error('Error fetching suggested users:', error);
           followList.innerHTML = '<p>Error loading suggestions.</p>';
         });
-      }
-    } catch (error) {
-      console.error('Error in async IIFE:', error);
     }
-  })();
+  } catch (error) {
+    console.error('Error initializing:', error);
+  }
 });
