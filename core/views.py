@@ -3,14 +3,12 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import JsonResponse, HttpResponse
-from django.db import models
 from django.db.models import Count, F, Q
-from .models import Tip, Like, Follow, Share, UserProfile, Comment, MessageThread, RaceMeeting, RaceResult, Message, User
+from .models import Tip, Like, Follow, Share, UserProfile, Comment, MessageThread, RaceMeeting, Message
 from .forms import UserProfileForm, CustomUserCreationForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.conf import settings
 from django.views.decorators.http import require_POST
-from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.views import APIView
 from rest_framework.authentication import TokenAuthentication
@@ -18,12 +16,11 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework import generics, status
 from rest_framework.serializers import ModelSerializer
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.core.exceptions import ValidationError
-from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
 
 import logging
@@ -769,6 +766,51 @@ def horse_racing_fixtures(request):
     ]
 
     return JsonResponse({'fixtures': fixtures})
+
+def get_racecards_json(request):
+    """Return race meeting data as JSON for the next 3 days."""
+    today = datetime.now().date()
+    three_days_later = today + timedelta(days=3)
+    meetings = RaceMeeting.objects.filter(
+        date__gte=today,
+        date__lte=three_days_later
+    ).order_by('date', 'venue')
+
+    # Serialize meetings to JSON-compatible format
+    meetings_data = []
+    for meeting in meetings:
+        races = meeting.races.all().order_by('race_time')
+        races_data = []
+        for race in races:
+            result = race.results.first()
+            races_data.append({
+                'race_time': race.race_time.strftime('%H:%M'),
+                'name': race.name or 'Unnamed Race',
+                'horses': [
+                    {
+                        'number': horse['number'],
+                        'name': horse['name'],
+                        'jockey': horse.get('jockey', 'Unknown'),
+                        'odds': horse.get('odds', 'N/A'),
+                        'trainer': horse.get('trainer', 'Unknown'),
+                        'owner': horse.get('owner', 'Unknown'),
+                    } for horse in race.horses
+                ],
+                'result': {
+                    'winner': result.winner if result and result.winner else None,
+                    'placed_horses': [
+                        {'position': horse['position'], 'name': horse['name']}
+                        for horse in result.placed_horses
+                    ] if result and result.placed_horses else []
+                } if result else None
+            })
+        meetings_data.append({
+            'venue': meeting.venue,
+            'date': meeting.date.strftime('%Y-%m-%d'),
+            'races': races_data
+        })
+
+    return JsonResponse({'meetings': meetings_data})
 
 # API view for trending tips
 @login_required

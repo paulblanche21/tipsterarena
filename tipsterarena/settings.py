@@ -13,8 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-from django.conf.urls.static import static
-from django.conf import settings
+
 
 # Define the base directory of the project
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -37,6 +36,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",        # Messaging framework
     "django.contrib.staticfiles",     # Static file handling
     'core.apps.CoreConfig',           # Custom core app for Tipster Arena
+    'corsheaders',                    # CORS headers for cross-origin requests
     'rest_framework',                 # Django REST framework for API support
     'rest_framework.authtoken',       # Token authentication for REST framework
     "csp",                            # Content Security Policy enforcement
@@ -48,6 +48,7 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",   # Session support
     "django.middleware.common.CommonMiddleware",             # Common utilities
     "django.middleware.csrf.CsrfViewMiddleware",             # CSRF protection
+    'corsheaders.middleware.CorsMiddleware',                 # CORS middleware for handling cross-origin requests
     "django.contrib.auth.middleware.AuthenticationMiddleware",  # User authentication
     "django.contrib.messages.middleware.MessageMiddleware",  # Messages support
     "django.middleware.clickjacking.XFrameOptionsMiddleware",  # Clickjacking protection
@@ -117,6 +118,13 @@ DEBUG = True  # Set to True for development to enable media file serving
 LOGIN_REDIRECT_URL = '/home/'  # Redirect after successful login
 LOGOUT_REDIRECT_URL = '/'      # Redirect after logout
 LOGIN_URL = '/'                # Redirect to landing page if not authenticated
+
+
+# Allow specific origins
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
 
 # Security settings
 CSP_DEFAULT_SRC = ("'self'",)

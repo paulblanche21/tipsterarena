@@ -53,7 +53,8 @@ urlpatterns = [
 
     # API routes for data retrieval
     path('horse-racing/cards/', views.horse_racing_fixtures, name='horse_racing_fixtures'),  # Updated path
-    path('api/race-meetings/', views.RaceMeetingList.as_view(), name='race-meetings'), 
+    path('horse-racing/cards-json/', views.get_racecards_json, name='racecards_json'),
+    path('horse-racing/fixtures/', views.horse_racing_fixtures, name='horse_racing_fixtures'),
     path('api/trending-tips/', views.trending_tips_api, name='trending_tips_api'),  # Trending tips
     path('api/current-user/', views.current_user_api, name='current_user_api'),  # Current user info
 

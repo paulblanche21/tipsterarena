@@ -57,7 +57,6 @@ body {
 
 /* Styles for the main content area */
 .content {
-    max-width: 680px;  /* Constrain content width for readability (increased from 650px) */
     margin: 0 auto;    /* Center the content horizontally */
     min-height: 100vh; /* Ensure content area spans full height */
     box-sizing: border-box;  /* Include padding/borders in dimensions */

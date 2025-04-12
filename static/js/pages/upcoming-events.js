@@ -1,4 +1,4 @@
-// upcoming-events.js
+// upcoming-events.js: Handles fetching and rendering upcoming events for sports in Tipster Arena
 
 import { getCSRFToken } from './utils.js';
 import { fetchEvents as fetchFootballEvents, formatEventList as formatFootballList, formatEventTable as formatFootballTable } from './football-events.js';
@@ -6,6 +6,7 @@ import { fetchEvents as fetchTennisEvents, formatEventList as formatTennisList, 
 import { fetchEvents as fetchGolfEvents, formatEventList as formatGolfList, fetchLeaderboard } from './golf-events.js';
 import { fetchMeetingList as fetchHorseRacingMeetings, fetchEvents as fetchHorseRacingEvents, formatEventList as formatHorseRacingList, formatMeetingList as formatHorseRacingMeetingList } from './horse-racing-events.js';
 
+// Configuration for sports and their respective leagues
 const SPORT_CONFIG = {
   football: [
     { sport: "soccer", league: "eng.1", icon: "⚽", name: "Premier League", priority: 1 },
@@ -34,6 +35,7 @@ const SPORT_CONFIG = {
   ]
 };
 
+// Mapping of sports to their fetch and format functions
 const SPORT_MODULES = {
   football: { fetch: fetchFootballEvents, format: formatFootballList },
   golf: { fetch: fetchGolfEvents, format: formatGolfList },
@@ -41,7 +43,7 @@ const SPORT_MODULES = {
   horse_racing: { fetch: fetchHorseRacingEvents, format: formatHorseRacingList }
 };
 
-// Use formatMeetingList for sidebar rendering
+// Formatters for sidebar rendering
 const FORMATTERS = {
   football: formatFootballList,
   golf: formatGolfList,
@@ -51,7 +53,9 @@ const FORMATTERS = {
 
 let globalEvents = {};
 
+// Fetches events for all configured sports
 export async function getDynamicEvents() {
+  console.log('Entering getDynamicEvents');
   const events = {};
   for (const sportKey of Object.keys(SPORT_CONFIG)) {
     const sportConfigs = SPORT_CONFIG[sportKey];
@@ -59,8 +63,8 @@ export async function getDynamicEvents() {
     if (module && sportConfigs.length > 0) {
       let allEvents = [];
       if (sportKey === "horse_racing") {
-        allEvents = await module.fetch();  // fetchEvents returns HTML string for horse racing
-        console.log(`Horse Racing: Fetched ${typeof allEvents === 'string' ? 'HTML content' : allEvents.length + ' events'}`);
+        allEvents = await module.fetch(); // Fetch horse racing events
+        console.log(`Horse Racing: Fetched ${allEvents.length} events`, allEvents);
       } else {
         const today = new Date();
         const startDate = new Date();
@@ -85,7 +89,6 @@ export async function getDynamicEvents() {
           }
         }
       }
-      // Only sort if allEvents is an array (i.e., not for horse racing)
       if (sportKey !== "football" && Array.isArray(allEvents)) {
         allEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
       }
@@ -93,7 +96,6 @@ export async function getDynamicEvents() {
     }
   }
   globalEvents = events;
-  // Combine events for all sports, excluding horse racing since it's HTML
   events.all = [
     ...(events.football || []),
     ...(events.golf || []),
@@ -102,12 +104,10 @@ export async function getDynamicEvents() {
   return events;
 }
 
-/**
- * Adds toggle functionality for expandable match cards (football and tennis)
- */
+// Adds toggle functionality for expandable match cards
 export function setupExpandableCards() {
   console.log('Entering setupExpandableCards');
-  const cards = document.querySelectorAll('.event-card.expandable-card, .tennis-card.expandable-card');
+  const cards = document.querySelectorAll('.event-card.expandable-card, .tennis-card.expandable-card, .meeting-card.expandable-card');
   console.log('Found expandable cards:', cards.length);
 
   if (cards.length === 0) {
@@ -117,7 +117,7 @@ export function setupExpandableCards() {
 
   cards.forEach((card, index) => {
     const header = card.querySelector('.card-header');
-    const details = card.querySelector('.match-details');
+    const details = card.querySelector('.card-content, .match-details');
 
     if (!header) {
       console.error(`Card ${index} (ID: ${card.dataset.matchId || card.dataset.eventId}) is missing a .card-header element.`, card);
@@ -125,7 +125,7 @@ export function setupExpandableCards() {
     }
 
     if (!details) {
-      console.log(`Card ${index} (ID: ${card.dataset.matchId || card.dataset.eventId}) has no .match-details element. This is expected for non-live matches.`, card);
+      console.log(`Card ${index} (ID: ${card.dataset.matchId || card.dataset.eventId}) has no .card-content or .match-details element.`, card);
       return;
     }
 
@@ -138,7 +138,6 @@ export function setupExpandableCards() {
       e.stopPropagation();
       console.log(`Card header clicked for card ${index} (ID: ${card.dataset.matchId || card.dataset.eventId})`);
       const isVisible = details.style.display === 'block';
-      console.log(`Toggling card ${index} (ID: ${card.dataset.matchId || card.dataset.eventId}), Visible: ${isVisible}`);
       details.style.display = isVisible ? 'none' : 'block';
       card.classList.toggle('expanded', !isVisible);
     };
@@ -150,9 +149,9 @@ export function setupExpandableCards() {
 
   if (!document._cardCloseListener) {
     const closeHandler = (e) => {
-      if (!e.target.closest('.event-card.expandable-card') && !e.target.closest('.tennis-card.expandable-card')) {
+      if (!e.target.closest('.event-card.expandable-card') && !e.target.closest('.tennis-card.expandable-card') && !e.target.closest('.meeting-card.expandable-card')) {
         console.log('Click outside, closing all expandable cards');
-        document.querySelectorAll('.match-details').forEach(details => {
+        document.querySelectorAll('.card-content, .match-details').forEach(details => {
           details.style.display = 'none';
         });
         document.querySelectorAll('.expandable-card').forEach(card => {
@@ -166,20 +165,23 @@ export function setupExpandableCards() {
   }
 }
 
-// New function to populate the center feed with detailed racecards
+// Populates the center feed with detailed racecards for horse racing
 async function populateCenterFeed(sport) {
-  if (sport !== 'horse_racing') return;  // Only handle horse racing for now
-
+  if (sport !== 'horse_racing') return;
   const centerFeed = document.querySelector('.center-feed');
   if (!centerFeed) {
     console.warn('Center feed container not found');
     return;
   }
-
-  const events = await fetchHorseRacingEvents();  // Fetch detailed racecards
-  centerFeed.innerHTML = events || '<p>No upcoming horse racing meetings available.</p>';
+  const events = await fetchHorseRacingEvents();
+  const html = await formatHorseRacingList(events, 'horse_racing');
+  centerFeed.innerHTML = html;
+  setTimeout(() => {
+    setupExpandableCards();
+  }, 0);
 }
 
+// Generates HTML for the events popup
 export async function getEventList(currentPath, target, activeSport = 'football') {
   const path = currentPath.toLowerCase();
   let title = "";
@@ -273,9 +275,9 @@ export async function getEventList(currentPath, target, activeSport = 'football'
     } else if (path.includes("/sport/horse_racing/")) {
       title = "Upcoming Horse Racing Meetings";
       description = "Here are the race meetings for the next 3 days (detailed racecards are in the center feed):";
-      const horseRacingEvents = await fetchHorseRacingMeetings();  // Fetch simple meeting list
+      const horseRacingEvents = await fetchHorseRacingMeetings();
       const horseRacingContent = await formatHorseRacingMeetingList(horseRacingEvents, "horse_racing");
-      eventList = horseRacingEvents ? `
+      eventList = horseRacingEvents.length ? `
         <div class="meeting-list">
           ${horseRacingContent}
         </div>
@@ -292,15 +294,14 @@ export async function getEventList(currentPath, target, activeSport = 'football'
     </div>
   `;
 
-  console.log('getEventList: About to call setupExpandableCards');
   setTimeout(() => {
     setupExpandableCards();
-    console.log('setupExpandableCards called after DOM update in getEventList');
   }, 0);
 
   return popupHtml;
 }
 
+// Attaches click listeners to follow buttons
 function attachFollowButtonListeners() {
   const followButtons = document.querySelectorAll('.follow-btn');
   followButtons.forEach(button => {
@@ -311,6 +312,7 @@ function attachFollowButtonListeners() {
   });
 }
 
+// Sends follow request to the server
 function followUser(username, button) {
   const formData = new FormData();
   formData.append('username', username);
@@ -338,6 +340,7 @@ function followUser(username, button) {
   });
 }
 
+// Sets up "Show more" button listeners
 export function setupShowMoreButtons() {
   const showMoreButtons = document.querySelectorAll('.show-more');
   console.log('Found show-more buttons:', showMoreButtons.length);
@@ -470,6 +473,7 @@ export function setupShowMoreButtons() {
   });
 }
 
+// Populates carousel slides with events
 async function populateCarousel(container) {
   const dynamicEvents = await getDynamicEvents();
   const slides = container.querySelectorAll('.carousel-slide');
@@ -490,6 +494,7 @@ async function populateCarousel(container) {
   setupExpandableCards();
 }
 
+// Sets up carousel dot navigation
 function setupDotNavigation(container) {
   const dotsContainer = container.parentElement.querySelector('.carousel-dots');
   const dots = dotsContainer ? dotsContainer.querySelectorAll('.dot') : [];
@@ -503,7 +508,7 @@ function setupDotNavigation(container) {
   if (dots.length !== slides.length) {
     console.warn(`Mismatch detected: ${slides.length} slides vs ${dots.length} dots`);
     console.log("Slides:", Array.from(slides).map(s => s.getAttribute('data-sport')));
-    console.log("Dots:", Array.from(dots).map(d => s.getAttribute('data-sport')));
+    console.log("Dots:", Array.from(dots).map(d => d.getAttribute('data-sport')));
   }
 
   dots.forEach((dot, index) => {
@@ -516,6 +521,7 @@ function setupDotNavigation(container) {
   showSlide(container, activeSlideIndex !== -1 ? activeSlideIndex : 0);
 }
 
+// Starts automatic carousel rotation
 function startAutoRotation(container) {
   const slides = container.querySelectorAll('.carousel-slide');
   if (slides.length <= 1) return;
@@ -541,6 +547,7 @@ function startAutoRotation(container) {
   container.addEventListener('mouseleave', restartRotationHandler);
 }
 
+// Shows a specific carousel slide
 function showSlide(container, index) {
   const slides = container.querySelectorAll('.carousel-slide');
   const dotsContainer = container.parentElement.querySelector('.carousel-dots');
@@ -555,6 +562,7 @@ function showSlide(container, index) {
   });
 }
 
+// Initializes carousels on the page
 export async function initCarousel() {
   const dynamicEvents = await getDynamicEvents();
   const carouselContainers = document.querySelectorAll('.carousel-container');
@@ -588,12 +596,12 @@ export async function initCarousel() {
     }
   }
 
-  // Populate the center feed for horse racing
   if (window.location.pathname.includes('/sport/horse_racing/')) {
     await populateCenterFeed('horse_racing');
   }
 }
 
+// Initialize on page load
 document.addEventListener("DOMContentLoaded", () => {
   setupShowMoreButtons();
   initCarousel();
