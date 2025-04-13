@@ -18,7 +18,7 @@ i {
 /* Styles for the emoji picker modal */
 .emoji-picker {
     position: absolute;        /* Absolute positioning over content */
-    z-index: 1005;             /* High z-index above other modals */
+    z-index: 12000;             /* High z-index above other modals */
     background: #fff;          /* White background */
     border: 1px solid #e1e8ed; /* Light gray border */
     border-radius: 12px;       /* Rounded corners */
@@ -139,7 +139,7 @@ i {
     width: 100%;               /* Full width */
     height: 100%;              /* Full height */
     background: rgba(0, 31, 63, 0.5);  /* Dark blue with transparency */
-    z-index: 1005;             /* High z-index */
+    z-index: 12000;             /* High z-index */
 }
 
 /* Content within GIF modal */

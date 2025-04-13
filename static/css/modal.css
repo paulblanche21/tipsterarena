@@ -1,4 +1,4 @@
-/* models.css */
+/* modal.css */
 
 /* Event modal overlay */
 .event-modal {
@@ -77,14 +77,386 @@
     font-size: 1.3rem;
 }
 
+/* Comment modal styles (moved from tip.css and comment.css) */
+.hidden {
+    display: none;
+}
+
+.comment-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 250px; /* Match navbar width from base.css */
+    right: 350px; /* Match sidebar width from base.css */
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 11000; /* Above custom-alert (z-index: 10000) */
+    justify-content: center;
+    align-items: center;
+}
+
+.comment-modal.active {
+    display: flex; /* Use flex to center content */
+}
+
+.comment-modal.hidden {
+    display: none;
+}
+
+.comment-modal-content {
+    background: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-hover);
+    width: calc(100% - 20px); /* Match .tip-feed */
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    padding: var(--padding-small);
+    box-sizing: border-box;
+    margin: 0 10px 10px 10px; /* Match .tip-feed margins */
+}
+
+.comment-modal-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    color: var(--gray-light);
+    cursor: pointer;
+    border: none;
+    background: none;
+}
+
+.comment-modal-close:hover {
+    color: var(--red-accent);
+}
+
+.modal-tip,
+.comment-list {
+    padding: 15px;
+}
+
+.modal-tip {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 15px;
+}
+
+.modal-tip-content {
+    flex: 1;
+    width: 100%;
+    overflow-wrap: break-word;
+}
+
+.modal-tip-username {
+    font-weight: bold;
+    color: #000;
+}
+
+.modal-tip-text {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.modal-tip-timestamp {
+    color: #666;
+    font-size: 12px;
+}
+
+.comment-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.comment-list .comment {
+    background-color: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--padding-small);
+    box-shadow: var(--shadow-light);
+    margin-bottom: var(--margin-small);
+    color: var(--primary-bg);
+    transition: box-shadow 0.2s, background-color 0.2s;
+    display: flex;
+    align-items: flex-start;
+}
+
+.comment-list .comment:hover {
+    background-color: #f5f8fa;
+    box-shadow: var(--shadow-hover);
+}
+
+.comment-list .comment .comment-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.comment-list .comment .comment-username {
+    font-size: var(--font-size-base);
+    color: var(--black);
+    text-decoration: none;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.comment-list .comment .comment-content {
+    flex: 1;
+}
+
+.comment-list .comment p {
+    margin: 5px 0;
+    font-size: var(--font-size-base);
+    color: #333;
+}
+
+.comment-list .comment small {
+    color: var(--gray-light);
+    font-size: 12px;
+}
+
+.comment-list .comment .comment-actions {
+    margin-top: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.comment-list .comment .comment-action {
+    color: var(--gray-light);
+    text-decoration: none;
+    font-size: 1.2rem;
+    transition: color 0.2s, background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+.comment-list .comment .comment-action-like:hover {
+    color: #f91880;
+    background-color: rgba(249, 24, 128, 0.1);
+}
+
+.comment-list .comment .comment-action-share:hover {
+    color: #00ba7c;
+    background-color: rgba(0, 186, 124, 0.1);
+}
+
+.comment-list .comment .comment-action-comment:hover {
+    color: var(--twitter-blue);
+    background-color: rgba(29, 161, 242, 0.1);
+}
+
+.comment-list .comment .comment-action i {
+    vertical-align: middle;
+}
+
+.comment-list .comment .comment-action-count {
+    font-size: 0.9rem;
+    color: var(--gray-light);
+    margin-right: 0.75rem;
+}
+
+.comment-list .comment .comment-action-group {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.comment-list .comment .comment-action-spacer {
+    flex-grow: 0.5;
+}
+
+.comment-list .comment .comment-action-spacer-large {
+    flex-grow: 1;
+}
+
+.comment-list .comment .comment-action-like.liked i {
+    color: #ff4136;
+}
+
+.comment-list .comment .comment-action-share.shared i {
+    color: #1da1f2;
+}
+
+.comment-username {
+    font-size: var(--font-size-base);
+    color: var(--black);
+    text-decoration: none;
+}
+
+.comment-username strong {
+    margin-right: 5px;
+    font-weight: 600;
+}
+
+.comment p {
+    margin: 5px 0;
+    font-size: var(--font-size-base);
+    color: #333;
+}
+
+.comment small {
+    color: var(--gray-light);
+    font-size: 12px;
+}
+
+.comment-form {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.comment-input {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    resize: none;
+    height: 40px;
+    font-size: var(--font-size-base);
+    color: var(--primary-bg);
+    background-color: #f5f8fa;
+}
+
+.comment-input:focus {
+    outline: none;
+    border-color: var(--red-accent);
+}
+
+.comment-submit {
+    margin-left: 10px;
+    padding: 8px 16px;
+    background-color: var(--twitter-blue);
+    color: var(--secondary-bg);
+    border: none;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: var(--font-size-base);
+    cursor: pointer;
+}
+
+.comment-submit:hover {
+    background-color: #0d8ddb;
+}
+
+.post-reply-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 15px 0;
+    width: 100%;
+}
+
+.post-reply-box .post-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.post-reply-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.post-reply-input {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: vertical;
+    font-size: 14px;
+}
+
+.post-reply-submit {
+    background: #1DA1F2;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    align-self: flex-end;
+}
+
+.post-reply-submit:hover {
+    background: #0d8ddb;
+}
+
+.reply-to-header {
+    font-size: 14px;
+    color: #555;
+    margin: 10px 0;
+}
+
+.tip-comments {
+    margin-top: 10px;
+    padding: 10px;
+    background: #f5f8fa;
+    border-radius: 8px;
+    display: none;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.tip-comments.expanded {
+    display: block;
+}
+
+.tip-comments .comment {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 10px 0;
+    padding: 5px;
+}
+
+.tip-comments .comment-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 10px;
+}
+
+/* Loading spinner (from styles.css) */
+.loading-spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #1a73e8;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+/* Keyframes for spinner animation */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    .event-modal {
-        left: 0; /* Full width on mobile */
+    .event-modal,
+    .comment-modal {
+        left: 0;
         right: 0;
     }
 
-    .event-modal-content {
+    .event-modal-content,
+    .comment-modal-content {
         width: 90%;
         margin: 0 5%;
         padding: 10px;
@@ -96,5 +468,10 @@
 
     .sport-icon {
         font-size: 1.1rem;
+    }
+
+    .comment-list .comment .comment-avatar {
+        width: 40px;
+        height: 40px;
     }
 }

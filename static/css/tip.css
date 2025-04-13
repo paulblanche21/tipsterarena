@@ -377,7 +377,7 @@
     flex-wrap: wrap;           /* Allow wrapping on small screens */
     gap: 10px;                 /* Space between spans */
     font-size: 14px;           /* Consistent font size */
-    color: #666;            /* Gray text */
+    color: #666;               /* Gray text */
     width: 100%;                
 }
 
@@ -418,80 +418,4 @@
 .tip-image {
     max-width: 100%;           /* Limit to container width */
     overflow-wrap: break-word; /* Break long text */
-}
-
-/* Added styles for modal and avatar fixes */
-.hidden {
-    display: none;
-}
-
-.comment-modal {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 90%;
-    max-width: 600px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
-    padding: 15px;
-    box-sizing: border-box;
-}
-
-.comment-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-right: 10px;
-}
-
-.tip-comments {
-    margin-top: 10px;
-    padding: 10px;
-    background: #f5f8fa;
-    border-radius: 8px;
-    display: none;
-    width: 100%; /* Ensure it takes full width of parent */
-    box-sizing: border-box; /* Include padding in width */
-}
-
-.tip-comments.expanded {
-    display: block;
-}
-
-
-.tip-comments .comment-avatar {
-    width: 32px;
-    height: 32px;
-}
-
-.modal-tip,
-.comment-list {
-    padding: 15px;
-}
-
-.comment {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
-.comment-content {
-    flex: 1;
-}
-
-.comment-image {
-    max-width: 100%;
-    border-radius: 8px;
-    margin-top: 5px;
-}
-
-/* Ensure modal content doesn’t overflow */
-.modal-tip-content {
-    width: 100%;
-    overflow-wrap: break-word;
 }
