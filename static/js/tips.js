@@ -89,9 +89,23 @@ function setupTipInteractions() {
     fetch('/api/current-user/', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include'
+        credentials: 'include' // Ensure cookies (session) are sent
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            console.warn(`Failed to fetch current user data: ${response.status}`);
+            if (response.status === 401) {
+                console.log('User not authenticated');
+            }
+            return { success: false, error: response.status === 401 ? 'User not authenticated' : 'Request failed' };
+        }
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            console.warn('Received non-JSON response from /api/current-user/');
+            return { success: false, error: 'Invalid response format' };
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             currentUserData = {
@@ -100,9 +114,13 @@ function setupTipInteractions() {
                 isAdmin: data.is_admin || false
             };
             console.log('Current user data:', currentUserData);
+        } else {
+            console.warn(`Failed to fetch current user data: ${data.error}`);
         }
     })
-    .catch(error => console.error('Error fetching current user data:', error));
+    .catch(error => {
+        console.error('Error fetching current user data:', error);
+    });
 
     setupReplyModal();
 

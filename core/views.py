@@ -565,35 +565,42 @@ def accessibility(request):
     return render(request, 'core/accessibility.html')
 
 # API view for suggested users
-@login_required
+
+
 def suggested_users_api(request):
-    current_user = request.user
-    followed_users = Follow.objects.filter(follower=current_user).values_list('followed_id', flat=True)
-    suggested_users = User.objects.filter(
-        tip__isnull=False
-    ).exclude(
-        id__in=followed_users
-    ).exclude(
-        id=current_user.id
-    ).distinct()[:10]
+    try:
+        if not request.user.is_authenticated:
+            return JsonResponse({'success': False, 'error': 'User not authenticated'}, status=401)
+        logger.info(f"Fetching suggested users for user: {request.user.username}")
+        current_user = request.user
+        followed_users = Follow.objects.filter(follower=current_user).values_list('followed_id', flat=True)
+        logger.debug(f"Followed users: {list(followed_users)}")
+        suggested_users = User.objects.filter(
+            tip__isnull=False
+        ).exclude(
+            id__in=followed_users
+        ).exclude(
+            id=current_user.id
+        ).distinct()[:10]
+        logger.debug(f"Suggested users count: {suggested_users.count()}")
 
-    users_data = []
-    for user in suggested_users:
-        try:
-            profile = user.userprofile
-            avatar_url = profile.avatar.url if profile.avatar else settings.STATIC_URL + 'img/default-avatar.png'
-            bio = profile.description or "No bio available"
-        except UserProfile.DoesNotExist:
-            avatar_url = settings.STATIC_URL + 'img/default-avatar.png'
-            bio = "No bio available"
-        users_data.append({
-            'username': user.username,
-            'avatar_url': avatar_url,
-            'bio': bio,
-            'profile_url': f"/profile/{user.username}/"
-        })
+        users_data = []
+        for user in suggested_users:
+            profile = getattr(user, 'userprofile', None)
+            avatar_url = profile.avatar.url if profile and profile.avatar else settings.STATIC_URL + 'img/default-avatar.png'
+            bio = profile.description or "No bio available" if profile else "No bio available"
+            users_data.append({
+                'username': user.username,
+                'avatar_url': avatar_url,
+                'bio': bio,
+                'profile_url': f"/profile/{user.username}/"
+            })
 
-    return JsonResponse({'users': users_data})
+        logger.info(f"Returning {len(users_data)} suggested users")
+        return JsonResponse({'success': True, 'users': users_data})
+    except Exception as e:
+        logger.error(f"Error in suggested_users_api: {str(e)}")
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 # Updated TipSerializer
 class TipSerializer(ModelSerializer):
@@ -770,52 +777,58 @@ def horse_racing_fixtures(request):
 # API view for trending tips
 @login_required
 def trending_tips_api(request):
-    trending_tips = Tip.objects.annotate(
-        total_likes=Count('likes'),
-        total_shares=Count('shares')
-    ).annotate(
-        total_engagement=F('total_likes') + F('total_shares')
-    ).order_by('-total_engagement')[:4]
+    try:
+        if not request.user.is_authenticated:
+            return JsonResponse({'success': False, 'error': 'User not authenticated'}, status=401)
+        logger.info(f"Fetching trending tips for user: {request.user.username}")
+        trending_tips = Tip.objects.annotate(
+            total_likes=Count('likes'),
+            total_shares=Count('shares')
+        ).annotate(
+            total_engagement=F('total_likes') + F('total_shares')
+        ).order_by('-total_engagement')[:4]
+        logger.debug(f"Trending tips count: {trending_tips.count()}")
 
-    tips_data = []
-    for tip in trending_tips:
-        try:
-            profile = tip.user.userprofile
-            avatar_url = profile.avatar.url if profile.avatar else settings.STATIC_URL + 'img/default-avatar.png'
-            handle = profile.handle.lstrip('@') if profile.handle else tip.user.username
-        except UserProfile.DoesNotExist:
-            avatar_url = settings.STATIC_URL + 'img/default-avatar.png'
-            handle = tip.user.username
-        tips_data.append({
-            'username': tip.user.username,
-            'handle': handle,
-            'avatar_url': avatar_url,
-            'text': tip.text[:50],
-            'likes': tip.total_likes,
-            'profile_url': f"/profile/{tip.user.username}/",
-        })
+        tips_data = []
+        for tip in trending_tips:
+            profile = getattr(tip.user, 'userprofile', None)
+            avatar_url = profile.avatar.url if profile and profile.avatar else settings.STATIC_URL + 'img/default-avatar.png'
+            handle = profile.handle.lstrip('@') if profile and profile.handle else tip.user.username
+            tips_data.append({
+                'username': tip.user.username,
+                'handle': handle,
+                'avatar_url': avatar_url,
+                'text': tip.text[:50],
+                'likes': tip.total_likes,
+                'profile_url': f"/profile/{tip.user.username}/",
+            })
 
-    return JsonResponse({'trending_tips': tips_data})
+        logger.info(f"Returning {len(tips_data)} trending tips")
+        return JsonResponse({'success': True, 'trending_tips': tips_data})
+    except Exception as e:
+        logger.error(f"Error in trending_tips_api: {str(e)}")
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 # API view for current user info
-@login_required
 def current_user_api(request):
-    user = request.user
     try:
-        profile = user.userprofile
-        avatar_url = profile.avatar.url if profile.avatar else settings.STATIC_URL + 'img/default-avatar.png'
-        handle = profile.handle or user.username
-    except UserProfile.DoesNotExist:
-        avatar_url = settings.STATIC_URL + 'img/default-avatar.png'
-        handle = user.username
-
-    return JsonResponse({
-        'success': True,
-        'avatar_url': avatar_url,
-        'handle': handle,
-        'username': user.username,
-        'is_admin': user.is_staff or user.is_superuser
-    })
+        if not request.user.is_authenticated:
+            return JsonResponse({'success': False, 'error': 'User not authenticated'}, status=401)
+        user = request.user
+        profile = getattr(user, 'userprofile', None)
+        avatar_url = profile.avatar.url if profile and profile.avatar else settings.STATIC_URL + 'img/default-avatar.png'
+        handle = profile.handle or user.username if profile else user.username
+        return JsonResponse({
+            'success': True,
+            'avatar_url': avatar_url,
+            'handle': handle,
+            'username': user.username,
+            'is_admin': user.is_staff or user.is_superuser
+        })
+    except Exception as e:
+        logger.error(f"Error in current_user_api: {str(e)}")
+        return JsonResponse({'success': False, 'error': 'Internal server error'}, status=500)
+    
 
 # New API view to fetch tip details
 @login_required

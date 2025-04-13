@@ -64,36 +64,43 @@ export async function fetchMatchDetails(matchId) {
     return { sets: [], stats: {} };
   }
   const url = `https://site.api.espn.com/apis/site/v2/sports/tennis/atp/summary?event=${matchId}`;
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      if (response.status === 400) {
+  const maxRetries = 3;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        if (response.status === 400) {
+          failedMatchIds.add(matchId);
+          console.warn(`Bad Request for match ${matchId}, caching to skip future attempts`);
+          return { sets: [], stats: {} };
+        }
+        throw new Error(`HTTP error: ${response.status}`);
+      }
+      const data = await response.json();
+      const sets = data.sets || [];
+      const stats = data.boxscore?.statistics || {};
+      console.log(`Fetched details for match ${matchId}: ${sets.length} sets`);
+      return {
+        sets: sets.map(set => ({
+          setNumber: set.setNumber || "N/A",
+          team1Score: set.team1Score || 0,
+          team2Score: set.team2Score || 0
+        })),
+        stats: {
+          aces: stats.aces || { team1: 0, team2: 0 },
+          doubleFaults: stats.doubleFaults || { team1: 0, team2: 0 },
+          servicePointsWon: stats.servicePointsWon || { team1: 0, team2: 0 }
+        }
+      };
+    } catch (error) {
+      if (attempt === maxRetries) {
+        console.error(`Error fetching match details for ${matchId} after ${maxRetries} attempts:`, error);
         failedMatchIds.add(matchId);
-        console.warn(`Bad Request for match ${matchId}, caching to skip future attempts`);
         return { sets: [], stats: {} };
       }
-      throw new Error(`HTTP error: ${response.status}`);
+      console.warn(`Attempt ${attempt} failed for match ${matchId}, retrying...`);
+      await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
     }
-    const data = await response.json();
-    const sets = data.sets || [];
-    const stats = data.boxscore?.statistics || {};
-    console.log(`Fetched details for match ${matchId}: ${sets.length} sets`);
-    return {
-      sets: sets.map(set => ({
-        setNumber: set.setNumber || "N/A",
-        team1Score: set.team1Score || 0,
-        team2Score: set.team2Score || 0
-      })),
-      stats: {
-        aces: stats.aces || { team1: 0, team2: 0 },
-        doubleFaults: stats.doubleFaults || { team1: 0, team2: 0 },
-        servicePointsWon: stats.servicePointsWon || { team1: 0, team2: 0 }
-      }
-    };
-  } catch (error) {
-    console.error(`Error fetching match details for ${matchId}:`, error);
-    failedMatchIds.add(matchId);
-    return { sets: [], stats: {} };
   }
 }
 
@@ -129,21 +136,22 @@ export async function formatEventList(events, sportKey = 'tennis', category, isC
 
   // Sidebar rendering
   const eventItems = filteredEvents.map(match => {
-    const setsList = match.sets && match.sets.length
-      ? `<ul class="sets-list">${
-          match.sets.map(set => `<li>${set.team1Score} - ${set.team2Score}</li>`).join("")
-        }</ul>`
-      : `<span class='no-sets'>Score: ${match.score || 'No set data'}</span>`;
+    const setsDisplay = match.sets && match.sets.length
+      ? `
+        <div class="sets-display">
+          <div class="sets-row">${match.sets.map(set => `<span>${set.team1Score}</span>`).join(' ')}</div>
+          <div class="sets-row">${match.sets.map(set => `<span>${set.team2Score}</span>`).join(' ')}</div>
+        </div>`
+      : `<span class="score-fallback">${match.score}</span>`;
     const detailsContent = (category === 'inplay' || category === 'results')
       ? `
         <div class="match-details">
           <div class="sets">
             <p><strong>Sets:</strong></p>
-            ${setsList}
+            ${setsDisplay}
           </div>
-          <p class='load-stats' data-match-id="${match.id}">Load stats...</p>
-        </div>
-      `
+          <p class="load-stats" data-match-id="${match.id}">Load stats...</p>
+        </div>`
       : '';
     return `
       <div class="event-item tennis-event ${category === 'inplay' ? 'live-match' : ''}" data-match-id="${match.id}">
@@ -154,8 +162,8 @@ export async function formatEventList(events, sportKey = 'tennis', category, isC
               <span class="player-name">${match.player2}</span>
             </div>
             <div class="score vertical">
-              <span>${category === 'fixtures' ? 'vs' : (match.sets.length ? match.sets.map(set => set.team1Score).join('-') : match.score.split(' - ')[0])}</span>
-              <span>${category === 'fixtures' ? '' : (match.sets.length ? match.sets.map(set => set.team2Score).join('-') : match.score.split(' - ')[1] || '')}${category === 'inplay' ? ` (Set ${match.period}, ${match.clock})` : ''}</span>
+              ${category === 'fixtures' ? '<span>vs</span><span></span>' : setsDisplay}
+              ${category === 'inplay' ? `<span class="inplay-meta">(Set ${match.period}, ${match.clock})</span>` : ''}
             </div>
           </div>
           <div class="match-meta">
@@ -210,20 +218,22 @@ export async function formatEventTable(matches, sportKey = 'tennis') {
     });
 
     for (const match of sortedMatches) {
-      const setsList = match.sets && match.sets.length
-        ? `<ul class="sets-list">${
-            match.sets.map(set => `<li>${set.team1Score} - ${set.team2Score}</li>`).join("")
-          }</ul>`
-        : `<span class='no-sets'>Score: ${match.score || 'No set data'}</span>`;
+      const setsDisplay = match.sets && match.sets.length
+        ? `
+          <div class="sets-display">
+            <div class="sets-row">${match.sets.map(set => `<span>${set.team1Score}</span>`).join(' ')}</div>
+            <div class="sets-row">${match.sets.map(set => `<span>${set.team2Score}</span>`).join(' ')}</div>
+          </div>`
+        : `<span class="score-fallback">${match.score}</span>`;
       const detailsContent = (match.state === "in" || match.state === "post")
         ? `
           <div class="match-details" style="display: none;">
             <div class="match-stats">
               <div class="sets">
                 <p><strong>Sets:</strong></p>
-                ${setsList}
+                ${setsDisplay}
               </div>
-              <p class='load-stats' data-match-id="${match.id}">Load stats...</p>
+              <p class="load-stats" data-match-id="${match.id}">Load stats...</p>
             </div>
           </div>
         `
@@ -240,8 +250,8 @@ export async function formatEventTable(matches, sportKey = 'tennis') {
                 <span class="player-name">${match.player2}</span>
               </div>
               <div class="score vertical">
-                <span>${match.state === "pre" ? 'vs' : (match.sets.length ? match.sets.map(set => set.team1Score).join('-') : match.score.split(' - ')[0])}</span>
-                <span>${match.state === "pre" ? '' : (match.sets.length ? match.sets.map(set => set.team2Score).join('-') : match.score.split(' - ')[1] || '')}${timeOrScore}</span>
+                ${match.state === "pre" ? '<span>vs</span><span></span>' : setsDisplay}
+                ${match.state === "in" ? `<span class="inplay-meta">${timeOrScore}</span>` : ''}
               </div>
             </div>
             <div class="match-meta">

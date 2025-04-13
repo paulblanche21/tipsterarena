@@ -125,68 +125,110 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Trending Tips
     const trendingTipsList = document.querySelector('.trending-tips-list');
     if (trendingTipsList) {
-      fetch('/api/trending-tips/', {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      })
-        .then(response => response.json())
-        .then(data => {
-          trendingTipsList.innerHTML = '';
-          if (data.trending_tips && data.trending_tips.length > 0) {
-            data.trending_tips.forEach(tip => {
-              trendingTipsList.innerHTML += `
-                <div class="trending-tip">
-                  <img src="${tip.avatar_url}" alt="${tip.username} Avatar" class="tip-avatar">
-                  <div class="tip-details">
-                    <a href="${tip.profile_url}" class="tip-username"><strong>@${tip.handle}</strong></a>
-                    <p class="tip-text">${tip.text}</p>
-                  </div>
-                  <span class="tip-likes"><i class="fas fa-heart"></i> ${tip.likes}</span>
-                </div>
-              `;
-            });
-          } else {
-            trendingTipsList.innerHTML = '<p>No trending tips available.</p>';
-          }
-        })
-        .catch(error => {
-          console.error('Error fetching trending tips:', error);
-          trendingTipsList.innerHTML = '<p>Error loading trending tips.</p>';
+      try {
+        const response = await fetch('/api/trending-tips/', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include', // Ensure cookies (session) are sent
         });
+        if (!response.ok) {
+          console.warn(`Failed to fetch trending tips: ${response.status}`);
+          if (response.status === 401) {
+            trendingTipsList.innerHTML = '<p><a href="/login/">Please log in</a> to view trending tips.</p>';
+          } else {
+            trendingTipsList.innerHTML = '<p>Unable to load trending tips.</p>';
+          }
+        } else {
+          const contentType = response.headers.get('content-type');
+          if (!contentType || !contentType.includes('application/json')) {
+            console.warn('Received non-JSON response from /api/trending-tips/');
+            trendingTipsList.innerHTML = '<p>Unable to load trending tips.</p>';
+          } else {
+            const data = await response.json();
+            if (!data.success) {
+              const errorMessage = data.error || 'An unexpected error occurred';
+              console.warn(`Trending tips error: ${errorMessage}`);
+              trendingTipsList.innerHTML = `<p>${errorMessage === 'User not authenticated' ? '<a href="/login/">Please log in</a> to view trending tips.' : 'Unable to load trending tips: ' + errorMessage}</p>`;
+            } else {
+              trendingTipsList.innerHTML = '';
+              if (data.trending_tips && data.trending_tips.length > 0) {
+                data.trending_tips.forEach(tip => {
+                  trendingTipsList.innerHTML += `
+                    <div class="trending-tip">
+                      <img src="${tip.avatar_url}" alt="${tip.username} Avatar" class="tip-avatar">
+                      <div class="tip-details">
+                        <a href="${tip.profile_url}" class="tip-username"><strong>@${tip.handle}</strong></a>
+                        <p class="tip-text">${tip.text}</p>
+                      </div>
+                      <span class="tip-likes"><i class="fas fa-heart"></i> ${tip.likes}</span>
+                    </div>
+                  `;
+                });
+              } else {
+                trendingTipsList.innerHTML = '<p>No trending tips available.</p>';
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching trending tips:', error);
+        trendingTipsList.innerHTML = '<p>Unable to load trending tips.</p>';
+      }
     }
 
     // Who to Follow
     const followList = document.querySelector('.follow-list');
     if (followList) {
-      fetch('/api/suggested-users/', {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      })
-        .then(response => response.json())
-        .then(data => {
-          followList.innerHTML = '';
-          if (data.users && data.users.length > 0) {
-            const limitedUsers = data.users.slice(0, 3);
-            limitedUsers.forEach(user => {
-              followList.innerHTML += `
-                <div class="follow-item">
-                  <img src="${user.avatar_url}" alt="${user.username}" class="follow-avatar">
-                  <div class="follow-details">
-                    <a href="${user.profile_url}" class="follow-username">@${user.username}</a>
-                    <p class="follow-bio">${user.bio}</p>
-                  </div>
-                  <button class="follow-btn" data-username="${user.username}">Follow</button>
-                </div>
-              `;
-            });
-          } else {
-            followList.innerHTML = '<p>No suggested tipsters available.</p>';
-          }
-        })
-        .catch(error => {
-          console.error('Error fetching suggested users:', error);
-          followList.innerHTML = '<p>Error loading suggestions.</p>';
+      try {
+        const response = await fetch('/api/suggested-users/', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include', // Ensure cookies (session) are sent
         });
+        if (!response.ok) {
+          console.warn(`Failed to fetch suggested users: ${response.status}`);
+          if (response.status === 401) {
+            followList.innerHTML = '<p><a href="/login/">Please log in</a> to view suggested users.</p>';
+          } else {
+            followList.innerHTML = '<p>Unable to load suggestions.</p>';
+          }
+        } else {
+          const contentType = response.headers.get('content-type');
+          if (!contentType || !contentType.includes('application/json')) {
+            console.warn('Received non-JSON response from /api/suggested-users/');
+            followList.innerHTML = '<p>Unable to load suggestions.</p>';
+          } else {
+            const data = await response.json();
+            if (!data.success) {
+              const errorMessage = data.error || 'An unexpected error occurred';
+              console.warn(`Suggested users error: ${errorMessage}`);
+              followList.innerHTML = `<p>${errorMessage === 'User not authenticated' ? '<a href="/login/">Please log in</a> to view suggested users.' : 'Unable to load suggestions: ' + errorMessage}</p>`;
+            } else {
+              followList.innerHTML = '';
+              if (data.users && data.users.length > 0) {
+                const limitedUsers = data.users.slice(0, 3);
+                limitedUsers.forEach(user => {
+                  followList.innerHTML += `
+                    <div class="follow-item">
+                      <img src="${user.avatar_url}" alt="${user.username}" class="follow-avatar">
+                      <div class="follow-details">
+                        <a href="${user.profile_url}" class="follow-username">@${user.username}</a>
+                        <p class="follow-bio">${user.bio}</p>
+                      </div>
+                      <button class="follow-btn" data-username="${user.username}">Follow</button>
+                    </div>
+                  `;
+                });
+              } else {
+                followList.innerHTML = '<p>No suggested tipsters available.</p>';
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching suggested users:', error);
+        followList.innerHTML = '<p>Unable to load suggestions.</p>';
+      }
     }
   } catch (error) {
     console.error('Error initializing:', error);

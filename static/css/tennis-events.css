@@ -59,6 +59,7 @@
 /* Card header */
 .tennis-card .card-header {
   padding: 15px;
+  padding-right: 30px; /* Add padding to avoid overlap with carat */
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -76,10 +77,11 @@
   content: '▼';
   font-size: 0.8em;
   position: absolute;
-  right: 15px;
+  right: 10px; /* Adjusted to give more space */
   top: 50%;
   transform: translateY(-50%);
   transition: transform 0.3s ease;
+  z-index: 0; /* Ensure carat is behind the scores */
 }
 
 .tennis-card.live-match .card-header {
@@ -124,10 +126,38 @@
   gap: 4px;
   font-weight: bold;
   color: #333;
+  padding-right: 20px; /* Add padding to avoid carat overlap */
+  position: relative;
+  z-index: 1; /* Ensure scores are above the carat */
 }
 
 .tennis-card .match-info .score.vertical {
   align-items: flex-end;
+}
+
+.tennis-card .match-info .sets-display {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tennis-card .match-info .sets-display .sets-row {
+  display: flex;
+  gap: 8px;
+}
+
+.tennis-card .match-info .sets-display .sets-row span {
+  width: 20px;
+  text-align: center;
+}
+
+.tennis-card .match-info .score-fallback {
+  font-size: 1em;
+}
+
+.tennis-card .match-info .inplay-meta {
+  font-size: 0.9em;
+  color: #e63946;
 }
 
 .tennis-card.live-match .match-info .score {
@@ -176,18 +206,23 @@
   margin-bottom: 5px;
 }
 
-.match-details .sets-list {
-  margin: 5px 0;
-  padding-left: 20px;
+.match-details .sets-display {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.match-details .sets-list li {
-  margin-bottom: 3px;
-  font-size: 1em;
-  font-weight: 500;
+.match-details .sets-display .sets-row {
+  display: flex;
+  gap: 8px;
 }
 
-.match-details .no-sets {
+.match-details .sets-display .sets-row span {
+  width: 20px;
+  text-align: center;
+}
+
+.match-details .score-fallback {
   font-style: italic;
   color: #666;
 }
@@ -222,6 +257,7 @@
 
   .tennis-card .card-header {
     padding: 8px;
+    padding-right: 25px; /* Adjust for smaller screens */
   }
 
   .tennis-card .match-details {
@@ -230,6 +266,10 @@
 
   .tennis-card .match-info .player-name {
     font-size: 0.9em;
+  }
+
+  .tennis-card .match-info .score {
+    padding-right: 15px; /* Adjust for smaller screens */
   }
 
   .tournament-header {

@@ -91,8 +91,22 @@ async function fetchEventsForSport(sport) {
       }
     }
   }
+  // Filter out events outside the desired range immediately after fetching
+  const currentTime = new Date();
+  const sevenDaysAgo = new Date();
+  const sevenDaysFuture = new Date();
+  sevenDaysAgo.setDate(currentTime.getDate() - 7);
+  sevenDaysFuture.setDate(currentTime.getDate() + 7);
+  allEvents = allEvents.filter(event => {
+    const eventDate = new Date(event.date);
+    const isWithinRange = eventDate >= sevenDaysAgo && eventDate <= sevenDaysFuture;
+    if (!isWithinRange) {
+      console.log(`Excluding fetched event outside range: ${event.player1 || event.name} vs ${event.player2 || ''}, Date: ${event.date}`);
+    }
+    return isWithinRange;
+  });
   globalEvents[sport] = allEvents;
-  console.log(`Total ${sport} events fetched: ${allEvents.length}`);
+  console.log(`Total ${sport} events fetched after range filter: ${allEvents.length}`);
   return allEvents;
 }
 
