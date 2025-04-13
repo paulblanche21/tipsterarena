@@ -1,10 +1,11 @@
-// upcoming-events.js: Handles fetching and rendering events in a modal for Tipster Arena
-
+// static/js/pages/upcoming-events.js
 import { getCSRFToken } from './utils.js';
 import { fetchEvents as fetchFootballEvents, formatEventList as formatFootballList, formatFootballTable } from './football-events.js';
 import { fetchEvents as fetchTennisEvents, formatEventList as formatTennisList, formatEventTable as formatTennisTable } from './tennis-events.js';
-import { fetchEvents as fetchGolfEvents, formatEventList as formatGolfList } from './golf-events.js';
+import { fetchEvents as fetchGolfEvents, formatEventList as formatGolfList, setupLeaderboardUpdates } from './golf-events.js';
 import { fetchEvents as fetchHorseRacingEvents, formatEventList as formatHorseRacingList } from './horse-racing-events.js';
+
+console.log('Loading upcoming-events.js');
 
 // Configuration for sports and their respective leagues
 const SPORT_CONFIG = {
@@ -24,8 +25,8 @@ const SPORT_CONFIG = {
     { sport: "soccer", league: "sco.1", icon: "⚽", name: "Scottish Premiership", priority: 13 }
   ],
   golf: [
-    { sport: "golf", league: "pga", icon: "⛳", name: "PGA Tour" },
-    { sport: "golf", league: "lpga", icon: "⛳", name: "LPGA Tour" }
+    { sport: "golf", league: "pga", icon: "⛳", name: "PGA Tour", priority: 1 },
+    { sport: "golf", league: "lpga", icon: "⛳", name: "LPGA Tour", priority: 2 }
   ],
   tennis: [
     { sport: "tennis", league: "atp", icon: "🎾", name: "ATP Tour", priority: 1 }
@@ -71,8 +72,8 @@ async function fetchEventsForSport(sport) {
     const today = new Date();
     const startDate = new Date();
     const endDate = new Date();
-    const daysToFetchPast = 7; // Go back 7 days for completed games
-    const daysToFetchFuture = 7; // Fetch next 7 days for fixtures
+    const daysToFetchPast = 14; // Extended to capture completed events
+    const daysToFetchFuture = 7;
     startDate.setDate(today.getDate() - daysToFetchPast);
     endDate.setDate(today.getDate() + daysToFetchFuture);
     const startDateStr = startDate.toISOString().split('T')[0].replace(/-/g, '');
@@ -83,6 +84,7 @@ async function fetchEventsForSport(sport) {
         const response = await fetch(url);
         if (!response.ok) throw new Error(`HTTP error: ${response.status} for ${config.name}`);
         const data = await response.json();
+        console.log(`Raw API data for ${config.name}:`, data); // Debug log
         const leagueEvents = await module.fetch(data, config);
         console.log(`${config.name}: Fetched ${leagueEvents.length} events, Start: ${startDateStr}, End: ${endDateStr}`);
         allEvents = allEvents.concat(leagueEvents);
@@ -91,22 +93,22 @@ async function fetchEventsForSport(sport) {
       }
     }
   }
-  // Filter out events outside the desired range immediately after fetching
+  // Filter events within range
   const currentTime = new Date();
-  const sevenDaysAgo = new Date();
+  const fourteenDaysAgo = new Date();
   const sevenDaysFuture = new Date();
-  sevenDaysAgo.setDate(currentTime.getDate() - 7);
+  fourteenDaysAgo.setDate(currentTime.getDate() - 14);
   sevenDaysFuture.setDate(currentTime.getDate() + 7);
   allEvents = allEvents.filter(event => {
     const eventDate = new Date(event.date);
-    const isWithinRange = eventDate >= sevenDaysAgo && eventDate <= sevenDaysFuture;
+    const isWithinRange = eventDate >= fourteenDaysAgo && eventDate <= sevenDaysFuture;
     if (!isWithinRange) {
-      console.log(`Excluding fetched event outside range: ${event.player1 || event.name} vs ${event.player2 || ''}, Date: ${event.date}`);
+      console.log(`Excluding event: ${event.name}, Date: ${event.date}`);
     }
     return isWithinRange;
   });
   globalEvents[sport] = allEvents;
-  console.log(`Total ${sport} events fetched after range filter: ${allEvents.length}`);
+  console.log(`Total ${sport} events fetched: ${allEvents.length}`);
   return allEvents;
 }
 
@@ -114,9 +116,9 @@ async function fetchEventsForSport(sport) {
 function filterEvents(events, category, sportKey) {
   console.log(`Filtering events for ${sportKey}, category: ${category}`);
   const currentTime = new Date();
-  const sevenDaysAgo = new Date();
+  const fourteenDaysAgo = new Date();
   const sevenDaysFuture = new Date();
-  sevenDaysAgo.setDate(currentTime.getDate() - 7);
+  fourteenDaysAgo.setDate(currentTime.getDate() - 14);
   sevenDaysFuture.setDate(currentTime.getDate() + 7);
 
   if (sportKey === 'horse_racing') {
@@ -143,16 +145,19 @@ function filterEvents(events, category, sportKey) {
         .filter(meeting => meeting.races.length > 0);
     }
   } else if (sportKey === 'golf') {
+    console.log('Golf events before filter:', events);
     if (category === 'fixtures') {
       return events
         .filter(event => event.state === "pre" && new Date(event.date) > currentTime)
-        .sort((a, b) => new Date(a.date) - new Date(b.date));
+        .sort((a, b) => a.priority - b.priority || new Date(a.date) - new Date(b.date));
     } else if (category === 'inplay') {
-      return events.filter(event => event.state === "in");
+      return events
+        .filter(event => event.state === "in")
+        .sort((a, b) => a.priority - b.priority);
     } else if (category === 'results') {
       return events
-        .filter(event => event.state === "post")
-        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .filter(event => event.state === "post" || event.completed) // Relaxed filter
+        .sort((a, b) => a.priority - b.priority || new Date(b.date) - new Date(a.date))
         .slice(0, 1);
     }
   } else {
@@ -163,21 +168,15 @@ function filterEvents(events, category, sportKey) {
       } else if (category === 'inplay') {
         return event.state === 'in';
       } else if (category === 'results') {
-        console.log(`Results filter - Event: ${event.player1 || event.name} vs ${event.player2 || ''}, State: ${event.state}, Date: ${event.date}`);
-        const isWithinSevenDays = eventDate >= sevenDaysAgo && eventDate <= currentTime;
-        if (!isWithinSevenDays) {
-          console.log(`Excluding event outside 7-day window: ${eventDate}`);
-        }
-        return event.state === 'post' && isWithinSevenDays;
+        const isWithinFourteenDays = eventDate >= fourteenDaysAgo && eventDate <= currentTime;
+        return event.state === 'post' && isWithinFourteenDays;
       }
       return false;
     }).sort((a, b) => {
-      if (sportKey === 'tennis') {
-        if (a.priority !== b.priority) return a.priority - b.priority;
-      } else if (sportKey === 'football') {
+      if (sportKey === 'tennis' || sportKey === 'football') {
         if (a.priority !== b.priority) return a.priority - b.priority;
       }
-      return new Date(b.date) - new Date(a.date); // Newest first for results
+      return new Date(b.date) - new Date(a.date);
     });
   }
   return [];
@@ -190,11 +189,10 @@ async function populateModal(sport, category) {
   const modalTitle = document.getElementById('event-modal-title');
   const modalBody = document.getElementById('event-modal-body');
   if (!modal || !modalTitle || !modalBody) {
-    console.error('Modal elements not found:', { modal, modalTitle, modalBody });
+    console.error('Modal elements not found');
     return;
   }
 
-  // Set modal title
   const sportName = sport === 'horse_racing' ? 'Horse Racing' : sport.charAt(0).toUpperCase() + sport.slice(1);
   const categoryName = sport === 'horse_racing'
     ? category.replace('upcoming_meetings', 'Upcoming Meetings')
@@ -206,7 +204,6 @@ async function populateModal(sport, category) {
   modalBody.innerHTML = '<p>Loading events...</p>';
 
   try {
-    // Fetch events if not already loaded
     if (!globalEvents[sport]) {
       console.log(`No cached events for ${sport}, fetching...`);
       await fetchEventsForSport(sport);
@@ -223,10 +220,14 @@ async function populateModal(sport, category) {
     }
     const html = await formatter(filteredEvents, sport, category, true);
     modalBody.innerHTML = html || `<p>No ${categoryName.toLowerCase()} available for ${sportName}.</p>`;
-    console.log(`Modal populated with HTML for ${sport} ${category}`);
+    console.log(`Modal populated for ${sport} ${category}`);
     setupExpandableCards();
-    if (sport === 'golf' && (category === 'inplay' || category === 'results')) {
-      setupLeaderboardUpdates();
+    if (sport === 'golf' && (category === 'inplay' || category === 'results') && filteredEvents.length > 0) {
+      if (typeof setupLeaderboardUpdates === 'function') {
+        setupLeaderboardUpdates();
+      } else {
+        console.warn('setupLeaderboardUpdates is not defined');
+      }
     }
     modal.style.display = 'flex';
   } catch (error) {
@@ -238,7 +239,7 @@ async function populateModal(sport, category) {
 // Adds toggle functionality for expandable cards
 export function setupExpandableCards() {
   console.log('Setting up expandable cards');
-  const cards = document.querySelectorAll('.event-item.expandable-card, .tennis-card.expandable-card, .event-card.expandable-card, .golf-card, .meeting-card.expandable-card');
+  const cards = document.querySelectorAll('.event-item.expandable-card, .tennis-card.expandable-card, .event-card.expandable-card, .golf-card.expandable-card, .meeting-card.expandable-card');
   console.log(`Found ${cards.length} expandable cards`);
   cards.forEach((card, index) => {
     const header = card.querySelector('.card-header');
@@ -263,11 +264,11 @@ export function setupExpandableCards() {
 
   if (!document._cardCloseListener) {
     const closeHandler = (e) => {
-      if (!e.target.closest('.event-item.expandable-card, .tennis-card.expandable-card, .event-card.expandable-card, .golf-card, .meeting-card.expandable-card')) {
+      if (!e.target.closest('.event-item.expandable-card, .tennis-card.expandable-card, .event-card.expandable-card, .golf-card.expandable-card, .meeting-card.expandable-card')) {
         document.querySelectorAll('.card-content, .match-details').forEach(details => {
           details.style.display = 'none';
         });
-        document.querySelectorAll('.expandable-card, .golf-card').forEach(card => {
+        document.querySelectorAll('.expandable-card').forEach(card => {
           card.classList.remove('expanded');
         });
         console.log('Closed all expandable cards');
@@ -293,24 +294,20 @@ export async function initButtons() {
   const modalCloseBtn = document.querySelector('.event-modal-close');
 
   if (!buttonsContainer || !modal || !modalCloseBtn) {
-    console.warn('Event buttons or modal elements not found:', { buttonsContainer, modal, modalCloseBtn });
+    console.warn('Event buttons or modal elements not found');
     return;
   }
 
-  // Determine active sport
   let activeSport;
   if (sportSelector) {
-    // Home page: Use sport selector
     activeSport = sportSelector.value;
   } else {
-    // Sport page: Extract from class like 'upcoming-events-football'
-    const sportClass = Array.from(buttonsContainer.closest('.upcoming-events-card').classList)
+    const sportClass = Array.from(sidebar.classList)
       .find(cls => cls.startsWith('upcoming-events-') && cls !== 'upcoming-events-card');
     activeSport = sportClass ? sportClass.replace('upcoming-events-', '') : 'football';
   }
   console.log(`Active sport: ${activeSport}`);
 
-  // Update button labels based on sport
   const updateButtonLabels = (sport) => {
     const buttons = buttonsContainer.querySelectorAll('.event-btn');
     buttons.forEach(button => {
@@ -326,7 +323,6 @@ export async function initButtons() {
 
   updateButtonLabels(activeSport);
 
-  // Sport selector change
   if (sportSelector) {
     sportSelector.addEventListener('change', () => {
       activeSport = sportSelector.value;
@@ -337,7 +333,6 @@ export async function initButtons() {
     });
   }
 
-  // Button clicks to open modal
   buttonsContainer.addEventListener('click', (e) => {
     const button = e.target.closest('.event-btn');
     if (!button) return;
@@ -348,11 +343,9 @@ export async function initButtons() {
     button.classList.add('active');
     const category = activeSport === 'horse_racing' ? button.dataset.horseRacing : button.dataset.category;
 
-    // Open modal and load events
     populateModal(activeSport, category);
   });
 
-  // Close modal
   modalCloseBtn.addEventListener('click', () => {
     console.log('Closing modal');
     modal.style.display = 'none';
@@ -360,7 +353,6 @@ export async function initButtons() {
     buttons.forEach(btn => btn.classList.remove('active'));
   });
 
-  // Close modal on outside click
   modal.addEventListener('click', (e) => {
     if (e.target === modal) {
       console.log('Closing modal (outside click)');

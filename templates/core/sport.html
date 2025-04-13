@@ -5,11 +5,17 @@
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/modal.css' %}">
+    {% if sport == 'golf' %}
+        <link rel="stylesheet" href="{% static 'css/golf-events.css' %}">
+    {% endif %}
+    {% if sport == 'tennis' %}
+        <link rel="stylesheet" href="{% static 'css/tennis-events.css' %}">
+    {% endif %}
 {% endblock %}
 
 {% block content %}
     <div class="content">
-        <!-- Tip posting interface -->
+        <!-- Tip posting interface (unchanged) -->
         <div class="post-box">
             <div class="post-user">
                 {% if request.user.is_authenticated and request.user.userprofile.avatar %}
@@ -23,11 +29,10 @@
                         <option value="everyone">Everyone</option>
                         <option value="followers">Followers</option>
                     </select>
-                    <!-- Hidden sport field since sport is fixed -->
                     <input type="hidden" class="post-sport" value="{{ sport }}">
                 </div>
             </div>
-            <textarea placeholder="Post a Tip (e.g., Team A to win)..." class="post-input" maxlength="280"></textarea>
+            <textarea placeholder="Post a Tip (e.g., Player X to win)..." class="post-input" maxlength="280"></textarea>
             <div class="tip-details">
                 <div class="tip-odds">
                     <label for="odds-type">Odds Format:</label>
@@ -110,7 +115,7 @@
             </div>
         </div>
 
-        <!-- Tip feed -->
+        <!-- Tip feed (unchanged) -->
         <div class="tip-feed">
             {% for tip in tips %}
             <div class="tip" data-tip-id="{{ tip.id }}">
@@ -197,7 +202,7 @@
             </div>
         </div>
 
-        <!-- Comment modal -->
+        <!-- Comment modal (unchanged) -->
         <div class="comment-modal" id="comment-modal">
             <div class="comment-modal-content">
                 <span class="comment-modal-close">×</span>
@@ -287,9 +292,9 @@
         </h3>
         <div class="event-buttons">
             {% if sport == 'horse_racing' %}
-                <button class="event-btn" data-category="upcoming_meetings">Upcoming Meetings</button>
-                <button class="event-btn" data-category="at_the_post">At the Post</button>
-                <button class="event-btn" data-category="race_results">Race Results</button>
+                <button class="event-btn" data-category="upcoming_meetings" data-horse-racing="upcoming_meetings">Upcoming Meetings</button>
+                <button class="event-btn" data-category="at_the_post" data-horse-racing="at_the_post">At the Post</button>
+                <button class="event-btn" data-category="race_results" data-horse-racing="race_results">Race Results</button>
             {% else %}
                 <button class="event-btn" data-category="fixtures">Fixtures</button>
                 <button class="event-btn" data-category="inplay">In Play</button>

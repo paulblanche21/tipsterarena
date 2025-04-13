@@ -1,5 +1,4 @@
-// main.js: Entry point for Tipster Arena's frontend
-
+// main.js
 function getCurrentPage() {
   return window.location.pathname;
 }
@@ -46,7 +45,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }),
     ]);
 
-    const upcomingEventsModule = sharedModules[2]; // Store for reuse
+    const upcomingEventsModule = sharedModules[2];
 
     if (page === '/' || page === '/home/') {
       await Promise.all([
@@ -60,7 +59,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           module.setupReplyModal();
         }),
         import('./pages/bookmarks.js').then(module => module.setupBookmarkInteractions()),
-        import('./pages/golf-events.js').then(module => module.setupLeaderboardUpdates()),
+        import('./pages/golf-events.js').then(module => {
+          // Only call for golf-specific pages if needed
+        }),
       ]);
     }
 
@@ -76,7 +77,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           module.setupReplyModal();
         }),
         import('./pages/bookmarks.js').then(module => module.setupBookmarkInteractions()),
-        import('./pages/golf-events.js').then(module => module.setupLeaderboardUpdates()),
+        import('./pages/golf-events.js').then(module => {
+          // Only call for golf-specific pages if needed
+        }),
       ]);
     }
 
@@ -89,7 +92,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           module.setupReplyModal();
         }),
         import('./pages/bookmarks.js').then(module => module.setupBookmarkInteractions()),
-        import('./pages/golf-events.js').then(module => module.setupLeaderboardUpdates()),
+        import('./pages/golf-events.js').then(module => {
+          // Only call for golf-specific pages if needed
+        }),
       ]);
     }
 
@@ -104,7 +109,11 @@ document.addEventListener('DOMContentLoaded', async () => {
           module.setupReplyModal();
         }),
         import('./pages/bookmarks.js').then(module => module.setupBookmarkInteractions()),
-        import('./pages/golf-events.js').then(module => module.setupLeaderboardUpdates()),
+        import('./pages/golf-events.js').then(module => {
+          if (page.includes('/sport/golf/')) {
+            module.setupLeaderboardUpdates();
+          }
+        }),
       ]);
     }
 
@@ -122,14 +131,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       await import('./pages/messages.js').then(module => module.init());
     }
 
-    // Trending Tips
+    // Trending Tips (unchanged)
     const trendingTipsList = document.querySelector('.trending-tips-list');
     if (trendingTipsList) {
       try {
         const response = await fetch('/api/trending-tips/', {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include', // Ensure cookies (session) are sent
+          credentials: 'include',
         });
         if (!response.ok) {
           console.warn(`Failed to fetch trending tips: ${response.status}`);
@@ -176,14 +185,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // Who to Follow
+    // Who to Follow (unchanged)
     const followList = document.querySelector('.follow-list');
     if (followList) {
       try {
         const response = await fetch('/api/suggested-users/', {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include', // Ensure cookies (session) are sent
+          credentials: 'include',
         });
         if (!response.ok) {
           console.warn(`Failed to fetch suggested users: ${response.status}`);

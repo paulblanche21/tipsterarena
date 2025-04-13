@@ -23,7 +23,6 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.utils.decorators import method_decorator
-
 import logging
 import bleach
 
@@ -940,3 +939,7 @@ def racecards_json_view(request):
     """Return JSON data for horse racing racecards."""
     data = get_racecards_json()
     return JsonResponse(data, safe=False)  # safe=False allows non-dict data (list)
+
+# views.py (optional)
+
+

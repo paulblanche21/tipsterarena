@@ -1,194 +1,175 @@
-/* golf-events.css */
+/* static/css/golf-events.css */
+.golf-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 10px;
+}
 
-/* Ensure the events-popup container doesn't add extra styling that exposes the navy background */
-.events-popup {
-    background-color: transparent; /* Let the .golf-feed background take over */
-    padding: 0; /* Remove padding, as .golf-feed will handle it */
-    margin: 8px; /* Remove margin to fit snugly within .content */
-    
-  }
-  
-  /* Golf feed container */
+.golf-card.expandable-card {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #fff;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.golf-card.expanded {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: #28a745;
+  background-color: #f0fff0;
+}
+
+.golf-card.expanded .card-header::after {
+  transform: rotate(180deg);
+}
+
+.golf-card.live-event .card-header {
+  background-color: #e6ffe6;
+}
+
+.golf-card.live-event .live-indicator {
+  color: #28a745;
+  font-weight: bold;
+  animation: blink 1s infinite;
+}
+
+.golf-card .card-header {
+  padding: 10px 15px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: background-color 0.3s ease;
+}
+
+.golf-card .card-header:hover {
+  background-color: #f5f5f5;
+}
+
+.golf-card .card-header::after {
+  content: '▼';
+  font-size: 0.8em;
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: transform 0.3s ease;
+}
+
+.golf-card .event-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1em;
+}
+
+.golf-card .event-info .event-name {
+  font-weight: bold;
+}
+
+.golf-card .event-info .event-status {
+  color: #666;
+}
+
+.golf-card .event-info .live-indicator {
+  font-size: 0.9em;
+}
+
+.golf-card .event-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85em;
+  color: #666;
+  margin-top: 5px;
+}
+
+.golf-card .card-content {
+  padding: 15px;
+  border-top: 1px solid #eee;
+  background-color: #f9f9f9;
+}
+
+.event-details p {
+  margin: 5px 0;
+  font-size: 0.9em;
+  color: #555;
+}
+
+.leaderboard-content {
+  margin-bottom: 10px;
+}
+
+.leaderboard-table, .full-leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85em;
+}
+
+.leaderboard-table th, .full-leaderboard-table th {
+  background-color: #f4f4f4;
+  padding: 8px;
+  text-align: left;
+  border-bottom: 2px solid #ddd;
+}
+
+.leaderboard-table td, .full-leaderboard-table td {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.leaderboard-table tr:hover, .full-leaderboard-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+.leaderboard-table tr.player-active {
+  background-color: #e6ffe6; /* Highlight active players */
+}
+
+.leaderboard-table tr.player-inactive {
+  opacity: 0.7; /* Dim inactive players */
+}
+
+.view-full-leaderboard {
+  margin-top: 10px;
+  padding: 6px 12px;
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9em;
+}
+
+.view-full-leaderboard:hover {
+  background-color: #218838;
+}
+
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.3; }
+  100% { opacity: 1; }
+}
+
+@media (max-width: 768px) {
   .golf-feed {
-    background-color: #fff; /* White background for the golf feed */
-    border-radius: 5px;
-    padding: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
-    margin: 0; /* Ensure no extra margin */
-    color: #001f3f; /* Dark text for readability on white background */
+    padding: 5px;
   }
-  
-  /* Ensure event-list within golf-feed is styled correctly */
-  .golf-feed .event-list {
-    background-color: #fff; /* Ensure the event list has a white background */
-    padding: 0; /* Remove extra padding since .golf-feed already has padding */
-  }
-  
-  /* Golf card container */
-  .golf-card {
-    width: 100%;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: #fff;
-    margin-bottom: 15px;
-    transition: all 0.3s ease;
-    box-sizing: border-box;
-    min-height: 120px; /* Matches football and tennis card height */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow to make it pop */
-  }
-  
-  /* Card header */
+
   .golf-card .card-header {
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    z-index: 1;
-    transition: background-color 0.3s ease;
+    padding: 8px 12px;
   }
-  
-  .golf-card .card-header:hover {
-    background-color: #f5f5f5;
-  }
-  
-  .golf-card .event-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  
-  .golf-card .event-info .event-name {
-    font-size: 1.1em;
-    font-weight: bold;
-    color: #333;
-  }
-  
-  .golf-card .event-info .event-status {
-    font-size: 0.9em;
-    color: #666;
-  }
-  
-  .golf-card .event-info .live-indicator {
-    background-color: #e74c3c;
-    color: #fff;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.8em;
-    font-weight: bold;
-  }
-  
-  .golf-card .event-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 5px;
-    font-size: 0.85em;
-    color: #666;
-    gap: 10px; /* Add a gap between flex items */
-  }
-  
-  .golf-card .event-meta .datetime {
-    flex: 0 0 auto;
-  }
-  
-  .golf-card .event-meta .location {
-    flex: 0 0 auto;
-  }
-  
-  /* Card content */
+
   .golf-card .card-content {
-    padding: 15px;
-    border-top: 1px solid #eee;
-    background-color: #f9f9f9;
+    padding: 10px;
   }
-  
-  /* Leaderboard content */
-  .golf-card .leaderboard-content h4 {
-    font-size: 1em;
-    font-weight: bold;
-    margin-bottom: 10px;
+
+  .leaderboard-table, .full-leaderboard-table {
+    font-size: 0.8em;
   }
-  
-  .golf-card .leaderboard-table {
-    width: 100%;
-    border-collapse: collapse;
+
+  .leaderboard-table th, .leaderboard-table td,
+  .full-leaderboard-table th, .full-leaderboard-table td {
+    padding: 6px;
   }
-  
-  .golf-card .leaderboard-table th,
-  .golf-card .leaderboard-table td {
-    padding: 8px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-  }
-  
-  .golf-card .leaderboard-table th {
-    background-color: #f5f5f5;
-    font-weight: bold;
-    color: #333;
-  }
-  
-  .golf-card .leaderboard-table td {
-    color: #555;
-  }
-  
-  /* Event details for upcoming events */
-  .golf-card .event-details p {
-    margin: 5px 0;
-    font-size: 0.9em;
-    color: #555;
-  }
-  
-  .golf-card .event-details p strong {
-    color: #333;
-  }
-  
-  /* Additional details section */
-  .golf-card .additional-details {
-    margin-top: 15px;
-  }
-  
-  .golf-card .additional-details h4 {
-    font-size: 1em;
-    font-weight: bold;
-    margin-bottom: 10px;
-  }
-  
-  .golf-card .additional-details p {
-    margin: 5px 0;
-    font-size: 0.9em;
-    color: #555;
-  }
-  
-  .golf-card .additional-details p strong {
-    color: #333;
-  }
-  
-  /* Responsive adjustments */
-  @media (max-width: 768px) {
-    .golf-feed {
-      padding: 10px;
-    }
-  
-    .golf-card {
-      margin: 5px 0;
-    }
-  
-    .golf-card .card-header {
-      padding: 8px;
-    }
-  
-    .golf-card .card-content {
-      padding: 8px;
-    }
-  
-    .golf-card .event-info .event-name {
-      font-size: 0.9em;
-    }
-  
-    .golf-card .event-meta {
-      font-size: 0.8em;
-    }
-  }
+}
