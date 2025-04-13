@@ -220,29 +220,10 @@ function setupTipInteractions() {
                 commentList.insertBefore(newComment, commentList.firstChild);
                 attachCommentActionListeners();
 
+                // Update the comment count in the tip feed
                 const tipFeed = document.querySelector(`.tip[data-tip-id="${tipId}"] .tip-content`);
                 const tipComments = tipFeed.querySelector('.tip-actions .comment-count');
                 tipComments.textContent = data.comment_count;
-
-                const tipCommentsContainer = tipFeed.querySelector('.tip-comments') || tipFeed.appendChild(document.createElement('div'));
-                tipCommentsContainer.className = 'tip-comments';
-                const newCommentInFeed = document.createElement('div');
-                newCommentInFeed.className = 'comment';
-                if (data.data.parent_id) newCommentInFeed.classList.add('reply-comment');
-                newCommentInFeed.setAttribute('data-comment-id', data.comment_id);
-                newCommentInFeed.innerHTML = `
-                    <img src="${currentUserData.avatarUrl}" alt="${currentUserData.handle} Avatar" class="comment-avatar" onerror="this.src='${window.default_avatar_url}'">
-                    <div class="comment-content">
-                        <a href="/profile/${window.currentUser}/" class="comment-username"><strong>${currentUserData.handle}</strong></a>
-                        ${data.data.parent_id ? `<span class="reply-to">Replying to <a href="/profile/${data.data.parent_username}/">@${data.data.parent_username}</a></span>` : ''}
-                        <p>${data.data.content}</p>
-                        ${data.data.image ? `<img src="${data.data.image}" alt="Comment Image" class="comment-image">` : ''}
-                        ${data.data.gif_url ? `<img src="${data.data.gif_url}" alt="Comment GIF" class="comment-image" width="582" height="300">` : ''}
-                        <small>${new Date(data.data.created_at).toLocaleString()}</small>
-                    </div>
-                `;
-                tipCommentsContainer.appendChild(newCommentInFeed);
-                console.log('Updated tip feed HTML:', tipCommentsContainer.innerHTML);
 
                 // Close modal after successful submission
                 commentModal.classList.add('hidden');
@@ -315,7 +296,7 @@ function setupReplyModal() {
 
     if (!previewDiv.className) {
         previewDiv.className = 'post-reply-preview';
-        previewDiv.style.display = 'none'; // This inline style is okay as it's dynamic
+        previewDiv.style.display = 'none';
         previewDiv.innerHTML = `
             <img src="" alt="Preview" class="preview-media">
             <button class="remove-preview">×</button>
@@ -326,7 +307,7 @@ function setupReplyModal() {
     const imageInput = document.createElement('input');
     imageInput.type = 'file';
     imageInput.accept = 'image/*';
-    imageInput.style.display = 'none'; // This inline style is okay as it's dynamic
+    imageInput.style.display = 'none';
     imageInput.className = 'post-reply-image-input';
     document.body.appendChild(imageInput);
 
@@ -598,15 +579,16 @@ function openCommentModal(tip, tipId, parentId = null) {
         updateTipStatus();
         commentList.innerHTML = '<p>Loading comments...</p>';
 
-        if (parentId) {
-            replyToHeader.style.display = 'block';
-            fetchComments(tipId, commentList, () => {
+        // Load comments regardless of parentId
+        fetchComments(tipId, commentList, () => {
+            if (parentId) {
+                replyToHeader.style.display = 'block';
                 const parentComment = commentList.querySelector(`.comment[data-comment-id="${parentId}"]`);
                 if (parentComment) replyToUsername.textContent = parentComment.querySelector('.comment-username strong').textContent;
-            });
-        } else {
-            replyToHeader.style.display = 'none';
-        }
+            } else {
+                replyToHeader.style.display = 'none';
+            }
+        });
 
         let pollingInterval = setInterval(() => {
             updateTipStatus();
