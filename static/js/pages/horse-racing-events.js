@@ -1,6 +1,8 @@
 async function fetchRaceData() {
   const url = 'http://localhost:8000/horse-racing/cards-json/';
   try {
+    console.log('Fetching race data from:', url);
+    document.dispatchEvent(new CustomEvent('raceDataLoading', { detail: true }));
     const response = await fetch(url, {
       method: 'GET',
       headers: { 'Accept': 'application/json' },
@@ -10,12 +12,15 @@ async function fetchRaceData() {
       throw new Error(`HTTP error! status: ${response.status}, body: ${text}`);
     }
     const data = await response.json();
-    const meetings = data.meetings || [];
-    console.log('Fetched horse racing meetings:', meetings);
+    console.log('Raw response data:', data);
+    const meetings = Array.isArray(data) ? data : data.meetings || [];
+    console.log('Parsed horse racing meetings:', meetings);
     return meetings;
   } catch (error) {
     console.error('Error fetching horse racing data:', error);
     return [];
+  } finally {
+    document.dispatchEvent(new CustomEvent('raceDataLoading', { detail: false }));
   }
 }
 
@@ -28,15 +33,20 @@ export async function fetchMeetingList() {
 }
 
 export async function formatEventList(events, sportKey, category, isCentralFeed = false) {
+  console.log(`Formatting events for category: ${category}, events:`, events);
   if (!events || !events.length) {
-    return `<p>No ${category.replace('_', ' ')} available.</p>`;
+    return `<div class="error-message"><p>No ${category.replace('_', ' ')} available. Please check back later.</p></div>`;
   }
 
   const currentTime = new Date();
   let filteredEvents = [];
 
   if (category === 'upcoming_meetings') {
-    filteredEvents = events.filter(meeting => new Date(meeting.date) > currentTime);
+    filteredEvents = events.filter(meeting => {
+      const isFuture = new Date(meeting.date) > currentTime;
+      console.log(`Meeting ${meeting.venue} (${meeting.date}): isFuture=${isFuture}`);
+      return isFuture;
+    });
   } else if (category === 'at_the_post') {
     filteredEvents = events
       .filter(meeting => new Date(meeting.date).toDateString() === currentTime.toDateString())
@@ -58,8 +68,9 @@ export async function formatEventList(events, sportKey, category, isCentralFeed 
       .filter(meeting => meeting.races.length > 0);
   }
 
+  console.log(`Filtered events for ${category}:`, filteredEvents);
   if (!filteredEvents.length) {
-    return `<p>No ${category.replace('_', ' ')} available.</p>`;
+    return `<div class="info-message"><p>No ${category.replace('_', ' ')} found for the selected criteria.</p></div>`;
   }
 
   if (isCentralFeed) {
@@ -84,7 +95,7 @@ export async function formatEventList(events, sportKey, category, isCentralFeed 
           ? `
               <div class="race-result">
                 <p><strong>Winner:</strong> ${race.result.winner}</p>
-                ${race.result.placed_horses && race.result.placed_horses.length ? '<ul>' + race.result.placed_horses.map(h => `<li>${h.position || 'N/A'}nd: ${h.name || 'Unknown'}</li>`).join('') + '</ul>' : ''}
+                ${race.result.positions && race.result.positions.length ? '<ul>' + race.result.positions.map(h => `<li>${h.position || 'N/A'}nd: ${h.name || 'Unknown'}</li>`).join('') + '</ul>' : ''}
               </div>
             `
           : '';

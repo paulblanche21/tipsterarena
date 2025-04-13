@@ -543,6 +543,8 @@ function openCommentModal(tip, tipId, parentId = null) {
                         <span class="status">Status: ${status}</span>
                     </div>
                     <small class="modal-tip-timestamp">${timestamp}</small>
+                    ${data.data && data.data.image ? `<img src="${data.data.image}" alt="Tip Image" class="comment-image">` : ''}
+                    ${data.data && data.data.gif_url ? `<img src="${data.data.gif_url}" alt="Tip GIF" class="comment-image" width="582" height="300" onerror="this.src='/static/img/default-image.png'">` : ''}
                     <div class="tip-actions">
                         <div class="tip-action-group">
                             <a href="#" class="tip-action tip-action-like" data-action="like"><i class="fas fa-heart"></i></a>

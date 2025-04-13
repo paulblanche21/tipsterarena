@@ -1,164 +1,202 @@
-# core/horse_racing_events.py
-
-from datetime import datetime, timedelta
-from core.models import RaceMeeting
 import logging
+from datetime import datetime, timedelta
+from core.models import RaceMeeting, Race, RaceResult
+from django.db import transaction
+from playwright.sync_api import sync_playwright
+from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 
-def format_racecard_list(meetings):
-    if not meetings:
-        return "<p>No upcoming horse racing meetings available.</p>"
-
-    event_html = '<div class="racecard-feed">'
-    for meeting in meetings:
-        races = meeting.races.all().order_by('race_time')
-        if not races:
-            continue
-
-        # Meeting header
-        event_html += f"""
-        <div class="meeting-card">
-          <div class="card-header">
-            <div class="meeting-info">
-              <span class="meeting-name">{meeting.venue} - {meeting.date.strftime('%a %d %b %Y')}</span>
-            </div>
-          </div>
-          <div class="card-content">
-        """
-
-        # List races
-        for race in races:
-            # Format horses with jockeys, odds, trainers, and owners
-            horses_list = "".join([
-                f"<li>{horse['number']}. {horse['name']} (Jockey: {horse.get('jockey', 'Unknown')}, Odds: {horse.get('odds', 'N/A')}, Trainer: {horse.get('trainer', 'Unknown')}, Owner: {horse.get('owner', 'Unknown')})</li>"
-                for horse in race.horses
-            ]) if race.horses else "<li>No horses available.</li>"
-
-            # Format results
-            result = race.results.first()
-            result_content = ""
-            if result and result.winner:
-                placed_horses = "".join([
-                    f"<li>{horse['position']}nd: {horse['name']}</li>"
-                    for horse in result.placed_horses
-                ]) if result.placed_horses else ""
-                result_content = f"""
-                <div class="race-result">
-                  <p><strong>Winner:</strong> {result.winner}</p>
-                  {placed_horses}
-                </div>
-                """
-
-            event_html += f"""
-            <div class="race-details">
-              <p><strong>Race Time:</strong> {race.race_time.strftime('%H:%M')}</p>
-              <p><strong>Race Name:</strong> {race.name or 'Unnamed Race'}</p>
-              <div class="horses-list">
-                <p><strong>Horses:</strong></p>
-                <ul>{horses_list}</ul>
-              </div>
-              {result_content}
-            </div>
-            """
-
-        event_html += """
-          </div>
-        </div>
-        """
-
-    event_html += '</div>'
-    return event_html
-
-def get_racecards():
-    """Fetch and format racecards for upcoming meetings."""
-    today = datetime.now().date()
-    three_days_later = today + timedelta(days=3)
-    meetings = RaceMeeting.objects.filter(
-        date__gte=today,
-        date__lte=three_days_later
-    ).order_by('date', 'venue')
-    return format_racecard_list(meetings)
-
 def get_racecards_json():
     """
-    Fetch horse racing racecards as JSON for the last 7 days, including completed races.
-    Uses RaceMeeting model; extend with API if available.
+    Scrape horse racing racecards and results from Racing Post for the last 7 days.
+    Falls back to RaceMeeting model if scraping fails.
     """
-    try:
-        # Placeholder for external API (e.g., Timeform, Racing Post)
-        # Uncomment and configure with real endpoint and key if available
-        """
-        api_url = "https://api.racingpost.com/v1/racecards"
-        response = requests.get(api_url, timeout=10)
-        if response.status_code == 200:
-            data = response.json()
-            meetings = parse_api_data(data)
-            logger.info(f"Fetched {len(meetings)} horse racing meetings from API")
-            return meetings
-        else:
-            logger.warning(f"API request failed: {response.status_code}")
-        """
-        pass
-    except Exception as e:
-        logger.error(f"Error fetching racecards from API: {str(e)}")
-
-    # Fallback to RaceMeeting model
     today = datetime.now().date()
     seven_days_ago = today - timedelta(days=7)
-    meetings = RaceMeeting.objects.filter(
-        date__gte=seven_days_ago,
-        date__lte=today
-    ).order_by('-date', 'venue')
+    meetings = []
 
-    racecards = []
-    for meeting in meetings:
-        races = meeting.races.all().order_by('race_time')
-        races_data = [
-            {
-                'race_time': race.race_time.strftime('%H:%M') if race.race_time else 'N/A',
-                'name': race.name or 'Unnamed Race',
-                'horses': race.horses or [],
-                'result': {
-                    'winner': result.winner,
-                    'positions': result.placed_horses
-                } if (result := race.results.first()) and result.winner else None
-            }
-            for race in races
-        ]
-        racecards.append({
-            'date': meeting.date.isoformat(),
-            'displayDate': meeting.date.strftime('%b %d, %Y'),
-            'venue': meeting.venue,
-            'races': races_data,
-            'url': meeting.url or ''
-        })
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.set_extra_http_headers({
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            })
 
-    logger.info(f"Fetched {len(racecards)} horse racing meetings from RaceMeeting model")
-    return racecards
+            for i in range(8):
+                date = today - timedelta(days=i)
+                date_str = date.strftime('%Y-%m-%d')
+                logger.debug(f"Scraping date: {date_str}")
 
-def parse_api_data(data):
+                # Racecards
+                racecard_url = f"https://www.racingpost.com/racecards/{date_str}"
+                logger.debug(f"Fetching racecards: {racecard_url}")
+                page.goto(racecard_url, wait_until="networkidle", timeout=60000)
+                racecard_soup = BeautifulSoup(page.content(), 'html.parser')
+
+                # Results
+                result_url = f"https://www.racingpost.com/results/{date_str}"
+                logger.debug(f"Fetching results: {result_url}")
+                page.goto(result_url, wait_until="networkidle", timeout=60000)
+                result_soup = BeautifulSoup(page.content(), 'html.parser')
+
+                day_meetings = parse_racecard_page(racecard_soup, result_soup, date)
+                logger.debug(f"Parsed {len(day_meetings)} meetings for {date_str}")
+                meetings.extend(day_meetings)
+                page.wait_for_timeout(2000)
+
+            browser.close()
+
+        logger.info(f"Scraped {len(meetings)} horse racing meetings from Racing Post")
+        return meetings
+
+    except Exception as e:
+        logger.error(f"Error scraping Racing Post: {str(e)}")
+        # Fallback to RaceMeeting model
+        meetings = RaceMeeting.objects.filter(
+            date__gte=seven_days_ago,
+            date__lte=today
+        ).order_by('-date', 'venue')
+
+        racecards = []
+        for meeting in meetings:
+            races = meeting.races.all().order_by('race_time')
+            races_data = [
+                {
+                    'race_time': race.race_time.strftime('%H:%M') if race.race_time else 'N/A',
+                    'name': race.name or 'Unnamed Race',
+                    'horses': race.horses or [],
+                    'result': {
+                        'winner': result.winner,
+                        'positions': result.placed_horses
+                    } if (result := race.results.first()) and result.winner else None
+                }
+                for race in races
+            ]
+            racecards.append({
+                'date': meeting.date.isoformat(),
+                'displayDate': meeting.date.strftime('%b %d, %Y'),
+                'venue': meeting.venue,
+                'races': races_data,
+                'url': f"https://www.racingpost.com/racecards/{meeting.date.strftime('%Y-%m-%d')}/{meeting.venue.lower().replace(' ', '-')}"
+            })
+        logger.info(f"Fallback: Fetched {len(racecards)} meetings from RaceMeeting model")
+        return racecards
+
+def parse_racecard_page(racecard_soup, result_soup, date):
     """
-    Parse external API response into racecard format.
-    Placeholder; customize based on actual API structure.
+    Parse Racing Post racecard and results pages into frontend-compatible format.
     """
     meetings = []
-    # Example parsing (adjust for real API)
-    for event in data.get('events', []):
-        meeting = {
-            'date': event.get('date', datetime.now().isoformat()),
-            'displayDate': datetime.strptime(event.get('date', ''), '%Y-%m-%d').strftime('%b %d, %Y') if event.get('date') else datetime.now().strftime('%b %d, %Y'),
-            'venue': event.get('venue', 'Unknown Venue'),
-            'races': [
-                {
-                    'race_time': race.get('time', 'N/A'),
-                    'name': race.get('name', 'Unnamed Race'),
-                    'horses': race.get('horses', []),
-                    'result': race.get('result', None)
+    # Try racecard meeting sections
+    meeting_sections = racecard_soup.select('div[class*="MeetingContainer"], div.rp-resultsBettingsOffer')
+    logger.debug(f"Found {len(meeting_sections)} meeting sections in racecards")
+
+    for section in meeting_sections:
+        venue_elem = section.select_one('h3[class*="MeetingName"], h1[class*="CourseName"]')
+        if not venue_elem:
+            logger.warning("No venue element found in racecard section")
+            continue
+        venue = venue_elem.text.strip().split(' - ')[0].replace(' Results', '').strip()
+        logger.debug(f"Processing venue: {venue}")
+
+        races = []
+        race_cards = section.select('div[class*="RaceCardContainer"], div.rp-raceCourse__panel__race__info')
+        logger.debug(f"Found {len(race_cards)} race cards for {venue}")
+
+        for race_card in race_cards:
+            race_time_elem = race_card.select_one('span[class*="RaceTime"], span[data-test-selector="text-raceTime"]')
+            race_name_elem = race_card.select_one('h4[class*="RaceName"], a.rp-raceCourse__panel__race__info__title__link > span')
+            horses_list = race_card.select('div[class*="RunnerDetails"], ol.rp-raceCourse__panel__race__info__results li')
+            race_id = race_card.get('data-diffusion-race-id', '')
+
+            race_time = race_time_elem.text.strip() if race_time_elem else 'N/A'
+            race_name = race_name_elem.text.strip() if race_name_elem else 'Unnamed Race'
+            logger.debug(f"Race: {race_name} at {race_time}")
+
+            horses = []
+            for horse in horses_list:
+                horse_data = {
+                    'number': 'N/A',
+                    'name': 'Unknown',
+                    'jockey': 'Unknown',
+                    'odds': 'N/A',
+                    'trainer': 'Unknown',
+                    'owner': 'Unknown'
                 }
-                for race in event.get('races', [])
-            ],
-            'url': event.get('url', '')
-        }
-        meetings.append(meeting)
+                # Try racecard selectors first
+                number_elem = horse.select_one('span[class*="RunnerNumber"]')
+                name_elem = horse.select_one('a[class*="RunnerName"]')
+                jockey_elem = horse.select_one('span[class*="Jockey"]')
+                odds_elem = horse.select_one('span[class*="Odds"]')
+                trainer_elem = horse.select_one('span[class*="Trainer"]')
+                owner_elem = horse.select_one('span[class*="Owner"]')
+                # Fallback to results selectors
+                if not name_elem:
+                    name_elem = horse.select_one('div.rp-raceCourse__panel__race__info__results__name__table__row')
+                    odds_elem = horse.select_one('div.rp-raceCourse__panel__race__info__results__name__table__price')
+                    jockey_elem = horse.select_one('a[href*="/jockey"]')
+                    trainer_elem = horse.select_one('a[href*="/trainer"]')
+                    owner_elem = horse.select_one('a[href*="/owner"]')
+
+                if name_elem:
+                    horse_data['name'] = name_elem.text.strip().split('. ')[-1] if '. ' in name_elem.text else name_elem.text.strip()
+                if number_elem:
+                    horse_data['number'] = number_elem.text.strip()
+                if jockey_elem:
+                    horse_data['jockey'] = jockey_elem.text.strip()
+                if odds_elem:
+                    horse_data['odds'] = odds_elem.text.strip()
+                if trainer_elem:
+                    horse_data['trainer'] = trainer_elem.text.strip()
+                if owner_elem:
+                    horse_data['owner'] = owner_elem.text.strip()
+                
+                horses.append(horse_data)
+            
+            logger.debug(f"Parsed {len(horses)} horses for {race_name}")
+
+            # Parse results
+            result = None
+            result_race = result_soup.select_one(f'div.rp-raceCourse__panel__race[data-diffusion-race-id="{race_id}"]') or \
+                         result_soup.select_one(f'div.rp-raceCourse__panel__race[data-diffusion-racetime="{race_time.replace(":", ":")}"]')
+            if result_race:
+                results_list = result_race.select('ol.rp-raceCourse__panel__race__info__results li')
+                logger.debug(f"Found {len(results_list)} result items")
+                winner = None
+                placed = []
+                for idx, result_item in enumerate(results_list, 1):
+                    horse_name_elem = result_item.select_one('div.rp-raceCourse__panel__race__info__results__name__table__row')
+                    if not horse_name_elem:
+                        continue
+                    horse_name = horse_name_elem.text.strip().split('. ')[-1]
+                    outcome = result_item.get('data-outcome-desc', '')
+                    if outcome == '1st':
+                        winner = horse_name
+                    elif outcome in ('2nd', '3rd'):
+                        placed.append({
+                            'position': outcome.replace('nd', '').replace('rd', ''),
+                            'name': horse_name
+                        })
+                if winner:
+                    result = {'winner': winner, 'positions': placed}
+                    logger.debug(f"Result: winner={winner}, placed={len(placed)}")
+
+            races.append({
+                'race_time': race_time,
+                'name': race_name,
+                'horses': horses,
+                'result': result
+            })
+
+        meetings.append({
+            'date': date.isoformat(),
+            'displayDate': date.strftime('%b %d, %Y'),
+            'venue': venue,
+            'races': races,
+            'url': f"https://www.racingpost.com/racecards/{date.strftime('%Y-%m-%d')}/{venue.lower().replace(' ', '-')}"
+        })
+
+    logger.debug(f"Returning {len(meetings)} meetings for {date}")
     return meetings

@@ -182,3 +182,15 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAdminUser',
     ],
 }
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {'class': 'logging.StreamHandler'},
+        'file': {'class': 'logging.FileHandler', 'filename': 'scraper.log'},
+    },
+    'loggers': {
+        'core': {'handlers': ['console', 'file'], 'level': 'DEBUG'},
+    },
+}

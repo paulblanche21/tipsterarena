@@ -67,7 +67,7 @@ async function fetchEventsForSport(sport) {
   let allEvents = [];
   if (sport === "horse_racing") {
     allEvents = await module.fetch();
-    console.log(`Horse Racing: Fetched ${allEvents.length} events`);
+    console.log(`Horse Racing: Fetched ${allEvents.length} events`, allEvents);
   } else {
     const today = new Date();
     const startDate = new Date();
@@ -84,7 +84,7 @@ async function fetchEventsForSport(sport) {
         const response = await fetch(url);
         if (!response.ok) throw new Error(`HTTP error: ${response.status} for ${config.name}`);
         const data = await response.json();
-        console.log(`Raw API data for ${config.name}:`, data); // Debug log
+        console.log(`Raw API data for ${config.name}:`, data);
         const leagueEvents = await module.fetch(data, config);
         console.log(`${config.name}: Fetched ${leagueEvents.length} events, Start: ${startDateStr}, End: ${endDateStr}`);
         allEvents = allEvents.concat(leagueEvents);
@@ -103,7 +103,7 @@ async function fetchEventsForSport(sport) {
     const eventDate = new Date(event.date);
     const isWithinRange = eventDate >= fourteenDaysAgo && eventDate <= sevenDaysFuture;
     if (!isWithinRange) {
-      console.log(`Excluding event: ${event.name}, Date: ${event.date}`);
+      console.log(`Excluding event: ${event.name || event.venue}, Date: ${event.date}`);
     }
     return isWithinRange;
   });
@@ -114,7 +114,7 @@ async function fetchEventsForSport(sport) {
 
 // Filters events by category
 function filterEvents(events, category, sportKey) {
-  console.log(`Filtering events for ${sportKey}, category: ${category}`);
+  console.log(`Filtering events for ${sportKey}, category: ${category}, events:`, events);
   const currentTime = new Date();
   const fourteenDaysAgo = new Date();
   const sevenDaysFuture = new Date();
@@ -123,7 +123,14 @@ function filterEvents(events, category, sportKey) {
 
   if (sportKey === 'horse_racing') {
     if (category === 'upcoming_meetings') {
-      return events.filter(meeting => new Date(meeting.date) > currentTime);
+      return events.filter(meeting => {
+        const meetingDate = new Date(meeting.date);
+        // Include today and future meetings
+        const isSameOrFuture = meetingDate >= new Date(currentTime.setHours(0, 0, 0, 0));
+        const hasRaces = meeting.races && meeting.races.length > 0;
+        console.log(`Meeting ${meeting.venue} (${meeting.date}): isSameOrFuture=${isSameOrFuture}, hasRaces=${hasRaces}`);
+        return isSameOrFuture && hasRaces;
+      });
     } else if (category === 'at_the_post') {
       return events
         .filter(meeting => new Date(meeting.date).toDateString() === currentTime.toDateString())
@@ -156,7 +163,7 @@ function filterEvents(events, category, sportKey) {
         .sort((a, b) => a.priority - b.priority);
     } else if (category === 'results') {
       return events
-        .filter(event => event.state === "post" || event.completed) // Relaxed filter
+        .filter(event => event.state === "post" || event.completed)
         .sort((a, b) => a.priority - b.priority || new Date(b.date) - new Date(a.date))
         .slice(0, 1);
     }
@@ -209,9 +216,9 @@ async function populateModal(sport, category) {
       await fetchEventsForSport(sport);
     }
     const events = globalEvents[sport] || [];
-    console.log(`Found ${events.length} events for ${sport}`);
+    console.log(`Found ${events.length} events for ${sport}`, events);
     const filteredEvents = filterEvents(events, category, sport);
-    console.log(`Filtered ${filteredEvents.length} events for ${category}`);
+    console.log(`Filtered ${filteredEvents.length} events for ${category}`, filteredEvents);
     const formatter = FORMATTERS[sport];
     if (!formatter) {
       console.warn(`No formatter for ${sport}`);
