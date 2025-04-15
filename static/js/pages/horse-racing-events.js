@@ -42,10 +42,15 @@ export async function formatEventList(events, sportKey, category, isCentralFeed 
   let filteredEvents = [];
 
   if (category === 'upcoming_meetings') {
+    // Include today and tomorrow for upcoming meetings
     filteredEvents = events.filter(meeting => {
-      const isFuture = new Date(meeting.date) > currentTime;
-      console.log(`Meeting ${meeting.venue} (${meeting.date}): isFuture=${isFuture}`);
-      return isFuture;
+      const meetingDate = new Date(meeting.date);
+      const today = new Date(currentTime.setHours(0, 0, 0, 0));
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
+      const isTodayOrTomorrow = meetingDate >= today && meetingDate <= tomorrow;
+      console.log(`Meeting ${meeting.venue} (${meeting.date}): isTodayOrTomorrow=${isTodayOrTomorrow}`);
+      return isTodayOrTomorrow;
     });
   } else if (category === 'at_the_post') {
     filteredEvents = events
@@ -119,9 +124,29 @@ export async function formatEventList(events, sportKey, category, isCentralFeed 
     let eventHtml = '<div class="league-group"><p class="league-header"><span class="sport-icon">🏇</span> <strong>UK & Irish Racing</strong></p>';
     if (category === 'upcoming_meetings') {
       eventHtml += filteredEvents.map(meeting => `
-        <p class="event-item horse_racing-event">
-          <span>${meeting.venue} - ${new Date(meeting.date).toLocaleDateString('en-US', { weekday: 'short', day: '2-digit', month: 'short' })}</span>
-        </p>
+        <div class="event-item horse_racing-event expandable-card">
+          <div class="card-header">
+            <span>${meeting.venue} - ${new Date(meeting.date).toLocaleDateString('en-US', { weekday: 'short', day: '2-digit', month: 'short' })}</span>
+          </div>
+          <div class="card-content" style="display: none;">
+            ${meeting.races && meeting.races.length > 0 ? meeting.races.map(race => `
+              <div class="race-details">
+                <p><strong>Race Time:</strong> ${race.race_time || 'N/A'}</p>
+                <p><strong>Race Name:</strong> ${race.name || 'Unnamed Race'}</p>
+                ${race.horses && race.horses.length > 0 ? `
+                  <div class="horses-list">
+                    <p><strong>Horses:</strong></p>
+                    <ul>
+                      ${race.horses.map(h => `
+                        <li>${h.number || 'N/A'}. ${h.name || 'Unknown'} (Jockey: ${h.jockey || 'Unknown'}, Odds: ${h.odds || 'N/A'})</li>
+                      `).join('')}
+                    </ul>
+                  </div>
+                ` : '<p>No horses available.</p>'}
+              </div>
+            `).join('') : '<p>No races available for this meeting.</p>'}
+          </div>
+        </div>
       `).join('');
     } else {
       eventHtml += filteredEvents.flatMap(meeting => 

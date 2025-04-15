@@ -125,11 +125,13 @@ function filterEvents(events, category, sportKey) {
     if (category === 'upcoming_meetings') {
       return events.filter(meeting => {
         const meetingDate = new Date(meeting.date);
-        // Include today and future meetings
-        const isSameOrFuture = meetingDate >= new Date(currentTime.setHours(0, 0, 0, 0));
+        const today = new Date(currentTime.setHours(0, 0, 0, 0));
+        const tomorrow = new Date(today);
+        tomorrow.setDate(today.getDate() + 1);
+        const isTodayOrTomorrow = meetingDate >= today && meetingDate <= tomorrow;
         const hasRaces = meeting.races && meeting.races.length > 0;
-        console.log(`Meeting ${meeting.venue} (${meeting.date}): isSameOrFuture=${isSameOrFuture}, hasRaces=${hasRaces}`);
-        return isSameOrFuture && hasRaces;
+        console.log(`Meeting ${meeting.venue} (${meeting.date}): isTodayOrTomorrow=${isTodayOrTomorrow}, hasRaces=${hasRaces}`);
+        return isTodayOrTomorrow; // Removed hasRaces check to debug rendering
       });
     } else if (category === 'at_the_post') {
       return events
