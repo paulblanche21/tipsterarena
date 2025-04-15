@@ -18,7 +18,8 @@ class Command(BaseCommand):
         today = datetime.now().date()
         tomorrow = today + timedelta(days=1)
         seven_days_ago = today - timedelta(days=7)
-        rpscrape_dir = os.path.join(os.path.dirname(__file__), 'rpscrape')
+        rpscrape_dir = os.path.join(os.path.dirname(__file__), 'rpscrape', 'scripts')
+        base_rpscrape_dir = os.path.join(os.path.dirname(__file__), 'rpscrape')
         meetings = []
 
         # Handle racecards
@@ -37,32 +38,55 @@ class Command(BaseCommand):
 
         for date in dates:
             date_str = date.strftime('%Y-%m-%d')
-            logger.info(f"Scraping racecards for {date_str}")
+            cmd_arg = 'today' if date == today else 'tomorrow' if date == tomorrow else date_str
+            logger.info(f"Scraping racecards for {cmd_arg} ({date_str})")
             try:
                 # Run racecards.py
                 result = subprocess.run(
-                    ['python', 'racecards.py', date_str],
+                    ['python', 'racecards.py', cmd_arg],
                     cwd=rpscrape_dir,
                     capture_output=True,
                     text=True,
                     env={**os.environ, 'PYTHONIOENCODING': 'utf-8'}
                 )
                 if result.returncode != 0:
-                    logger.error(f"racecards.py failed for {date_str}: {result.stderr}")
+                    logger.error(f"racecards.py failed for {cmd_arg}: {result.stderr}")
                     continue
 
                 # Read JSON output
-                json_path = os.path.join(rpscrape_dir, 'racecards', f'{date_str}.json')
+                json_path = os.path.join(base_rpscrape_dir, 'racecards', f'{date_str}.json')
                 if not os.path.exists(json_path):
-                    logger.warning(f"No JSON output found for {date_str}")
+                    logger.warning(f"No JSON output found for {cmd_arg}")
                     continue
 
                 with open(json_path, 'r', encoding='utf-8') as f:
-                    races = json.load(f)
+                    data = json.load(f)
+
+                # Handle nested JSON structure
+                if not isinstance(data, dict):
+                    logger.warning(f"Expected dict for {cmd_arg}, got {type(data)}")
+                    continue
+
+                # Flatten nested structure
+                races = []
+                for region, courses in data.items():
+                    for course, times in courses.items():
+                        for time, race in times.items():
+                            if isinstance(race, dict):
+                                races.append(race)
+                            else:
+                                logger.warning(f"Invalid race entry for {cmd_arg} at {course} {time}: {race}")
+
+                if not races:
+                    logger.warning(f"No valid races found for {cmd_arg}")
+                    continue
 
                 # Group by venue
                 venue_meetings = {}
                 for race in races:
+                    if not isinstance(race, dict):
+                        logger.warning(f"Invalid race entry for {cmd_arg}: {race}")
+                        continue
                     venue = race.get('course', 'Unknown')
                     if venue.lower() == 'down':
                         venue = 'Down Royal'
@@ -75,40 +99,41 @@ class Command(BaseCommand):
                             'url': f"https://www.racingpost.com/racecards/{date_str}/{venue.lower().replace(' ', '-')}"
                         }
                     venue_meetings[venue]['races'].append({
-                        'race_time': race.get('time', 'N/A'),
+                        'race_time': race.get('off_time', 'N/A'),
                         'name': race.get('race_name', 'Unnamed Race'),
                         'horses': [
                             {
                                 'number': str(i + 1),
                                 'name': runner.get('name', 'Unknown'),
                                 'jockey': runner.get('jockey', 'Unknown'),
-                                'odds': runner.get('odds', 'N/A'),
+                                'odds': runner.get('odds', 'N/A') or 'N/A',
                                 'trainer': runner.get('trainer', 'Unknown'),
-                                'owner': 'Unknown'  # rpscrape doesn't provide owner
+                                'owner': runner.get('owner', 'Unknown')
                             } for i, runner in enumerate(race.get('runners', []))
                         ],
-                        'result': None,  # Results handled separately
+                        'result': None,
                         'going_data': race.get('going', 'N/A'),
-                        'runners': str(len(race.get('runners', []))) + ' runners',
-                        'tv': race.get('tv', 'N/A')
+                        'runners': f"{race.get('field_size', 0)} runners",
+                        'tv': race.get('tv', 'N/A') or 'N/A'
                     })
 
                 meetings.extend(venue_meetings.values())
-                logger.info(f"Processed {len(venue_meetings)} meetings for {date_str}")
+                logger.info(f"Processed {len(venue_meetings)} meetings for {cmd_arg}")
 
             except Exception as e:
-                logger.error(f"Error processing racecards for {date_str}: {str(e)}")
+                logger.error(f"Error processing racecards for {cmd_arg}: {str(e)}")
 
-        # Handle results for past 7 days if requested
+        # Handle results for past 7 days
         if options['results']:
             for i in range(1, 8):
                 past_date = today - timedelta(days=i)
                 date_str = past_date.strftime('%Y-%m-%d')
+                date_arg = past_date.strftime('%Y/%m/%d')
                 logger.info(f"Scraping results for {date_str}")
                 try:
                     # Run rpscrape.py for results
                     result = subprocess.run(
-                        ['python', 'rpscrape.py', date_str],
+                        ['python', 'rpscrape.py', '-d', date_arg],
                         cwd=rpscrape_dir,
                         capture_output=True,
                         text=True,
@@ -118,18 +143,32 @@ class Command(BaseCommand):
                         logger.error(f"rpscrape.py failed for {date_str}: {result.stderr}")
                         continue
 
-                    # Read JSON output (assuming rpscrape.py saves to results/YYYY-MM-DD.json)
-                    json_path = os.path.join(rpscrape_dir, 'results', f'{date_str}.json')
+                    # Read JSON output
+                    json_path = os.path.join(base_rpscrape_dir, 'results', f'{date_str}.json')
                     if not os.path.exists(json_path):
                         logger.warning(f"No results JSON found for {date_str}")
                         continue
 
                     with open(json_path, 'r', encoding='utf-8') as f:
-                        races = json.load(f)
+                        races_data = json.load(f)
+
+                    # Handle unexpected string output
+                    if isinstance(races_data, str):
+                        logger.warning(f"Received string instead of list for results {date_str}: {races_data}")
+                        continue
+
+                    # Ensure races is a list
+                    races = races_data if isinstance(races_data, list) else []
+                    if not races:
+                        logger.warning(f"Empty races list for results {date_str}")
+                        continue
 
                     # Process results
                     venue_meetings = {}
                     for race in races:
+                        if not isinstance(race, dict):
+                            logger.warning(f"Invalid race entry for results {date_str}: {race}")
+                            continue
                         venue = race.get('course', 'Unknown')
                         if venue.lower() == 'down':
                             venue = 'Down Royal'
@@ -157,13 +196,13 @@ class Command(BaseCommand):
                                 result_data = {'winner': winner, 'positions': placed}
 
                         venue_meetings[venue]['races'].append({
-                            'race_time': race.get('time', 'N/A'),
+                            'race_time': race.get('off_time', 'N/A'),
                             'name': race.get('race_name', 'Unnamed Race'),
-                            'horses': [],  # Results don’t include full runner list
+                            'horses': [],
                             'result': result_data,
                             'going_data': race.get('going', 'N/A'),
                             'runners': 'N/A',
-                            'tv': race.get('tv', 'N/A')
+                            'tv': race.get('tv', 'N/A') or 'N/A'
                         })
 
                     meetings.extend(venue_meetings.values())
@@ -172,5 +211,7 @@ class Command(BaseCommand):
                 except Exception as e:
                     logger.error(f"Error processing results for {date_str}: {str(e)}")
 
+        # Output status message as string
         self.stdout.write(self.style.SUCCESS(f"Scraped {len(meetings)} meetings"))
+        # Return meetings for call_command
         return meetings
