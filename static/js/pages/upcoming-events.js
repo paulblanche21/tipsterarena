@@ -49,7 +49,7 @@ const FORMATTERS = {
   football: formatFootballTable,
   golf: formatGolfList,
   tennis: formatTennisTable,
-  horse_racing: formatHorseRacingList
+  horse_racing: renderHorseRacingEvents // Updated to custom function
 };
 
 let globalEvents = {};
@@ -72,7 +72,7 @@ async function fetchEventsForSport(sport) {
     const today = new Date();
     const startDate = new Date();
     const endDate = new Date();
-    const daysToFetchPast = 14; // Extended to capture completed events
+    const daysToFetchPast = 14;
     const daysToFetchFuture = 7;
     startDate.setDate(today.getDate() - daysToFetchPast);
     endDate.setDate(today.getDate() + daysToFetchFuture);
@@ -114,7 +114,7 @@ async function fetchEventsForSport(sport) {
 
 // Filters events by category
 function filterEvents(events, category, sportKey) {
-  console.log(`Filtering events for ${sportKey}, category: ${category}, events:`, events);
+  console.log(`Filtering events for ${sportKey}, category: ${category}`);
   const currentTime = new Date();
   const fourteenDaysAgo = new Date();
   const sevenDaysFuture = new Date();
@@ -129,9 +129,8 @@ function filterEvents(events, category, sportKey) {
         const tomorrow = new Date(today);
         tomorrow.setDate(today.getDate() + 1);
         const isTodayOrTomorrow = meetingDate >= today && meetingDate <= tomorrow;
-        const hasRaces = meeting.races && meeting.races.length > 0;
-        console.log(`Meeting ${meeting.venue} (${meeting.date}): isTodayOrTomorrow=${isTodayOrTomorrow}, hasRaces=${hasRaces}`);
-        return isTodayOrTomorrow; // Removed hasRaces check to debug rendering
+        console.log(`Meeting ${meeting.venue} (${meeting.date}): isTodayOrTomorrow=${isTodayOrTomorrow}`);
+        return isTodayOrTomorrow;
       });
     } else if (category === 'at_the_post') {
       return events
@@ -153,22 +152,6 @@ function filterEvents(events, category, sportKey) {
         }))
         .filter(meeting => meeting.races.length > 0);
     }
-  } else if (sportKey === 'golf') {
-    console.log('Golf events before filter:', events);
-    if (category === 'fixtures') {
-      return events
-        .filter(event => event.state === "pre" && new Date(event.date) > currentTime)
-        .sort((a, b) => a.priority - b.priority || new Date(a.date) - new Date(b.date));
-    } else if (category === 'inplay') {
-      return events
-        .filter(event => event.state === "in")
-        .sort((a, b) => a.priority - b.priority);
-    } else if (category === 'results') {
-      return events
-        .filter(event => event.state === "post" || event.completed)
-        .sort((a, b) => a.priority - b.priority || new Date(b.date) - new Date(a.date))
-        .slice(0, 1);
-    }
   } else {
     return events.filter(event => {
       const eventDate = new Date(event.date);
@@ -189,6 +172,61 @@ function filterEvents(events, category, sportKey) {
     });
   }
   return [];
+}
+
+// Renders horse racing events for modal
+async function renderHorseRacingEvents(events, sport, category) {
+  console.log(`Rendering horse racing events for ${category}, count: ${events.length}`);
+  if (!events || events.length === 0) {
+    return `<p>No ${category.replace(/_/g, ' ')} available.</p>`;
+  }
+
+  let html = '<div class="racecard-feed">';
+  events.forEach(event => {
+    html += `
+      <div class="meeting-card expandable-card">
+        <div class="card-header">
+          <div class="meeting-info">
+            <span class="meeting-name">${event.venue} - ${event.displayDate}</span>
+            <a href="${event.url}" target="_blank">View Full Card</a>
+          </div>
+        </div>
+        <div class="card-content" style="display: none;">
+          ${event.races.map(race => `
+            <div class="race-details">
+              <p><strong>${race.race_time} - ${race.name}</strong></p>
+              <p>Runners: ${race.runners} | Going: ${race.going_data} | TV: ${race.tv}</p>
+              ${category === 'race_results' && race.result ? `
+                <div class="race-result">
+                  <p><strong>Winner:</strong> ${race.result.winner}</p>
+                  <p><strong>Placed:</strong> ${race.result.positions.map(p => `${p.position}. ${p.name}`).join(', ')}</p>
+                </div>
+              ` : ''}
+              <div class="horses-list">
+                <ul>
+                  ${race.horses.map(h => `
+                    <li>
+                      <strong>${h.finish_status === h.number ? h.number : `${h.number} (${h.finish_status})`}. ${h.name}</strong><br>
+                      <span class="jockey">Jockey: ${h.jockey}</span><br>
+                      <span class="trainer">Trainer: ${h.trainer}</span><br>
+                      <span class="owner">Owner: ${h.owner}</span><br>
+                      <span class="odds">Odds: ${h.odds}</span><br>
+                      <span>Form: ${h.form}</span><br>
+                      <span>RPR: ${h.rpr}</span><br>
+                      <span>Spotlight: ${h.spotlight}</span><br>
+                      <span>Trainer 14 Days: ${h.trainer_14_days.runs ? `${h.trainer_14_days.wins}/${h.trainer_14_days.runs} (${h.trainer_14_days.percent}%)` : 'N/A'}</span>
+                    </li>
+                  `).join('')}
+                </ul>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  });
+  html += '</div>';
+  return html;
 }
 
 // Populates modal with events
@@ -218,9 +256,9 @@ async function populateModal(sport, category) {
       await fetchEventsForSport(sport);
     }
     const events = globalEvents[sport] || [];
-    console.log(`Found ${events.length} events for ${sport}`, events);
+    console.log(`Found ${events.length} events for ${sport}`);
     const filteredEvents = filterEvents(events, category, sport);
-    console.log(`Filtered ${filteredEvents.length} events for ${category}`, filteredEvents);
+    console.log(`Filtered ${filteredEvents.length} events for ${category}`);
     const formatter = FORMATTERS[sport];
     if (!formatter) {
       console.warn(`No formatter for ${sport}`);

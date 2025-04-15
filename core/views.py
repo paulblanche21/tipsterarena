@@ -934,12 +934,14 @@ def search(request):
         'tips': tip_results,
     })
 
-# View for JSON racecards
 def racecards_json_view(request):
     """Return JSON data for horse racing racecards."""
-    data = get_racecards_json()
-    return JsonResponse(data, safe=False)  # safe=False allows non-dict data (list)
-
-# views.py (optional)
-
-
+    try:
+        logger.debug("Entering racecards_json_view")
+        data = get_racecards_json()
+        logger.info(f"Returning racecards data: {len(data)} meetings")
+        logger.debug(f"Sample data: {data[0] if data else 'Empty'}")
+        return JsonResponse(data, safe=False)
+    except Exception as e:
+        logger.error(f"Error in racecards_json_view: {str(e)}", exc_info=True)
+        return JsonResponse([], safe=False)

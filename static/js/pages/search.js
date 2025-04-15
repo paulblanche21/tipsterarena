@@ -112,25 +112,23 @@ export function setupSearch() {
   });
 
   document.addEventListener('click', (e) => {
-    const eventCard = e.target.closest('.event-card') || 
-                     e.target.closest('.tennis-card') || 
-                     e.target.closest('.golf-card') || 
-                     e.target.closest('.horse-racing-card');
-    const tipAction = e.target.closest('.tip-action'); // New check for tip actions
+    const eventCard = e.target.closest('.event-card, .tennis-card, .golf-card, .horse-racing-card');
+    const tipAction = e.target.closest('.tip-action');
+    const categoryButton = e.target.closest('.event-btn'); // New check for category buttons
     
     console.log('Click event target:', e.target);
     console.log('Closest card:', eventCard ? eventCard.className : 'None');
     console.log('Closest tip action:', tipAction ? tipAction.className : 'None');
+    console.log('Closest category button:', categoryButton ? categoryButton.className : 'None');
     
-    if (!searchBar.contains(e.target) && !searchResults.contains(e.target) && !eventCard && !tipAction) {
-      console.log('Click outside search bar, results, cards, and tip actions, hiding results');
+    if (!searchBar.contains(e.target) && !searchResults.contains(e.target) && !eventCard && !tipAction && !categoryButton) {
+      console.log('Click outside search bar, results, cards, tip actions, and category buttons, hiding results');
       searchResults.style.display = 'none';
     } else {
-      console.log('Click inside search bar, results, card, or tip action, keeping results visible');
+      console.log('Click inside search bar, results, card, tip action, or category button, keeping results visible');
     }
   });
 
-  // Add event delegation for expandable cards
   document.addEventListener('click', (e) => {
     const card = e.target.closest('.event-card, .tennis-card, .golf-card, .horse-racing-card');
     if (card) {
