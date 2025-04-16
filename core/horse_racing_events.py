@@ -1,6 +1,6 @@
 # core/horse_racing_events.py
 import logging
-from core.models import RaceMeeting, Race, RaceResult
+from core.models import RaceMeeting
 from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)

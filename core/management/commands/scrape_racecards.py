@@ -6,7 +6,6 @@ import logging
 import csv
 from datetime import datetime, timedelta
 from django.core.management.base import BaseCommand
-from django.utils import timezone
 from collections import defaultdict
 from core.models import RaceMeeting, Race, RaceResult
 
