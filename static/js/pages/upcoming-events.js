@@ -175,6 +175,7 @@ function filterEvents(events, category, sportKey) {
 }
 
 // Renders horse racing events for modal
+// static/js/upcoming-events.js
 async function renderHorseRacingEvents(events, sport, category) {
   console.log(`Rendering horse racing events for ${category}, count: ${events.length}`);
   if (!events || events.length === 0) {
@@ -193,9 +194,11 @@ async function renderHorseRacingEvents(events, sport, category) {
         </div>
         <div class="card-content" style="display: none;">
           ${event.races.map(race => `
-            <div class="race-details">
-              <p><strong>${race.race_time} - ${race.name}</strong></p>
-              <p>Runners: ${race.runners} | Going: ${race.going_data} | TV: ${race.tv}</p>
+            <div class="race-card">
+              <div class="race-header">
+                <p class="race-title"><strong>${race.race_time} - ${race.name}</strong></p>
+                <p class="race-meta">Runners: ${race.runners} | Going: ${race.going_data} | TV: ${race.tv}</p>
+              </div>
               ${category === 'race_results' && race.result ? `
                 <div class="race-result">
                   <p><strong>Winner:</strong> ${race.result.winner}</p>
@@ -206,14 +209,14 @@ async function renderHorseRacingEvents(events, sport, category) {
                 <ul>
                   ${race.horses.map(h => `
                     <li>
-                      <strong>${h.finish_status === h.number ? h.number : `${h.number} (${h.finish_status})`}. ${h.name}</strong><br>
-                      <span class="jockey">Jockey: ${h.jockey}</span><br>
-                      <span class="trainer">Trainer: ${h.trainer}</span><br>
-                      <span class="owner">Owner: ${h.owner}</span><br>
-                      <span class="odds">Odds: ${h.odds}</span><br>
-                      <span>Form: ${h.form}</span><br>
-                      <span>RPR: ${h.rpr}</span><br>
-                      <span>Spotlight: ${h.spotlight}</span><br>
+                      <strong>${h.finish_status === h.number ? h.number : `${h.number} (${h.finish_status})`}. ${h.name}</strong>
+                      <span class="jockey">Jockey: ${h.jockey}</span>
+                      <span class="trainer">Trainer: ${h.trainer}</span>
+                      <span class="owner">Owner: ${h.owner}</span>
+                      <span class="odds">Odds: ${h.odds}</span>
+                      <span>Form: ${h.form}</span>
+                      <span>RPR: ${h.rpr}</span>
+                      <span>Spotlight: ${h.spotlight}</span>
                       <span>Trainer 14 Days: ${h.trainer_14_days.runs ? `${h.trainer_14_days.wins}/${h.trainer_14_days.runs} (${h.trainer_14_days.percent}%)` : 'N/A'}</span>
                     </li>
                   `).join('')}

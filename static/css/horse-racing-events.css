@@ -1,146 +1,203 @@
 /* static/css/horse_racing_events.css */
-
 .racecard-feed {
-    background-color: #fff;
-    border-radius: 5px;
-    padding: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    margin: 0;
-    color: #001f3f;
-  }
-  
-  .meeting-card {
-    width: 100%;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: #fff;
-    margin-bottom: 15px;
-    transition: all 0.3s ease;
-    box-sizing: border-box;
-    min-height: 120px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  .meeting-card .card-header {
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    z-index: 1;
-    transition: background-color 0.3s ease;
-  }
-  
-  .meeting-card .card-header:hover {
-    background-color: #f5f5f5;
-  }
-  
-  .meeting-card .meeting-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  
-  .meeting-card .meeting-info .meeting-name {
-    font-size: 1.1em;
-    font-weight: bold;
-    color: #333;
-  }
-  
-  .meeting-card .card-content {
-    padding: 15px;
-    border-top: 1px solid #eee;
-    background-color: #f9f9f9;
-  }
-  
-  .race-details {
-    margin-bottom: 20px;
-  }
-  
-  .race-details p {
-    margin: 5px 0;
-    font-size: 0.9em;
-    color: #555;
-  }
-  
-  .race-details p strong {
-    color: #333;
-  }
-  
-  .horses-list ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .horses-list li {
-    font-size: 0.9em;
-    color: #555;
-    margin: 2px 0;
-    line-height: 1.5; /* Improved readability */
-  }
-  
-  /* Style for jockey, odds, trainer, and owner */
-  .horses-list li span.jockey,
-  .horses-list li span.trainer,
-  .horses-list li span.owner {
-    font-style: italic;
-    color: #777;
-  }
-  
-  .horses-list li span.odds {
-    font-weight: bold;
-    color: #2e7d32; /* Green color for odds */
-  }
-  
-  .race-result p {
-    margin: 5px 0;
-    font-size: 0.9em;
-    color: #555;
-  }
-  
-  .race-result p strong {
-    color: #333;
-  }
-  
-  .race-result ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .race-result li {
-    font-size: 0.9em;
-    color: #555;
-    margin: 2px 0;
-  }
-  
-  /* Responsive adjustments */
-  @media (max-width: 768px) {
-    .racecard-feed {
+  background-color: #fff;
+  border-radius: 5px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin: 0;
+  color: #001f3f;
+}
+
+.meeting-card {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #fff;
+  margin-bottom: 15px;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  min-height: 120px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.meeting-card .card-header {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+  transition: background-color 0.3s ease;
+}
+
+.meeting-card .card-header:hover {
+  background-color: #f5f5f5;
+}
+
+.meeting-card .meeting-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.meeting-card .meeting-info .meeting-name {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #333;
+}
+
+.meeting-card .card-content {
+  padding: 15px;
+  border-top: 1px solid #eee;
+  background-color: #f9f9f9;
+}
+
+.race-card {
+  margin-bottom: 20px;
+  padding: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.race-header {
+  margin-bottom: 10px;
+}
+
+.race-title {
+  margin: 0;
+  font-size: 1.1em;
+  color: #001f3f;
+}
+
+.race-meta {
+  margin: 5px 0;
+  font-size: 0.9em;
+  color: #555;
+}
+
+.race-details {
+  margin-bottom: 20px;
+}
+
+.race-details p {
+  margin: 5px 0;
+  font-size: 0.9em;
+  color: #555;
+}
+
+.race-details p strong {
+  color: #333;
+}
+
+.horses-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.horses-list li {
+  font-size: 0.9em;
+  color: #555;
+  margin: 5px 0;
+  line-height: 1.5;
+  padding: 5px 0;
+  border-bottom: 1px dotted #ddd;
+}
+
+.horses-list li:last-child {
+  border-bottom: none;
+}
+
+.horses-list li strong {
+  color: #333;
+}
+
+.horses-list li span {
+  display: block;
+  margin-left: 15px;
+}
+
+.horses-list li span.jockey,
+.horses-list li span.trainer,
+.horses-list li span.owner {
+  font-style: italic;
+  color: #777;
+}
+
+.horses-list li span.odds {
+  font-weight: bold;
+  color: #2e7d32;
+}
+
+.race-result {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #f0f8ff;
+  border-radius: 5px;
+}
+
+.race-result p {
+  margin: 5px 0;
+  font-size: 0.9em;
+  color: #555;
+}
+
+.race-result p strong {
+  color: #333;
+}
+
+.race-result ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.race-result li {
+  font-size: 0.9em;
+  color: #555;
+  margin: 2px 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .racecard-feed {
       padding: 10px;
-    }
-  
-    .meeting-card {
-      margin: 5px 0;
-    }
-  
-    .meeting-card .card-header {
-      padding: 8px;
-    }
-  
-    .meeting-card .card-content {
-      padding: 8px;
-    }
-  
-    .meeting-card .meeting-info .meeting-name {
-      font-size: 0.9em;
-    }
-  
-    .horses-list li {
-      font-size: 0.85em;
-      line-height: 1.4; /* Adjusted for smaller screens */
-    }
   }
+
+  .meeting-card {
+      margin: 5px 0;
+  }
+
+  .meeting-card .card-header {
+      padding: 8px;
+  }
+
+  .meeting-card .card-content {
+      padding: 8px;
+  }
+
+  .meeting-card .meeting-info .meeting-name {
+      font-size: 1em;
+  }
+
+  .race-card {
+      padding: 10px;
+  }
+
+  .race-title {
+      font-size: 1em;
+  }
+
+  .race-meta {
+      font-size: 0.85em;
+  }
+
+  .horses-list li {
+      font-size: 0.85em;
+      line-height: 1.4;
+  }
+}
