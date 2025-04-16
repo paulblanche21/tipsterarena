@@ -1,3 +1,4 @@
+# core/management/commands/scrape_racecards.py
 import os
 import subprocess
 import json
@@ -5,7 +6,9 @@ import logging
 import csv
 from datetime import datetime, timedelta
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 from collections import defaultdict
+from core.models import RaceMeeting, Race, RaceResult
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +25,6 @@ class Command(BaseCommand):
         try:
             today = datetime.now().date()
             tomorrow = today + timedelta(days=1)
-            seven_days_ago = today - timedelta(days=7)
             rpscrape_dir = os.path.join(os.path.dirname(__file__), 'rpscrape', 'scripts')
             base_rpscrape_dir = os.path.join(os.path.dirname(__file__), 'rpscrape')
             racecards_dir = os.path.join(base_rpscrape_dir, 'racecards')
@@ -39,7 +41,30 @@ class Command(BaseCommand):
                     os.makedirs(d, exist_ok=True)
                 if not os.access(d, os.W_OK):
                     logger.error(f"No write permission for directory: {d}")
-                    return []
+                    return "Error: No write permission for directory"
+
+            # Run rpscrape.py for results if needed
+            if options['results']:
+                logger.info("Running rpscrape.py for results")
+                race_types = ['flat', 'jumps']
+                for i in range(1, 8):
+                    past_date = today - timedelta(days=i)
+                    date_str = past_date.strftime('%Y/%m/%d')
+                    for race_type in race_types:
+                        try:
+                            result = subprocess.run(
+                                ['python', 'rpscrape.py', '--date', date_str, '--region', 'all', '--type', race_type],
+                                cwd=rpscrape_dir,
+                                capture_output=True,
+                                text=True
+                            )
+                            logger.debug(f"rpscrape.py stdout for {race_type} on {date_str}: {result.stdout}")
+                            logger.debug(f"rpscrape.py stderr for {race_type} on {date_str}: {result.stderr}")
+                            if result.returncode != 0:
+                                logger.error(f"rpscrape.py failed for {race_type} on {date_str}: {result.stderr}")
+                        except Exception as e:
+                            logger.error(f"Error running rpscrape.py for {race_type} on {date_str}: {str(e)}")
+                            continue
 
             # Handle racecards
             dates = [today, tomorrow] if not options['date'] else []
@@ -53,7 +78,7 @@ class Command(BaseCommand):
                         dates = [datetime.strptime(options['date'], '%Y-%m-%d').date()]
                     except ValueError:
                         logger.error('Invalid date format. Use YYYY-MM-DD, today, or tomorrow')
-                        return []
+                        return "Error: Invalid date format"
 
             for date in dates:
                 date_str = date.strftime('%Y-%m-%d')
@@ -83,9 +108,13 @@ class Command(BaseCommand):
                         continue
 
                     logger.debug(f"JSON file exists: {json_path}, size: {os.path.getsize(json_path)} bytes")
-                    with open(json_path, 'r', encoding='utf-8') as f:
-                        data = json.load(f)
-                        logger.debug(f"Loaded JSON data, keys: {list(data.keys())[:5]}")
+                    try:
+                        with open(json_path, 'r', encoding='utf-8') as f:
+                            data = json.load(f)
+                            logger.debug(f"Loaded JSON data, keys: {list(data.keys())[:5]}")
+                    except json.JSONDecodeError as e:
+                        logger.error(f"Invalid JSON in {json_path}: {str(e)}")
+                        continue
 
                     # Handle nested JSON structure
                     if not isinstance(data, dict):
@@ -241,9 +270,61 @@ class Command(BaseCommand):
                         logger.error(f"Error processing results for {date_display}: {str(e)}", exc_info=True)
                         continue
 
-            logger.info(f"Returning {len(meetings)} meetings from scrape_racecards")
-            logger.debug(f"Meetings sample: {meetings[0] if meetings else 'Empty'}")
-            return meetings or []
+            # Save meetings to database
+            for meeting in meetings:
+                try:
+                    # Create or get RaceMeeting
+                    meeting_obj, created = RaceMeeting.objects.get_or_create(
+                        date=meeting['date'],
+                        venue=meeting['venue'],
+                        defaults={'url': meeting['url']}
+                    )
+                    logger.debug(f"{'Created' if created else 'Retrieved'} meeting: {meeting_obj}")
+
+                    for race in meeting['races']:
+                        # Convert race_time to TimeField format (HH:MM:SS)
+                        race_time_str = race['race_time']
+                        try:
+                            race_time = datetime.strptime(race_time_str, '%H:%M').time()
+                        except (ValueError, TypeError):
+                            logger.warning(f"Invalid race_time format: {race_time_str}, using default")
+                            race_time = datetime.strptime('00:00', '%H:%M').time()
+
+                        # Create or get Race
+                        race_obj, created = Race.objects.get_or_create(
+                            meeting=meeting_obj,
+                            race_time=race_time,
+                            defaults={
+                                'name': race['name'],
+                                'horses': race['horses']
+                            }
+                        )
+                        logger.debug(f"{'Created' if created else 'Retrieved'} race: {race_obj}")
+
+                        # Create RaceResult if result data exists (from CSV results)
+                        if race['result']:
+                            RaceResult.objects.get_or_create(
+                                race=race_obj,
+                                defaults={
+                                    'winner': race['result']['winner'] or '',
+                                    'placed_horses': race['result']['positions']
+                                }
+                            )
+                            logger.debug(f"Created result for race: {race_obj}")
+
+                except Exception as e:
+                    logger.error(f"Error saving meeting {meeting['venue']} on {meeting['date']}: {str(e)}", exc_info=True)
+                    continue
+
+            # Log meetings by date for verification
+            date_counts = defaultdict(int)
+            for meeting in meetings:
+                date_counts[meeting['date']] += 1
+            logger.info(f"Meetings by date: {dict(date_counts)}")
+
+            # Return a string to satisfy Django's BaseCommand
+            return f"Successfully processed {len(meetings)} meetings"
+
         except Exception as e:
             logger.error(f"Unexpected error in scrape_racecards: {str(e)}", exc_info=True)
-            return []
+            return f"Error: {str(e)}"

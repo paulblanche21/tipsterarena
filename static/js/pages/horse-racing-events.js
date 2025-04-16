@@ -11,11 +11,12 @@ export async function fetchEvents() {
                 'X-CSRFToken': getCSRFToken(),
             },
         });
+        console.log(`Response status: ${response.status}`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        console.log(`Fetched ${data.length} horse racing events`);
+        console.log(`Fetched ${data.length} horse racing events`, data);
         return data;
     } catch (error) {
         console.error('Error fetching race data:', error);
