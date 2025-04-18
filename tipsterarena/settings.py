@@ -16,6 +16,7 @@ from pathlib import Path
 from celery.schedules import crontab
 import os
 import ssl
+import certifi
 
 
 # Define the base directory of the project
@@ -205,8 +206,12 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+CELERY_BROKER_TRANSPORT_OPTIONS = {
+    'visibility_timeout': 3600,  # Prevent task loss
+}
 CELERY_BROKER_USE_SSL = {
-    'ssl_cert_reqs': ssl.CERT_NONE  # Optional for TLS issues
+    'ssl_cert_reqs': ssl.CERT_REQUIRED,  # Enforce TLS verification
+    'ssl_ca_certs': certifi.where(),  # Use certifi CA certificates
 } if os.environ.get('CELERY_BROKER_URL', '').startswith('rediss://') else {}
 
 # Celery Beat schedule
