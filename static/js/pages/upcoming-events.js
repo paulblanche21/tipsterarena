@@ -49,7 +49,7 @@ const FORMATTERS = {
   football: formatFootballTable,
   golf: formatGolfList,
   tennis: formatTennisTable,
-  horse_racing: renderHorseRacingEvents // Updated to custom function
+  horse_racing: renderHorseRacingEvents
 };
 
 let globalEvents = {};
@@ -65,7 +65,58 @@ async function fetchEventsForSport(sport) {
   }
 
   let allEvents = [];
-  if (sport === "horse_racing") {
+  if (sport === 'football') {
+    // Fetch from Django API
+    try {
+      const response = await fetch('/api/football/fixtures/?category=fixtures', {
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error(`HTTP error: ${response.status} for football fixtures`);
+      const data = await response.json();
+      console.log(`Fetched ${data.length} football fixtures from Django API`);
+
+      // Transform data to match expected format
+      allEvents = data.map(event => ({
+        id: event.event_id,
+        date: event.match_date,
+        displayDate: new Date(event.match_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+        time: new Date(event.match_date).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "GMT" }),
+        state: event.state,
+        statusDescription: event.status_detail || (event.state === 'pre' ? 'Scheduled' : event.state === 'in' ? 'In Progress' : 'Final'),
+        statusDetail: event.status_detail || 'N/A',
+        league: event.league,
+        icon: sportConfigs.find(config => config.name === event.league)?.icon || "⚽",
+        priority: sportConfigs.find(config => config.name === event.league)?.priority || 999,
+        homeTeam: {
+          name: event.home_team,
+          score: event.home_score || '0',
+          logo: '', // Optional: fetch logos separately if needed
+          form: 'N/A', // Placeholder
+          record: 'N/A', // Placeholder
+          stats: { possession: 'N/A', shots: 'N/A', shotsOnTarget: 'N/A', corners: 'N/A', fouls: 'N/A' },
+        },
+        awayTeam: {
+          name: event.away_team,
+          score: event.away_score || '0',
+          logo: '',
+          form: 'N/A',
+          record: 'N/A',
+          stats: { possession: 'N/A', shots: 'N/A', shotsOnTarget: 'N/A', corners: 'N/A', fouls: 'N/A' },
+        },
+        venue: { fullName: 'TBD', address: { city: 'Unknown', state: 'Unknown' } }, // Placeholder
+        keyEvents: [], // Placeholder
+        scores: event.state === 'in' || event.state === 'post' ? {
+          homeScore: event.home_score || '0',
+          awayScore: event.away_score || '0',
+          statusDetail: event.status_detail || (event.state === 'in' ? 'In Progress' : 'Final'),
+        } : null,
+        broadcast: 'N/A', // Placeholder
+      }));
+    } catch (error) {
+      console.error(`Error fetching football fixtures:`, error);
+    }
+  } else if (sport === 'horse_racing') {
     allEvents = await module.fetch();
     console.log(`Horse Racing: Fetched ${allEvents.length} events`, allEvents);
   } else {
@@ -93,6 +144,7 @@ async function fetchEventsForSport(sport) {
       }
     }
   }
+
   // Filter events within range
   const currentTime = new Date();
   const fourteenDaysAgo = new Date();
@@ -175,7 +227,6 @@ function filterEvents(events, category, sportKey) {
 }
 
 // Renders horse racing events for modal
-// static/js/upcoming-events.js
 async function renderHorseRacingEvents(events, sport, category) {
   console.log(`Rendering horse racing events for ${category}, count: ${events.length}`);
   if (!events || events.length === 0) {
@@ -254,8 +305,8 @@ async function populateModal(sport, category) {
   modalBody.innerHTML = '<p>Loading events...</p>';
 
   try {
-    if (!globalEvents[sport]) {
-      console.log(`No cached events for ${sport}, fetching...`);
+    if (!globalEvents[sport] || sport === 'football') {
+      console.log(`No cached events for ${sport} or football, fetching...`);
       await fetchEventsForSport(sport);
     }
     const events = globalEvents[sport] || [];
@@ -300,11 +351,19 @@ export function setupExpandableCards() {
       header.removeEventListener('click', header._toggleHandler, true);
     }
 
-    const handler = (e) => {
+    const handler = async (e) => {
       e.stopPropagation();
       const isVisible = details.style.display === 'block';
-      details.style.display = isVisible ? 'none' : 'block';
-      card.classList.toggle('expanded', !isVisible);
+      if (!isVisible) {
+        details.style.display = 'block';
+        card.classList.add('expanded');
+        if (card.classList.contains('carousel-event-card') && card.dataset.eventId) {
+          await window.fetchMatchDetails(card.dataset.eventId, details); // Use window to access global fetchMatchDetails
+        }
+      } else {
+        details.style.display = 'none';
+        card.classList.remove('expanded');
+      }
       console.log(`Toggled card ${index}, visible: ${!isVisible}`);
     };
 

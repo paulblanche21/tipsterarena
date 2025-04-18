@@ -256,3 +256,33 @@ class RaceResult(models.Model):
 
     def __str__(self):
         return f"Result for {self.race} - Winner: {self.winner}"
+    
+class FootballFixture(models.Model):
+    event_id = models.CharField(max_length=50, unique=True)
+    match_date = models.DateTimeField()
+    home_team = models.CharField(max_length=100)
+    away_team = models.CharField(max_length=100)
+    league = models.CharField(max_length=100)
+    state = models.CharField(
+        max_length=20,
+        choices=[
+            ('pre', 'Pre'),
+            ('in', 'In'),
+            ('post', 'Post'),
+        ],
+        default='pre'
+    )
+    home_score = models.CharField(max_length=10, blank=True, null=True)
+    away_score = models.CharField(max_length=10, blank=True, null=True)
+    status_detail = models.CharField(max_length=100, blank=True, null=True)
+    odds = models.JSONField(blank=True, null=True)  # Store odds
+    key_events = models.JSONField(blank=True, null=True)  # Store key events
+    last_updated = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.home_team} vs {self.away_team} on {self.match_date}"
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['match_date', 'league']),
+        ]

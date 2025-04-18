@@ -3,6 +3,7 @@ from . import views
 from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
+from .views import FootballFixturesView, FootballFixtureDetailView
 
 # URL patterns for the Tipster Arena core app
 urlpatterns = [
@@ -58,6 +59,8 @@ urlpatterns = [
     path('api/trending-tips/', views.trending_tips_api, name='trending_tips_api'),  # Trending tips
     path('api/current-user/', views.current_user_api, name='current_user_api'),  # Current user info
     path('horse-racing/cards-json/', views.racecards_json_view, name='racecards_json'),
+    path('api/football/fixtures/', FootballFixturesView.as_view(), name='football-fixtures'),
+    path('api/football/fixtures/<str:event_id>/', FootballFixtureDetailView.as_view(), name='football-fixture-detail'),
 
     # CSP reporting route
     path('csp-report/', views.csp_report, name='csp_report'),  # Endpoint for CSP violation reports

@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from celery.schedules import crontab
+import os
+import ssl
 
 
 # Define the base directory of the project
@@ -192,5 +195,29 @@ LOGGING = {
     },
     'loggers': {
         'core': {'handlers': ['console', 'file'], 'level': 'DEBUG'},
+    },
+}
+
+# Celery settings
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+CELERY_BROKER_USE_SSL = {
+    'ssl_cert_reqs': ssl.CERT_NONE  # Optional for TLS issues
+} if os.environ.get('CELERY_BROKER_URL', '').startswith('rediss://') else {}
+
+# Celery Beat schedule
+CELERY_BEAT_SCHEDULE = {
+    'fetch-football-fixtures-every-hour': {
+        'task': 'core.tasks.fetch_football_fixtures',
+        'schedule': crontab(minute=0, hour='*'),
+    },
+    'fetch-inplay-fixtures-every-5-minutes': {
+        'task': 'core.tasks.fetch_football_fixtures',
+        'schedule': crontab(minute='*/5'),
+        'args': (['in'],),
     },
 }

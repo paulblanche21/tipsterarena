@@ -4,7 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import JsonResponse, HttpResponse
 from django.db.models import Count, F, Q
-from .models import Tip, Like, Follow, Share, UserProfile, Comment, MessageThread, RaceMeeting, Message
+from .models import Tip, Like, Follow, Share, UserProfile, Comment, MessageThread, RaceMeeting, Message, FootballFixture
+from core.serializers import FootballFixtureSerializer
 from .forms import UserProfileForm, CustomUserCreationForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.conf import settings
@@ -16,9 +17,10 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework import generics, status
 from rest_framework.serializers import ModelSerializer
-from datetime import datetime
+from datetime import datetime, timedelta
 from .horse_racing_events import get_racecards_json  # Re-enabled
 import json
+import requests
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.core.exceptions import ValidationError
@@ -945,3 +947,47 @@ def racecards_json_view(request):
     except Exception as e:
         logger.error(f"Error in racecards_json_view: {str(e)}", exc_info=True)
         return JsonResponse([], safe=False)
+
+
+class FootballFixturesView(APIView):
+    def get(self, request):
+        category = request.query_params.get('category', 'fixtures')
+        current_time = timezone.now()
+        fourteen_days_ago = current_time - timedelta(days=14)
+        seven_days_future = current_time + timedelta(days=7)
+
+        if category == 'fixtures':
+            fixtures = FootballFixture.objects.filter(
+                state='pre',
+                match_date__gt=current_time,
+                match_date__lte=seven_days_future
+            )
+        elif category == 'inplay':
+            fixtures = FootballFixture.objects.filter(state='in')
+        elif category == 'results':
+            fixtures = FootballFixture.objects.filter(
+                state='post',
+                match_date__gte=fourteen_days_ago,
+                match_date__lte=current_time
+            )
+        else:
+            logger.error(f"Invalid category: {category}")
+            return Response({'error': 'Invalid category'}, status=status.HTTP_400_BAD_REQUEST)
+
+        logger.info(f"Category: {category}, Fixtures found: {fixtures.count()}")
+        for fixture in fixtures:
+            logger.info(f"Fixture: {fixture.event_id}, {fixture.home_team} vs {fixture.away_team}, {fixture.match_date}, {fixture.state}")
+
+        fixtures = fixtures.order_by('match_date')
+        serializer = FootballFixtureSerializer(fixtures, many=True)
+        return Response(serializer.data)
+    
+class FootballFixtureDetailView(APIView):
+    def get(self, request, event_id):
+        try:
+            response = requests.get(f"https://site.api.espn.com/apis/site/v2/sports/soccer/any/summary?event={event_id}", timeout=10)
+            response.raise_for_status()
+            return Response(response.json())
+        except requests.RequestException as e:
+            logger.error(f"Error fetching details for event {event_id}: {e}")
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
