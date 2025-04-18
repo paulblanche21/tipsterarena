@@ -40,12 +40,15 @@ INSTALLED_APPS = [
     "django.contrib.sessions",        # Session management
     "django.contrib.messages",        # Messaging framework
     "django.contrib.staticfiles",     # Static file handling
-    'core.apps.CoreConfig',           # Custom core app for Tipster Arena
-    'corsheaders',                    # CORS headers for cross-origin requests
-    'rest_framework',                 # Django REST framework for API support
-    'rest_framework.authtoken',       # Token authentication for REST framework
+    "core.apps.CoreConfig", 
+    "django_celery_beat",             # Custom core app for Tipster Arena
+    "corsheaders",            # CORS headers for cross-origin requests
+    "rest_framework",                 # Django REST framework for API support
+    "rest_framework.authtoken",       # Token authentication for REST framework
     "csp",                            # Content Security Policy enforcement
     "django_vite",                    # Integration with Vite for frontend assets
+    "compressor",
+
 ]
 
 MIDDLEWARE = [
@@ -200,20 +203,22 @@ LOGGING = {
     },
 }
 
-# Celery settings
-CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
-CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
+# settings.py (Celery section)
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_BROKER_TRANSPORT = 'redis'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_BROKER_TRANSPORT_OPTIONS = {
-    'visibility_timeout': 3600,  # Prevent task loss
+    'visibility_timeout': 3600,
 }
 CELERY_BROKER_USE_SSL = {
-    'ssl_cert_reqs': ssl.CERT_REQUIRED,  # Enforce TLS verification
-    'ssl_ca_certs': certifi.where(),  # Use certifi CA certificates
+    'ssl_cert_reqs': ssl.CERT_REQUIRED,
+    'ssl_ca_certs': certifi.where(),
 } if os.environ.get('CELERY_BROKER_URL', '').startswith('rediss://') else {}
+
 
 # Celery Beat schedule
 CELERY_BEAT_SCHEDULE = {
