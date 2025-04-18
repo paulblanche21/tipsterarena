@@ -29,7 +29,8 @@ SECRET_KEY = "django-insecure-or8ih)*8^-c_@9h4r&sojeg#*5841-k%f9s+$tj##9n=&thm)4
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True  # Set to False in production for security
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']  # Add production hosts here
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'tipster-arena-462b360fb9c5.herokuapp.com' ]  # Add production hosts here
+
 
 # Application definition
 INSTALLED_APPS = [
