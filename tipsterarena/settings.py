@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SITE_URL = 'http://localhost:8000'  # For development; adjust for production
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-or8ih)*8^-c_@9h4r&sojeg#*5841-k%f9s+$tj##9n=&thm)4"  # Replace with a secure key in production
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-or8ih)*8^-c_@9h4r&sojeg#*5841-k%f9s+$tj##9n=&thm)4') # Replace with a secure key in production
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True  # Set to False in production for security
@@ -214,7 +214,6 @@ CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_BROKER_TRANSPORT_OPTIONS = {
     'visibility_timeout': 3600,
 }
-# SSL settings for rediss:// URLs
 CELERY_BROKER_USE_SSL = {
     'ssl_cert_reqs': ssl.CERT_REQUIRED,
     'ssl_ca_certs': certifi.where(),
