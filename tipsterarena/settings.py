@@ -203,7 +203,7 @@ LOGGING = {
     },
 }
 
-# settings.py (Celery section)
+# Celery Configuration
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
 CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
 CELERY_BROKER_TRANSPORT = 'redis'
@@ -214,13 +214,17 @@ CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_BROKER_TRANSPORT_OPTIONS = {
     'visibility_timeout': 3600,
 }
+# SSL settings for rediss:// URLs
 CELERY_BROKER_USE_SSL = {
     'ssl_cert_reqs': ssl.CERT_REQUIRED,
     'ssl_ca_certs': certifi.where(),
 } if os.environ.get('CELERY_BROKER_URL', '').startswith('rediss://') else {}
+CELERY_REDIS_BACKEND_USE_SSL = {
+    'ssl_cert_reqs': ssl.CERT_REQUIRED,
+    'ssl_ca_certs': certifi.where(),
+} if os.environ.get('CELERY_RESULT_BACKEND', '').startswith('rediss://') else {}
 
-
-# Celery Beat schedule
+# Celery Beat Schedule
 CELERY_BEAT_SCHEDULE = {
     'fetch-football-fixtures-every-hour': {
         'task': 'core.tasks.fetch_football_fixtures',
