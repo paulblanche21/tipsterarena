@@ -44,5 +44,5 @@ lxml==5.3.0
 orjson~=3.6
 tomli~=2.0
 amqp==5.2.0
-kombu==5.3.7
+kombu==5.3.4
 
