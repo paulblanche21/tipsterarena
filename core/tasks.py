@@ -13,22 +13,11 @@ def fetch_football_fixtures(states=None):
         leagues = [
             {"league": "eng.1", "name": "Premier League"},
             {"league": "esp.1", "name": "La Liga"},
-            {"league": "ita.1", "name": "Serie A"},
-            {"league": "fra.1", "name": "Ligue 1"},
-            {"league": "uefa.champions", "name": "Champions League"},
-            {"league": "uefa.europa", "name": "Europa League"},
-            {"league": "eng.fa", "name": "FA Cup"},
-            {"league": "eng.2", "name": "EFL Championship"},
-            {"league": "por.1", "name": "Primeira Liga"},
-            {"league": "ned.1", "name": "Eredivisie"},
-            {"league": "nir.1", "name": "Irish League"},
-            {"league": "usa.1", "name": "MLS"},
-            {"league": "sco.1", "name": "Scottish Premiership"},
         ]
 
         today = timezone.now()
-        start_date = today - timedelta(days=7)
-        end_date = today + timedelta(days=14)
+        start_date = today - timedelta(days=7)  # Past 7 days for results
+        end_date = today + timedelta(days=7)   # Next 7 days for fixtures
         start_date_str = start_date.strftime('%Y%m%d')
         end_date_str = end_date.strftime('%Y%m%d')
 
@@ -52,9 +41,8 @@ def fetch_football_fixtures(states=None):
                     competition = competitions[0]
 
                     competitors = competition.get('competitors', [])
-                    logger.debug(f"Competitors for event {event_id}: {competitors}")
                     if len(competitors) < 2:
-                        logger.warning(f"Insufficient competitors for event {event_id}: {len(competitors)}, skipping")
+                        logger.warning(f"Insufficient competitors for event {event_id}, skipping")
                         continue
                     home = next((c for c in competitors if c.get('homeAway', '').lower() == 'home'), None)
                     away = next((c for c in competitors if c.get('homeAway', '').lower() == 'away'), None)
@@ -86,15 +74,11 @@ def fetch_football_fixtures(states=None):
                     key_events = []
                     try:
                         summary_url = f"https://site.api.espn.com/apis/site/v2/sports/soccer/{config['league']}/summary?event={event_id}"
-                        logger.debug(f"Fetching summary for event {event_id}: {summary_url}")
                         summary_response = requests.get(summary_url, timeout=5)
                         summary_response.raise_for_status()
                         summary_data = summary_response.json()
-                        logger.debug(f"Summary data for event {event_id}: {summary_data}")
 
-                        # Safely access odds
                         competitions_data = summary_data.get('header', {}).get('competitions', [])
-                        logger.debug(f"Competitions data for event {event_id}: {competitions_data}")
                         if competitions_data and 'odds' in competitions_data[0] and competitions_data[0]['odds']:
                             odds_data = competitions_data[0]['odds'][0]
                             odds = {
@@ -103,11 +87,8 @@ def fetch_football_fixtures(states=None):
                                 'drawOdds': odds_data.get('drawOdds', {}).get('moneyLine', 'N/A'),
                                 'provider': odds_data.get('provider', {}).get('name', 'Unknown Provider'),
                             }
-                        else:
-                            logger.warning(f"No odds data for event {event_id}")
 
                         plays = summary_data.get('plays', [])
-                        logger.debug(f"Plays for event {event_id}: {len(plays)}")
                         key_events = [
                             {
                                 'type': play.get('type', {}).get('text', 'Unknown'),
@@ -157,5 +138,5 @@ def fetch_football_fixtures(states=None):
         return total_fixtures
 
     except Exception as e:
-        logger.error(f"Error in fetch_football_fixtures: {e}, Event ID: {event_id if 'event_id' in locals() else 'unknown'}")
+        logger.error(f"Error in fetch_football_fixtures: {e}")
         raise fetch_football_fixtures.retry(exc=e, countdown=60)
