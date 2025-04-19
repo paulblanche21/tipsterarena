@@ -86,7 +86,6 @@ DATABASES = {
     )
 }
 
-# Fallback to SQLite for local development if DATABASE_URL is not set
 if not os.environ.get('DATABASE_URL'):
     DATABASES['default'] = {
         'ENGINE': 'django.db.backends.sqlite3',
