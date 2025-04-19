@@ -16,7 +16,9 @@ from pathlib import Path
 from celery.schedules import crontab
 import os
 import ssl
+import certifi
 import dj_database_url
+
 
 
 
