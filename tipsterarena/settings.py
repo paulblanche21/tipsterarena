@@ -216,21 +216,27 @@ CELERY_BROKER_TRANSPORT_OPTIONS = {
 }
 # SSL settings for rediss:// URLs
 CELERY_BROKER_USE_SSL = {
-    'ssl_cert_reqs': ssl.CERT_NONE,  # Disable certificate verification for Heroku
+    'ssl_cert_reqs': ssl.CERT_NONE,
+    'ssl_ca_certs': None,
+    'ssl_certfile': None,
+    'ssl_keyfile': None,
 } if os.environ.get('CELERY_BROKER_URL', '').startswith('rediss://') else {}
 CELERY_REDIS_BACKEND_USE_SSL = {
-    'ssl_cert_reqs': ssl.CERT_NONE,  # Disable certificate verification for Heroku
+    'ssl_cert_reqs': ssl.CERT_NONE,
+    'ssl_ca_certs': None,
+    'ssl_certfile': None,
+    'ssl_keyfile': None,
 } if os.environ.get('CELERY_RESULT_BACKEND', '').startswith('rediss://') else {}
 
 # Celery Beat Schedule
 CELERY_BEAT_SCHEDULE = {
-    'fetch-football-fixtures-every-hour': {
+    'fetch-football-fixtures-every-24-hours': {
         'task': 'core.tasks.fetch_football_fixtures',
-        'schedule': crontab(minute=0, hour='*'),
+        'schedule': crontab(minute=0, hour=0),  # Run daily at midnight
     },
-    'fetch-inplay-fixtures-every-5-minutes': {
+    'fetch-inplay-fixtures-every-30-minutes': {
         'task': 'core.tasks.fetch_football_fixtures',
-        'schedule': crontab(minute='*/5'),
+        'schedule': crontab(minute='*/30'),  # Run every 30 minutes
         'args': (['in'],),
     },
 }
