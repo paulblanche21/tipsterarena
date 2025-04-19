@@ -1,0 +1,6 @@
+/* Styles for error messages */
+.error {
+    color: red;         /* Red text to indicate errors */
+    font-size: 0.9em;   /* Slightly smaller font size for subtlety */
+    margin-top: 10px;   /* Space above the error message */
+}

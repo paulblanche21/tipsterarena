@@ -1,0 +1,588 @@
+/* sidebar.css */
+
+/* Upcoming Events Card Styling (Shared Base Styles) */
+.upcoming-events-card {
+    padding: 10px;
+    background-color: var(--secondary-bg);
+    border-radius: var(--border-radius);
+    margin-bottom: 15px;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    max-width: 350px;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 250px
+}
+
+/* Ensure sidebar cards don't interfere */
+.sidebar-card {
+    background-color: var(--secondary-bg);
+    border: 1px solid #e1e8ed;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    min-height: 200px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-card h3 {
+    color: #001f3f;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+/* Adjust padding or height if needed to accommodate "Show more" */
+.sidebar-card p {
+    color: #666666;
+    font-size: 14px;
+    line-height: 1.4;
+    margin-bottom: 0;
+}
+
+/* Ensure Sidebar Card Fits Policy Links */
+.sidebar-card[data-card="policy-links"] {
+    min-height: auto;
+    padding: 12px;
+}
+
+/* Specific Heights for Who to Follow */
+.sidebar-card[data-card="who-to-follow"] {
+    min-height: 350px;
+}
+
+/* Specific Heights for Trending Tips (updated) */
+.sidebar-card[data-card="trending-tips"] {
+    min-height: 450px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow-y: auto;
+}
+
+/* Event Controls (Sport Selector and Buttons) */
+.event-controls {
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+
+  .event-item {
+    padding: 10px;
+    margin-bottom: 8px;
+    background: #ffffff;
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    font-size: 13px;
+  }
+  
+  .event-item h4, .event-item p {
+    margin: 3px 0;
+    color: #001f3f;
+  }
+
+
+/* Golf sidebar items */
+.event-item.golf-event {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+  }
+  
+  /* Football sidebar items (match football-events.css) */
+  .event-item.football-event {
+    padding: 8px;
+    border: 1px solid #ddd;
+  }
+  
+  .event-item.football-event .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  
+  .event-item.football-event.live-match .card-header {
+    background-color: #ffe6e6;
+  }
+  
+  .event-item.football-event .match-details {
+    display: none;
+    padding: 8px;
+    background: #f9f9f9;
+    border-top: 1px solid #eee;
+    font-size: 12px;
+  }
+
+
+  .event-item.tennis-event {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background: #fff;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  
+  .event-item.tennis-event .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  
+  .event-item.tennis-event.live-match .card-header {
+    background-color: #ffe6e6;
+  }
+  
+  .event-item.tennis-event .match-details {
+    display: none;
+    padding: 8px;
+    background: #f9f9f9;
+    border-top: 1px solid #eee;
+    font-size: 12px;
+  }
+  
+  .event-item.tennis-event .match-info .players {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: bold;
+  }
+  
+  .event-item.tennis-event .match-info .score {
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .event-item.tennis-event.live-match .match-info .score {
+    color: #e63946;
+  }
+
+  .event-item.horse_racing-event {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background: #fff;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  
+  .event-item.horse_racing-event .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  
+  .event-item.horse_racing-event .card-content {
+    display: none;
+    padding: 8px;
+    background: #f9f9f9;
+    border-top: 1px solid #eee;
+    font-size: 12px;
+  }
+  
+  .carousel-event-card.expandable-card {
+    padding: 8px;
+    margin-bottom: 8px;
+  }
+
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  
+  .match-details {
+    font-size: 12px;
+    color: #666666;
+  }
+
+  
+  .sport-selector {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-color); /* #e1e8ed */
+    border-radius: var(--border-radius); /* 12px */
+    background: var(--secondary-bg); /* #ffffff */
+    color: var(--black);
+    font-family: var(--font-default);
+    font-size: var(--font-size-base); /* 14px */
+  }
+  
+  .sport-selector:focus {
+    outline: none;
+    border-color: var(--red-accent); /* #ff4136 */
+  }
+  
+  .event-buttons {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .event-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: #e1e8ed; /* --border-color */
+    color: var(--black);
+    cursor: pointer;
+    font-family: var(--font-default);
+    font-size: 14px; /* Matches --font-size-base */
+    font-weight: 600;
+    border-radius: var(--border-radius); /* 12px */
+    transition: background 0.3s, color 0.3s;
+  }
+  
+  .event-btn.active {
+    background: var( --primary-bg);        /* Dark blue background used site-wide */ /* #1DA1F2 */
+    color: #ffffff;
+  }
+  
+  .event-btn:hover {
+    background: #d0d7de; /* Darker inactive */
+  }
+  
+  .event-btn.active:hover {
+    background: #0d8ecf; /* Darker --twitter-blue */
+  }
+  
+  .event-list {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 150px; /* Enough for a few events */
+    color: var(--gray-light); /* #666666 */
+  }
+
+.sidebar-message-content {
+    position: fixed;
+    width: 200px;
+    right: 0;
+    top: 0;
+    height: 100vh;
+    padding: 10px;
+    background-color: #f5f5f5;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.sidebar-message-content h3 {
+    color: #001f3f;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.sidebar-message-content p {
+    color: #666666;
+    font-size: 14px;
+    line-height: 1.4;
+    margin-bottom: 12px;
+}
+
+.sidebar-scrollable {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 10px;
+}
+
+/* Copyright Notice */
+.copyright-notice {
+    color: #666666;
+    font-size: 11px;
+    margin: 0;
+    padding-top: 4px;
+    border-top: 1px solid #e1e8ed;
+}
+
+/* Policy Links Container */
+.policy-links {
+    padding: 12px;
+    background-color: transparent;
+    color: #666666;
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    justify-content: flex-start;
+}
+
+/* New wrapper for the links to create two columns */
+.policy-links-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 12px;
+    width: 100%;
+}
+
+/* Individual Policy Links */
+.policy-link {
+    color: #666666;
+    text-decoration: none;
+    font-size: 12px;
+}
+
+.policy-link:hover {
+    text-decoration: underline;
+    color: #ff4136;
+}
+
+/* Trending Tips Card */
+.trending-tips-card {
+    background-color: white;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+/* Trending Tips List */
+.trending-tips-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    overflow: hidden;
+}
+
+/* Trending Tip Row */
+.trending-tip {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+    overflow: hidden;
+}
+
+/* Who to Follow Header */
+.who-to-follow-header {
+    font-size: 18px;
+    font-weight: 700;
+    color: #000000;
+    margin-bottom: 12px;
+}
+
+
+/* Search Input and Results */
+.search-wrapper {
+    position: relative;
+    padding: 0 10px;
+}
+
+.search-input {
+    width: 100%;
+    margin: 10px auto;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    background-color: var(--secondary-bg);
+    color: var(--black);
+    display: block;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #ff4136;
+}
+
+.search-results {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 10px;
+    width: calc(100% - 20px);
+    max-height: 300px;
+    overflow-y: auto;
+    background-color: #ffffff;
+    border: 1px solid #e1e8ed;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 10002;
+    padding: 10px;
+    display: none;
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    border-bottom: 1px solid #e1e8ed;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.search-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.search-details {
+    flex-grow: 1;
+}
+
+.search-username {
+    color: #001f3f;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.search-username:hover {
+    text-decoration: underline;
+    color: #ff4136;
+}
+
+.search-tip-text {
+    margin: 0;
+    font-size: 12px;
+    color: #657786;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Policy Page Styles */
+.policy-body {
+    background-color: #ffffff;
+    color: #1a2526;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    font-family: 'Roboto', sans-serif;
+}
+
+.policy-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: #ffffff;
+    border: 1px solid #1a2526;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.policy-close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: #e63946;
+    font-size: 28px;
+    text-decoration: none;
+    background-color: #ffffff;
+    border: 2px solid #e63946;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.policy-close-btn:hover {
+    background-color: #e63946;
+    color: #ffffff;
+}
+
+.policy-content h1 {
+    font-size: 2.5em;
+    color: #1a2526;
+    margin-bottom: 20px;
+    border-bottom: 3px solid #e63946;
+    padding-bottom: 10px;
+}
+
+.policy-content h2 {
+    font-size: 1.8em;
+    color: #1a2526;
+    margin-top: 40px;
+    margin-bottom: 15px;
+}
+
+.policy-content h3 {
+    font-size: 1.4em;
+    color: #1a2526;
+    margin-top: 30px;
+    margin-bottom: 10px;
+}
+
+.policy-content p {
+    margin-bottom: 20px;
+    font-size: 1.1em;
+}
+
+.policy-content ul {
+    margin-bottom: 20px;
+    padding-left: 25px;
+}
+
+.policy-content ul li {
+    margin-bottom: 12px;
+    font-size: 1.1em;
+}
+
+.policy-content a {
+    color: #e63946;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.policy-content a:hover {
+    text-decoration: underline;
+    color: #b32d39;
+}
+
+/* Responsive Design for Policy */
+@media (max-width: 768px) {
+    .policy-container {
+        margin: 20px;
+        padding: 20px;
+    }
+
+    .policy-content h1 {
+        font-size: 2em;
+    }
+
+    .policy-content h2 {
+        font-size: 1.5em;
+    }
+
+    .policy-content h3 {
+        font-size: 1.2em;
+    }
+
+    .policy-content p,
+    .policy-content ul li {
+        font-size: 1em;
+    }
+
+    .policy-close-btn {
+        top: 15px;
+        right: 15px;
+        font-size: 24px;
+        width: 36px;
+        height: 36px;
+    }
+}
+

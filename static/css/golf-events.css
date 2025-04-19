@@ -1,0 +1,175 @@
+/* static/css/golf-events.css */
+.golf-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 10px;
+}
+
+.golf-card.expandable-card {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #fff;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.golf-card.expanded {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: #28a745;
+  background-color: #f0fff0;
+}
+
+.golf-card.expanded .card-header::after {
+  transform: rotate(180deg);
+}
+
+.golf-card.live-event .card-header {
+  background-color: #e6ffe6;
+}
+
+.golf-card.live-event .live-indicator {
+  color: #28a745;
+  font-weight: bold;
+  animation: blink 1s infinite;
+}
+
+.golf-card .card-header {
+  padding: 10px 15px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: background-color 0.3s ease;
+}
+
+.golf-card .card-header:hover {
+  background-color: #f5f5f5;
+}
+
+.golf-card .card-header::after {
+  content: '▼';
+  font-size: 0.8em;
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: transform 0.3s ease;
+}
+
+.golf-card .event-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1em;
+}
+
+.golf-card .event-info .event-name {
+  font-weight: bold;
+}
+
+.golf-card .event-info .event-status {
+  color: #666;
+}
+
+.golf-card .event-info .live-indicator {
+  font-size: 0.9em;
+}
+
+.golf-card .event-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85em;
+  color: #666;
+  margin-top: 5px;
+}
+
+.golf-card .card-content {
+  padding: 15px;
+  border-top: 1px solid #eee;
+  background-color: #f9f9f9;
+}
+
+.event-details p {
+  margin: 5px 0;
+  font-size: 0.9em;
+  color: #555;
+}
+
+.leaderboard-content {
+  margin-bottom: 10px;
+}
+
+.leaderboard-table, .full-leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85em;
+}
+
+.leaderboard-table th, .full-leaderboard-table th {
+  background-color: #f4f4f4;
+  padding: 8px;
+  text-align: left;
+  border-bottom: 2px solid #ddd;
+}
+
+.leaderboard-table td, .full-leaderboard-table td {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.leaderboard-table tr:hover, .full-leaderboard-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+.leaderboard-table tr.player-active {
+  background-color: #e6ffe6; /* Highlight active players */
+}
+
+.leaderboard-table tr.player-inactive {
+  opacity: 0.7; /* Dim inactive players */
+}
+
+.view-full-leaderboard {
+  margin-top: 10px;
+  padding: 6px 12px;
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9em;
+}
+
+.view-full-leaderboard:hover {
+  background-color: #218838;
+}
+
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.3; }
+  100% { opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  .golf-feed {
+    padding: 5px;
+  }
+
+  .golf-card .card-header {
+    padding: 8px 12px;
+  }
+
+  .golf-card .card-content {
+    padding: 10px;
+  }
+
+  .leaderboard-table, .full-leaderboard-table {
+    font-size: 0.8em;
+  }
+
+  .leaderboard-table th, .leaderboard-table td,
+  .full-leaderboard-table th, .full-leaderboard-table td {
+    padding: 6px;
+  }
+}

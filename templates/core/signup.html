@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Metadata and page setup -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Tipster Arena</title>
+    {% load static %}
+    <!-- Stylesheet for landing and auth pages -->
+    <link rel="stylesheet" href="{% static 'css/landing.css' %}">
+</head>
+<body>
+    <!-- Container for the sign-up interface -->
+    <div class="auth-container">
+        <!-- Tipster Arena branding -->
+        <div class="auth-logo">
+            <img src="{% static 'img/tipster-arena-logo.png' %}" alt="Tipster Arena Logo" class="auth-logo-img">
+        </div>
+
+        <!-- Page heading and subtitle -->
+        <h1>Sign Up for Tipster Arena</h1>
+        <p class="auth-subtitle">Join our thriving community of sports tipsters and enthusiasts!</p>
+
+        <!-- Sign-up form with user input fields -->
+        <form method="post" class="auth-form">
+            {% csrf_token %}
+            <!-- Username input field -->
+            <div class="form-group">
+                <label for="{{ form.username.id_for_label }}">Username</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                    <span class="error">{{ form.username.errors }}</span>
+                {% endif %}
+            </div>
+
+            <!-- Handle input field -->
+            <div class="form-group">
+                <label for="{{ form.handle.id_for_label }}">Handle</label>
+                {{ form.handle }}
+                {% if form.handle.errors %}
+                    <span class="error">{{ form.handle.errors }}</span>
+                {% endif %}
+            </div>
+
+            <!-- Email input field -->
+            <div class="form-group">
+                <label for="{{ form.email.id_for_label }}">Email</label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                    <span class="error">{{ form.email.errors }}</span>
+                {% endif %}
+            </div>
+
+            <!-- Password input field -->
+            <div class="form-group">
+                <label for="{{ form.password1.id_for_label }}">Password</label>
+                {{ form.password1 }}
+                {% if form.password1.errors %}
+                    <span class="error">{{ form.password1.errors }}</span>
+                {% endif %}
+            </div>
+
+            <!-- Confirm password input field -->
+            <div class="form-group">
+                <label for="{{ form.password2.id_for_label }}">Confirm Password</label>
+                {{ form.password2 }}
+                {% if form.password2.errors %}
+                    <span class="error">{{ form.password2.errors }}</span>
+                {% endif %}
+            </div>
+
+            <!-- Submit button for sign-up -->
+            <button type="submit" class="landing-button landing-button--primary">Sign Up</button>
+        </form>
+
+        <!-- General error message for form issues -->
+        {% if form.errors %}
+            <p class="error">Please correct the errors above.</p>
+        {% endif %}
+
+        <!-- Navigation links for login and landing page -->
+        <p class="auth-links">Already have an account? <a href="{% url 'login' %}" class="auth-link">Log in here</a>.</p>
+        <p class="auth-links"><a href="{% url 'landing' %}" class="auth-link">Back to Landing</a></p>
+    </div>
+</body>
+</html>

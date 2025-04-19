@@ -1,0 +1,70 @@
+/* bookmarks.css */
+
+/* Styles for the fixed header on the Bookmarks page */
+.bookmarks-header-top {
+  align-items: center;       /* Center vertically */
+  backdrop-filter: blur(5px);  /* Blur effect */
+  -webkit-backdrop-filter: blur(5px);  /* Safari support */
+  background-color: #ffffff; /* White background */
+  border-bottom: 1px solid rgba(225, 232, 237, 0.5);  /* Semi-transparent border */
+  display: flex;             /* Flex layout */
+  padding: 20px 20px;         /* Internal padding */
+  position: fixed;           /* Fixed to top */
+  top: 0;                    /* Align to top */
+  max-width: 700px;          /* Matches .content max-width */
+  width: 660px;              /* Fixed width (initially matches profile-header-top) */
+  margin-left: 10px;           
+  box-sizing: border-box;    /* Include padding/borders */
+  z-index: 1000;             /* High z-index */
+}
+
+/* Wrapper for tip feed to clear fixed header */
+.bookmarks-feed-wrapper {
+  margin-top: 67px;          /* Matches profile-content padding-top to clear header */
+}
+
+/* Existing styles from your previous bookmarks.css */
+.tip-action-bookmark.bookmarked {
+  color: #FFD700;            /* Yellow for bookmarked state */
+}
+
+.empty-bookmarks {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.page-header {
+  padding: 10px 15px;
+  border-bottom: 1px solid #e6ecf0;
+  margin-bottom: 10px;
+}
+
+.tip-action-bookmark {
+  color: #808080;            /* Grey for unbookmarked state */
+  background: none;
+  border: none;
+  outline: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.tip-action-bookmark:focus,
+.tip-action-bookmark:hover {
+  outline: none;
+  background: none;
+  border-radius: 0;
+}
+
+.tip-action-bookmark i {
+  font-size: 16px;
+  color: inherit; /* Ensure the icon inherits the button's color */
+}
+
+.tip-action-bookmark.bookmarked {
+  color: #FFD700; /* Yellow for bookmarked state */
+}
+
+.tip-action-bookmark.bookmarked i {
+  color: #FFD700; /* Explicitly set for the icon */
+}

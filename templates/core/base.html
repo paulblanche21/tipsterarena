@@ -1,0 +1,297 @@
+{% load static django_vite %}
+<!-- base.html: Core template for Tipster Arena. Provides the foundational HTML structure, styles, and navigation shared across all pages. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Metadata and title setup -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Tipster Arena{% endblock %}</title>
+    <link rel="icon" type="image/x-icon" href="{% static 'img/favicon.ico' %}">
+
+    <!-- Core stylesheets for layout and components -->
+    <link rel="stylesheet" href="http://localhost:3000/static/css/base.css">
+    <link rel="stylesheet" href="http://localhost:3000/static/css/navbar.css">
+    <link rel="stylesheet" href="http://localhost:3000/static/css/sidebar.css">
+    <link rel="stylesheet" href="http://localhost:3000/static/css/follow.css">
+    <link rel="stylesheet" href="http://localhost:3000/static/css/post.css">
+    <link rel="stylesheet" href="http://localhost:3000/static/css/tip.css">
+    <link rel="stylesheet" href="http://localhost:3000/static/css/profile.css">
+    <link rel="stylesheet" href="http://localhost:3000/static/css/notification.css">
+    <link rel="stylesheet" href="http://localhost:3000/static/css/bookmarks.css">
+    <link rel="stylesheet" href="http://localhost:3000/static/css/profile-edit.css">
+    <link rel="stylesheet" href="http://localhost:3000/static/css/modal.css">
+    <link rel="stylesheet" href="http://localhost:3000/static/css/form.css">
+    <link rel="stylesheet" href="http://localhost:3000/static/css/misc.css">
+    <link rel="stylesheet" href="http://localhost:3000/static/css/messages.css">
+    <link rel="stylesheet" href="http://localhost:3000/static/css/football-events.css">
+    <link rel="stylesheet" href="http://localhost:3000/static/css/tennis-events.css">
+    <link rel="stylesheet" href="http://localhost:3000/static/css/golf-events.css">
+    <link rel="stylesheet" href="http://localhost:3000/static/css/horse-racing-events.css">
+
+    <!-- Load main JavaScript bundle via Vite -->
+    {% vite_asset 'js/main.js' defer=True %}
+
+    <!-- External fonts and icons with preload for performance -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" as="style" onload="this.rel='stylesheet'">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" as="style" onload="this.rel='stylesheet'">
+    <noscript>
+        <!-- Fallback for no-JS environments -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap">
+    </noscript>
+
+    <!-- Placeholder for page-specific CSS -->
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    <!-- Navigation bar with links and user info -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <!-- Logo with responsive resolution support -->
+            <img src="{% static 'img/tipster-arena-logo.png' %}" 
+                 srcset="{% static 'img/tipster-arena-logo.png' %} 1x, {% static 'img/tipster-arena-logo@2x.png' %} 2x" 
+                 alt="Tipster Arena Logo" 
+                 class="nav-brand-logo"
+                 width="209" 
+                 height="40">
+        </div>
+        <ul class="nav-menu">
+            <!-- Main navigation links with icons -->
+            <li><a href="{% url 'home' %}"><i class="fas fa-home nav-icon"></i> Home</a></li>
+            <li><a href="{% url 'explore' %}"><i class="fas fa-search nav-icon"></i> Explore</a></li>
+            <li><a href="{% url 'notifications' %}"><i class="fas fa-bell nav-icon"></i> Notifications</a></li>
+            <li><a href="{% url 'sport' 'football' %}"><i class="fas fa-futbol nav-icon"></i> Football</a></li>
+            <li><a href="{% url 'sport' 'golf' %}"><i class="fas fa-golf-ball nav-icon"></i> Golf</a></li>
+            <li><a href="{% url 'sport' 'tennis' %}"><i class="fas fa-table-tennis nav-icon"></i> Tennis</a></li>
+            <li><a href="{% url 'sport' 'horse_racing' %}"><i class="fas fa-horse nav-icon"></i> Horse Racing</a></li>
+            <li><a href="{% url 'profile' request.user.username|default:'guest' %}"><i class="fas fa-user nav-icon"></i> Profile</a></li>
+            <li><a href="{% url 'messages' %}"><i class="fas fa-envelope nav-icon"></i> Messages</a></li>
+            <li><a href="{% url 'bookmarks' %}"><i class="fas fa-bookmark nav-icon"></i> Bookmarks</a></li>
+        </ul>
+        <div class="nav-post">
+            <!-- Button to trigger the post tip modal -->
+            <button class="nav-post-btn" data-toggle="post-modal">Post Tip</button>
+        </div>
+        <div class="nav-user">
+            <!-- User profile dropdown with avatar and options -->
+            <div class="nav-user-content" tabindex="0">
+                {% if request.user.is_authenticated and request.user.userprofile.avatar %}
+                    <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="nav-avatar">
+                {% else %}
+                    <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="nav-avatar" onerror="this.style.display='none'">
+                {% endif %}
+                <div class="user-info">
+                    <span class="user-display-name">{{ request.user.username|default:"Guest" }}</span>
+                    <span class="user-handle">{{ request.user.userprofile.handle|default:"@guest" }}</span>
+                </div>
+                <span class="nav-menu-icon">⋯</span>
+            </div>
+            <div class="nav-user-dropdown">
+                <a href="#" class="nav-dropdown-item">Add an Existing Account</a>
+                <a href="{% url 'logout' %}" class="nav-dropdown-item nav-logout-btn" data-logout>Log Out {{ request.user.userprofile.handle|default:"@guest" }}</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main layout container for content and sidebar -->
+    <div class="main-container">
+        <!-- Primary content area, overridden by child templates -->
+        <main class="content">
+            {% block content %}{% endblock %}
+        </main>
+
+        <!-- Sidebar with search and follow suggestions -->
+        {% block sidebar %}
+        <aside class="sidebar">
+            <div class="search-wrapper">
+                <input type="text" placeholder="Search Tipster Arena..." class="search-input">
+                <div class="search-results" style="display: none;"></div>
+            </div>
+            <div class="sidebar-scrollable">
+                <!-- Upcoming events widget (buttons only) -->
+                {% block upcoming_events %}
+                <div class="sidebar-card upcoming-events-card" data-card="upcoming-events" style="background-color: var(--secondary-bg);">
+                    <h3>Upcoming Events</h3>
+                    <p>Click a button to view events.</p>
+                </div>
+                {% endblock %}
+                {% block trending_tips %}{% endblock %}
+                <!-- Who to follow widget -->
+                <div class="sidebar-card" data-card="who-to-follow">
+                    <h3 class="who-to-follow-header">Who to Follow</h3>
+                    <div class="follow-list">
+                        {% for tipster in suggested_tipsters %}
+                            <div class="follow-item">
+                                <img src="{{ tipster.avatar }}" alt="{{ tipster.username }} Avatar" class="follow-avatar" width="48" height="48">
+                                <div class="follow-details">
+                                    <a href="/profile/{{ tipster.username }}/" class="follow-username">@{{ tipster.username }}</a>
+                                    <p class="follow-bio">{{ tipster.bio|default:"No bio" }}</p>
+                                </div>
+                                <button class="follow-btn" data-username="{{ tipster.username }}">Follow</button>
+                            </div>
+                        {% empty %}
+                            <p>No suggested tipsters available.</p>
+                        {% endfor %}
+                    </div>
+                    <a href="#" class="show-more" data-target="who-to-follow">Show more</a>
+                </div>
+                <!-- Policy and copyright links -->
+                <div class="sidebar-card" data-card="policy-links">
+                    <div class="policy-links">
+                        <div class="policy-links-columns">
+                            <a href="{% url 'terms_of_service' %}" class="policy-link">Terms of Service</a>
+                            <a href="{% url 'privacy_policy' %}" class="policy-link">Privacy Policy</a>
+                            <a href="{% url 'cookie_policy' %}" class="policy-link">Cookie Policy</a>
+                            <a href="{% url 'accessibility' %}" class="policy-link">Accessibility</a>
+                        </div>
+                        <p class="copyright-notice">© 2025 Tipster Arena. All Rights Reserved.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Quick access to messages -->
+            <div class="messages-container">
+                <a href="{% url 'messages' %}" class="messages-card">
+                    <span class="messages-text-base">Messages</span>
+                    <span class="messages-icon-base"><i class="fas fa-envelope"></i></span>
+                    <span class="messages-caret-base"><i class="fas fa-caret-down"></i></span>
+                </a>
+            </div>
+        </aside>
+        {% endblock %}
+
+        <!-- Modal for Events -->
+        <div class="events-modal" id="events-modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modal-title">Upcoming Events</h2>
+                    <button class="modal-close-btn" id="modal-close-btn">×</button>
+                </div>
+                <div class="modal-body" id="modal-body">
+                    <p>Loading events...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Post Modal -->
+    <div class="post-modal" id="post-modal">
+        <div class="post-modal-content">
+            <div class="post-user">
+                {% if request.user.is_authenticated and request.user.userprofile.avatar %}
+                    <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
+                {% else %}
+                    <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
+                {% endif %}
+                <div class="post-username-container">
+                    <span class="post-username">{{ request.user.username|default:"Guest" }}</span>
+                    <select class="post-audience">
+                        <option value="everyone">Everyone</option>
+                        <option value="followers">Followers</option>
+                    </select>
+                    {% if not sport %}
+                        <select class="post-sport">
+                            <option value="football">Football</option>
+                            <option value="golf">Golf</option>
+                            <option value="tennis">Tennis</option>
+                            <option value="horse_racing">Horse Racing</option>
+                        </select>
+                    {% endif %}
+                </div>
+            </div>
+            <textarea placeholder="Post a Tip (e.g., Team A to win)..." class="post-input"></textarea>
+            <!-- New Tip-Specific Fields -->
+            <div class="tip-details">
+                <div class="tip-odds">
+                    <label for="odds-type">Odds Format:</label>
+                    <select class="odds-type" name="odds-type" id="odds-type">
+                        <option value="decimal">Decimal</option>
+                        <option value="fractional">Fractional</option>
+                    </select>
+                    <div id="odds-input-container">
+                        <!-- Decimal odds (single input) -->
+                        <input type="text" id="odds-input-decimal" name="odds-input-decimal" placeholder="e.g., 2.5" style="display: none;">
+                        <!-- Fractional odds (two inputs) -->
+                        <div id="odds-input-fractional" style="display: none;">
+                            <input type="text" id="odds-numerator" name="odds-numerator" placeholder="e.g., 2" style="width: 60px;">
+                            <span>/</span>
+                            <input type="text" id="odds-denominator" name="odds-denominator" placeholder="e.g., 1" style="width: 60px;">
+                        </div>
+                    </div>
+                </div>
+                <div class="tip-bet-type">
+                    <label for="bet-type">Bet Type:</label>
+                    <select class="bet-type" name="bet-type" id="bet-type">
+                        <option value="single">Single</option>
+                        <option value="double">Double</option>
+                        <option value="treble">Treble</option>
+                        <option value="fourfold">Fourfold</option>
+                        <option value="fivefold">Fivefold</option>
+                        <option value="sixfold">Sixfold</option>
+                        <option value="sevenfold">Sevenfold</option>
+                        <option value="eightfold">Eightfold</option>
+                        <option value="accumulator">Accumulator</option>
+                        <option value="trixie">Trixie</option>
+                        <option value="yankee">Yankee</option>
+                        <option value="canadian">Canadian / Super Yankee</option>
+                        <option value="patent">Patent</option>
+                        <option value="lucky15">Lucky 15</option>
+                        <option value="lucky31">Lucky 31</option>
+                        <option value="lucky63">Lucky 63</option>
+                        <option value="heinz">Heinz</option>
+                        <option value="super_heinz">Super Heinz</option>
+                        <option value="goliath">Goliath</option>
+                        <option value="super_heinz_singles">Super Heinz with Singles</option>
+                        <option value="super_goliath">Super Goliath</option>
+                    </select>
+                </div>
+                <div class="tip-condition">
+                    <label for="each-way">Each Way:</label>
+                    <select class="each-way" name="each-way" id="each-way">
+                        <option value="no">No</option>
+                        <option value="yes">Yes</option>
+                    </select>
+                </div>
+                <div class="tip-confidence">
+                    <label for="confidence">Confidence (1 Star = Very Low  5 Star = Very High ):</label>
+                    <select class="confidence" name="confidence" id="confidence">
+                        <option value="1">1 Star</option>
+                        <option value="2">2 Stars</option>
+                        <option value="3" selected>3 Stars</option>
+                        <option value="4">4 Stars</option>
+                        <option value="5">5 Stars</option>
+                    </select>
+                </div>
+            </div>
+            <div class="post-preview" style="display: none;">
+                <img src="" alt="Preview" class="preview-media">
+                <button class="remove-preview">×</button>
+            </div>
+            <div class="post-actions">
+                <button class="post-action-btn image" aria-label="Add image"><i class="fas fa-image"></i></button>
+                <button class="post-action-btn gif" aria-label="Add GIF"><i class="far fa-file-image"></i></button>
+                <button class="post-action-btn poll" aria-label="Create poll"><i class="fas fa-chart-bar"></i></button>
+                <button class="post-action-btn emoji" aria-label="Add emoji"><i class="far fa-smile"></i></button>
+                <button class="post-action-btn location" aria-label="Add location"><i class="fas fa-map-marker-alt"></i></button>
+                <button class="post-action-btn schedule" aria-label="Schedule post"><i class="fas fa-clock"></i></button>
+                <button class="post-action-btn bold" aria-label="Bold text"><i class="fas fa-bold"></i></button>
+                <button class="post-action-btn italic" aria-label="Italicize text"><i class="fas fa-italic"></i></button>
+            </div>
+            <button class="post-submit" id="submit-post">Post</button>
+            <span class="post-modal-close">×</span>
+        </div>
+    </div>
+
+    <!-- Hidden CSRF token and global JavaScript variables -->
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    <script>
+        window.logout_url = "{% url 'logout' %}";
+        window.landing_url = "{% url 'landing' %}";
+        window.default_avatar_url = "{% static 'img/default-avatar.png' %}";
+        window.default_banner_url = "{% static 'img/default-banner.png' %}";
+    </script>
+
+    <!-- Placeholder for page-specific JavaScript -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

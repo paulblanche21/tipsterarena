@@ -1,0 +1,10 @@
+{
+    "python.pythonPath": "/Users/paulblanche/Desktop/Tipster Arena/venv/bin/python",
+    "python.analysis.extraPaths": [
+        "./tipsterarena",
+        "./core"
+    ],
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": false,
+    "python.linting.pylanceEnabled": true
+}

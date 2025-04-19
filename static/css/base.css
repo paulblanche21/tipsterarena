@@ -1,0 +1,95 @@
+/* base.css */
+/* Core reset and box-sizing for consistent layout across Tipster Arena */
+html {
+    box-sizing: border-box;  /* Ensures padding and borders are included in element dimensions */
+}
+
+*, *:before, *:after {
+    box-sizing: inherit;  /* Applies box-sizing to all elements and pseudo-elements */
+}
+
+/* Reset default margins and padding for common elements */
+body, h1, h2, h3, p, ul {
+    margin: 0;
+    padding: 0;
+}
+
+/* Define global CSS variables for consistent styling */
+:root {
+    --navbar-width: 250px;         /* Width of the fixed navigation bar */
+    --sidebar-width: 350px;        /* Width of the fixed sidebar */
+    --primary-bg: #001f3f;         /* Dark blue background used site-wide */
+    --secondary-bg: #ffffff;       /* White background for content areas */
+    --border-color: #e1e8ed;       /* Light gray for borders */
+    --twitter-blue: #1DA1F2;       /* Blue accent inspired by Twitter */
+    --red-accent: #ff4136;         /* Red accent for highlights and hover states */
+    --gray-light: #666666;         /* Light gray for secondary text */
+    --black: black;                /* Standard black color */
+    --shadow-light: 0 1px 3px rgba(0, 0, 0, 0.1);  /* Subtle shadow for elevation */
+    --shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.15); /* Enhanced shadow on hover */
+    --padding-small: 12px;         /* Small padding for spacing */
+    --margin-small: 10px;          /* Small margin for spacing */
+    --border-radius: 12px;         /* Consistent border radius for rounded corners */
+    --font-default: 'Helvetica Neue', Arial, sans-serif;  /* Default font stack */
+    --font-size-base: 14px;        /* Base font size for readability */
+}
+
+/* Base styles for the body element */
+body {
+    font-family: var(--font-default);  /* Apply default font */
+    font-size: var(--font-size-base);  /* Set base font size */
+    background-color: var(--primary-bg);  /* Dark blue background for the site */
+    color: #ffffff;  /* White text for contrast against dark background */
+    margin: 0;       /* Remove default margin */
+    padding: 0;      /* Remove default padding */
+    min-height: 100vh;  /* Ensure body fills viewport height */
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+/* Layout styles for main content container */
+.main-container {
+    margin-left: var(--navbar-width);    /* Offset content to accommodate fixed navbar */
+    margin-right: var(--sidebar-width);  /* Offset content to accommodate fixed sidebar */
+    min-height: 100vh;  /* Ensure container spans full viewport height */
+    background-color: #001f3f;  /* Match primary background color */
+    box-sizing: border-box;  /* Include padding/borders in dimensions */
+}
+
+/* Styles for the main content area */
+.content {
+    margin: 0 auto;    /* Center the content horizontally */
+    min-height: 100vh; /* Ensure content area spans full height */
+    box-sizing: border-box;  /* Include padding/borders in dimensions */
+    background-attachment: var(--primary-bg);
+    color: #ffffff;  /* White text for contrast on dark background */
+}
+
+/* Adjust text colors for lists and links within content areas */
+.content li,
+.content a {
+    color: #001f3f;  /* Dark blue text for contrast on white backgrounds */
+}
+
+/* Hover effects for links within content */
+.content li a:hover,
+.content .follow-username:hover {
+    color: #ff4136;  /* Red accent on hover for consistency with design */
+    text-decoration: underline;  /* Underline on hover for clarity */
+}
+
+/* Styles for the fixed sidebar */
+.sidebar {
+    width: 350px;       /* Fixed width matching --sidebar-width */
+    max-width: 350px;   /* Prevent sidebar from exceeding its defined width */
+    padding: 10px 0;    /* Vertical padding for internal spacing */
+    background-color: #001f3f;  /* Dark blue background to match site theme */
+    color: #001f3f;     /* Dark text (note: likely should be #ffffff for contrast) */
+    position: fixed;    /* Fix sidebar to the right side */
+    right: 0;           /* Align to the right edge */
+    top: 0;             /* Start from the top */
+    height: 100vh;      /* Span full viewport height */
+    display: flex;      /* Use flexbox for layout */
+    flex-direction: column;  /* Stack children vertically */
+    z-index: 1001;      /* Ensure sidebar sits above most content */
+    overflow-x: hidden; /* Prevent horizontal overflow */
+}
