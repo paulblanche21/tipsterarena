@@ -6,10 +6,14 @@ import path from 'path';
 
 console.log('Vite config loaded with port 3000');
 
+// Determine Python executable based on environment
+const isHeroku = process.env.NODE_ENV === 'production';
+const pythonExecutable = isHeroku ? 'python3' : '/Users/paulblanche/Desktop/Tipster Arena/venv/bin/python3';
+
 export default defineConfig({
   plugins: [
     djangoVitePlugin({
-      pythonExecutable: '/Users/paulblanche/Desktop/Tipster Arena/venv/bin/python3',
+      pythonExecutable,
       settingsModule: 'tipsterarena.settings',
     }),
     legacy(),
