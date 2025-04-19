@@ -19,14 +19,17 @@ import dj_database_url
 # Define the base directory of the project
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SITE_URL = 'http://localhost:8000'  # For development; adjust for production
+# Site URL for development
+SITE_URL = 'https://tipster-arena-462b360fb9c5.herokuapp.com'
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-or8ih)*8^-c_@9h4r&sojeg#*5841-k%f9s+$tj##9n=&thm)4')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True  # Set to False in production for security
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'tipster-arena-462b360fb9c5.herokuapp.com']
+DEBUG = True
+
+# Allowed hosts for the application
+ALLOWED_HOSTS = ['tipster-arena-462b360fb9c5.herokuapp.com', 'localhost', '127.0.0.1']
 
 # Application definition
 INSTALLED_APPS = [
@@ -82,15 +85,10 @@ WSGI_APPLICATION = "tipsterarena.wsgi.application"
 DATABASES = {
     'default': dj_database_url.config(
         default=os.environ.get('DATABASE_URL'),
-        conn_max_age=600
+        conn_max_age=600,
+        ssl_require=True
     )
 }
-
-if not os.environ.get('DATABASE_URL'):
-    DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -110,6 +108,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
 # Media files configuration
 MEDIA_URL = '/media/'
@@ -122,6 +121,7 @@ LOGIN_URL = '/'
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
+    'https://tipster-arena-462b360fb9c5.herokuapp.com',
     'http://localhost:8000',
     'http://127.0.0.1:8000',
     'http://localhost:3000',
@@ -195,8 +195,8 @@ LOGGING = {
 }
 
 # Celery configuration
-CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
-CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND')
 CELERY_BROKER_TRANSPORT = 'redis'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
@@ -208,7 +208,7 @@ CELERY_BROKER_TRANSPORT_OPTIONS = {
 CELERY_BROKER_USE_SSL = {
     'ssl_cert_reqs': ssl.CERT_REQUIRED,
     'ssl_ca_certs': certifi.where(),
-} if os.environ.get('CELERY_BROKER_URL', '').startswith('rediss://') else {}
+}
 
 # Celery Beat schedule
 CELERY_BEAT_SCHEDULE = {
