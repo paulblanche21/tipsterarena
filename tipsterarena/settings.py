@@ -16,7 +16,7 @@ from pathlib import Path
 from celery.schedules import crontab
 import os
 import ssl
-
+import certifi
 
 
 # Define the base directory of the project
@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SITE_URL = 'http://localhost:8000'  # For development; adjust for production
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-or8ih)*8^-c_@9h4r&sojeg#*5841-k%f9s+$tj##9n=&thm)4') # Replace with a secure key in production
+SECRET_KEY = "django-insecure-or8ih)*8^-c_@9h4r&sojeg#*5841-k%f9s+$tj##9n=&thm)4"  # Replace with a secure key in production
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True  # Set to False in production for security
@@ -203,7 +203,7 @@ LOGGING = {
     },
 }
 
-# Celery Configuration
+# settings.py (Celery section)
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
 CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
 CELERY_BROKER_TRANSPORT = 'redis'
@@ -214,29 +214,21 @@ CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_BROKER_TRANSPORT_OPTIONS = {
     'visibility_timeout': 3600,
 }
-# SSL settings for rediss:// URLs
 CELERY_BROKER_USE_SSL = {
-    'ssl_cert_reqs': ssl.CERT_NONE,
-    'ssl_ca_certs': None,
-    'ssl_certfile': None,
-    'ssl_keyfile': None,
+    'ssl_cert_reqs': ssl.CERT_REQUIRED,
+    'ssl_ca_certs': certifi.where(),
 } if os.environ.get('CELERY_BROKER_URL', '').startswith('rediss://') else {}
-CELERY_REDIS_BACKEND_USE_SSL = {
-    'ssl_cert_reqs': ssl.CERT_NONE,
-    'ssl_ca_certs': None,
-    'ssl_certfile': None,
-    'ssl_keyfile': None,
-} if os.environ.get('CELERY_RESULT_BACKEND', '').startswith('rediss://') else {}
 
-# Celery Beat Schedule
+
+# Celery Beat schedule
 CELERY_BEAT_SCHEDULE = {
-    'fetch-football-fixtures-every-24-hours': {
+    'fetch-football-fixtures-every-hour': {
         'task': 'core.tasks.fetch_football_fixtures',
-        'schedule': crontab(minute=0, hour=0),  # Run daily at midnight
+        'schedule': crontab(minute=0, hour='*'),
     },
-    'fetch-inplay-fixtures-every-30-minutes': {
+    'fetch-inplay-fixtures-every-5-minutes': {
         'task': 'core.tasks.fetch_football_fixtures',
-        'schedule': crontab(minute='*/30'),  # Run every 30 minutes
+        'schedule': crontab(minute='*/5'),
         'args': (['in'],),
     },
 }
