@@ -47,3 +47,4 @@ tomli~=2.0
 amqp==5.2.0
 kombu==5.3.4
 
+psycopg2-binary==2.9.10
