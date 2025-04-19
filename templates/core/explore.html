@@ -13,7 +13,7 @@
                 {% if request.user.is_authenticated and request.user.userprofile.avatar %}
                     <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar">
                 {% else %}
-                    <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.onerror=null; this.src='/static/img/default-avatar.png';">
+                    <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="post-avatar">
                 {% endif %}
                 <div class="post-username-container">
                     <span class="post-username">{{ request.user.username|default:"Guest" }}</span>
@@ -122,7 +122,7 @@
                 {% if tip.user.userprofile.avatar %}
                     <img src="{{ tip.user.userprofile.avatar.url }}" alt="{{ tip.user.username }} Avatar" class="tip-avatar">
                 {% else %}
-                    <img src="{% static 'img/default-avatar.png' %}" alt="{{ tip.user.username }} Avatar" class="tip-avatar" onerror="this.onerror=null; this.src='/static/img/default-avatar.png';">
+                    <img src="{% static 'img/default-avatar.png' %}" alt="{{ tip.user.username }} Avatar" class="tip-avatar">
                 {% endif %}
                 <div class="tip-content">
                     <div class="tip-header">
@@ -207,7 +207,7 @@
             <div class="comment-modal-content">
                 <span class="comment-modal-close">×</span>
                 <div class="modal-tip">
-                    <img src="" alt="User Avatar" class="tip-avatar modal-tip-avatar" onerror="this.onerror=null; this.src='/static/img/default-avatar.png';">
+                    <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="tip-avatar modal-tip-avatar">
                     <div class="modal-tip-content">
                         <a href="#" class="tip-username">
                             <strong class="modal-tip-username"></strong>
@@ -218,39 +218,38 @@
                         <small class="modal-tip-timestamp"></small>
                         <div class="tip-actions">
                             <div class="tip-action-group">
-                                <a href="#" class="tip-action tip-action-like" data-action="like"><i class="fas fa-heart"></i></a>
-                                <span class="tip-action-count like-count"></span>
+                                <a href="#" class="tip-action tip-action-like" data-action="like" aria-label="Like this tip"><i class="fas fa-heart"></i></a>
+                                <span class="tip-action-count like-count">0</span>
                             </div>
                             <div class="tip-action-group">
-                                <a href="#" class="tip-action tip-action-share" data-action="share"><i class="fas fa-retweet"></i></a>
-                                <span class="tip-action-count share-count"></span>
+                                <a href="#" class="tip-action tip-action-share" data-action="share" aria-label="Share this tip"><i class="fas fa-retweet"></i></a>
+                                <span class="tip-action-count share-count">0</span>
                             </div>
                             <div class="tip-action-group">
-                                <a href="#" class="tip-action tip-action-comment" data-action="comment"><i class="fas fa-comment-dots"></i></a>
-                                <span class="tip-action-count comment-count"></span>
+                                <a href="#" class="tip-action tip-action-comment" data-action="comment" aria-label="Comment on this tip"><i class="fas fa-comment-dots"></i></a>
+                                <span class="tip-action-count comment-count">0</span>
                             </div>
                             <div class="tip-action-spacer"></div>
                             <div class="tip-action-group">
-                                <a href="#" class="tip-action tip-action-engagement"><i class="fas fa-users"></i></a>
-                                <span class="tip-action-count"></span>
+                                <a href="#" class="tip-action tip-action-engagement" aria-label="View engagement"><i class="fas fa-users"></i></a>
+                                <span class="tip-action-count">0</span>
                             </div>
                             <div class="tip-action-spacer-large"></div>
                             <div class="tip-action-group">
-                                <a href="#" class="tip-action tip-action-bookmark"><i class="fas fa-bookmark"></i></a>
+                                <a href="#" class="tip-action tip-action-bookmark" aria-label="Bookmark this tip"><i class="fas fa-bookmark"></i></a>
                             </div>
                             <div class="tip-action-group">
-                                <a href="#" class="tip-action tip-action-share-link"><i class="fas fa-arrow-up"></i></a>
+                                <a href="#" class="tip-action tip-action-share-link" aria-label="Share link to this tip"><i class="fas fa-arrow-up"></i></a>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="reply-to-header" style="display: none;">Replying to <span class="reply-to-username"></span></div>
                 <div class="post-reply-box">
-                    <!-- Reply input area -->
                     {% if request.user.is_authenticated and request.user.userprofile.avatar %}
                         <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar">
                     {% else %}
-                        <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.onerror=null; this.src='/static/img/default-avatar.png';">
+                        <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="post-avatar">
                     {% endif %}
                     <div class="post-reply-content">
                         <div class="post-username-container">
@@ -282,37 +281,39 @@
     </div>
 {% endblock %}
 
-
 {% block upcoming_events %}
-  <div class="sidebar-card upcoming-events-card" data-card="upcoming-events" style="background-color: var(--secondary-bg);">
-    <h3>Upcoming Events</h3>
-    <div class="event-controls">
-      <select class="sport-selector">
-        <option value="football">Football</option>
-        <option value="golf">Golf</option>
-        <option value="tennis">Tennis</option>
-        <option value="horse_racing">Horse Racing</option>
-      </select>
-      <div class="event-buttons">
-        <button class="event-btn" data-category="fixtures" data-horse-racing="upcoming_meetings">Fixtures</button>
-        <button class="event-btn" data-category="inplay" data-horse-racing="at_the_post">In Play</button>
-        <button class="event-btn" data-category="results" data-horse-racing="race_results">Results</button>
-      </div>
+    <div class="sidebar-card upcoming-events-card upcoming-events-{{ sport }}" data-card="upcoming-events" style="background-color: var(--secondary-bg);">
+        <h3>
+            {% if sport == 'horse_racing' %}
+                Upcoming Meetings
+            {% else %}
+                Upcoming {{ sport|title }} Events
+            {% endif %}
+        </h3>
+        <div class="event-buttons">
+            {% if sport == 'horse_racing' %}
+                <button class="event-btn active" data-category="upcoming_meetings" data-horse-racing="upcoming_meetings">Upcoming Meetings</button>
+                <button class="event-btn" data-category="at_the_post" data-horse-racing="at_the_post">At the Post</button>
+                <button class="event-btn" data-category="race_results" data-horse-racing="race_results">Race Results</button>
+            {% else %}
+                <button class="event-btn active" data-category="fixtures">Fixtures</button>
+                <button class="event-btn" data-category="inplay">In Play</button>
+                <button class="event-btn" data-category="results">Results</button>
+            {% endif %}
+        </div>
     </div>
-  </div>
 {% endblock %}
 
 {% block trending_tips %}
-<!-- Sidebar widget for trending tips -->
-<div class="sidebar-card trending-tips-card" data-card="trending-tips" style="background-color: white;">
-    <h3>Trending Tips</h3>
-    <div class="trending-tips-list">
-        <p>Loading trending tips...</p>
+    <div class="sidebar-card trending-tips-card" data-card="trending-tips" style="background-color: var(--secondary-bg);">
+        <h3>Trending {{ sport|title }} Tips</h3>
+        <div class="trending-tips-list">
+            <p>Loading trending tips...</p>
+        </div>
+        <a href="#" class="show-more" data-target="trending-tips">Show more</a>
     </div>
-    <a href="#" class="show-more" data-target="trending-tips">Show more</a>
-</div>
 {% endblock %}
 
 {% block extra_js %}
-    <!-- No additional scripts needed, as main.js dynamically imports comment.js, like.js, share.js, post.js, gif.js, poll.js, emoji.js, modal.js, trendingTips.js, eventPopup.js -->
+    {% vite_asset 'js/upcoming-events.js' %}
 {% endblock %}

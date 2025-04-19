@@ -15,13 +15,13 @@
 
 {% block content %}
     <div class="content">
-        <!-- Tip posting interface (unchanged) -->
+        <!-- Tip posting interface -->
         <div class="post-box">
             <div class="post-user">
                 {% if request.user.is_authenticated and request.user.userprofile.avatar %}
-                    <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
+                    <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar">
                 {% else %}
-                    <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
+                    <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="post-avatar">
                 {% endif %}
                 <div class="post-username-container">
                     <span class="post-username">{{ request.user.username|default:"Guest" }}</span>
@@ -115,14 +115,14 @@
             </div>
         </div>
 
-        <!-- Tip feed (unchanged) -->
+        <!-- Tip feed -->
         <div class="tip-feed">
             {% for tip in tips %}
             <div class="tip" data-tip-id="{{ tip.id }}">
                 {% if tip.user.userprofile.avatar %}
-                    <img src="{{ tip.user.userprofile.avatar.url }}" alt="{{ tip.user.username }} Avatar" class="tip-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
+                    <img src="{{ tip.user.userprofile.avatar.url }}" alt="{{ tip.user.username }} Avatar" class="tip-avatar">
                 {% else %}
-                    <img src="{% static 'img/default-avatar.png' %}" alt="{{ tip.user.username }} Avatar" class="tip-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
+                    <img src="{% static 'img/default-avatar.png' %}" alt="{{ tip.user.username }} Avatar" class="tip-avatar">
                 {% endif %}
                 <div class="tip-content">
                     <div class="tip-header">
@@ -202,12 +202,12 @@
             </div>
         </div>
 
-        <!-- Comment modal (unchanged) -->
+        <!-- Comment modal -->
         <div class="comment-modal" id="comment-modal">
             <div class="comment-modal-content">
                 <span class="comment-modal-close">×</span>
                 <div class="modal-tip">
-                    <img src="" alt="User Avatar" class="tip-avatar modal-tip-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
+                    <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="tip-avatar modal-tip-avatar">
                     <div class="modal-tip-content">
                         <a href="#" class="tip-username">
                             <strong class="modal-tip-username"></strong>
@@ -247,9 +247,9 @@
                 <div class="reply-to-header" style="display: none;">Replying to <span class="reply-to-username"></span></div>
                 <div class="post-reply-box">
                     {% if request.user.is_authenticated and request.user.userprofile.avatar %}
-                        <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
+                        <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar">
                     {% else %}
-                        <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
+                        <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="post-avatar">
                     {% endif %}
                     <div class="post-reply-content">
                         <div class="post-username-container">
@@ -292,11 +292,11 @@
         </h3>
         <div class="event-buttons">
             {% if sport == 'horse_racing' %}
-                <button class="event-btn" data-category="upcoming_meetings" data-horse-racing="upcoming_meetings">Upcoming Meetings</button>
+                <button class="event-btn active" data-category="upcoming_meetings" data-horse-racing="upcoming_meetings">Upcoming Meetings</button>
                 <button class="event-btn" data-category="at_the_post" data-horse-racing="at_the_post">At the Post</button>
                 <button class="event-btn" data-category="race_results" data-horse-racing="race_results">Race Results</button>
             {% else %}
-                <button class="event-btn" data-category="fixtures">Fixtures</button>
+                <button class="event-btn active" data-category="fixtures">Fixtures</button>
                 <button class="event-btn" data-category="inplay">In Play</button>
                 <button class="event-btn" data-category="results">Results</button>
             {% endif %}
@@ -315,5 +315,5 @@
 {% endblock %}
 
 {% block extra_js %}
-    <script type="module" src="{% static 'js/pages/upcoming-events.js' %}"></script>
+    {% vite_asset 'js/upcoming-events.js' %}
 {% endblock %}

@@ -15,9 +15,9 @@
         <div class="post-box">
             <div class="post-user">
                 {% if request.user.is_authenticated and request.user.userprofile.avatar %}
-                    <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
+                    <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar">
                 {% else %}
-                    <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
+                    <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="post-avatar">
                 {% endif %}
                 <div class="post-username-container">
                     <span class="post-username">{{ request.user.username|default:"Guest" }}</span>
@@ -124,9 +124,9 @@
             {% for tip in tips %}
             <div class="tip" data-tip-id="{{ tip.id }}">
                 {% if tip.user.userprofile.avatar %}
-                    <img src="{{ tip.user.userprofile.avatar.url }}" alt="{{ tip.user.username }} Avatar" class="tip-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
+                    <img src="{{ tip.user.userprofile.avatar.url }}" alt="{{ tip.user.username }} Avatar" class="tip-avatar">
                 {% else %}
-                    <img src="{% static 'img/default-avatar.png' %}" alt="{{ tip.user.username }} Avatar" class="tip-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
+                    <img src="{% static 'img/default-avatar.png' %}" alt="{{ tip.user.username }} Avatar" class="tip-avatar">
                 {% endif %}
                 <div class="tip-content">
                     <div class="tip-header">
@@ -211,7 +211,7 @@
             <div class="comment-modal-content">
                 <span class="comment-modal-close">×</span>
                 <div class="modal-tip">
-                    <img src="" alt="User Avatar" class="tip-avatar modal-tip-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
+                    <img src="" alt="User Avatar" class="tip-avatar modal-tip-avatar">
                     <div class="modal-tip-content">
                         <a href="#" class="tip-username">
                             <strong class="modal-tip-username"></strong>
@@ -251,9 +251,9 @@
                 <div class="reply-to-header" style="display: none;">Replying to <span class="reply-to-username"></span></div>
                 <div class="post-reply-box">
                     {% if request.user.is_authenticated and request.user.userprofile.avatar %}
-                        <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
+                        <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar">
                     {% else %}
-                        <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
+                        <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="post-avatar">
                     {% endif %}
                     <div class="post-reply-content">
                         <div class="post-username-container">
@@ -316,5 +316,5 @@
 {% endblock %}
 
 {% block extra_js %}
-    <script type="module" src="{% static 'js/pages/upcoming-events.js' %}"></script>
+    {% vite_asset 'js/upcoming-events.js' %}
 {% endblock %}

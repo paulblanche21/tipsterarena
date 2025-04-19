@@ -10,24 +10,24 @@
     <link rel="icon" type="image/x-icon" href="{% static 'img/favicon.ico' %}">
 
     <!-- Core stylesheets for layout and components -->
-    <link rel="stylesheet" href="http://localhost:3000/static/css/base.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/navbar.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/sidebar.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/follow.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/post.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/tip.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/profile.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/notification.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/bookmarks.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/profile-edit.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/modal.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/form.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/misc.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/messages.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/football-events.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/tennis-events.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/golf-events.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/horse-racing-events.css">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/follow.css' %}">
+    <link rel="stylesheet" href="{% static 'css/post.css' %}">
+    <link rel="stylesheet" href="{% static 'css/tip.css' %}">
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}">
+    <link rel="stylesheet" href="{% static 'css/notification.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bookmarks.css' %}">
+    <link rel="stylesheet" href="{% static 'css/profile-edit.css' %}">
+    <link rel="stylesheet" href="{% static 'css/modal.css' %}">
+    <link rel="stylesheet" href="{% static 'css/form.css' %}">
+    <link rel="stylesheet" href="{% static 'css/misc.css' %}">
+    <link rel="stylesheet" href="{% static 'css/messages.css' %}">
+    <link rel="stylesheet" href="{% static 'css/football-events.css' %}">
+    <link rel="stylesheet" href="{% static 'css/tennis-events.css' %}">
+    <link rel="stylesheet" href="{% static 'css/golf-events.css' %}">
+    <link rel="stylesheet" href="{% static 'css/horse-racing-events.css' %}">
 
     <!-- Load main JavaScript bundle via Vite -->
     {% vite_asset 'js/main.js' defer=True %}
@@ -79,7 +79,7 @@
                 {% if request.user.is_authenticated and request.user.userprofile.avatar %}
                     <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="nav-avatar">
                 {% else %}
-                    <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="nav-avatar" onerror="this.style.display='none'">
+                    <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="nav-avatar">
                 {% endif %}
                 <div class="user-info">
                     <span class="user-display-name">{{ request.user.username|default:"Guest" }}</span>
@@ -179,9 +179,9 @@
         <div class="post-modal-content">
             <div class="post-user">
                 {% if request.user.is_authenticated and request.user.userprofile.avatar %}
-                    <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
+                    <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar">
                 {% else %}
-                    <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="post-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
+                    <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="post-avatar">
                 {% endif %}
                 <div class="post-username-container">
                     <span class="post-username">{{ request.user.username|default:"Guest" }}</span>

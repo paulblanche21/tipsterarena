@@ -31,7 +31,7 @@ function fetchComments(tipId, list, callback) {
                 commentDiv.setAttribute('data-comment-id', comment.id);
                 commentDiv.setAttribute('data-parent-id', comment.parent_id || '');
                 commentDiv.innerHTML = `
-                    <img src="${avatarUrl}" alt="${comment.user__username} Avatar" class="comment-avatar" onerror="this.src='${window.default_avatar_url}'">
+                    <img src="${avatarUrl}" alt="${comment.user__username} Avatar" class="comment-avatar">
                     <div class="comment-content">
                         <a href="/profile/${comment.user__username}/" class="comment-username"><strong>${comment.user__username}</strong></a>
                         ${comment.parent_id ? `<span class="reply-to">Replying to <a href="/profile/${comment.parent_username}/">@${comment.parent_username}</a></span>` : ''}
@@ -193,7 +193,7 @@ function setupTipInteractions() {
                 if (data.data.parent_id) newComment.classList.add('reply-comment');
                 newComment.setAttribute('data-comment-id', data.comment_id);
                 newComment.innerHTML = `
-                    <img src="${currentUserData.avatarUrl}" alt="${currentUserData.handle} Avatar" class="comment-avatar" onerror="this.src='${window.default_avatar_url}'">
+                    <img src="${currentUserData.avatarUrl}" alt="${currentUserData.handle} Avatar" class="comment-avatar">
                     <div class="comment-content">
                         <a href="/profile/${window.currentUser}/" class="comment-username"><strong>${currentUserData.handle}</strong></a>
                         ${data.data.parent_id ? `<span class="reply-to">Replying to <a href="/profile/${data.data.parent_username}/">@${data.data.parent_username}</a></span>` : ''}
@@ -544,7 +544,7 @@ function openCommentModal(tip, tipId, parentId = null) {
                     </div>
                     <small class="modal-tip-timestamp">${timestamp}</small>
                     ${data.data && data.data.image ? `<img src="${data.data.image}" alt="Tip Image" class="comment-image">` : ''}
-                    ${data.data && data.data.gif_url ? `<img src="${data.data.gif_url}" alt="Tip GIF" class="comment-image" width="582" height="300" onerror="this.src='/static/img/default-image.png'">` : ''}
+                    ${data.data && data.data.gif_url ? `<img src="${data.data.gif_url}" alt="Tip GIF" class="comment-image" width="582" height="300">` : ''}
                     <div class="tip-actions">
                         <div class="tip-action-group">
                             <a href="#" class="tip-action tip-action-like" data-action="like"><i class="fas fa-heart"></i></a>

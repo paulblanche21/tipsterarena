@@ -20,18 +20,17 @@
         <!-- Banner and avatar section -->
         <div class="profile-header">
             {% if user_profile.banner %}
-                <img src="{{ user_profile.banner.url }}" alt="Banner Image" class="profile-banner" onerror="this.style.display='none'; this.src=window.default_banner_url;">
+                <img src="{{ user_profile.banner.url }}" alt="Banner Image" class="profile-banner">
             {% else %}
                 <img src="{% static 'img/default-banner.png' %}" alt="Default Banner Image" class="profile-banner">
             {% endif %}
             {% if user_profile.avatar %}
-                <img src="{{ user_profile.avatar.url }}" alt="{{ user.username }} Avatar" class="profile-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
+                <img src="{{ user_profile.avatar.url }}" alt="{{ user.username }} Avatar" class="profile-avatar">
             {% else %}
                 <img src="{% static 'img/default-avatar.png' %}" alt="{{ user.username }} Avatar" class="profile-avatar">
             {% endif %}
         </div>
 
-                <!-- User info and action buttons -->
         <!-- User info and action buttons -->
         <div class="profile-user-info">
             <div class="profile-actions">
@@ -56,7 +55,6 @@
                     <span class="profile-total-bets"><i class="fas fa-list-ol"></i> Total Bets: {{ total_tips }}</span>
                     <span class="profile-average-odds"><i class="fas fa-calculator"></i> Avg Odds: {{ average_odds|floatformat:2 }}</span>
                     <span class="profile-win-rate"><i class="fas fa-trophy"></i> Win Rate: {{ win_rate|floatformat:1 }}%</span>
-                    
                 </div>
             </div>
         </div>
@@ -81,7 +79,7 @@
             {% for tip in user_tips %}
                 <div class="tip" data-tip-id="{{ tip.id }}">
                     {% if tip.user.userprofile.avatar %}
-                        <img src="{{ tip.user.userprofile.avatar.url }}" alt="{{ tip.user.username }} Avatar" class="tip-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
+                        <img src="{{ tip.user.userprofile.avatar.url }}" alt="{{ tip.user.username }} Avatar" class="tip-avatar">
                     {% else %}
                         <img src="{% static 'img/default-avatar.png' %}" alt="{{ tip.user.username }} Avatar" class="tip-avatar">
                     {% endif %}
@@ -158,7 +156,7 @@
                 <span class="comment-modal-close">×</span>
                 <!-- Original tip display -->
                 <div class="modal-tip">
-                    <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="tip-avatar modal-tip-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
+                    <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="tip-avatar modal-tip-avatar">
                     <div class="modal-tip-content">
                         <a href="#" class="tip-username">
                             <strong class="modal-tip-username"></strong>
@@ -199,7 +197,7 @@
                 <div class="reply-to-header" style="display: none;">Replying to <span class="reply-to-username"></span></div>
                 <div class="post-reply-box">
                     {% if request.user.is_authenticated and request.user.userprofile.avatar %}
-                        <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
+                        <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar">
                     {% else %}
                         <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="post-avatar">
                     {% endif %}
@@ -234,7 +232,7 @@
             <div class="edit-profile-header">
                 <div class="profile-edit-banner">
                     {% if user_profile.banner %}
-                        <img src="{{ user_profile.banner.url }}" alt="Banner Image" class="profile-edit-banner-img" onerror="this.style.display='none'; this.src=window.default_banner_url;">
+                        <img src="{{ user_profile.banner.url }}" alt="Banner Image" class="profile-edit-banner-img">
                     {% else %}
                         <img src="{% static 'img/default-banner.png' %}" alt="Default Banner Image" class="profile-edit-banner-img">
                     {% endif %}
@@ -244,7 +242,7 @@
                     </div>
                     <div class="profile-edit-avatar">
                         {% if user_profile.avatar %}
-                            <img src="{{ user_profile.avatar.url }}" alt="Avatar" class="profile-edit-avatar-img" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
+                            <img src="{{ user_profile.avatar.url }}" alt="Avatar" class="profile-edit-avatar-img">
                         {% else %}
                             <img src="{% static 'img/default-avatar.png' %}" alt="Avatar" class="profile-edit-avatar-img">
                         {% endif %}
@@ -287,31 +285,31 @@
 {% endblock %}
 
 {% block upcoming_events %}
-  <div class="sidebar-card upcoming-events-card" data-card="upcoming-events" style="background-color: var(--secondary-bg);">
-    <h3>Upcoming Events</h3>
-    <div class="event-controls">
-      <select class="sport-selector">
-        <option value="football">Football</option>
-        <option value="golf">Golf</option>
-        <option value="tennis">Tennis</option>
-        <option value="horse_racing">Horse Racing</option>
-      </select>
-      <div class="event-buttons">
-        <button class="event-btn active" data-category="fixtures" data-horse-racing="upcoming_meetings">Fixtures</button>
-        <button class="event-btn" data-category="inplay" data-horse-racing="at_the_post">In Play</button>
-        <button class="event-btn" data-category="results" data-horse-racing="race_results">Results</button>
-      </div>
+    <div class="sidebar-card upcoming-events-card" data-card="upcoming-events" style="background-color: var(--secondary-bg);">
+        <h3>Upcoming Events</h3>
+        <div class="event-controls">
+            <select class="sport-selector">
+                <option value="football">Football</option>
+                <option value="golf">Golf</option>
+                <option value="tennis">Tennis</option>
+                <option value="horse_racing">Horse Racing</option>
+            </select>
+            <div class="event-buttons">
+                <button class="event-btn active" data-category="fixtures" data-horse-racing="upcoming_meetings">Fixtures</button>
+                <button class="event-btn" data-category="inplay" data-horse-racing="at_the_post">In Play</button>
+                <button class="event-btn" data-category="results" data-horse-racing="race_results">Results</button>
+            </div>
+        </div>
     </div>
-  </div>
 {% endblock %}
 
 {% block trending_tips %}
-<!-- Sidebar widget for trending tips -->
-<div class="sidebar-card trending-tips-card" data-card="trending-tips" style="background-color: white;">
-    <h3>Trending Tips</h3>
-    <div class="trending-tips-list">
-        <p>Loading trending tips...</p>
+    <!-- Sidebar widget for trending tips -->
+    <div class="sidebar-card trending-tips-card" data-card="trending-tips" style="background-color: white;">
+        <h3>Trending Tips</h3>
+        <div class="trending-tips-list">
+            <p>Loading trending tips...</p>
+        </div>
+        <a href="#" class="show-more" data-target="trending-tips">Show more</a>
     </div>
-    <a href="#" class="show-more" data-target="trending-tips">Show more</a>
-</div>
 {% endblock %}

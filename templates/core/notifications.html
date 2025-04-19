@@ -17,7 +17,7 @@
                     {% if like.user.userprofile.avatar %}
                         <img src="{{ like.user.userprofile.avatar.url }}" alt="User Avatar" class="tip-avatar">
                     {% else %}
-                        <img src="{% static 'img/default-avatar.png' %}" alt="Default Avatar" class="tip-avatar" onerror="this.style.display='none'">
+                        <img src="{% static 'img/default-avatar.png' %}" alt="Default Avatar" class="tip-avatar">
                     {% endif %}
                     <div class="tip-content">
                         <!-- Notification text with username and tip preview -->
@@ -41,7 +41,7 @@
                     {% if follow.follower.userprofile.avatar %}
                         <img src="{{ follow.follower.userprofile.avatar.url }}" alt="User Avatar" class="tip-avatar">
                     {% else %}
-                        <img src="{% static 'img/default-avatar.png' %}" alt="Default Avatar" class="tip-avatar" onerror="this.style.display='none'">
+                        <img src="{% static 'img/default-avatar.png' %}" alt="Default Avatar" class="tip-avatar">
                     {% endif %}
                     <div class="tip-content">
                         <!-- Notification text for new follower -->
@@ -65,7 +65,7 @@
                     {% if share.user.userprofile.avatar %}
                         <img src="{{ share.user.userprofile.avatar.url }}" alt="User Avatar" class="tip-avatar">
                     {% else %}
-                        <img src="{% static 'img/default-avatar.png' %}" alt="Default Avatar" class="tip-avatar" onerror="this.style.display='none'">
+                        <img src="{% static 'img/default-avatar.png' %}" alt="Default Avatar" class="tip-avatar">
                     {% endif %}
                     <div class="tip-content">
                         <!-- Notification text with username and tip preview -->

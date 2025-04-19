@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     "core.apps.CoreConfig",
     "django_celery_beat",
@@ -51,6 +52,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     'corsheaders.middleware.CorsMiddleware',
     "django.middleware.common.CommonMiddleware",
@@ -108,7 +110,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files configuration
 MEDIA_URL = '/media/'
@@ -130,6 +132,7 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = ['GET', 'POST', 'OPTIONS']
 CORS_ALLOW_HEADERS = ['Content-Type', 'X-CSRFToken']
+CORS_ALLOW_ALL_ORIGINS = DEBUG
 
 # Security settings
 CSP_DEFAULT_SRC = ("'self'",)
@@ -161,9 +164,9 @@ CSP_REPORT_URI = "/csp-report/"
 # Django Vite configuration
 DJANGO_VITE = {
     'default': {
-        'dev_mode': DEBUG,
+        'dev_mode': False,
         'dev_server_port': 3000,
-        'static_url_prefix': '',
+        'static_url_prefix': '/static/',
         'manifest_path': BASE_DIR / 'static/dist/manifest.json',
     }
 }
