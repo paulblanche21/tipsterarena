@@ -215,7 +215,7 @@ CELERY_BROKER_USE_SSL = {
 CELERY_BEAT_SCHEDULE = {
     'fetch-football-fixtures-every-hour': {
         'task': 'core.tasks.fetch_football_fixtures',
-        'schedule': crontab(minute=0, hour='*'),
+        'schedule': crontab(minute=0, hour='0'),
     },
     'fetch-inplay-fixtures-every-30-minutes': {
         'task': 'core.tasks.fetch_football_fixtures',
