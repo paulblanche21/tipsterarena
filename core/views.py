@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse, HttpResponse
 from django.db.models import Count, F, Q
 from .models import Tip, Like, Follow, Share, UserProfile, Comment, MessageThread, RaceMeeting, Message
+from .models import FootballLeague, FootballTeam, TeamStats, FootballEvent, KeyEvent, BettingOdds, DetailedStats
 from .forms import UserProfileForm, CustomUserCreationForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.conf import settings
@@ -16,15 +17,18 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework import generics, status
 from rest_framework.serializers import ModelSerializer
-from datetime import datetime
-from .horse_racing_events import get_racecards_json  # Re-enabled
+from datetime import datetime, timedelta
+from .horse_racing_events import get_racecards_json
 import json
-from django.template.loader import render_to_string
-from django.utils import timezone
-from django.core.exceptions import ValidationError
-from django.utils.decorators import method_decorator
+import requests
 import logging
 import bleach
+from django.utils import timezone
+from django.template.loader import render_to_string
+from django.core.exceptions import ValidationError
+from django.utils.decorators import method_decorator
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -563,8 +567,6 @@ def cookie_policy(request):
 def accessibility(request):
     return render(request, 'core/accessibility.html')
 
-# API view for suggested users
-
 
 def suggested_users_api(request):
     try:
@@ -601,7 +603,6 @@ def suggested_users_api(request):
         logger.error(f"Error in suggested_users_api: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
-# Updated TipSerializer
 class TipSerializer(ModelSerializer):
     class Meta:
         model = Tip
@@ -945,3 +946,254 @@ def racecards_json_view(request):
     except Exception as e:
         logger.error(f"Error in racecards_json_view: {str(e)}", exc_info=True)
         return JsonResponse([], safe=False)
+    
+# Configuration for football leagues (mirrors SPORT_CONFIG in upcoming-events.js)
+
+
+FOOTBALL_LEAGUES = [
+    {"league_id": "eng.1", "name": "Premier League", "icon": "⚽", "priority": 1},
+    {"league_id": "esp.1", "name": "La Liga", "icon": "⚽", "priority": 2},
+    {"league_id": "ita.1", "name": "Serie A", "icon": "⚽", "priority": 3},
+]
+
+# Helper function to fetch and store football events
+def fetch_and_store_football_events():
+    today = datetime.now().date()
+    start_date = today - timedelta(days=7)  # 7 days past for results
+    end_date = today + timedelta(days=7)  # 7 days future for fixtures
+    start_date_str = start_date.strftime('%Y%m%d')
+    end_date_str = end_date.strftime('%Y%m%d')
+
+    for league_config in FOOTBALL_LEAGUES:
+        league_id = league_config['league_id']
+        url = f"https://site.api.espn.com/apis/site/v2/sports/soccer/{league_id}/scoreboard?dates={start_date_str}-{end_date_str}"
+        try:
+            response = requests.get(url)
+            if not response.ok:
+                logger.error(f"Failed to fetch {league_config['name']}: {response.status_code}")
+                continue
+            data = response.json()
+
+            # Ensure league exists in database
+            league, _ = FootballLeague.objects.get_or_create(
+                league_id=league_id,
+                defaults={
+                    'name': league_config['name'],
+                    'icon': league_config['icon'],
+                    'priority': league_config['priority']
+                }
+            )
+
+            for event in data.get('events', []):
+                competitions = event.get('competitions', [{}])[0]
+                competitors = competitions.get('competitors', [])
+                home = next((c for c in competitors if c.get('homeAway', '').lower() == 'home'), competitors[0] if competitors else {})
+                away = next((c for c in competitors if c.get('homeAway', '').lower() == 'away'), competitors[1] if competitors else {})
+
+                # Create or update teams
+                home_team, _ = FootballTeam.objects.get_or_create(
+                    name=home.get('team', {}).get('displayName', 'TBD'),
+                    defaults={
+                        'logo': home.get('team', {}).get('logo', ''),
+                        'form': home.get('form', 'N/A'),
+                        'record': home.get('records', [{}])[0].get('summary', 'N/A')
+                    }
+                )
+                away_team, _ = FootballTeam.objects.get_or_create(
+                    name=away.get('team', {}).get('displayName', 'TBD'),
+                    defaults={
+                        'logo': away.get('team', {}).get('logo', ''),
+                        'form': away.get('form', 'N/A'),
+                        'record': home.get('records', [{}])[0].get('summary', 'N/A')
+                    }
+                )
+
+                # Create team stats
+                def get_team_stats(team):
+                    stats = team.get('statistics', [])
+                    return TeamStats.objects.create(
+                        possession=next((s['displayValue'] for s in stats if s['name'] == 'possessionPct'), 'N/A'),
+                        shots=next((s['displayValue'] for s in stats if s['name'] == 'totalShots'), 'N/A'),
+                        shots_on_target=next((s['displayValue'] for s in stats if s['name'] == 'shotsOnTarget'), 'N/A'),
+                        corners=next((s['displayValue'] for s in stats if s['name'] == 'wonCorners'), 'N/A'),
+                        fouls=next((s['displayValue'] for s in stats if s['name'] == 'foulsCommitted'), 'N/A')
+                    )
+
+                home_stats = get_team_stats(home)
+                away_stats = get_team_stats(away)
+
+                geo_broadcasts = competitions.get('geoBroadcasts', [])
+                broadcast = geo_broadcasts[0].get('media', {}).get('shortName', 'N/A') if geo_broadcasts else 'N/A'
+                
+                # Create or update event
+                event_obj, created = FootballEvent.objects.update_or_create(
+                    event_id=event.get('id'),
+                    defaults={
+                        'name': event.get('shortName', event.get('name', '')),
+                        'date': event.get('date'),
+                        'state': event.get('status', {}).get('type', {}).get('state', 'unknown'),
+                        'status_description': event.get('status', {}).get('type', {}).get('description', 'Unknown'),
+                        'status_detail': event.get('status', {}).get('type', {}).get('detail', 'N/A'),
+                        'league': league,
+                        'venue': competitions.get('venue', {}).get('fullName', 'Location TBD'),
+                        'home_team': home_team,
+                        'away_team': away_team,
+                        'home_score': home.get('score', '0'),
+                        'away_score': away.get('score', '0'),
+                        'home_stats': home_stats,
+                        'away_stats': away_stats,
+                        'clock': event.get('status', {}).get('type', {}).get('clock', '0:00'),
+                        'period': event.get('status', {}).get('type', {}).get('period', 0),
+                        'broadcast': broadcast  
+                    }
+                )
+
+                # Fetch detailed event data
+                detailed_url = f"https://site.api.espn.com/apis/site/v2/sports/soccer/{league_id}/summary?event={event['id']}"
+                try:
+                    detailed_response = requests.get(detailed_url)
+                    if detailed_response.ok:
+                        summary_data = detailed_response.json()
+
+                        # Key events
+                        plays = summary_data.get('plays', [])
+                        key_events = [
+                            {
+                                'type': play.get('type', {}).get('text', 'Unknown'),
+                                'time': play.get('clock', {}).get('displayValue', 'N/A'),
+                                'team': play.get('team', {}).get('displayName', 'Unknown'),
+                                'player': play.get('participants', [{}])[0].get('athlete', {}).get('displayName', 'Unknown'),
+                                'is_goal': 'goal' in play.get('type', {}).get('text', '').lower(),
+                                'is_yellow_card': play.get('yellowCard', False),
+                                'is_red_card': play.get('redCard', False)
+                            }
+                            for play in plays if 'goal' in play.get('type', {}).get('text', '').lower() or play.get('yellowCard', False) or play.get('redCard', False)
+                        ]
+                        event_obj.key_events.all().delete()  # Clear existing key events
+                        for ke in key_events:
+                            KeyEvent.objects.create(event=event_obj, **ke)
+
+                        # Detailed stats
+                        goals = [
+                            {
+                                'scorer': play.get('participants', [{}])[0].get('athlete', {}).get('displayName', 'Unknown'),
+                                'team': play.get('team', {}).get('displayName', 'Unknown'),
+                                'time': play.get('clock', {}).get('displayValue', 'N/A'),
+                                'assist': play.get('participants', [{}])[1].get('athlete', {}).get('displayName', 'Unassisted') if len(play.get('participants', [])) > 1 else 'Unassisted'
+                            }
+                            for play in plays if 'goal' in play.get('type', {}).get('text', '').lower()
+                        ]
+                        DetailedStats.objects.update_or_create(
+                            event=event_obj,
+                            defaults={
+                                'possession': summary_data.get('header', {}).get('competitions', [{}])[0].get('possession', {}).get('text', f"{home_stats.possession} - {away_stats.possession}"),
+                                'home_shots': next((s.get('displayValue', home_stats.shots) for s in summary_data.get('boxscore', {}).get('teams', [{}])[0].get('statistics', []) if s.get('name') == 'shots'), home_stats.shots),
+                                'away_shots': next((s.get('displayValue', away_stats.shots) for s in summary_data.get('boxscore', {}).get('teams', [{}])[1].get('statistics', []) if s.get('name') == 'shots'), away_stats.shots),
+                                'goals': goals
+                            }
+                        )
+
+                        # Betting odds
+                        odds_data = summary_data.get('header', {}).get('competitions', [{}])[0].get('odds', [{}])[0]
+                        BettingOdds.objects.update_or_create(
+                            event=event_obj,
+                            defaults={
+                                'home_odds': odds_data.get('homeTeamOdds', {}).get('moneyLine', 'N/A'),
+                                'away_odds': odds_data.get('awayTeamOdds', {}).get('moneyLine', 'N/A'),
+                                'draw_odds': odds_data.get('drawOdds', {}).get('moneyLine', 'N/A'),
+                                'provider': odds_data.get('provider', {}).get('name', 'Unknown Provider')
+                            }
+                        )
+
+                except requests.RequestException as e:
+                    logger.error(f"Error fetching detailed data for event {event['id']}: {str(e)}")
+
+        except requests.RequestException as e:
+            logger.error(f"Error fetching {league_config['name']}: {str(e)}")
+
+# API view to trigger fetching and storing events
+
+@method_decorator(csrf_exempt, name='dispatch')
+class FetchFootballEventsView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        try:
+            fetch_and_store_football_events()
+            return Response({'success': True, 'message': 'Football events fetched and stored'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.error(f"Error fetching football events: {str(e)}")
+            return Response({'success': False, 'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# Serializers for FootballEvent and related models
+class FootballLeagueSerializer(ModelSerializer):
+    class Meta:
+        model = FootballLeague
+        fields = ['league_id', 'name', 'icon', 'priority']
+
+class FootballTeamSerializer(ModelSerializer):
+    class Meta:
+        model = FootballTeam
+        fields = ['name', 'logo', 'form', 'record']
+
+class TeamStatsSerializer(ModelSerializer):
+    class Meta:
+        model = TeamStats
+        fields = ['possession', 'shots', 'shots_on_target', 'corners', 'fouls']
+
+class KeyEventSerializer(ModelSerializer):
+    class Meta:
+        model = KeyEvent
+        fields = ['type', 'time', 'team', 'player', 'is_goal', 'is_yellow_card', 'is_red_card']
+
+class BettingOddsSerializer(ModelSerializer):
+    class Meta:
+        model = BettingOdds
+        fields = ['home_odds', 'away_odds', 'draw_odds', 'provider']
+
+class DetailedStatsSerializer(ModelSerializer):
+    class Meta:
+        model = DetailedStats
+        fields = ['possession', 'home_shots', 'away_shots', 'goals']
+
+class FootballEventSerializer(ModelSerializer):
+    league = FootballLeagueSerializer()
+    home_team = FootballTeamSerializer()
+    away_team = FootballTeamSerializer()
+    home_stats = TeamStatsSerializer()
+    away_stats = TeamStatsSerializer()
+    key_events = KeyEventSerializer(many=True)
+    odds = BettingOddsSerializer(many=True)
+    detailed_stats = DetailedStatsSerializer(many=True)
+
+    class Meta:
+        model = FootballEvent
+        fields = [
+            'event_id', 'name', 'date', 'state', 'status_description', 'status_detail', 'league', 'venue',
+            'home_team', 'away_team', 'home_score', 'away_score', 'home_stats', 'away_stats', 'clock',
+            'period', 'broadcast', 'key_events', 'odds', 'detailed_stats'
+        ]
+
+# API view to retrieve football events
+class FootballEventsList(generics.ListAPIView):
+    serializer_class = FootballEventSerializer
+
+    def get_queryset(self):
+        category = self.request.query_params.get('category', 'fixtures')
+        today = timezone.now()
+        seven_days_ago = today - timedelta(days=7)
+        seven_days_future = today + timedelta(days=7)
+
+        queryset = FootballEvent.objects.all().select_related(
+            'league', 'home_team', 'away_team', 'home_stats', 'away_stats'
+        ).prefetch_related('key_events', 'odds', 'detailed_stats')
+
+        if category == 'fixtures':
+            return queryset.filter(state='pre', date__gt=today, date__lte=seven_days_future)
+        elif category == 'inplay':
+            return queryset.filter(state='in')
+        elif category == 'results':
+            return queryset.filter(state='post', date__gte=seven_days_ago, date__lte=today)
+        return queryset

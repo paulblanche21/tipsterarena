@@ -13,16 +13,16 @@ const SPORT_CONFIG = {
     { sport: "soccer", league: "eng.1", icon: "⚽", name: "Premier League", priority: 1 },
     { sport: "soccer", league: "esp.1", icon: "⚽", name: "La Liga", priority: 2 },
     { sport: "soccer", league: "ita.1", icon: "⚽", name: "Serie A", priority: 3 },
-    { sport: "soccer", league: "fra.1", icon: "⚽", name: "Ligue 1", priority: 4 },
-    { sport: "soccer", league: "uefa.champions", icon: "⚽", name: "Champions League", priority: 5 },
-    { sport: "soccer", league: "uefa.europa", icon: "⚽", name: "Europa League", priority: 6 },
-    { sport: "soccer", league: "eng.fa", icon: "⚽", name: "FA Cup", priority: 7 },
-    { sport: "soccer", league: "eng.2", icon: "⚽", name: "EFL Championship", priority: 8 },
-    { sport: "soccer", league: "por.1", icon: "⚽", name: "Primeira Liga", priority: 9 },
-    { sport: "soccer", league: "ned.1", icon: "⚽", name: "Eredivisie", priority: 10 },
-    { sport: "soccer", league: "nir.1", icon: "⚽", name: "Irish League", priority: 11 },
-    { sport: "soccer", league: "usa.1", icon: "⚽", name: "MLS", priority: 12 },
-    { sport: "soccer", league: "sco.1", icon: "⚽", name: "Scottish Premiership", priority: 13 }
+    // { sport: "soccer", league: "fra.1", icon: "⚽", name: "Ligue 1", priority: 4 },
+    // { sport: "soccer", league: "uefa.champions", icon: "⚽", name: "Champions League", priority: 5 },
+    // { sport: "soccer", league: "uefa.europa", icon: "⚽", name: "Europa League", priority: 6 },
+    // { sport: "soccer", league: "eng.fa", icon: "⚽", name: "FA Cup", priority: 7 },
+    // { sport: "soccer", league: "eng.2", icon: "⚽", name: "EFL Championship", priority: 8 },
+    // { sport: "soccer", league: "por.1", icon: "⚽", name: "Primeira Liga", priority: 9 },
+    // { sport: "soccer", league: "ned.1", icon: "⚽", name: "Eredivisie", priority: 10 },
+    // { sport: "soccer", league: "nir.1", icon: "⚽", name: "Irish League", priority: 11 },
+    // { sport: "soccer", league: "usa.1", icon: "⚽", name: "MLS", priority: 12 },
+    // { sport: "soccer", league: "sco.1", icon: "⚽", name: "Scottish Premiership", priority: 13 }
   ],
   golf: [
     { sport: "golf", league: "pga", icon: "⛳", name: "PGA Tour", priority: 1 },
@@ -49,7 +49,7 @@ const FORMATTERS = {
   football: formatFootballTable,
   golf: formatGolfList,
   tennis: formatTennisTable,
-  horse_racing: renderHorseRacingEvents // Updated to custom function
+  horse_racing: renderHorseRacingEvents
 };
 
 let globalEvents = {};
@@ -65,7 +65,84 @@ async function fetchEventsForSport(sport) {
   }
 
   let allEvents = [];
-  if (sport === "horse_racing") {
+  if (sport === "football") {
+    // Fetch from backend API instead of ESPN API
+    const categories = ['fixtures', 'inplay', 'results'];
+    for (const category of categories) {
+      try {
+        const response = await fetch(`/api/football-events/?category=${category}`);
+        if (!response.ok) throw new Error(`HTTP error: ${response.status} for ${category}`);
+        const events = await response.json();
+        console.log(`Fetched ${events.length} ${category} events from backend`);
+
+        // Map backend data to frontend-compatible format
+        const mappedEvents = events.map(event => ({
+          id: event.event_id,
+          name: event.name,
+          date: event.date,
+          displayDate: new Date(event.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+          time: new Date(event.date).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "GMT" }),
+          state: event.state,
+          statusDescription: event.status_description,
+          statusDetail: event.status_detail,
+          venue: { fullName: event.venue },
+          league: event.league.name,
+          icon: event.league.icon,
+          priority: event.league.priority,
+          homeTeam: {
+            name: event.home_team.name,
+            logo: event.home_team.logo,
+            score: event.home_score,
+            form: event.home_team.form,
+            record: event.home_team.record,
+            stats: {
+              possession: event.home_stats.possession,
+              shots: event.home_stats.shots,
+              shotsOnTarget: event.home_stats.shots_on_target,
+              corners: event.home_stats.corners,
+              fouls: event.home_stats.fouls
+            }
+          },
+          awayTeam: {
+            name: event.away_team.name,
+            logo: event.away_team.logo,
+            score: event.away_score,
+            form: event.away_team.form,
+            record: event.away_team.record,
+            stats: {
+              possession: event.away_stats.possession,
+              shots: event.away_stats.shots,
+              shotsOnTarget: event.away_stats.shots_on_target,
+              corners: event.away_stats.corners,
+              fouls: event.away_stats.fouls
+            }
+          },
+          scores: event.state === "in" ? {
+            homeScore: event.home_score,
+            awayScore: event.away_score,
+            clock: event.clock,
+            period: event.period,
+            statusDetail: event.status_detail
+          } : event.state === "post" ? {
+            homeScore: event.home_score,
+            awayScore: event.away_score,
+            statusDetail: event.status_detail
+          } : null,
+          broadcast: event.broadcast,
+          keyEvents: event.key_events,
+          odds: event.odds[0] || { homeOdds: "N/A", awayOdds: "N/A", drawOdds: "N/A", provider: "Unknown Provider" },
+          detailedStats: event.detailed_stats[0] || {
+            possession: `${event.home_stats.possession} - ${event.away_stats.possession}`,
+            shots: { home: event.home_stats.shots, away: event.away_stats.shots },
+            goals: []
+          }
+        }));
+        allEvents = allEvents.concat(mappedEvents);
+      } catch (error) {
+        console.error(`Error fetching ${category} for football:`, error);
+      }
+    }
+  } else if (sport === "horse_racing") {
     allEvents = await module.fetch();
     console.log(`Horse Racing: Fetched ${allEvents.length} events`, allEvents);
   } else {
@@ -93,15 +170,16 @@ async function fetchEventsForSport(sport) {
       }
     }
   }
+
   // Filter events within range
   const currentTime = new Date();
-  const fourteenDaysAgo = new Date();
+  const sevenDaysAgo = new Date();
   const sevenDaysFuture = new Date();
-  fourteenDaysAgo.setDate(currentTime.getDate() - 14);
+  sevenDaysAgo.setDate(currentTime.getDate() - 7);
   sevenDaysFuture.setDate(currentTime.getDate() + 7);
   allEvents = allEvents.filter(event => {
     const eventDate = new Date(event.date);
-    const isWithinRange = eventDate >= fourteenDaysAgo && eventDate <= sevenDaysFuture;
+    const isWithinRange = eventDate >= sevenDaysAgo && eventDate <= sevenDaysFuture;
     if (!isWithinRange) {
       console.log(`Excluding event: ${event.name || event.venue}, Date: ${event.date}`);
     }
@@ -116,9 +194,9 @@ async function fetchEventsForSport(sport) {
 function filterEvents(events, category, sportKey) {
   console.log(`Filtering events for ${sportKey}, category: ${category}`);
   const currentTime = new Date();
-  const fourteenDaysAgo = new Date();
+  const sevenDaysAgo = new Date();
   const sevenDaysFuture = new Date();
-  fourteenDaysAgo.setDate(currentTime.getDate() - 14);
+  sevenDaysAgo.setDate(currentTime.getDate() - 7);
   sevenDaysFuture.setDate(currentTime.getDate() + 7);
 
   if (sportKey === 'horse_racing') {
@@ -160,8 +238,8 @@ function filterEvents(events, category, sportKey) {
       } else if (category === 'inplay') {
         return event.state === 'in';
       } else if (category === 'results') {
-        const isWithinFourteenDays = eventDate >= fourteenDaysAgo && eventDate <= currentTime;
-        return event.state === 'post' && isWithinFourteenDays;
+        const isWithinSevenDays = eventDate >= sevenDaysAgo && eventDate <= currentTime;
+        return event.state === 'post' && isWithinSevenDays;
       }
       return false;
     }).sort((a, b) => {
@@ -175,7 +253,6 @@ function filterEvents(events, category, sportKey) {
 }
 
 // Renders horse racing events for modal
-// static/js/upcoming-events.js
 async function renderHorseRacingEvents(events, sport, category) {
   console.log(`Rendering horse racing events for ${category}, count: ${events.length}`);
   if (!events || events.length === 0) {

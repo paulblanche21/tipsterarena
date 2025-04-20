@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',       # Token authentication for REST framework
     "csp",                            # Content Security Policy enforcement
     "django_vite",                    # Integration with Vite for frontend assets
+    'django_crontab',                 # Cron job management
 ]
 
 MIDDLEWARE = [
@@ -188,14 +189,33 @@ REST_FRAMEWORK = {
     ],
 }
 
+CRONJOBS = [
+    # Run update_football_events every 24 hours at midnight
+    ('0 0 * * *', 'core.cron.update_football_events', '>> /var/log/tipsterarena_cron.log 2>&1'),
+    # Run check_inplay_matches every 10 minutes
+    ('*/10 * * * *', 'core.cron.check_inplay_matches', '>> /var/log/tipsterarena_cron.log 2>&1'),
+]
+
+# Logging configuration for cron jobs
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
-        'console': {'class': 'logging.StreamHandler'},
-        'file': {'class': 'logging.FileHandler', 'filename': 'scraper.log'},
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/tipsterarena.log',
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+        },
     },
     'loggers': {
-        'core': {'handlers': ['console', 'file'], 'level': 'DEBUG'},
+        'core': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
     },
 }

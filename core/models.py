@@ -1,6 +1,7 @@
 # models.py
 from django.db import models
 from django.contrib.auth.models import User
+import json
 
 
 # Model representing a user's tip
@@ -256,3 +257,108 @@ class RaceResult(models.Model):
 
     def __str__(self):
         return f"Result for {self.race} - Winner: {self.winner}"
+    
+    
+
+# Model for a football league
+class FootballLeague(models.Model):
+    league_id = models.CharField(max_length=50, unique=True)  # e.g., "eng.1", "esp.1"
+    name = models.CharField(max_length=100)  # e.g., "Premier League"
+    icon = models.CharField(max_length=10, default="⚽")  # Emoji icon
+    priority = models.PositiveIntegerField(default=999)  # Sorting priority
+
+    def __str__(self):
+        return self.name
+
+# Model for a football team
+class FootballTeam(models.Model):
+    name = models.CharField(max_length=100)  # Team name, e.g., "Manchester United"
+    logo = models.URLField(blank=True, null=True)  # Team logo URL
+    form = models.CharField(max_length=50, blank=True, null=True)  # Recent form, e.g., "W-L-D"
+    record = models.CharField(max_length=50, blank=True, null=True)  # Season record, e.g., "10-5-3"
+
+    def __str__(self):
+        return self.name
+
+# Model for team statistics in a match
+class TeamStats(models.Model):
+    possession = models.CharField(max_length=10, default="N/A")  # Possession percentage
+    shots = models.CharField(max_length=10, default="N/A")  # Total shots
+    shots_on_target = models.CharField(max_length=10, default="N/A")  # Shots on target
+    corners = models.CharField(max_length=10, default="N/A")  # Corners won
+    fouls = models.CharField(max_length=10, default="N/A")  # Fouls committed
+
+    def __str__(self):
+        return f"Stats: {self.possession}% possession, {self.shots} shots"
+
+# Model for a football event (match)
+class FootballEvent(models.Model):
+    event_id = models.CharField(max_length=50, unique=True)  # ESPN event ID
+    name = models.CharField(max_length=200)  # Match name, e.g., "Man United vs Arsenal"
+    date = models.DateTimeField()  # Match date and time
+    state = models.CharField(
+        max_length=20,
+        choices=[
+            ('pre', 'Pre'),
+            ('in', 'In Progress'),
+            ('post', 'Post'),
+            ('unknown', 'Unknown'),
+        ],
+        default='pre'
+    )  # Match status
+    status_description = models.CharField(max_length=100, default="Unknown")  # e.g., "Scheduled", "In Progress"
+    status_detail = models.CharField(max_length=100, default="N/A")  # e.g., "Half Time", "Final"
+    league = models.ForeignKey(FootballLeague, on_delete=models.CASCADE, related_name='events')
+    venue = models.CharField(max_length=200, default="Location TBD")  # Venue name
+    home_team = models.ForeignKey(FootballTeam, on_delete=models.CASCADE, related_name='home_events')
+    away_team = models.ForeignKey(FootballTeam, on_delete=models.CASCADE, related_name='away_events')
+    home_score = models.CharField(max_length=10, default="0")  # Home team score
+    away_score = models.CharField(max_length=10, default="0")  # Away team score
+    home_stats = models.ForeignKey(TeamStats, on_delete=models.CASCADE, related_name='home_stats', null=True)
+    away_stats = models.ForeignKey(TeamStats, on_delete=models.CASCADE, related_name='away_stats', null=True)
+    clock = models.CharField(max_length=10, blank=True, null=True)  # Match clock, e.g., "45:00"
+    period = models.PositiveIntegerField(default=0)  # Match period, e.g., 1 for first half
+    broadcast = models.CharField(max_length=100, default="N/A")  # Broadcast info
+    last_updated = models.DateTimeField(auto_now=True)  # Last time event was updated
+
+    def __str__(self):
+        return f"{self.name} ({self.date})"
+
+# Model for key events (e.g., goals, cards)
+class KeyEvent(models.Model):
+    event = models.ForeignKey(FootballEvent, on_delete=models.CASCADE, related_name='key_events')
+    type = models.CharField(max_length=50, default="Unknown")  # e.g., "Goal", "Yellow Card"
+    time = models.CharField(max_length=10, default="N/A")  # e.g., "45:00"
+    team = models.CharField(max_length=100, default="Unknown")  # Team involved
+    player = models.CharField(max_length=100, default="Unknown")  # Player involved
+    is_goal = models.BooleanField(default=False)
+    is_yellow_card = models.BooleanField(default=False)
+    is_red_card = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.type} by {self.player} at {self.time}"
+
+# Model for betting odds
+class BettingOdds(models.Model):
+    event = models.ForeignKey(FootballEvent, on_delete=models.CASCADE, related_name='odds')
+    home_odds = models.CharField(max_length=20, default="N/A")  # Home team odds
+    away_odds = models.CharField(max_length=20, default="N/A")  # Away team odds
+    draw_odds = models.CharField(max_length=20, default="N/A")  # Draw odds
+    provider = models.CharField(max_length=100, default="Unknown Provider")  # Odds provider
+
+    def __str__(self):
+        return f"Odds for {self.event.name}"
+
+# Model for detailed match statistics
+class DetailedStats(models.Model):
+    event = models.ForeignKey(FootballEvent, on_delete=models.CASCADE, related_name='detailed_stats')
+    possession = models.CharField(max_length=50, default="N/A")  # e.g., "55% - 45%"
+    home_shots = models.CharField(max_length=10, default="N/A")  # Home team shots
+    away_shots = models.CharField(max_length=10, default="N/A")  # Away team shots
+    goals = models.JSONField(default=list)  # List of goals: [{"scorer": "Player", "team": "Team", "time": "45:00", "assist": "Player"}]
+
+    def __str__(self):
+        return f"Stats for {self.event.name}"
+
+# Ensure existing models (Tip, UserProfile, etc.) remain unchanged
+# ... [Your existing models: Tip, UserProfile, Like, Follow, Share, Comment, MessageThread, Message, RaceMeeting, Race, RaceResult] ...
