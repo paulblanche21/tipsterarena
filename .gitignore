@@ -20,3 +20,5 @@ venv/
 __pycache__/
 core/management/commands/rpscrape/racecards/*.json
 core/management/commands/rpscrape/results/*.json
+.env.env
+db.sqlite3
