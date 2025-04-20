@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config  # For environment variable management
 
 
 # Define the base directory of the project
@@ -79,9 +80,13 @@ WSGI_APPLICATION = "tipsterarena.wsgi.application"  # WSGI application entry poi
 # Database configuration
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",  # SQLite database engine
-        "NAME": BASE_DIR / "db.sqlite3",         # Database file location
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'tipsterarena',
+        'USER': 'paul',
+        'PASSWORD': config('DATABASE_PASSWORD'),
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
