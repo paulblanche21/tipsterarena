@@ -1,91 +1,89 @@
-// static/js/pages/golf-events.js
-console.log('Loading golf-events.js');
-
-export async function fetchEvents(data, config) {
-  console.log(`Fetching events for ${config.name}`);
-  const events = (data.events || []).map(event => {
-    const competitions = event.competitions?.[0] || {};
-    const venue = competitions.venue || { fullName: "Location TBD", address: { city: "Unknown", state: "Unknown" } };
-    let finalVenue = venue;
-    if (event.name === "Valero Texas Open" && venue.fullName === "Location TBD") {
-      finalVenue = {
-        fullName: "TPC San Antonio (Oaks Course)",
-        address: { city: "San Antonio", state: "TX" }
-      };
-    }
-    const courseDetails = competitions.course || {};
-    const broadcast = event.broadcasts?.[0]?.media || { shortName: "N/A" };
-    const status = event.status || {};
-    const period = status.period || 1;
-    const totalRounds = event.format?.rounds || 4;
-    const isPlayoff = status.playoff || false;
-    const weather = event.weather || { condition: "N/A", temperature: "N/A" };
-
-    return {
-      id: event.id,
+export async function fetchEvents(category = 'fixtures') {
+  console.log(`Fetching golf events for category: ${category}`);
+  try {
+    const response = await fetch(`/api/golf/events/?category=${category}`);
+    if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+    const data = await response.json();
+    console.log(`Fetched ${data.length} golf events for ${category}`);
+    return data.map(event => ({
+      id: event.event_id,
       name: event.name,
-      shortName: event.shortName || event.name,
+      shortName: event.short_name,
       date: event.date,
       displayDate: new Date(event.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-      state: status.type?.state || "unknown",
-      completed: status.type?.completed || false,
-      venue: finalVenue,
-      course: {
-        name: courseDetails.name || "Unknown Course",
-        par: courseDetails.par || "N/A",
-        yardage: courseDetails.yardage || "N/A",
+      state: event.state,
+      completed: event.completed,
+      venue: {
+        fullName: event.venue,
+        address: { city: event.city, state: event.state_location }
       },
-      purse: event.purse || "N/A",
-      broadcast: broadcast.shortName || "N/A",
-      currentRound: period,
-      totalRounds: totalRounds,
-      isPlayoff: isPlayoff,
-      league: config.name,
-      icon: config.icon,
-      weather: weather,
-      priority: config.priority || 0,
-      apiLeague: config.league // e.g., "pga" or "lpga"
-    };
-  });
-  console.log(`Fetched ${events.length} events for ${config.name}`);
-  return events;
+      course: event.course,
+      purse: event.purse,
+      broadcast: event.broadcast,
+      currentRound: event.current_round,
+      totalRounds: event.total_rounds,
+      isPlayoff: event.is_playoff,
+      league: event.tour.name,
+      icon: event.tour.icon,
+      weather: {
+        condition: event.weather_condition,
+        temperature: event.weather_temperature
+      },
+      priority: event.tour.priority,
+      apiLeague: event.tour.tour_id,
+      leaderboard: event.leaderboard.map(entry => ({
+        position: entry.position,
+        playerName: entry.player.name,
+        score: entry.score,
+        rounds: entry.rounds,
+        strokes: entry.strokes,
+        worldRanking: entry.player.world_ranking,
+        status: entry.status
+      }))
+    }));
+  } catch (error) {
+    console.error(`Error fetching golf events: ${error}`);
+    return [];
+  }
 }
 
-export async function fetchLeaderboard(eventId, sport, apiLeague, retries = 3) {
-  const url = `https://site.api.espn.com/apis/site/v2/sports/${sport}/${apiLeague}/scoreboard/${eventId}`;
-  console.log(`Fetching leaderboard for event ${eventId}, league: ${apiLeague}`);
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-      const data = await response.json();
-      console.log(`Leaderboard data for event ${eventId}:`, data);
-      const leaderboardData = data?.competitions?.[0]?.competitors || [];
-      const leaderboard = leaderboardData.map((competitor, index) => {
-        const roundsStat = competitor.linescores?.map(round => round.value) || [];
-        const strokesStat = roundsStat.length === 4 ? roundsStat.reduce((sum, score) => sum + score, 0) : (competitor.strokes || "N/A");
-        return {
-          position: competitor.position || (index + 1),
-          playerName: competitor.athlete?.displayName || "Unknown",
-          score: competitor.score || "N/A",
-          rounds: roundsStat.length > 0 ? roundsStat : ["N/A", "N/A", "N/A", "N/A"],
-          strokes: strokesStat,
-          worldRanking: competitor.athlete?.worldRanking || "N/A",
-          status: competitor.status || "active",
-        };
-      });
-      console.log(`Fetched leaderboard for event ${eventId}: ${leaderboard.length} players`);
-      return leaderboard;
-    } catch (error) {
-      console.error(`Attempt ${attempt} failed for event ${eventId}:`, error);
-      if (attempt === retries) {
-        console.error(`All retries exhausted for event ${eventId}`);
-        return [];
-      }
-      await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+export async function fetchLeaderboard(eventId, sport, apiLeague) {
+  console.log(`Fetching leaderboard for event ${eventId}`);
+  try {
+    const response = await fetch(`/api/golf/events/?category=inplay`);
+    if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+    const data = await response.json();
+    const event = data.find(e => e.event_id === eventId);
+    if (!event) {
+      console.log(`Event ${eventId} not found in inplay events`);
+      const responseResults = await fetch(`/api/golf/events/?category=results`);
+      if (!responseResults.ok) throw new Error(`HTTP error: ${responseResults.status}`);
+      const resultsData = await responseResults.json();
+      const resultEvent = resultsData.find(e => e.event_id === eventId);
+      if (!resultEvent) throw new Error(`Event ${eventId} not found in results`);
+      return resultEvent.leaderboard.map(entry => ({
+        position: entry.position,
+        playerName: entry.player.name,
+        score: entry.score,
+        rounds: entry.rounds,
+        strokes: entry.strokes,
+        worldRanking: entry.player.world_ranking,
+        status: entry.status
+      }));
     }
+    return event.leaderboard.map(entry => ({
+      position: entry.position,
+      playerName: entry.player.name,
+      score: entry.score,
+      rounds: entry.rounds,
+      strokes: entry.strokes,
+      worldRanking: entry.player.world_ranking,
+      status: entry.status
+    }));
+  } catch (error) {
+    console.error(`Error fetching leaderboard for event ${eventId}: ${error}`);
+    return [];
   }
-  return [];
 }
 
 export async function formatEventList(events, sportKey, category, isCentralFeed = false) {
@@ -279,7 +277,7 @@ export async function setupLeaderboardUpdates() {
       updateLeaderboard(table).catch(error => {
         console.error(`Polling error for leaderboard ${table.getAttribute('data-event-id')}:`, error);
       });
-    }, 30000);
+    }, 3600000); // 1 hour
     table.dataset.intervalId = intervalId;
   });
 

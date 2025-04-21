@@ -4,6 +4,7 @@ from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
 from . import views
+from core.views import FetchGolfEventsView, GolfEventsList
 
 
 # URL patterns for the Tipster Arena core app
@@ -61,10 +62,10 @@ urlpatterns = [
     path('api/current-user/', views.current_user_api, name='current_user_api'),
     path('horse-racing/cards-json/', views.racecards_json_view, name='racecards_json'),
     path('csp-report/', views.csp_report, name='csp_report'),
-
-    # New routes for football events
     path('api/fetch-football-events/', views.FetchFootballEventsView.as_view(), name='fetch_football_events'),
     path('api/football-events/', views.FootballEventsList.as_view(), name='football_events'),
+    path('api/golf/events/fetch/', FetchGolfEventsView.as_view(), name='fetch_golf_events'),
+    path('api/golf/events/', GolfEventsList.as_view(), name='golf_events_list'),
 ]
 
 if settings.DEBUG:

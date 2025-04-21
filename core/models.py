@@ -1,7 +1,6 @@
 # models.py
 from django.db import models
 from django.contrib.auth.models import User
-import json
 
 
 # Model representing a user's tip
@@ -360,5 +359,79 @@ class DetailedStats(models.Model):
     def __str__(self):
         return f"Stats for {self.event.name}"
 
-# Ensure existing models (Tip, UserProfile, etc.) remain unchanged
-# ... [Your existing models: Tip, UserProfile, Like, Follow, Share, Comment, MessageThread, Message, RaceMeeting, Race, RaceResult] ...
+# Model for a golf tour (e.g., PGA, LPGA)
+class GolfTour(models.Model):
+    tour_id = models.CharField(max_length=50, unique=True)  # e.g., "pga", "lpga"
+    name = models.CharField(max_length=100)  # e.g., "PGA Tour"
+    icon = models.CharField(max_length=10, default="🏌️‍♂️")  # Emoji icon
+    priority = models.PositiveIntegerField(default=999)  # Sorting priority
+
+    def __str__(self):
+        return self.name
+
+# Model for a golf course
+class GolfCourse(models.Model):
+    name = models.CharField(max_length=200)  # Course name
+    par = models.CharField(max_length=10, default="N/A")  # Course par
+    yardage = models.CharField(max_length=20, default="N/A")  # Course yardage
+
+    def __str__(self):
+        return self.name
+
+# Model for a golf player
+class GolfPlayer(models.Model):
+    name = models.CharField(max_length=100)  # Player name
+    world_ranking = models.CharField(max_length=10, default="N/A")  # World ranking
+
+    def __str__(self):
+        return self.name
+
+# Model for a golf event
+class GolfEvent(models.Model):
+    event_id = models.CharField(max_length=50, unique=True)  # ESPN event ID
+    name = models.CharField(max_length=200)  # Event name, e.g., "The Masters"
+    short_name = models.CharField(max_length=200)  # Shortened name
+    date = models.DateTimeField()  # Event date and time
+    state = models.CharField(
+        max_length=20,
+        choices=[
+            ('pre', 'Pre'),
+            ('in', 'In Progress'),
+            ('post', 'Post'),
+            ('unknown', 'Unknown'),
+        ],
+        default='pre'
+    )  # Event status
+    completed = models.BooleanField(default=False)  # Whether event is completed
+    venue = models.CharField(max_length=200, default="Location TBD")  # Venue name
+    city = models.CharField(max_length=100, default="Unknown")  # City
+    state_location = models.CharField(max_length=100, default="Unknown")  # State or region
+    tour = models.ForeignKey(GolfTour, on_delete=models.CASCADE, related_name='events')  # Associated tour
+    course = models.ForeignKey(GolfCourse, on_delete=models.CASCADE, related_name='events')  # Associated course
+    purse = models.CharField(max_length=20, default="N/A")  # Prize purse
+    broadcast = models.CharField(max_length=100, default="N/A")  # Broadcast info
+    current_round = models.PositiveIntegerField(default=1)  # Current round
+    total_rounds = models.PositiveIntegerField(default=4)  # Total rounds
+    is_playoff = models.BooleanField(default=False)  # Playoff status
+    weather_condition = models.CharField(max_length=100, default="N/A")  # Weather condition
+    weather_temperature = models.CharField(max_length=20, default="N/A")  # Weather temperature
+    last_updated = models.DateTimeField(auto_now=True)  # Last update timestamp
+
+    def __str__(self):
+        return f"{self.name} ({self.date})"
+
+# Model for leaderboard entries
+class LeaderboardEntry(models.Model):
+    event = models.ForeignKey(GolfEvent, on_delete=models.CASCADE, related_name='leaderboard')
+    player = models.ForeignKey(GolfPlayer, on_delete=models.CASCADE, related_name='leaderboard_entries')
+    position = models.CharField(max_length=10, default="N/A")  # Position in leaderboard
+    score = models.CharField(max_length=10, default="N/A")  # Current score
+    rounds = models.JSONField(default=list)  # List of round scores, e.g., [70, 72, 71, "N/A"]
+    strokes = models.CharField(max_length=10, default="N/A")  # Total strokes
+    status = models.CharField(max_length=20, default="active")  # Player status, e.g., "active", "withdrawn"
+
+    def __str__(self):
+        return f"{self.player.name} - {self.event.name} (Pos: {self.position})"
+
+    class Meta:
+        unique_together = ('event', 'player')

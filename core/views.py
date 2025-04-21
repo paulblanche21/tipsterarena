@@ -5,7 +5,8 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse, HttpResponse
 from django.db.models import Count, F, Q
 from .models import Tip, Like, Follow, Share, UserProfile, Comment, MessageThread, RaceMeeting, Message
-from .models import FootballLeague, FootballTeam, TeamStats, FootballEvent, KeyEvent, BettingOdds, DetailedStats
+from .models import FootballLeague, FootballTeam, TeamStats, FootballEvent, KeyEvent, BettingOdds, DetailedStats, GolfCourse, GolfEvent,GolfPlayer, GolfTour, LeaderboardEntry
+from .serializers import  GolfEventSerializer, FootballEventSerializer
 from .forms import UserProfileForm, CustomUserCreationForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.conf import settings
@@ -1127,55 +1128,6 @@ class FetchFootballEventsView(APIView):
             return Response({'success': False, 'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-# Serializers for FootballEvent and related models
-class FootballLeagueSerializer(ModelSerializer):
-    class Meta:
-        model = FootballLeague
-        fields = ['league_id', 'name', 'icon', 'priority']
-
-class FootballTeamSerializer(ModelSerializer):
-    class Meta:
-        model = FootballTeam
-        fields = ['name', 'logo', 'form', 'record']
-
-class TeamStatsSerializer(ModelSerializer):
-    class Meta:
-        model = TeamStats
-        fields = ['possession', 'shots', 'shots_on_target', 'corners', 'fouls']
-
-class KeyEventSerializer(ModelSerializer):
-    class Meta:
-        model = KeyEvent
-        fields = ['type', 'time', 'team', 'player', 'is_goal', 'is_yellow_card', 'is_red_card']
-
-class BettingOddsSerializer(ModelSerializer):
-    class Meta:
-        model = BettingOdds
-        fields = ['home_odds', 'away_odds', 'draw_odds', 'provider']
-
-class DetailedStatsSerializer(ModelSerializer):
-    class Meta:
-        model = DetailedStats
-        fields = ['possession', 'home_shots', 'away_shots', 'goals']
-
-class FootballEventSerializer(ModelSerializer):
-    league = FootballLeagueSerializer()
-    home_team = FootballTeamSerializer()
-    away_team = FootballTeamSerializer()
-    home_stats = TeamStatsSerializer()
-    away_stats = TeamStatsSerializer()
-    key_events = KeyEventSerializer(many=True)
-    odds = BettingOddsSerializer(many=True)
-    detailed_stats = DetailedStatsSerializer(many=True)
-
-    class Meta:
-        model = FootballEvent
-        fields = [
-            'event_id', 'name', 'date', 'state', 'status_description', 'status_detail', 'league', 'venue',
-            'home_team', 'away_team', 'home_score', 'away_score', 'home_stats', 'away_stats', 'clock',
-            'period', 'broadcast', 'key_events', 'odds', 'detailed_stats'
-        ]
-
 # API view to retrieve football events
 class FootballEventsList(generics.ListAPIView):
     serializer_class = FootballEventSerializer
@@ -1189,6 +1141,169 @@ class FootballEventsList(generics.ListAPIView):
         queryset = FootballEvent.objects.all().select_related(
             'league', 'home_team', 'away_team', 'home_stats', 'away_stats'
         ).prefetch_related('key_events', 'odds', 'detailed_stats')
+
+        if category == 'fixtures':
+            return queryset.filter(state='pre', date__gt=today, date__lte=seven_days_future)
+        elif category == 'inplay':
+            return queryset.filter(state='in')
+        elif category == 'results':
+            return queryset.filter(state='post', date__gte=seven_days_ago, date__lte=today)
+        return queryset
+    
+# Configuration for golf tours (mirrors config in golf-events.js)
+GOLF_TOURS = [
+    {"tour_id": "pga", "name": "PGA Tour", "icon": "🏌️‍♂️", "priority": 1},
+    {"tour_id": "lpga", "name": "LPGA Tour", "icon": "🏌️‍♀️", "priority": 2},
+]
+
+# Helper function to fetch and store golf events
+def fetch_and_store_golf_events():
+    today = datetime.now().date()
+    start_date = today - timedelta(days=7)  # 7 days past for results
+    end_date = today + timedelta(days=7)  # 7 days future for fixtures
+    start_date_str = start_date.strftime('%Y%m%d')
+    end_date_str = end_date.strftime('%Y%m%d')
+
+    for tour_config in GOLF_TOURS:
+        tour_id = tour_config['tour_id']
+        url = f"https://site.api.espn.com/apis/site/v2/sports/golf/{tour_id}/scoreboard?dates={start_date_str}-{end_date_str}"
+        try:
+            response = requests.get(url)
+            if not response.ok:
+                logger.error(f"Failed to fetch {tour_config['name']}: {response.status_code}")
+                continue
+            data = response.json()
+
+            # Ensure tour exists in database
+            tour, _ = GolfTour.objects.get_or_create(
+                tour_id=tour_id,
+                defaults={
+                    'name': tour_config['name'],
+                    'icon': tour_config['icon'],
+                    'priority': tour_config['priority']
+                }
+            )
+
+            for event in data.get('events', []):
+                competitions = event.get('competitions', [{}])[0]
+                venue = competitions.get('venue', {'fullName': 'Location TBD', 'address': {'city': 'Unknown', 'state': 'Unknown'}})
+                course_details = competitions.get('course', {})
+                broadcast = event.get('broadcasts', [{}])[0].get('media', {}).get('shortName', 'N/A')
+                status = event.get('status', {})
+                weather = event.get('weather', {'condition': 'N/A', 'temperature': 'N/A'})
+
+                # Special case for Valero Texas Open
+                if event.get('name') == "Valero Texas Open" and venue.get('fullName') == "Location TBD":
+                    venue = {
+                        'fullName': "TPC San Antonio (Oaks Course)",
+                        'address': {'city': "San Antonio", 'state': "TX"}
+                    }
+
+                # Create or update course
+                course, _ = GolfCourse.objects.get_or_create(
+                    name=course_details.get('name', 'Unknown Course'),
+                    defaults={
+                        'par': str(course_details.get('par', 'N/A')),
+                        'yardage': str(course_details.get('yardage', 'N/A'))
+                    }
+                )
+
+                # Create or update event
+                event_obj, created = GolfEvent.objects.update_or_create(
+                    event_id=event.get('id'),
+                    defaults={
+                        'name': event.get('name', ''),
+                        'short_name': event.get('shortName', event.get('name', '')),
+                        'date': event.get('date'),
+                        'state': status.get('type', {}).get('state', 'unknown'),
+                        'completed': status.get('type', {}).get('completed', False),
+                        'venue': venue.get('fullName', 'Location TBD'),
+                        'city': venue.get('address', {}).get('city', 'Unknown'),
+                        'state_location': venue.get('address', {}).get('state', 'Unknown'),
+                        'tour': tour,
+                        'course': course,
+                        'purse': event.get('purse', 'N/A'),
+                        'broadcast': broadcast,
+                        'current_round': status.get('period', 1),
+                        'total_rounds': event.get('format', {}).get('rounds', 4),
+                        'is_playoff': status.get('playoff', False),
+                        'weather_condition': weather.get('condition', 'N/A'),
+                        'weather_temperature': weather.get('temperature', 'N/A')
+                    }
+                )
+
+                # Fetch and store leaderboard for in-progress or completed events
+                if event_obj.state in ['in', 'post']:
+                    detailed_url = f"https://site.api.espn.com/apis/site/v2/sports/golf/{tour_id}/scoreboard/{event['id']}"
+                    try:
+                        detailed_response = requests.get(detailed_url)
+                        if detailed_response.ok:
+                            summary_data = detailed_response.json()
+                            leaderboard_data = summary_data.get('competitions', [{}])[0].get('competitors', [])
+
+                            # Clear existing leaderboard entries for this event
+                            event_obj.leaderboard.all().delete()
+
+                            for competitor in leaderboard_data:
+                                player_name = competitor.get('athlete', {}).get('displayName', 'Unknown')
+                                player, _ = GolfPlayer.objects.get_or_create(
+                                    name=player_name,
+                                    defaults={
+                                        'world_ranking': competitor.get('athlete', {}).get('worldRanking', 'N/A')
+                                    }
+                                )
+
+                                rounds_stat = [round.get('value', 'N/A') for round in competitor.get('linescores', [])]
+                                rounds_stat += ["N/A"] * (4 - len(rounds_stat))  # Pad rounds to 4
+                                strokes = competitor.get('strokes', 'N/A')
+                                if rounds_stat and all(r != "N/A" for r in rounds_stat[:len([r for r in rounds_stat if r != "N/A"])]):
+                                    try:
+                                        strokes = sum(float(r) for r in rounds_stat if r != "N/A")
+                                    except (ValueError, TypeError):
+                                        strokes = 'N/A'
+
+                                LeaderboardEntry.objects.create(
+                                    event=event_obj,
+                                    player=player,
+                                    position=competitor.get('position', 'N/A'),
+                                    score=competitor.get('score', 'N/A'),
+                                    rounds=rounds_stat,
+                                    strokes=str(strokes),
+                                    status=competitor.get('status', 'active')
+                                )
+
+                    except requests.RequestException as e:
+                        logger.error(f"Error fetching leaderboard for event {event['id']}: {str(e)}")
+
+        except requests.RequestException as e:
+            logger.error(f"Error fetching {tour_config['name']}: {str(e)}")
+
+# API view to trigger fetching and storing golf events
+@method_decorator(csrf_exempt, name='dispatch')
+class FetchGolfEventsView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        try:
+            fetch_and_store_golf_events()
+            return Response({'success': True, 'message': 'Golf events fetched and stored'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.error(f"Error fetching golf events: {str(e)}")
+            return Response({'success': False, 'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class GolfEventsList(generics.ListAPIView):
+    serializer_class = GolfEventSerializer
+
+    def get_queryset(self):
+        category = self.request.query_params.get('category', 'fixtures')
+        today = timezone.now()
+        seven_days_ago = today - timedelta(days=7)
+        seven_days_future = today + timedelta(days=7)
+
+        queryset = GolfEvent.objects.all().select_related(
+            'tour', 'course'
+        ).prefetch_related('leaderboard__player')
 
         if category == 'fixtures':
             return queryset.filter(state='pre', date__gt=today, date__lte=seven_days_future)

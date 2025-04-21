@@ -194,6 +194,7 @@ CRONJOBS = [
     ('0 0 * * *', 'core.cron.update_football_events', '>> /var/log/tipsterarena_cron.log 2>&1'),
     # Run check_inplay_matches every 10 minutes
     ('*/10 * * * *', 'core.cron.check_inplay_matches', '>> /var/log/tipsterarena_cron.log 2>&1'),
+    ('* * * * *', 'your_app.views.fetch_and_store_golf_events', '>> /path/to/logfile.log 2>&1'),
 ]
 
 # Logging configuration for cron jobs
