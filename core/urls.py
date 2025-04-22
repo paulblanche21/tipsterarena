@@ -66,6 +66,8 @@ urlpatterns = [
     path('api/football-events/', views.FootballEventsList.as_view(), name='football_events'),
     path('api/golf/events/fetch/', FetchGolfEventsView.as_view(), name='fetch_golf_events'),
     path('api/golf/events/', GolfEventsList.as_view(), name='golf_events_list'),
+    path('api/tennis-events/', views.tennis_events, name='tennis_events'),
+    path('api/tennis-events/<str:event_id>/stats/', views.tennis_event_stats, name='tennis_event_stats'),
 ]
 
 if settings.DEBUG:

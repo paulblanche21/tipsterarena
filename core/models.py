@@ -435,3 +435,86 @@ class LeaderboardEntry(models.Model):
 
     class Meta:
         unique_together = ('event', 'player')
+        
+# Tennis models
+# Tennis models
+class TennisLeague(models.Model):
+    league_id = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=100)
+    icon = models.CharField(max_length=10, default="🎾")
+    priority = models.PositiveIntegerField(default=999)
+
+    def __str__(self):
+        return self.name
+
+class TennisTournament(models.Model):
+    tournament_id = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=200)
+    league = models.ForeignKey(TennisLeague, on_delete=models.CASCADE, related_name='tournaments')
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+class TennisPlayer(models.Model):
+    name = models.CharField(max_length=100)
+    short_name = models.CharField(max_length=50, blank=True)
+    world_ranking = models.CharField(max_length=10, default="N/A")
+
+    def __str__(self):
+        return self.name
+
+class TennisVenue(models.Model):
+    name = models.CharField(max_length=200)
+    court = models.CharField(max_length=100, default="Unknown")
+
+    def __str__(self):
+        return f"{self.name} - {self.court}"
+
+class TennisEvent(models.Model):
+    event_id = models.CharField(max_length=50, unique=True)
+    tournament = models.ForeignKey(TennisTournament, on_delete=models.CASCADE, related_name='events')
+    date = models.DateTimeField()
+    state = models.CharField(
+        max_length=20,
+        choices=[
+            ('pre', 'Pre'),
+            ('in', 'In Progress'),
+            ('post', 'Post'),
+            ('unknown', 'Unknown'),
+        ],
+        default='pre'
+    )
+    completed = models.BooleanField(default=False)
+    player1 = models.ForeignKey(TennisPlayer, on_delete=models.CASCADE, related_name='player1_events')
+    player2 = models.ForeignKey(TennisPlayer, on_delete=models.CASCADE, related_name='player2_events')
+    score = models.CharField(max_length=50, default="TBD")
+    sets = models.JSONField(default=list)
+    stats = models.JSONField(default=dict)
+    clock = models.CharField(max_length=20, default="0:00")
+    period = models.PositiveIntegerField(default=0)
+    round_name = models.CharField(max_length=100, default="Unknown Round")
+    venue = models.ForeignKey(TennisVenue, on_delete=models.SET_NULL, null=True, related_name='events')
+    match_type = models.CharField(max_length=50, default="Unknown")
+    player1_rank = models.CharField(max_length=10, default="N/A")
+    player2_rank = models.CharField(max_length=10, default="N/A")
+    last_updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.player1.name} vs {self.player2.name} - {self.tournament.name} ({self.date})"
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['date', 'state']),
+            models.Index(fields=['tournament']),
+        ]
+
+class TennisBettingOdds(models.Model):
+    event = models.ForeignKey(TennisEvent, on_delete=models.CASCADE, related_name='odds')
+    player1_odds = models.CharField(max_length=20, default="N/A")
+    player2_odds = models.CharField(max_length=20, default="N/A")
+    provider = models.CharField(max_length=100, default="Unknown Provider")
+
+    def __str__(self):
+        return f"Odds for {self.event.player1.name} vs {self.event.player2.name}"

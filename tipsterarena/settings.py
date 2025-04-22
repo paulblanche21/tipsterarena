@@ -196,27 +196,37 @@ CRONJOBS = [
     # Run check_inplay_matches every 10 minutes
     ('*/10 * * * *', 'core.cron.check_inplay_matches', '>> /var/log/tipsterarena_cron.log 2>&1'),
     ('0 * * * *', 'core.views.fetch_and_store_golf_events', '>> /Users/paulblanche/Desktop/Tipster\\ Arena/logs/cron.log 2>&1'),
+    ('0 0 * * *', 'your_app.management.commands.populate_tennis.Command', '>> /path/to/your/project/logs/tennis_populate.log 2>&1'),
 ]
 
 # Logging configuration for cron jobs
+# settings.py
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'handlers': {
-        'file': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': '/var/log/tipsterarena.log',
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
         },
+    },
+    'handlers': {
         'console': {
-            'level': 'INFO',
             'class': 'logging.StreamHandler',
+            'level': 'DEBUG',
+            'formatter': 'verbose',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': 'debug.log',  # File path relative to project root
+            'level': 'DEBUG',
+            'formatter': 'verbose',
         },
     },
     'loggers': {
-        'core': {
-            'handlers': ['file', 'console'],
-            'level': 'INFO',
+        '': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
             'propagate': True,
         },
     },

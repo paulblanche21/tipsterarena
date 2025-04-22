@@ -1,106 +1,50 @@
 // tennis-events.js
 
 // Cache for failed match IDs to avoid repeated failed requests
-const failedMatchIds = new Set();
-
-export async function fetchEvents(data, config) {
-  console.log(`Fetching tennis events for ${config.name}`);
-  const events = (data.events || []).flatMap(tournament => {
-    const groupings = tournament.groupings || [];
-    return groupings.flatMap(grouping => {
-      const competitions = grouping.competitions || [];
-      return competitions.map(comp => {
-        const competitors = comp.competitors || [];
-        const player1 = competitors[0]?.athlete?.displayName || "TBD";
-        const player2 = competitors[1]?.athlete?.displayName || "TBD";
-        // Handle scores for completed matches
-        let score = "TBD";
-        let sets = [];
-        if (competitors.length === 2) {
-          const p1Scores = competitors[0].linescores?.map(set => set.value) || ["0"];
-          const p2Scores = competitors[1].linescores?.map(set => set.value) || ["0"];
-          score = `${p1Scores.join('-')} - ${p2Scores.join('-')}`;
-          // Create sets array for rendering
-          const maxSets = Math.max(p1Scores.length, p2Scores.length);
-          for (let i = 0; i < maxSets; i++) {
-            sets.push({
-              setNumber: i + 1,
-              team1Score: p1Scores[i] || "-",
-              team2Score: p2Scores[i] || "-"
-            });
-          }
-        }
-        return {
-          id: comp.id,
-          tournamentId: tournament.id,
-          tournamentName: tournament.name,
-          date: comp.date,
-          displayDate: new Date(comp.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-          time: new Date(comp.date).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "GMT" }),
-          state: comp.status?.type?.state || "unknown",
-          completed: comp.status?.type?.completed || false,
-          player1,
-          player2,
-          score,
-          sets, // Store sets for rendering
-          clock: comp.status?.displayClock || "0:00",
-          period: comp.status?.period || 0,
-          round: comp.round?.displayName || "Unknown Round",
-          venue: comp.venue?.fullName || "Location TBD",
-          league: config.name,
-          icon: config.icon,
-          priority: config.priority || 999
-        };
-      });
-    });
-  });
-  console.log(`Parsed ${events.length} tennis matches`);
-  return events;
+export async function fetchEvents(category) {
+  console.log(`fetchEvents called with category ${category}, but data is fetched from backend`);
+  return []; // Return empty list as data comes from /api/tennis-events/
 }
 
+// Keep fetchMatchDetails for stats if needed
 export async function fetchMatchDetails(matchId) {
+  const failedMatchIds = new Set();
   if (failedMatchIds.has(matchId)) {
-    console.log(`Skipping fetch for failed match ID ${matchId}`);
-    return { sets: [], stats: {} };
+      console.log(`Skipping fetch for failed match ID ${matchId}`);
+      return { sets: [], stats: {} };
   }
-  const url = `https://site.api.espn.com/apis/site/v2/sports/tennis/atp/summary?event=${matchId}`;
+  const url = `/api/tennis-events/${matchId}/stats/`; // Backend stats endpoint
   const maxRetries = 3;
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        if (response.status === 400) {
-          failedMatchIds.add(matchId);
-          console.warn(`Bad Request for match ${matchId}, caching to skip future attempts`);
-          return { sets: [], stats: {} };
-        }
-        throw new Error(`HTTP error: ${response.status}`);
+      try {
+          const response = await fetch(url);
+          if (!response.ok) {
+              if (response.status === 400 || response.status === 404) {
+                  failedMatchIds.add(matchId);
+                  console.warn(`Bad Request for match ${matchId}, caching to skip future attempts`);
+                  return { sets: [], stats: {} };
+              }
+              throw new Error(`HTTP error: ${response.status}`);
+          }
+          const data = await response.json();
+          console.log(`Fetched details for match ${matchId}: ${data.sets.length} sets`);
+          return {
+              sets: data.sets || [],
+              stats: data.stats || {
+                  aces: { team1: 0, team2: 0 },
+                  doubleFaults: { team1: 0, team2: 0 },
+                  servicePointsWon: { team1: 0, team2: 0 },
+              },
+          };
+      } catch (error) {
+          if (attempt === maxRetries) {
+              console.error(`Error fetching match details for ${matchId} after ${maxRetries} attempts:`, error);
+              failedMatchIds.add(matchId);
+              return { sets: [], stats: {} };
+          }
+          console.warn(`Attempt ${attempt} failed for match ${matchId}, retrying...`);
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
       }
-      const data = await response.json();
-      const sets = data.sets || [];
-      const stats = data.boxscore?.statistics || {};
-      console.log(`Fetched details for match ${matchId}: ${sets.length} sets`);
-      return {
-        sets: sets.map(set => ({
-          setNumber: set.setNumber || "N/A",
-          team1Score: set.team1Score || 0,
-          team2Score: set.team2Score || 0
-        })),
-        stats: {
-          aces: stats.aces || { team1: 0, team2: 0 },
-          doubleFaults: stats.doubleFaults || { team1: 0, team2: 0 },
-          servicePointsWon: stats.servicePointsWon || { team1: 0, team2: 0 }
-        }
-      };
-    } catch (error) {
-      if (attempt === maxRetries) {
-        console.error(`Error fetching match details for ${matchId} after ${maxRetries} attempts:`, error);
-        failedMatchIds.add(matchId);
-        return { sets: [], stats: {} };
-      }
-      console.warn(`Attempt ${attempt} failed for match ${matchId}, retrying...`);
-      await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
-    }
   }
 }
 

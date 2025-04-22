@@ -27,7 +27,8 @@ const SPORT_CONFIG = {
         { sport: "golf", league: "lpga", icon: "⛳", name: "LPGA Tour", priority: 2 }
     ],
     tennis: [
-        { sport: "tennis", league: "atp", icon: "🎾", name: "ATP Tour", priority: 1 }
+        { sport: "tennis", league: "atp", icon: "🎾", name: "ATP Tour", priority: 1 },
+        { sport: "tennis", league: "wta", icon: "🎾", name: "WTA Tour", priority: 2 },
     ],
     horse_racing: [
         { sport: "horse_racing", league: "uk_irish", icon: "🏇", name: "UK & Irish Racing" }
@@ -55,131 +56,93 @@ let isInitialized = false;  // Prevent multiple initializations
 
 // Fetches events for a specific sport
 async function fetchEventsForSport(sport) {
-    console.log(`Fetching events for ${sport}`);
-    const sportConfigs = SPORT_CONFIG[sport];
-    const module = SPORT_MODULES[sport];
-    if (!module || !sportConfigs.length) {
-        console.warn(`No module or configs for ${sport}`);
-        return [];
-    }
+  console.log(`Fetching events for ${sport}`);
+  const sportConfigs = SPORT_CONFIG[sport];
+  const module = SPORT_MODULES[sport];
+  if (!module || !sportConfigs.length) {
+      console.warn(`No module or configs for ${sport}`);
+      return [];
+  }
 
-    let allEvents = [];
-    if (sport === "football") {
-        // Fetch from backend API instead of ESPN API
-        const categories = ['fixtures', 'inplay', 'results'];
-        for (const category of categories) {
-            try {
-                const response = await fetch(`/api/football-events/?category=${category}`);
-                if (!response.ok) throw new Error(`HTTP error: ${response.status} for ${category}`);
-                const events = await response.json();
-                console.log(`Fetched ${events.length} ${category} events from backend`);
+  let allEvents = [];
+  if (sport === "football" || sport === "tennis") {
+      // Fetch from backend API for football and tennis
+      const categories = ['fixtures', 'inplay', 'results'];
+      for (const category of categories) {
+          try {
+              const endpoint = sport === "football" ? `/api/football-events/?category=${category}` : `/api/tennis-events/?category=${category}`;
+              const response = await fetch(endpoint);
+              if (!response.ok) throw new Error(`HTTP error: ${response.status} for ${category}`);
+              const events = await response.json();
+              console.log(`Fetched ${events.length} ${category} events from backend for ${sport}`);
 
-                // Map backend data to frontend-compatible format
-                const mappedEvents = events.map(event => ({
-                    id: event.event_id,
-                    name: event.name,
-                    date: event.date,
-                    displayDate: new Date(event.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-                    time: new Date(event.date).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "GMT" }),
-                    state: event.state,
-                    statusDescription: event.status_description,
-                    statusDetail: event.status_detail,
-                    venue: { fullName: event.venue },
-                    league: event.league.name,
-                    icon: event.league.icon,
-                    priority: event.league.priority,
-                    homeTeam: {
-                        name: event.home_team.name,
-                        logo: event.home_team.logo,
-                        score: event.home_score,
-                        form: event.home_team.form,
-                        record: event.home_team.record,
-                        stats: {
-                            possession: event.home_stats.possession,
-                            shots: event.home_stats.shots,
-                            shotsOnTarget: event.home_stats.shots_on_target,
-                            corners: event.home_stats.corners,
-                            fouls: event.home_stats.fouls
-                        }
-                    },
-                    awayTeam: {
-                        name: event.away_team.name,
-                        logo: event.away_team.logo,
-                        score: event.away_score,
-                        form: event.away_team.form,
-                        record: event.away_team.record,
-                        stats: {
-                            possession: event.away_stats.possession,
-                            shots: event.away_stats.shots,
-                            shotsOnTarget: event.away_stats.shots_on_target,
-                            corners: event.away_stats.corners,
-                            fouls: event.away_stats.fouls
-                        }
-                    },
-                    scores: event.state === "in" ? {
-                        homeScore: event.home_score,
-                        awayScore: event.away_score,
-                        clock: event.clock,
-                        period: event.period,
-                        statusDetail: event.status_detail
-                    } : event.state === "post" ? {
-                        homeScore: event.home_score,
-                        awayScore: event.away_score,
-                        statusDetail: event.status_detail
-                    } : null,
-                    broadcast: event.broadcast,
-                    keyEvents: event.key_events,
-                    odds: event.odds[0] || { homeOdds: "N/A", awayOdds: "N/A", drawOdds: "N/A", provider: "Unknown Provider" },
-                    detailedStats: event.detailed_stats[0] || {
-                        possession: `${event.home_stats.possession} - ${event.away_stats.possession}`,
-                        shots: { home: event.home_stats.shots, away: event.away_stats.shots },
-                        goals: []
-                    }
-                }));
-                allEvents = allEvents.concat(mappedEvents);
-            } catch (error) {
-                console.error(`Error fetching ${category} for football:`, error);
-            }
-        }
-    } else if (sport === "horse_racing") {
-        allEvents = await module.fetch();
-        console.log(`Horse Racing: Fetched ${allEvents.length} events`, allEvents);
-    } else {
-        // Golf and Tennis: Fetch events for all categories (fixtures, inplay, results)
-        const categories = ['fixtures', 'inplay', 'results'];
-        for (const category of categories) {
-            for (const config of sportConfigs) {
-                try {
-                    const leagueEvents = await module.fetch(category);  // Use backend API with category
-                    console.log(`${config.name}: Fetched ${leagueEvents.length} ${category} events`);
-                    allEvents = allEvents.concat(leagueEvents);
-                } catch (error) {
-                    console.error(`Error fetching ${config.name} (${category}):`, error);
-                }
-            }
-        }
-    }
+              // Map backend data to frontend-compatible format
+              const mappedEvents = events.map(event => ({
+                  id: event.event_id,
+                  tournamentId: event.tournament.id,
+                  tournamentName: event.tournament.name,
+                  date: event.date,
+                  displayDate: new Date(event.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+                  time: new Date(event.date).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "GMT" }),
+                  state: event.state,
+                  completed: event.completed,
+                  player1: event.player1_name,
+                  player2: event.player2_name,
+                  score: event.score,
+                  sets: event.sets || [],
+                  clock: event.clock,
+                  period: event.period,
+                  round: event.round_name,
+                  venue: event.venue?.name || "Location TBD",
+                  league: event.tournament.league.name,
+                  icon: event.tournament.league.icon,
+                  priority: event.tournament.league.priority,
+                  stats: event.stats || {},
+              }));
+              allEvents = allEvents.concat(mappedEvents);
+          } catch (error) {
+              console.error(`Error fetching ${category} for ${sport}:`, error);
+          }
+      }
+  } else if (sport === "horse_racing") {
+      allEvents = await module.fetch();
+      console.log(`Horse Racing: Fetched ${allEvents.length} events`, allEvents);
+  } else {
+      // Golf or other sports
+      const categories = ['fixtures', 'inplay', 'results'];
+      for (const category of categories) {
+          for (const config of sportConfigs) {
+              try {
+                  const leagueEvents = await module.fetch(category);
+                  console.log(`${config.name}: Fetched ${leagueEvents.length} ${category} events`);
+                  allEvents = allEvents.concat(leagueEvents);
+              } catch (error) {
+                  console.error(`Error fetching ${config.name} (${category}):`, error);
+              }
+          }
+      }
+  }
 
-    // Filter events within range (7 days past to 7 days future)
-    const currentTime = new Date();
-    const sevenDaysAgo = new Date();
-    const sevenDaysFuture = new Date();
-    sevenDaysAgo.setDate(currentTime.getDate() - 7);
-    sevenDaysFuture.setDate(currentTime.getDate() + 7);
-    allEvents = allEvents.filter(event => {
-        const eventDate = new Date(event.date);
-        const isWithinRange = eventDate >= sevenDaysAgo && eventDate <= sevenDaysFuture;
-        if (!isWithinRange) {
-            console.log(`Excluding event: ${event.name || event.venue}, Date: ${event.date}`);
-        }
-        return isWithinRange;
-    });
+  // Filter events within 7 days
+  const currentTime = new Date();
+  const sevenDaysAgo = new Date();
+  const sevenDaysFuture = new Date();
+  sevenDaysAgo.setDate(currentTime.getDate() - 7);
+  sevenDaysFuture.setDate(currentTime.getDate() + 7);
+  allEvents = allEvents.filter(event => {
+      const eventDate = new Date(event.date);
+      const isWithinRange = eventDate >= sevenDaysAgo && eventDate <= sevenDaysFuture;
+      if (!isWithinRange) {
+          console.log(`Excluding event: ${event.name || event.venue}, Date: ${event.date}`);
+      }
+      return isWithinRange;
+  });
 
-    // Remove duplicates based on event ID
-    const uniqueEvents = Array.from(new Map(allEvents.map(event => [event.id, event])).values());
-    globalEvents[sport] = uniqueEvents;
-    console.log(`Total ${sport} events fetched (after deduplication): ${uniqueEvents.length}`);
-    return uniqueEvents;
+  // Remove duplicates based on event ID
+  const uniqueEvents = Array.from(new Map(allEvents.map(event => [event.id, event])).values());
+  globalEvents[sport] = uniqueEvents;
+  console.log(`Total ${sport} events fetched (after deduplication): ${uniqueEvents.length}`);
+  return uniqueEvents;
 }
 
 // Filters events by category

@@ -2,7 +2,6 @@ import logging
 from core.views import fetch_and_store_football_events
 from core.models import FootballEvent
 from django.utils import timezone
-from datetime import timedelta
 
 logger = logging.getLogger(__name__)
 
