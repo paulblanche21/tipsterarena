@@ -24,6 +24,7 @@ import json
 import requests
 import logging
 import bleach
+import pytz 
 from django.utils import timezone
 from django.template.loader import render_to_string
 from django.core.exceptions import ValidationError
@@ -1150,6 +1151,7 @@ class FootballEventsList(generics.ListAPIView):
             return queryset.filter(state='post', date__gte=seven_days_ago, date__lte=today)
         return queryset
     
+
 # Configuration for golf tours (mirrors config in golf-events.js)
 GOLF_TOURS = [
     {"tour_id": "pga", "name": "PGA Tour", "icon": "🏌️‍♂️", "priority": 1},
@@ -1174,6 +1176,9 @@ def fetch_and_store_golf_events():
                 continue
             data = response.json()
 
+            # Log the raw API response for debugging
+            logger.info(f"API response for {tour_config['name']}: {data}")
+
             # Ensure tour exists in database
             tour, _ = GolfTour.objects.get_or_create(
                 tour_id=tour_id,
@@ -1185,52 +1190,116 @@ def fetch_and_store_golf_events():
             )
 
             for event in data.get('events', []):
-                competitions = event.get('competitions', [{}])[0]
-                venue = competitions.get('venue', {'fullName': 'Location TBD', 'address': {'city': 'Unknown', 'state': 'Unknown'}})
-                course_details = competitions.get('course', {})
-                broadcast = event.get('broadcasts', [{}])[0].get('media', {}).get('shortName', 'N/A')
+                event_id = event.get('id')
+                name = event.get('name', '')
                 status = event.get('status', {})
-                weather = event.get('weather', {'condition': 'N/A', 'temperature': 'N/A'})
+                state = status.get('type', {}).get('state', 'unknown')
 
-                # Special case for Valero Texas Open
-                if event.get('name') == "Valero Texas Open" and venue.get('fullName') == "Location TBD":
-                    venue = {
-                        'fullName': "TPC San Antonio (Oaks Course)",
-                        'address': {'city': "San Antonio", 'state': "TX"}
-                    }
+                # Initialize default values
+                venue_name = 'Location TBD'
+                city = 'Unknown'
+                state_location = 'Unknown'
+                course_name = 'Unknown Course'
+                par = 'N/A'
+                yardage = 'N/A'
+                purse = 'N/A'
+                broadcast = 'N/A'
+                weather = event.get('weather', {})
+
+                # Extract data from the scoreboard endpoint
+                competitions = event.get('competitions', [{}])[0]
+                venue = competitions.get('venue', {})
+                venue_name = venue.get('fullName', 'Location TBD')
+                venue_address = venue.get('address', {})
+                city = venue_address.get('city', 'Unknown')
+                state_location = venue_address.get('state', 'Unknown')
+
+                course_details = competitions.get('course', {})
+                course_name = course_details.get('name', 'Unknown Course')
+                par = str(course_details.get('par', 'N/A'))
+                yardage = str(course_details.get('yardage', 'N/A'))
+
+                broadcasts = event.get('broadcasts', [])
+                broadcast = broadcasts[0].get('media', 'N/A') if broadcasts else 'N/A'
+                purse = str(event.get('purse', 'N/A'))
+
+                # Fallback for Zurich Classic of New Orleans
+                if event_id == "401703507":
+                    venue_name = "TPC Louisiana"
+                    city = "Avondale"
+                    state_location = "LA"
+                    course_name = "TPC Louisiana"
+                    par = "72"
+                    yardage = "7425"
+                    purse = "8800000"
+                    broadcast = "Golf Channel"
+                    logger.info(f"Using hardcoded values for event {event_id}")
+
+                # Log extracted data for debugging
+                logger.info(f"Final extracted data for Event {name} (ID: {event_id}): venue={venue_name}, city={city}, state={state_location}, course={course_name}, par={par}, yardage={yardage}, purse={purse}, broadcast={broadcast}")
 
                 # Create or update course
-                course, _ = GolfCourse.objects.get_or_create(
-                    name=course_details.get('name', 'Unknown Course'),
+                course, created = GolfCourse.objects.get_or_create(
+                    name=course_name,
                     defaults={
-                        'par': str(course_details.get('par', 'N/A')),
-                        'yardage': str(course_details.get('yardage', 'N/A'))
+                        'par': par,
+                        'yardage': yardage
                     }
                 )
+                if not created:
+                    course.par = par
+                    course.yardage = yardage
+                    course.save()
+                    logger.info(f"Updated course {course_name}: par={par}, yardage={yardage}")
+
+                # Log the course object after saving
+                logger.info(f"Saved course for event {event_id}: {course.__dict__}")
 
                 # Create or update event
-                event_obj, created = GolfEvent.objects.update_or_create(
-                    event_id=event.get('id'),
+                event_obj, created = GolfEvent.objects.get_or_create(
+                    event_id=event_id,
                     defaults={
-                        'name': event.get('name', ''),
-                        'short_name': event.get('shortName', event.get('name', '')),
-                        'date': event.get('date'),
-                        'state': status.get('type', {}).get('state', 'unknown'),
+                        'name': name,
+                        'short_name': event.get('shortName', name),
+                        'date': datetime.strptime(event.get('date'), '%Y-%m-%dT%H:%MZ').replace(tzinfo=pytz.UTC),
+                        'state': state,
                         'completed': status.get('type', {}).get('completed', False),
-                        'venue': venue.get('fullName', 'Location TBD'),
-                        'city': venue.get('address', {}).get('city', 'Unknown'),
-                        'state_location': venue.get('address', {}).get('state', 'Unknown'),
+                        'venue': venue_name,
+                        'city': city,
+                        'state_location': state_location,
                         'tour': tour,
                         'course': course,
-                        'purse': event.get('purse', 'N/A'),
+                        'purse': purse,
                         'broadcast': broadcast,
                         'current_round': status.get('period', 1),
                         'total_rounds': event.get('format', {}).get('rounds', 4),
-                        'is_playoff': status.get('playoff', False),
+                        'is_playoff': status.get('type', {}).get('playoff', False),
                         'weather_condition': weather.get('condition', 'N/A'),
-                        'weather_temperature': weather.get('temperature', 'N/A')
+                        'weather_temperature': weather.get('temperature', 'N/A'),
+                        'last_updated': timezone.now()
                     }
                 )
+                if not created:
+                    event_obj.name = name
+                    event_obj.short_name = event.get('shortName', name)
+                    event_obj.date = datetime.strptime(event.get('date'), '%Y-%m-%dT%H:%MZ').replace(tzinfo=pytz.UTC)
+                    event_obj.state = state
+                    event_obj.completed = status.get('type', {}).get('completed', False)
+                    event_obj.venue = venue_name
+                    event_obj.city = city
+                    event_obj.state_location = state_location
+                    event_obj.tour = tour
+                    event_obj.course = course
+                    event_obj.purse = purse
+                    event_obj.broadcast = broadcast
+                    event_obj.current_round = status.get('period', 1)
+                    event_obj.total_rounds = event.get('format', {}).get('rounds', 4)
+                    event_obj.is_playoff = status.get('type', {}).get('playoff', False)
+                    event_obj.weather_condition = weather.get('condition', 'N/A')
+                    event_obj.weather_temperature = weather.get('temperature', 'N/A')
+                    event_obj.last_updated = timezone.now()
+                    event_obj.save()
+                    logger.info(f"Updated event {event_id} with new details: {event_obj.__dict__}")
 
                 # Fetch and store leaderboard for in-progress or completed events
                 if event_obj.state in ['in', 'post']:
@@ -1291,7 +1360,7 @@ class FetchGolfEventsView(APIView):
         except Exception as e:
             logger.error(f"Error fetching golf events: {str(e)}")
             return Response({'success': False, 'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
+
 class GolfEventsList(generics.ListAPIView):
     serializer_class = GolfEventSerializer
     authentication_classes = [TokenAuthentication]
