@@ -1,278 +1,203 @@
-/* nav.css */
+/* navbar.css */
 
-/* Styles for the fixed navigation bar */
-.navbar {
-    position: fixed;           /* Fixed to the left side */
-    top: 0;                    /* Align to top */
-    left: 0;                   /* Align to left */
-    width: 250px;              /* Fixed width matching --navbar-width in base.css */
-    height: 100vh;             /* Full viewport height */
-    background-color: #001f3f; /* Dark blue background */
-    padding: 20px;             /* Internal padding */
-    display: flex;             /* Flex layout */
-    flex-direction: column;    /* Stack vertically */
-    justify-content: flex-start;  /* Align items to top */
-    border-right: 1px solid #e1e8ed;  /* Light gray border */
-    z-index: 1002;             /* High z-index above most content */
-    box-sizing: border-box;    /* Include padding and border in width */
-}
-
-/* Styles for the avatar in the nav user section */
-.nav-avatar {
-    width: 32px;               /* Fixed width */
-    height: 32px;              /* Fixed height */
-    border-radius: 50%;        /* Circular shape */
-    margin-right: 8px;         /* Space to the right */
-}
-
-/* Styles for the navbar brand heading */
-.nav-brand h1 {
-    color: #ffffff;            /* White text */
-    font-size: 24px;           /* Larger font for branding */
-    margin-bottom: 5px;        /* Space below */
-}
-
-/* Styles for the navbar brand logo */
-.nav-brand-logo {
-    width: 209px;              /* Fixed width */
-    height: 40px;              /* Fixed height */
-    margin-bottom: 5px;        /* Space below */
-}
-
-/* Styles for dropdown items in the nav user dropdown */
-.nav-dropdown-item {
-    display: block;            /* Block display */
-    padding: var(--padding-small) var(--padding-small) 12px 16px;  /* Consistent padding */
-    font-family: var(--font-default);  /* Default font */
-    font-size: 15px;           /* Slightly larger font */
-    color: var(--secondary-bg);  /* White text */
-    text-decoration: none;     /* No underline */
-    border: none;              /* No border */
-    background: none;          /* No background */
-    width: 100%;               /* Full width */
-    text-align: left;          /* Left-align text */
-    cursor: pointer;           /* Indicate clickability */
-    line-height: 1.2;          /* Comfortable line spacing */
-}
-
-/* Styles for the logout button in the nav */
-.nav-logout-btn {
-    display: block;            /* Block display */
-    padding: var(--padding-small) var(--padding-small) 12px 16px;  /* Consistent padding */
-    font-family: var(--font-default);  /* Default font */
-    font-size: 15px;           /* Slightly larger font */
-    color: var(--secondary-bg);  /* White text */
-    text-decoration: none;     /* No underline */
-    border: none;              /* No border */
-    background: none;          /* No background */
-    width: 100%;               /* Full width */
-    text-align: left;          /* Left-align text */
-    cursor: pointer;           /* Indicate clickability */
-    line-height: 1.2;          /* Comfortable line spacing */
-}
-
-/* Hover state for logout button */
-.nav-logout-btn:hover {
-    background: none;          /* No background change */
-    color: var(--red-accent);  /* Red text on hover */
-    text-decoration: none;     /* No underline */
-}
-
-/* Styles for the nav menu list */
-.nav-menu {
-    list-style: none;          /* Remove bullets */
-    padding: 0;                /* No padding */
-    margin-bottom: 0;          /* No bottom margin */
-    width: 100%;               /* Full width of navbar */
-}
-
-/* Base styles for nav menu links */
-.nav-menu a {
-    color: #ffffff;            /* White text */
-    text-decoration: none;     /* No underline */
-    font-size: 18px;           /* Larger font */
-    display: flex;             /* Flex layout for icon and text */
-    align-items: center;       /* Center vertically */
-}
-
-/* Hover state for nav menu links (initial) */
-.nav-menu a:hover {
-    color: #ff4136;            /* Red on hover (overridden below) */
-}
-
-/* List items within nav menu */
-.nav-menu li {
-    margin: 5px 0;             /* Vertical spacing */
-}
-
-/* Styles for nav menu link items */
-.nav-menu li a {
-    display: block;            /* Block display */
-    color: #ffffff;            /* White text */
-    text-decoration: none;     /* No underline */
-    padding: 10px 20px;        /* Consistent padding */
-    transition: background-color 0.2s, color 0.2s;  /* Smooth transitions */
-    border-radius: 20px;       /* Rounded corners */
-}
-
-/* Hover state for nav menu link items */
-.nav-menu li a:hover {
-    background-color: rgba(74, 144, 226, 0.1);  /* Light blue background */
-    color: #4a90e2;            /* Blue text (overrides earlier #ff4136) */
-}
-
-/* Active state for nav menu link items */
-.nav-menu li a.active {
-    background-color: rgba(74, 144, 226, 0.2);  /* Stronger blue background */
-    color: #4a90e2;            /* Blue text */
-}
-
-/* Styles for the nav menu icon (caret) */
-.nav-menu-icon {
-    font-size: 20px;           /* Larger font */
-    color: #ffffff;            /* White color */
-    margin-left: 8px;          /* Space to the left */
-    cursor: pointer;           /* Indicate clickability */
-}
-
-/* Container for the "Post Tip" button */
-.nav-post {
-    margin-bottom: 10px;       /* Space below */
-}
-
-/* Styles for the nav user section */
-.nav-user {
-    position: relative;        /* Relative for dropdown positioning */
-    display: flex;             /* Flex layout */
-    align-items: center;       /* Center vertically */
-    margin-top: auto;          /* Push to bottom */
-    padding: 5px 0;            /* Vertical padding */
-}
-
-/* Styles for the "Post Tip" button */
-.nav-post-btn {
-    background-color: transparent;  /* Transparent background */
-    border: var(--secondary-bg);    /* White border (likely meant to be a color) */
-    color: var(--secondary-bg);     /* White text */
-    font-size: 16px;           /* Match icon size */
-    cursor: pointer;           /* Indicate clickability */
-    transition: color 0.2s, background-color 0.2s, transform 0.1s, border-color 0.2s;  /* Smooth transitions */
-    padding: 8px 16px;         /* Button padding */
-    border-radius: 20px;       /* Oval shape */
-    display: inline-flex;      /* Flex for alignment */
-    align-items: center;       /* Center vertically */
-    justify-content: center;   /* Center horizontally */
-    width: 100%;               /* Full width */
-    text-decoration: none;     /* No underline */
-    font-weight: bold;         /* Bold text */
-}
-
-/* Hover state for "Post Tip" button */
-.nav-post-btn:hover {
-    color: var(--red-accent);            /* Red text */
-    background-color: rgba(74, 144, 226, 0.1);  /* Light blue background */
-    transform: scale(1.1);     /* Slight scale-up */
-}
-
-/* Content within nav user section */
-.nav-user-content {
-    display: flex;             /* Flex layout */
-    align-items: center;       /* Center vertically */
-    width: 100%;               /* Full width */
-    cursor: pointer;           /* Indicate clickability */
-    padding: 5px;              /* Consistent padding */
-}
-
-/* Hover state for nav user content */
-.nav-user-content:hover {
-    background-color: #333333; /* Dark gray background */
-    border-radius: 20px;       /* Rounded corners */
-}
-
-/* Styles for the nav user dropdown */
-.nav-user-dropdown {
-    position: absolute;        /* Absolute positioning above button */
-    bottom: 100%;              /* Position above nav-user */
-    right: 0;                  /* Align to right */
-    background-color: var(--primary-bg);  /* Dark blue background */
-    border: 1px solid var(--primary-bg);  /* Matching border */
-    border-radius: var(--border-radius);  /* Rounded corners */
-    min-width: 200px;          /* Minimum width */
-    box-shadow: var(--shadow-hover);  /* Enhanced shadow */
-    z-index: 1002;             /* Match navbar z-index */
-    display: none;             /* Hidden by default */
-    transform: translateY(-5px);  /* Slight upward offset */
-    max-height: calc(100vh - 20px);  /* Limit height */
-    overflow-y: auto;          /* Scrollable if needed */
-}
-
-/* Styles for the username in nav user section */
-.nav-username {
-    color: #ffffff;            /* White text */
-    font-weight: 600;          /* Bold text */
-    font-size: 16px;           /* Slightly larger font */
-    text-decoration: none;     /* No underline */
-    flex-grow: 1;              /* Take available space */
-}
-
-/* Hover state for nav username */
-.nav-username:hover {
-    text-decoration: none;     /* No underline */
-}
-
-/* Container for the messages button (bottom right) */
-.messages-container {
-    position: fixed;           /* Fixed to bottom right */
-    bottom: 20px;              /* Offset from bottom */
-    right: 20px;               /* Offset from right */
-    z-index: 1002;             /* Above other elements */
-}
-
-/* Styles for the messages card/button */
-.messages-card {
-    display: flex;             /* Flex layout */
-    align-items: center;       /* Center vertically */
-    justify-content: center;   /* Center horizontally */
-    background-color: var(--red-accent);  /* Red background */
-    border-radius: 50px;       /* Oval shape */
-    padding: 10px 15px;        /* Internal padding */
-    text-decoration: none;     /* No underline */
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);  /* Shadow for elevation */
-    transition: background-color 0.2s ease;  /* Smooth background transition */
-}
-
-/* Hover state for messages card */
-.messages-card:hover {
-    background-color: #e63b31; /* Darker red on hover */
-}
-
-/* Ensure no background on children of messages card */
-.messages-card * {
-    background-color: transparent;  /* Transparent background for children */
-}
-
-/* Text within messages card */
-.messages-text-base {
-    color: #fff;               /* White text */
-    font-size: 16px;           /* Slightly larger font */
-    font-weight: 600;          /* Bold text */
-    margin-right: 8px;         /* Space to the right */
-}
-
-/* Icon within messages card */
-.messages-icon-base {
-    color: #fff;               /* White color */
-    font-size: 18px;           /* Larger font */
-}
-
-/* Caret icon within messages card */
-.messages-caret-base {
-    color: #fff;               /* White color */
-    font-size: 14px;           /* Base font size */
-    margin-left: 8px;          /* Space to the left */
-}
-
-/* Ensure caret visibility on non-messages pages */
-.messages-caret-base {
-    display: inline-block !important;  /* Force display */
-}
+/* Navbar brand and logo */
+.nav-brand {
+    margin-bottom: var(--margin-small);
+  }
+  
+  .nav-brand-logo {
+    width: clamp(150px, 13vw, 209px);
+    height: auto;
+    display: block;
+  }
+  
+  /* Navbar menu styling */
+  .navbar .nav-menu {
+    list-style: none;
+    padding: 0;
+    margin: var(--margin-small) 0;
+    width: 100%;
+  }
+  
+  .navbar .nav-menu li {
+    margin: var(--margin-small) 0;
+  }
+  
+  .navbar .nav-menu a {
+    display: flex;
+    align-items: center;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: clamp(14px, 2vw, 18px);
+    padding: var(--padding-small) clamp(10px, 2vw, 20px);
+    border-radius: 20px;
+    transition: background-color 0.2s, color 0.2s;
+  }
+  
+  .navbar .nav-menu a:hover {
+    background-color: rgba(74, 144, 226, 0.1);
+    color: var(--red-accent);
+  }
+  
+  .navbar .nav-menu a.active {
+    background-color: rgba(74, 144, 226, 0.2);
+    color: var(--twitter-blue);
+  }
+  
+  .navbar .nav-icon {
+    margin-right: var(--padding-small);
+    font-size: clamp(16px, 2.5vw, 18px);
+  }
+  
+  /* Nav post button */
+  .nav-post {
+    margin: var(--margin-small) 0;
+  }
+  
+  .nav-post-btn {
+    background-color: transparent;
+    border: 1px solid var(--secondary-bg);
+    color: var(--secondary-bg);
+    font-size: clamp(14px, 2vw, 16px);
+    font-weight: bold;
+    padding: var(--padding-small) clamp(10px, 2vw, 16px);
+    border-radius: 20px;
+    width: 100%;
+    text-align: center;
+    cursor: pointer;
+    transition: color 0.2s, background-color 0.2s, transform 0.1s;
+  }
+  
+  .nav-post-btn:hover {
+    color: var(--red-accent);
+    background-color: rgba(74, 144, 226, 0.1);
+    transform: scale(1.1);
+  }
+  
+  /* Nav user section */
+  .nav-user {
+    margin-top: auto;
+    padding: var(--padding-small) 0;
+    position: relative;
+  }
+  
+  .nav-user-content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: var(--padding-small);
+    cursor: pointer;
+    border-radius: var(--border-radius);
+  }
+  
+  .nav-user-content:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .nav-avatar {
+    width: clamp(24px, 4vw, 32px);
+    height: clamp(24px, 4vw, 32px);
+    border-radius: 50%;
+    margin-right: var(--padding-small);
+  }
+  
+  .user-info {
+    flex-grow: 1;
+  }
+  
+  .user-display-name,
+  .user-handle {
+    display: block;
+    color: #ffffff;
+    font-size: clamp(12px, 2vw, 14px);
+  }
+  
+  .user-handle {
+    color: var(--gray-light);
+  }
+  
+  .nav-menu-icon {
+    font-size: clamp(16px, 2.5vw, 20px);
+    color: #ffffff;
+    margin-left: var(--padding-small);
+  }
+  
+  .nav-user-dropdown {
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    background-color: var(--primary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    min-width: clamp(150px, 20vw, 200px);
+    box-shadow: var(--shadow-hover);
+    z-index: 1002;
+    display: none;
+    transform: translateY(-5px);
+    max-height: calc(100vh - 20px);
+    overflow-y: auto;
+  }
+  
+  .nav-dropdown-item,
+  .nav-logout-btn {
+    display: block;
+    padding: var(--padding-small) clamp(10px, 2vw, 16px);
+    font-size: clamp(12px, 2vw, 15px);
+    color: #ffffff;
+    text-decoration: none;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    line-height: 1.2;
+  }
+  
+  .nav-dropdown-item:hover,
+  .nav-logout-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--red-accent);
+  }
+  
+  /* Messages container */
+  .messages-container {
+    position: fixed;
+    bottom: clamp(10px, 2vh, 20px);
+    right: clamp(10px, 2vw, 20px);
+    z-index: 1002;
+  }
+  
+  .messages-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--red-accent);
+    border-radius: 50px;
+    padding: var(--padding-small) clamp(10px, 2vw, 15px);
+    text-decoration: none;
+    box-shadow: var(--shadow-light);
+    transition: background-color 0.2s ease;
+  }
+  
+  .messages-card:hover {
+    background-color: #e63b31;
+  }
+  
+  .messages-text-base {
+    color: #ffffff;
+    font-size: clamp(14px, 2vw, 16px);
+    font-weight: 600;
+    margin-right: var(--padding-small);
+  }
+  
+  .messages-icon-base {
+    color: #ffffff;
+    font-size: clamp(16px, 2.5vw, 18px);
+  }
+  
+  .messages-caret-base {
+    color: #ffffff;
+    font-size: clamp(12px, 2vw, 14px);
+    margin-left: var(--padding-small);
+    display: inline-block;
+  }

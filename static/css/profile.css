@@ -121,19 +121,6 @@
     z-index: 0;                /* Below avatar */
 }
 
-/* Styles for the profile content container */
-.profile-content {
-    background-color: #ffffff; /* White background */
-    border: 1px solid #e1e8ed; /* Light gray border */
-    border-radius: 12px;       /* Rounded corners */
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);  /* Subtle shadow */
-    color: #001f3f;            /* Dark blue text */
-    margin: 0 10px 10px 10px;  /* Consistent margins */
-    overflow: hidden;          /* Prevent overflow */
-    padding-top: 67px;         /* Space for header-top */
-    width: calc(100% - 20px);  /* Full width minus margins */
-    box-sizing: border-box;    /* Include padding/borders */
-}
 
 /* Styles for the profile description (bio) */
 .profile-description {
@@ -199,8 +186,8 @@
     padding: 5px 20px;         /* Internal padding */
     position: fixed;           /* Fixed to top */
     top: 0;                    /* Align to top */
-    max-width: 700px;          /* Matches profile-content */
-    width: 660px;              /* Fixed width */
+    max-width: 900px;          /* Matches profile-content */
+    width: 900px;              /* Fixed width */
     box-sizing: border-box;    /* Include padding/borders */
     z-index: 1000;             /* High z-index */
 }

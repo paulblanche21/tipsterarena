@@ -1,95 +1,141 @@
 /* base.css */
 /* Core reset and box-sizing for consistent layout across Tipster Arena */
 html {
-    box-sizing: border-box;  /* Ensures padding and borders are included in element dimensions */
-}
-
-*, *:before, *:after {
-    box-sizing: inherit;  /* Applies box-sizing to all elements and pseudo-elements */
-}
-
-/* Reset default margins and padding for common elements */
-body, h1, h2, h3, p, ul {
+    box-sizing: border-box;
+  }
+  
+  *, *:before, *:after {
+    box-sizing: inherit;
+  }
+  
+  /* Reset default margins and padding for common elements */
+  body, h1, h2, h3, p, ul {
     margin: 0;
     padding: 0;
-}
-
-/* Define global CSS variables for consistent styling */
-:root {
-    --navbar-width: 250px;         /* Width of the fixed navigation bar */
-    --sidebar-width: 350px;        /* Width of the fixed sidebar */
-    --primary-bg: #001f3f;         /* Dark blue background used site-wide */
-    --secondary-bg: #ffffff;       /* White background for content areas */
-    --border-color: #e1e8ed;       /* Light gray for borders */
-    --twitter-blue: #1DA1F2;       /* Blue accent inspired by Twitter */
-    --red-accent: #ff4136;         /* Red accent for highlights and hover states */
-    --gray-light: #666666;         /* Light gray for secondary text */
-    --black: black;                /* Standard black color */
-    --shadow-light: 0 1px 3px rgba(0, 0, 0, 0.1);  /* Subtle shadow for elevation */
-    --shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.15); /* Enhanced shadow on hover */
-    --padding-small: 12px;         /* Small padding for spacing */
-    --margin-small: 10px;          /* Small margin for spacing */
-    --border-radius: 12px;         /* Consistent border radius for rounded corners */
-    --font-default: 'Helvetica Neue', Arial, sans-serif;  /* Default font stack */
-    --font-size-base: 14px;        /* Base font size for readability */
-}
-
-/* Base styles for the body element */
-body {
-    font-family: var(--font-default);  /* Apply default font */
-    font-size: var(--font-size-base);  /* Set base font size */
-    background-color: var(--primary-bg);  /* Dark blue background for the site */
-    color: #ffffff;  /* White text for contrast against dark background */
-    margin: 0;       /* Remove default margin */
-    padding: 0;      /* Remove default padding */
-    min-height: 100vh;  /* Ensure body fills viewport height */
-    overflow-x: hidden; /* Prevent horizontal scrolling */
-}
-
-/* Layout styles for main content container */
-.main-container {
-    margin-left: var(--navbar-width);    /* Offset content to accommodate fixed navbar */
-    margin-right: var(--sidebar-width);  /* Offset content to accommodate fixed sidebar */
-    min-height: 100vh;  /* Ensure container spans full viewport height */
-    background-color: #001f3f;  /* Match primary background color */
-    box-sizing: border-box;  /* Include padding/borders in dimensions */
-}
-
-/* Styles for the main content area */
-.content {
-    margin: 0 auto;    /* Center the content horizontally */
-    min-height: 100vh; /* Ensure content area spans full height */
-    box-sizing: border-box;  /* Include padding/borders in dimensions */
-    background-attachment: var(--primary-bg);
-    color: #ffffff;  /* White text for contrast on dark background */
-}
-
-/* Adjust text colors for lists and links within content areas */
-.content li,
-.content a {
-    color: #001f3f;  /* Dark blue text for contrast on white backgrounds */
-}
-
-/* Hover effects for links within content */
-.content li a:hover,
-.content .follow-username:hover {
-    color: #ff4136;  /* Red accent on hover for consistency with design */
-    text-decoration: underline;  /* Underline on hover for clarity */
-}
-
-/* Styles for the fixed sidebar */
-.sidebar {
-    width: 350px;       /* Fixed width matching --sidebar-width */
-    max-width: 350px;   /* Prevent sidebar from exceeding its defined width */
-    padding: 10px 0;    /* Vertical padding for internal spacing */
-    background-color: #001f3f;  /* Dark blue background to match site theme */
-    color: #001f3f;     /* Dark text (note: likely should be #ffffff for contrast) */
-    position: fixed;    /* Fix sidebar to the right side */
-    right: 0;           /* Align to the right edge */
-    top: 0;             /* Start from the top */
-    height: 100vh;      /* Span full viewport height */
-    display: flex;      /* Use flexbox for layout */
-    flex-direction: column;  /* Stack children vertically */
-    z-index: 1001;      /* Ensure sidebar sits above most content */
-    overflow-x: hidden; /* Prevent horizontal overflow */
-}
+  }
+  
+  /* Define global CSS variables for consistent styling */
+  :root {
+    --navbar-width: clamp(60px, 16.53vw, 250px);
+    --sidebar-width: clamp(200px, 23.15vw, 350px);
+    --content-width: clamp(400px, 90%, 800px);
+    --primary-bg: #001f3f;
+    --secondary-bg: #ffffff;
+    --border-color: #e1e8ed;
+    --twitter-blue: #1DA1F2;
+    --red-accent: #ff4136;
+    --gray-light: #666666;
+    --black: black;
+    --shadow-light: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.15);
+    --padding-small: clamp(8px, 1vw, 12px);
+    --margin-small: clamp(6px, 1vw, 10px);
+    --border-radius: 12px;
+    --font-default: 'Helvetica Neue', Arial, sans-serif;
+    --font-size-base: clamp(12px, 2vw, 14px);
+  }
+  
+  /* Base styles for the body element */
+  body {
+    font-family: var(--font-default);
+    font-size: var(--font-size-base);
+    background-color: var(--primary-bg);
+    color: #ffffff;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  
+  /* Styles for the fixed navigation bar */
+  .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--navbar-width);
+    height: 100vh;
+    background-color: var(--primary-bg);
+    padding: clamp(10px, 2vw, 20px);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    border-right: 1px solid var(--border-color);
+    z-index: 1002;
+    box-sizing: border-box;
+  }
+  
+  /* Layout styles for main content container */
+  .main-container {
+    margin-left: var(--navbar-width);
+    margin-right: var(--sidebar-width);
+    min-height: 100vh;
+    background-color: var(--primary-bg);
+    box-sizing: border-box;
+  }
+  
+  /* Styles for the main content area */
+  .content {
+    margin: 0 auto;
+    min-height: 100vh;
+    box-sizing: border-box;
+    background-color: var(--primary-bg);
+    color: #ffffff;
+    overflow-wrap: break-word;
+  }
+  
+  /* Adjust text colors for lists and links within content areas */
+  .content li,
+  .content a {
+    color: #ffffff;
+  }
+  
+  /* Hover effects for links within content */
+  .content li a:hover,
+  .content .follow-username:hover {
+    color: var(--red-accent);
+    text-decoration: underline;
+  }
+  
+  /* Styles for the fixed sidebar */
+  .sidebar {
+    width: var(--sidebar-width);
+    max-width: var(--sidebar-width);
+    padding: clamp(8px, 1vw, 10px) 0;
+    background-color: var(--primary-bg);
+    color: #ffffff;
+    position: fixed;
+    right: 0;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    z-index: 1001;
+    overflow-x: hidden;
+  }
+  
+  /* Styles for the post composition box */
+  .post-box {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 var(--margin-small) var(--margin-small);
+    background-color: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--padding-small);
+    box-shadow: var(--shadow-light);
+    color: var(--primary-bg);
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+  }
+  
+  /* Styles for the tip feed container */
+  .tip-feed {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 var(--margin-small) var(--margin-small);
+    padding: 0;
+    box-sizing: border-box;
+    overflow: visible;
+  }
+  
+  /* Styles
