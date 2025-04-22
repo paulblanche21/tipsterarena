@@ -1,49 +1,57 @@
 export async function fetchEvents(category = 'fixtures') {
   console.log(`Fetching golf events for category: ${category}`);
   try {
-    const response = await fetch(`/api/golf/events/?category=${category}`);
-    if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-    const data = await response.json();
-    console.log(`Fetched ${data.length} golf events for ${category}`);
-    return data.map(event => ({
-      id: event.event_id,
-      name: event.name,
-      shortName: event.short_name,
-      date: event.date,
-      displayDate: new Date(event.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-      state: event.state,
-      completed: event.completed,
-      venue: {
-        fullName: event.venue,
-        address: { city: event.city, state: event.state_location }
-      },
-      course: event.course,
-      purse: event.purse,
-      broadcast: event.broadcast,
-      currentRound: event.current_round,
-      totalRounds: event.total_rounds,
-      isPlayoff: event.is_playoff,
-      league: event.tour.name,
-      icon: event.tour.icon,
-      weather: {
-        condition: event.weather_condition,
-        temperature: event.weather_temperature
-      },
-      priority: event.tour.priority,
-      apiLeague: event.tour.tour_id,
-      leaderboard: event.leaderboard.map(entry => ({
-        position: entry.position,
-        playerName: entry.player.name,
-        score: entry.score,
-        rounds: entry.rounds,
-        strokes: entry.strokes,
-        worldRanking: entry.player.world_ranking,
-        status: entry.status
-      }))
-    }));
+      const response = await fetch(`/api/golf/events/?category=${category}`, {
+          headers: {
+              'Authorization': `Token ${localStorage.getItem('authToken') || 'ba59ecf8d26672d59c949b70453c361e74c2eec8'}`
+          },
+          credentials: 'include'
+      });
+      if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+      const data = await response.json();
+      console.log(`Raw API response for ${category} (length: ${data.length}):`, data);
+      console.log(`Fetched ${data.length} golf events for ${category}`);
+      const mappedEvents = data.map(event => ({
+          id: event.event_id,
+          name: event.name,
+          shortName: event.short_name,
+          date: event.date,
+          displayDate: new Date(event.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+          state: event.state,
+          completed: event.completed,
+          venue: {
+              fullName: event.venue,
+              address: { city: event.city, state: event.state_location }
+          },
+          course: event.course,
+          purse: event.purse,
+          broadcast: event.broadcast,
+          currentRound: event.current_round,
+          totalRounds: event.total_rounds,
+          isPlayoff: event.is_playoff,
+          league: event.tour.name,
+          icon: event.tour.icon,
+          weather: {
+              condition: event.weather_condition,
+              temperature: event.weather_temperature
+          },
+          priority: event.tour.priority,
+          apiLeague: event.tour.tour_id,
+          leaderboard: event.leaderboard.map(entry => ({
+              position: entry.position,
+              playerName: entry.player.name,
+              score: entry.score,
+              rounds: entry.rounds,
+              strokes: entry.strokes,
+              worldRanking: entry.player.world_ranking,
+              status: entry.status
+          }))
+      }));
+      console.log(`Mapped ${mappedEvents.length} events for ${category}:`, mappedEvents);
+      return mappedEvents;
   } catch (error) {
-    console.error(`Error fetching golf events: ${error}`);
-    return [];
+      console.error(`Error fetching golf events: ${error}`);
+      return [];
   }
 }
 
@@ -88,117 +96,98 @@ export async function fetchLeaderboard(eventId, sport, apiLeague) {
 
 export async function formatEventList(events, sportKey, category, isCentralFeed = false) {
   if (!events?.length) {
-    console.log(`No ${category} ${sportKey} events to format`);
-    return `<p>No ${category} ${sportKey} events available.</p>`;
+      console.log(`No ${category} ${sportKey} events to format`);
+      return `<p>No ${category} ${sportKey} events available.</p>`;
   }
-
+  console.log(`Events to render for ${category} (length: ${events.length}):`, events);
   const eventItems = await Promise.all(events.map(async event => {
-    console.log(`Formatting event: ${event.name}, ID: ${event.id}, League: ${event.apiLeague}`);
-    const venue = event.venue.fullName || `${event.venue.address.city}, ${event.venue.address.state}`;
-    let contentHtml = '';
-    if (category === 'inplay' || category === 'results') {
-      const leaderboard = await fetchLeaderboard(event.id, "golf", event.apiLeague || "pga");
-      contentHtml = leaderboard.length > 0
-        ? `
-          <div class="leaderboard-content">
-            <h4>${category === 'inplay' ? 'Live Leaderboard' : 'Final Leaderboard'}</h4>
-            <div class="leaderboard-wrapper">
-              <table class="leaderboard-table" data-event-id="${event.id}" data-api-league="${event.apiLeague || 'pga'}">
-                <thead>
-                  <tr>
-                    <th>Pos</th>
-                    <th>Player</th>
-                    <th>Score</th>
-                    <th>R1</th>
-                    <th>R2</th>
-                    <th>R3</th>
-                    <th>R4</th>
-                    <th>Total</th>
-                    <th>Rank</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${leaderboard.slice(0, 10).map(player => `
-                    <tr class="${player.status === 'active' ? 'player-active' : 'player-inactive'}">
-                      <td>${player.position}</td>
-                      <td>${player.playerName}</td>
-                      <td>${player.score}</td>
-                      <td>${player.rounds[0] || "N/A"}</td>
-                      <td>${player.rounds[1] || "N/A"}</td>
-                      <td>${player.rounds[2] || "N/A"}</td>
-                      <td>${player.rounds[3] || "N/A"}</td>
-                      <td>${player.strokes}</td>
-                      <td>${player.worldRanking}</td>
-                    </tr>
-                  `).join("")}
-                </tbody>
-              </table>
-              <button class="view-full-leaderboard" data-event-id="${event.id}" data-api-league="${event.apiLeague || 'pga'}">View Full Leaderboard</button>
-            </div>
-            ${category === 'inplay' ? '<p class="leaderboard-status">Updating...</p>' : ''}
+      console.log(`Formatting event: ${event.name}, ID: ${event.id}, League: ${event.apiLeague}`);
+      const venue = event.venue.fullName || `${event.venue.address.city}, ${event.venue.address.state}`;
+      let contentHtml = '';
+      if (category === 'inplay' || category === 'results') {
+          const leaderboard = event.leaderboard;  // Use pre-fetched leaderboard data
+          contentHtml = leaderboard.length > 0
+              ? `
+                <div class="leaderboard-content">
+                    <h4>${category === 'inplay' ? 'Live Leaderboard' : 'Final Leaderboard'}</h4>
+                    <div class="leaderboard-wrapper">
+                        <table class="leaderboard-table" data-event-id="${event.id}" data-api-league="${event.apiLeague || 'pga'}">
+                            <thead>
+                                <tr>
+                                    <th>Pos</th>
+                                    <th>Player</th>
+                                    <th>Score</th>
+                                    <th>R1</th>
+                                    <th>R2</th>
+                                    <th>R3</th>
+                                    <th>R4</th>
+                                    <th>Total</th>
+                                    <th>Rank</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${leaderboard.slice(0, 10).map(player => `
+                                  <tr class="${player.status === 'active' ? 'player-active' : 'player-inactive'}">
+                                      <td>${player.position}</td>
+                                      <td>${player.playerName}</td>
+                                      <td>${player.score}</td>
+                                      <td>${player.rounds[0] || "N/A"}</td>
+                                      <td>${player.rounds[1] || "N/A"}</td>
+                                      <td>${player.rounds[2] || "N/A"}</td>
+                                      <td>${player.rounds[3] || "N/A"}</td>
+                                      <td>${player.strokes}</td>
+                                      <td>${player.worldRanking}</td>
+                                  </tr>
+                                `).join("")}
+                            </tbody>
+                        </table>
+                        <button class="view-full-leaderboard" data-event-id="${event.id}" data-api-league="${event.apiLeague || 'pga'}">View Full Leaderboard</button>
+                    </div>
+                    ${category === 'inplay' ? '<p class="leaderboard-status">Updating...</p>' : ''}
+                </div>
+              `
+              : `
+                <div class="leaderboard-content">
+                    <h4>${category === 'inplay' ? 'Live Leaderboard' : 'Final Leaderboard'}</h4>
+                    <p>No leaderboard data available.</p>
+                </div>
+              `;
+      } else {
+          contentHtml = `
+              <div class="event-details">
+                  <p><strong>Event:</strong> ${event.name}</p>
+                  <p><strong>Date:</strong> ${event.displayDate}</p>
+                  <p><strong>Location:</strong> ${venue}</p>
+                  <p><strong>Course:</strong> ${event.course.name}</p>
+                  <p><strong>Par:</strong> ${event.course.par}</p>
+                  <p><strong>Yardage:</strong> ${event.course.yardage}</p>
+                  <p><strong>Purse:</strong> ${event.purse}</p>
+                  <p><strong>Broadcast:</strong> ${event.broadcast}</p>
+                  <p><strong>Weather:</strong> ${event.weather.condition}, ${event.weather.temperature}</p>
+              </div>
+          `;
+      }
+      const status = category === 'inplay' ? 'In Progress' : category === 'results' ? 'Completed' : 'Upcoming';
+      const liveIndicator = category === 'inplay' ? '<span class="live-indicator">Live</span>' : '';
+      return `
+          <div class="golf-card expandable-card ${category === 'inplay' ? 'live-event' : ''}">
+              <div class="card-header">
+                  <div class="event-info">
+                      <span class="event-name">${event.name}</span>
+                      <span class="event-status">(${status})</span>
+                      ${liveIndicator}
+                  </div>
+                  <div class="event-meta">
+                      <span class="datetime">${event.displayDate}</span>
+                      <span class="location">${venue}</span>
+                  </div>
+              </div>
+              <div class="card-content" style="display: none;">
+                  ${contentHtml}
+              </div>
           </div>
-        `
-        : `
-          <div class="leaderboard-content">
-            <h4>${category === 'inplay' ? 'Live Leaderboard' : 'Final Leaderboard'}</h4>
-            <table class="leaderboard-table" data-event-id="${event.id}" data-api-league="${event.apiLeague || 'pga'}">
-              <thead>
-                <tr>
-                  <th>Pos</th>
-                  <th>Player</th>
-                  <th>Score</th>
-                  <th>R1</th>
-                  <th>R2</th>
-                  <th>R3</th>
-                  <th>R4</th>
-                  <th>Total</th>
-                  <th>Rank</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td colspan="9">Loading leaderboard data...</td></tr>
-              </tbody>
-            </table>
-            <button class="view-full-leaderboard" data-event-id="${event.id}" data-api-league="${event.apiLeague || 'pga'}">View Full Leaderboard</button>
-          </div>
-        `;
-    } else {
-      contentHtml = `
-        <div class="event-details">
-          <p><strong>Event:</strong> ${event.name}</p>
-          <p><strong>Date:</strong> ${event.displayDate}</p>
-          <p><strong>Location:</strong> ${venue}</p>
-          <p><strong>Course:</strong> ${event.course.name}</p>
-          <p><strong>Par:</strong> ${event.course.par}</p>
-          <p><strong>Yardage:</strong> ${event.course.yardage}</p>
-          <p><strong>Purse:</strong> ${event.purse}</p>
-          <p><strong>Broadcast:</strong> ${event.broadcast}</p>
-          <p><strong>Weather:</strong> ${event.weather.condition}, ${event.weather.temperature}</p>
-        </div>
       `;
-    }
-    const status = category === 'inplay' ? 'In Progress' : category === 'results' ? 'Completed' : 'Upcoming';
-    const liveIndicator = category === 'inplay' ? '<span class="live-indicator">Live</span>' : '';
-    return `
-      <div class="golf-card expandable-card ${category === 'inplay' ? 'live-event' : ''}">
-        <div class="card-header">
-          <div class="event-info">
-            <span class="event-name">${event.name}</span>
-            <span class="event-status">(${status})</span>
-            ${liveIndicator}
-          </div>
-          <div class="event-meta">
-            <span class="datetime">${event.displayDate}</span>
-            <span class="location">${venue}</span>
-          </div>
-        </div>
-        <div class="card-content" style="display: none;">
-          ${contentHtml}
-        </div>
-      </div>
-    `;
   }));
-
   console.log(`Formatted ${eventItems.length} golf events for ${category}`);
   return `<div class="golf-feed">${eventItems.join("")}</div>`;
 }
@@ -221,7 +210,7 @@ export async function setupLeaderboardUpdates() {
     if (!eventId) return;
     const cacheKey = `${eventId}-${apiLeague}`;
     let leaderboard;
-
+ 
     // Check cache first
     if (leaderboardCache.has(cacheKey)) {
       const cached = leaderboardCache.get(cacheKey);
