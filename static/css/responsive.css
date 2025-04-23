@@ -75,8 +75,8 @@
     .post-box,
     .tip-feed,
     .profile-content {
-      margin: 0 var(--margin-small) var(--margin-small);
-      padding: var(--padding-small);
+      margin: 0 clamp(2px, 1vw, 4px) var(--margin-small);
+      padding: clamp(6px, 1vw, 8px);
     }
   
     .profile-content {
@@ -87,9 +87,68 @@
       right: clamp(10px, 2vw, 20px);
       bottom: clamp(10px, 2vh, 20px);
     }
+  
+    /* Optimize post-box layout */
+    .post-actions {
+      justify-content: flex-start;
+      gap: clamp(2px, 1vw, 4px);
+    }
+  
+    .post-action-btn {
+      width: clamp(20px, 5vw, 24px);
+      height: clamp(20px, 5vw, 24px);
+      font-size: clamp(10px, 3vw, 12px);
+    }
+  
+    .post-footer {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .post-meta {
+      margin-top: var(--margin-small);
+    }
+  
+    .post-user {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .post-avatar {
+      margin-bottom: var(--margin-small);
+    }
+  
+    .post-username-container {
+      flex-direction: column;
+      gap: clamp(2px, 1vw, 4px);
+    }
+  
+    .tip-details {
+      flex-direction: column;
+    }
+  
+    /* Optimize tip-feed layout */
+    .tip-actions {
+      gap: clamp(4px, 1vw, 6px);
+    }
+  
+    .tip-action {
+      width: clamp(20px, 5vw, 24px);
+      height: clamp(20px, 5vw, 24px);
+      font-size: clamp(10px, 3vw, 12px);
+    }
+  
+    .tip {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .tip-avatar {
+      margin-bottom: var(--margin-small);
+    }
   }
   
-  @media (min-width: 768px) and (max-width: 991px) {
+  @media (max-width: 1000px) {
     .main-container {
       margin-left: clamp(50px, 8vw, 60px);
       margin-right: clamp(150px, 20vw, 200px);
@@ -133,7 +192,7 @@
     }
   
     .navbar .nav-menu a span:not(.nav-icon) {
-      display: none;
+      display: none; /* Hide text labels */
     }
   
     .sidebar {
@@ -150,7 +209,24 @@
     .post-box,
     .tip-feed,
     .profile-content {
-      margin: 0 var(--margin-small) var(--margin-small);
+      margin: 0 clamp(4px, 1vw, 6px) var(--margin-small);
+    }
+  }
+  
+  @media (min-width: 1001px) {
+    .main-container {
+      margin-left: var(--navbar-width);
+      margin-right: var(--sidebar-width);
+    }
+  
+    .content {
+      max-width: var(--content-width);
+    }
+  
+    .post-box,
+    .tip-feed,
+    .profile-content {
+      margin: 0 clamp(4px, 1vw, 6px) var(--margin-small);
     }
   }
   
@@ -174,6 +250,6 @@
     .post-box,
     .tip-feed,
     .profile-content {
-      margin: 0 var(--margin-small) var(--margin-small);
+      margin: 0 clamp(4px, 1vw, 6px) var(--margin-small);
     }
   }

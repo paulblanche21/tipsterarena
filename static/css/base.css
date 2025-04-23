@@ -81,6 +81,7 @@ html {
     background-color: var(--primary-bg);
     color: #ffffff;
     overflow-wrap: break-word;
+    padding: 0 clamp(4px, 1vw, 8px); /* Reduced padding */
   }
   
   /* Adjust text colors for lists and links within content areas */
@@ -115,9 +116,8 @@ html {
   
   /* Styles for the post composition box */
   .post-box {
-    width: 100%;
-    max-width: 100%;
-    margin: 0 var(--margin-small) var(--margin-small);
+    max-width: 100%; /* Prevent overflow */
+    margin: 0 clamp(4px, 1vw, 6px) var(--margin-small); /* Reduced margins */
     background-color: var(--secondary-bg);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
@@ -130,12 +130,24 @@ html {
   
   /* Styles for the tip feed container */
   .tip-feed {
-    width: 100%;
-    max-width: 100%;
-    margin: 0 var(--margin-small) var(--margin-small);
+    max-width: 100%; /* Prevent overflow */
+    margin: 0 clamp(4px, 1vw, 6px) var(--margin-small); /* Reduced margins */
     padding: 0;
     box-sizing: border-box;
     overflow: visible;
   }
   
-  /* Styles
+  /* Styles for the profile content container */
+  .profile-content {
+    max-width: 100%;
+    margin: 0 clamp(4px, 1vw, 6px) var(--margin-small);
+    background-color: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-light);
+    color: var(--primary-bg);
+    overflow: hidden;
+    padding-top: clamp(50px, 10vh, 67px);
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+  }
