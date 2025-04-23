@@ -197,6 +197,10 @@ CRONJOBS = [
     ('*/10 * * * *', 'core.cron.check_inplay_matches', '>> /var/log/tipsterarena_cron.log 2>&1'),
     ('0 * * * *', 'core.views.fetch_and_store_golf_events', '>> /Users/paulblanche/Desktop/Tipster\\ Arena/logs/cron.log 2>&1'),
     ('0 0 * * *', 'your_app.management.commands.populate_tennis.Command', '>> /path/to/your/project/logs/tennis_populate.log 2>&1'),
+    # New cron jobs for horse racing scrapers
+    ('0 6 * * *', 'core.management.commands.scrape_racecards.run', '>> /var/log/tipsterarena_cron.log 2>&1', {'day': 'today'}),
+    ('0 7 * * *', 'core.management.commands.scrape_results.run', '>> /var/log/tipsterarena_cron.log 2>&1', {'race_type': 'flat'}),
+    ('0 7 * * *', 'core.management.commands.scrape_results.run', '>> /var/log/tipsterarena_cron.log 2>&1', {'race_type': 'jumps'}),
 ]
 
 # Logging configuration for cron jobs

@@ -518,3 +518,167 @@ class TennisBettingOdds(models.Model):
 
     def __str__(self):
         return f"Odds for {self.event.player1.name} vs {self.event.player2.name}"
+    
+
+
+# Model for a horse racing course
+class HorseRacingCourse(models.Model):
+    course_id = models.IntegerField(unique=True)  # RacingPost course ID
+    name = models.CharField(max_length=100)  # Course name, e.g., "Cheltenham"
+    region = models.CharField(max_length=50)  # Region, e.g., "GB", "IRE"
+
+    def __str__(self):
+        return f"{self.name} ({self.region})"
+
+    class Meta:
+        unique_together = ('course_id', 'region')
+
+# Model for a horse racing meeting (replaces RaceMeeting)
+class HorseRacingMeeting(models.Model):
+    date = models.DateField()
+    course = models.ForeignKey(HorseRacingCourse, on_delete=models.CASCADE, related_name='meetings')
+    url = models.URLField(unique=True, blank=True, null=True)  # Optional RacingPost URL
+
+    def __str__(self):
+        return f"{self.course.name} - {self.date}"
+
+    class Meta:
+        unique_together = ('date', 'course')
+
+# Model for a horse racing race (replaces Race)
+class HorseRacingRace(models.Model):
+    meeting = models.ForeignKey(HorseRacingMeeting, on_delete=models.CASCADE, related_name='races')
+    race_id = models.IntegerField(unique=True)  # RacingPost race ID
+    off_time = models.CharField(max_length=5)  # e.g., "14:40"
+    name = models.CharField(max_length=255)  # Race name
+    distance_round = models.CharField(max_length=50, blank=True, null=True)  # e.g., "2m4½f"
+    distance = models.CharField(max_length=50, blank=True, null=True)  # e.g., "2m4f127y"
+    distance_f = models.FloatField(blank=True, null=True)  # Distance in furlongs
+    pattern = models.CharField(max_length=50, blank=True, null=True)  # e.g., "Grade 2", "Listed"
+    race_class = models.CharField(max_length=50, blank=True, null=True)  # e.g., "Class 1"
+    type = models.CharField(max_length=50, blank=True, null=True)  # e.g., "Chase", "Flat"
+    age_band = models.CharField(max_length=50, blank=True, null=True)  # e.g., "5yo+"
+    rating_band = models.CharField(max_length=50, blank=True, null=True)  # Rating band
+    prize = models.CharField(max_length=50, blank=True, null=True)  # e.g., "£39,865"
+    field_size = models.IntegerField(blank=True, null=True)  # Number of runners
+    going = models.CharField(max_length=50, blank=True, null=True)  # e.g., "Good"
+    rail_movements = models.CharField(max_length=255, blank=True, null=True)  # Rail movements
+    stalls = models.CharField(max_length=50, blank=True, null=True)  # Stalls position
+    weather = models.CharField(max_length=255, blank=True, null=True)  # Weather conditions
+    surface = models.CharField(max_length=50, blank=True, null=True)  # e.g., "Turf"
+
+    def __str__(self):
+        return f"{self.name} at {self.off_time} - {self.meeting.course.name}"
+
+    class Meta:
+        unique_together = ('meeting', 'off_time', 'race_id')
+
+# Model for a horse
+class Horse(models.Model):
+    horse_id = models.IntegerField(unique=True)  # RacingPost horse ID
+    name = models.CharField(max_length=100)  # Horse name
+    dob = models.DateField(blank=True, null=True)  # Date of birth
+    age = models.IntegerField(blank=True, null=True)  # Age
+    sex = models.CharField(max_length=50, blank=True, null=True)  # e.g., "gelding"
+    sex_code = models.CharField(max_length=1, blank=True, null=True)  # e.g., "G"
+    colour = models.CharField(max_length=50, blank=True, null=True)  # e.g., "b"
+    region = models.CharField(max_length=50, blank=True, null=True)  # e.g., "IRE"
+    breeder = models.CharField(max_length=100, blank=True, null=True)  # Breeder name
+    dam = models.CharField(max_length=100, blank=True, null=True)  # Dam name
+    dam_region = models.CharField(max_length=50, blank=True, null=True)  # Dam region
+    sire = models.CharField(max_length=100, blank=True, null=True)  # Sire name
+    sire_region = models.CharField(max_length=50, blank=True, null=True)  # Sire region
+    grandsire = models.CharField(max_length=100, blank=True, null=True)  # Grandsire name
+    damsire = models.CharField(max_length=100, blank=True, null=True)  # Damsire name
+    damsire_region = models.CharField(max_length=50, blank=True, null=True)  # Damsire region
+
+    def __str__(self):
+        return self.name
+
+# Model for a trainer
+class Trainer(models.Model):
+    trainer_id = models.IntegerField(unique=True)  # RacingPost trainer ID
+    name = models.CharField(max_length=100)  # Trainer name
+    location = models.CharField(max_length=255, blank=True, null=True)  # Trainer location
+
+    def __str__(self):
+        return self.name
+
+# Model for a jockey
+class Jockey(models.Model):
+    jockey_id = models.IntegerField(unique=True)  # RacingPost jockey ID
+    name = models.CharField(max_length=100)  # Jockey name
+
+    def __str__(self):
+        return self.name
+
+# Model for a runner in a race
+class RaceRunner(models.Model):
+    race = models.ForeignKey(HorseRacingRace, on_delete=models.CASCADE, related_name='runners')
+    horse = models.ForeignKey(Horse, on_delete=models.CASCADE, related_name='races')
+    trainer = models.ForeignKey(Trainer, on_delete=models.SET_NULL, null=True, related_name='runners')
+    jockey = models.ForeignKey(Jockey, on_delete=models.SET_NULL, null=True, related_name='runners')
+    number = models.IntegerField(blank=True, null=True)  # Runner number
+    draw = models.IntegerField(blank=True, null=True)  # Draw position
+    headgear = models.CharField(max_length=50, blank=True, null=True)  # Headgear
+    headgear_first = models.CharField(max_length=50, blank=True, null=True)  # First-time headgear
+    lbs = models.IntegerField(blank=True, null=True)  # Weight carried (pounds)
+    official_rating = models.IntegerField(blank=True, null=True)  # Official rating (ofr)
+    rpr = models.IntegerField(blank=True, null=True)  # Racing Post Rating
+    topspeed = models.IntegerField(blank=True, null=True)  # Topspeed rating (ts)
+    form = models.CharField(max_length=100, blank=True, null=True)  # Recent form
+    last_run = models.CharField(max_length=100, blank=True, null=True)  # Days since last run
+    trainer_rtf = models.CharField(max_length=100, blank=True, null=True)  # Trainer run-to-form
+    trainer_14_days_runs = models.IntegerField(blank=True, null=True)  # Trainer runs in last 14 days
+    trainer_14_days_wins = models.IntegerField(blank=True, null=True)  # Trainer wins in last 14 days
+    trainer_14_days_percent = models.IntegerField(blank=True, null=True)  # Trainer win percentage
+    owner = models.CharField(max_length=255, blank=True, null=True)  # Owner name
+    comment = models.TextField(blank=True, null=True)  # Comment on horse
+    spotlight = models.TextField(blank=True, null=True)  # Spotlight comment
+    stats = models.JSONField(default=dict)  # Stats (course, distance, going, jockey, trainer)
+
+    def __str__(self):
+        return f"{self.horse.name} in {self.race.name}"
+
+    class Meta:
+        unique_together = ('race', 'horse')
+
+# Model for runner quotes
+class RunnerQuote(models.Model):
+    runner = models.ForeignKey(RaceRunner, on_delete=models.CASCADE, related_name='quotes')
+    date = models.DateField()  # Quote date
+    race_id = models.IntegerField(blank=True, null=True)  # Race ID
+    course = models.CharField(max_length=100, blank=True, null=True)  # Course name
+    course_id = models.IntegerField(blank=True, null=True)  # Course ID
+    distance_f = models.FloatField(blank=True, null=True)  # Distance in furlongs
+    distance_y = models.IntegerField(blank=True, null=True)  # Distance in yards
+    quote = models.TextField()  # Quote text
+
+    def __str__(self):
+        return f"Quote for {self.runner.horse.name} on {self.date}"
+
+# Model for race results (replaces RaceResult)
+class HorseRacingResult(models.Model):
+    race = models.ForeignKey(HorseRacingRace, on_delete=models.CASCADE, related_name='results')
+    horse = models.ForeignKey(Horse, on_delete=models.CASCADE, related_name='results')
+    trainer = models.ForeignKey(Trainer, on_delete=models.SET_NULL, null=True, related_name='results')
+    jockey = models.ForeignKey(Jockey, on_delete=models.SET_NULL, null=True, related_name='results')
+    position = models.IntegerField(blank=True, null=True)  # Finishing position
+    draw = models.IntegerField(blank=True, null=True)  # Draw position
+    ovr_btn = models.FloatField(blank=True, null=True)  # Overall beaten distance
+    btn = models.FloatField(blank=True, null=True)  # Beaten distance to previous horse
+    lbs = models.IntegerField(blank=True, null=True)  # Weight carried
+    headgear = models.CharField(max_length=50, blank=True, null=True)  # Headgear
+    time = models.CharField(max_length=50, blank=True, null=True)  # Finishing time
+    seconds = models.FloatField(blank=True, null=True)  # Time in seconds
+    decimal_time = models.FloatField(blank=True, null=True)  # Decimal time
+    prize = models.CharField(max_length=50, blank=True, null=True)  # Prize money
+    official_rating = models.IntegerField(blank=True, null=True)  # Official rating
+    rpr = models.IntegerField(blank=True, null=True)  # Racing Post Rating
+    comment = models.TextField(blank=True, null=True)  # Comment on performance
+
+    def __str__(self):
+        return f"Result for {self.horse.name} in {self.race.name} - Pos: {self.position}"
+
+    class Meta:
+        unique_together = ('race', 'horse')
