@@ -18,7 +18,7 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import generics, status
 from rest_framework.serializers import ModelSerializer
-from datetime import datetime, timedelta, time
+from datetime import datetime, timedelta
 from .horse_racing_events import get_racecards_json
 from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
@@ -27,6 +27,7 @@ import requests
 import logging
 import bleach
 import pytz 
+import time
 from django.utils import timezone
 from django.template.loader import render_to_string
 from django.core.exceptions import ValidationError
@@ -1187,9 +1188,6 @@ class GolfEventsList(generics.ListAPIView):
 # Configuration for football leagues (mirrors SPORT_CONFIG in upcoming-events.js)
 
 
-
-logger = logging.getLogger(__name__)
-
 FOOTBALL_LEAGUES = [
     {"league_id": "eng.1", "name": "Premier League", "icon": "⚽", "priority": 1},
     {"league_id": "esp.1", "name": "La Liga", "icon": "⚽", "priority": 2},
@@ -1199,12 +1197,12 @@ FOOTBALL_LEAGUES = [
 # Helper function to fetch and store football events
 def fetch_and_store_football_events():
     today = datetime.now().date()
-    start_date = today - timedelta(days=7)  # 7 days past for results
-    end_date = today + timedelta(days=7)  # 7 days future for fixtures
+    start_date = today - timedelta(days=7)
+    end_date = today + timedelta(days=7)
     start_date_str = start_date.strftime('%Y%m%d')
     end_date_str = end_date.strftime('%Y%m%d')
+    logger.info(f"Fetching events for date range: {start_date_str}-{end_date_str}")
 
-    # Set up requests session with retry for rate limiting
     session = requests.Session()
     retries = Retry(total=5, backoff_factor=3, status_forcelist=[429, 500, 502, 503, 504])
     session.mount('https://', HTTPAdapter(max_retries=retries))
@@ -1218,9 +1216,9 @@ def fetch_and_store_football_events():
                 logger.error(f"Failed to fetch {league_config['name']}: {response.status_code} - {response.text}")
                 continue
             data = response.json()
+            logger.info(f"ESPN API response for {league_config['name']}: {data}")
             logger.debug(f"Scoreboard data for {league_config['name']}: {data.keys()}")
 
-            # Ensure league exists in database
             league, _ = FootballLeague.objects.get_or_create(
                 league_id=league_id,
                 defaults={
@@ -1236,7 +1234,6 @@ def fetch_and_store_football_events():
                 home = next((c for c in competitors if c.get('homeAway', '').lower() == 'home'), competitors[0] if competitors else {})
                 away = next((c for c in competitors if c.get('homeAway', '').lower() == 'away'), competitors[1] if competitors else {})
 
-                # Create or update teams
                 home_team, _ = FootballTeam.objects.get_or_create(
                     name=home.get('team', {}).get('displayName', 'TBD'),
                     defaults={
@@ -1254,7 +1251,6 @@ def fetch_and_store_football_events():
                     }
                 )
 
-                # Create team stats
                 def get_team_stats(team):
                     stats = team.get('statistics', [])
                     return TeamStats.objects.create(
@@ -1271,13 +1267,12 @@ def fetch_and_store_football_events():
                 geo_broadcasts = competitions.get('geoBroadcasts', [])
                 broadcast = geo_broadcasts[0].get('media', {}).get('shortName', 'N/A') if geo_broadcasts else 'N/A'
 
-                # Create or update event
                 event_obj, created = FootballEvent.objects.update_or_create(
                     event_id=event.get('id'),
                     defaults={
                         'name': event.get('shortName', event.get('name', '')),
                         'date': event.get('date'),
-                        'state': event.get('status', {}).get('type', {}).get('state', 'unknown'),
+                        'state': event.get('status', {}).get('type', {}).get('state', 'pre'),
                         'status_description': event.get('status', {}).get('type', {}).get('description', 'Unknown'),
                         'status_detail': event.get('status', {}).get('type', {}).get('detail', 'N/A'),
                         'league': league,
@@ -1294,16 +1289,15 @@ def fetch_and_store_football_events():
                     }
                 )
 
-                # Fetch detailed event data
                 detailed_url = f"https://site.api.espn.com/apis/site/v2/sports/soccer/{league_id}/summary?event={event['id']}"
                 try:
                     detailed_response = session.get(detailed_url)
                     if detailed_response.ok:
                         summary_data = detailed_response.json()
+                        logger.info(f"Event {event['id']} summary data: {summary_data}")
                         logger.debug(f"Event {event['id']} summary data keys: {list(summary_data.keys())}")
                         logger.debug(f"Event {event['id']} state: {event.get('status', {}).get('type', {}).get('state', 'unknown')}")
 
-                        # Process plays for key events (post-game only)
                         plays = summary_data.get('plays', [])
                         logger.debug(f"Event {event['id']} total plays: {len(plays)}")
                         if not plays and event.get('status', {}).get('type', {}).get('state') == 'post':
@@ -1316,18 +1310,16 @@ def fetch_and_store_football_events():
                                 is_yellow_card = False
                                 is_red_card = False
                                 play_type = play.get('type', {}).get('text', '').lower()
-                                play_type_id = str(play.get('type', {}).get('id', ''))  # Convert to string
+                                play_type_id = str(play.get('type', {}).get('id', '')) 
 
-                                # Goal detection
                                 if (play.get('scoringPlay', False) or
                                     'goal' in play_type or
-                                    play_type_id in ['28', '29', '30'] or  # 28=Goal, 29=Own Goal, 30=Penalty Goal
+                                    play_type_id in ['28', '29', '30'] or
                                     play_type in ['penalty goal', 'own goal', 'free kick goal', 'header goal'] or
                                     'goal' in play.get('text', '').lower()):
                                     is_goal = True
                                     logger.info(f"Event {event['id']} detected goal: {play}")
 
-                                # Card detection
                                 if (play.get('yellowCard', False) or
                                     play_type == 'yellow card' or
                                     play_type_id == '70' or
@@ -1362,7 +1354,6 @@ def fetch_and_store_football_events():
                         else:
                             logger.warning(f"No key events found for event {event['id']} - plays array: {len(plays)} plays, state: {event.get('status', {}).get('type', {}).get('state')}")
 
-                        # Detailed stats (post-game only)
                         goals = [
                             {
                                 'scorer': play.get('participants', [{}])[0].get('athlete', {}).get('displayName', 'Unknown'),
@@ -1385,7 +1376,6 @@ def fetch_and_store_football_events():
                             }
                         )
 
-                        # Betting odds (pre-game and post-game)
                         odds_data = summary_data.get('header', {}).get('competitions', [{}])[0].get('odds', [{}])[0]
                         logger.debug(f"Event {event['id']} odds data: {odds_data}")
                         if odds_data:
@@ -1406,7 +1396,7 @@ def fetch_and_store_football_events():
                         logger.error(f"Failed to fetch summary for event {event['id']}: {detailed_response.status_code} - Response: {detailed_response.text}")
                 except requests.RequestException as e:
                     logger.error(f"Error fetching detailed data for event {event['id']}: {str(e)}")
-                time.sleep(2)  # Additional delay after each event
+                time.sleep(2)
 
         except requests.RequestException as e:
             logger.error(f"Error fetching {league_config['name']}: {str(e)}")

@@ -59,7 +59,6 @@
 
 /* Specific Heights for Trending Tips (updated) */
 .sidebar-card[data-card="trending-tips"] {
-    min-height: 450px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;

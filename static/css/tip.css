@@ -116,6 +116,7 @@
     display: flex;
     align-items: center;
     gap: clamp(4px, 1vw, 5px);
+    color: black;
   }
   
   /* Styles for the tip username */

@@ -1,7 +1,7 @@
 /* responsive.css */
 @media (max-width: 767px) {
     .sidebar {
-      display: none;
+      display: none; /* Already hidden at 1100px, redundant but kept for clarity */
     }
   
     .main-container {
@@ -65,7 +65,7 @@
   
     .navbar .nav-menu a span:not(.nav-icon),
     .navbar .nav-menu a::after {
-      display: none;
+      display: none !important; /* Higher specificity */
     }
   
     .navbar .nav-icon {
@@ -149,9 +149,13 @@
   }
   
   @media (max-width: 1000px) {
+    .sidebar {
+      display: none; /* Ensure sidebar remains hidden */
+    }
+  
     .main-container {
       margin-left: clamp(50px, 8vw, 60px);
-      margin-right: clamp(150px, 20vw, 200px);
+      margin-right: 0; /* No sidebar */
     }
   
     .navbar {
@@ -192,18 +196,36 @@
     }
   
     .navbar .nav-menu a span:not(.nav-icon) {
-      display: none; /* Hide text labels */
-    }
-  
-    .sidebar {
-      width: clamp(150px, 20vw, 200px);
-      max-width: clamp(150px, 20vw, 200px);
+      display: none !important; /* Higher specificity */
     }
   
     .content {
       width: 100%;
-      max-width: var(--content-width);
       margin: 0 auto;
+      max-width: 100%; /* Maximize space */
+    }
+  
+    .post-box,
+    .tip-feed,
+    .profile-content {
+      margin: 0 clamp(4px, 1vw, 6px) var(--margin-small);
+    }
+  }
+  
+  @media (max-width: 1100px) {
+    .sidebar {
+      display: none; /* Hide sidebar first */
+    }
+  
+    .main-container {
+      margin-left: var(--navbar-width); /* Full navbar */
+      margin-right: 0; /* No sidebar */
+    }
+  
+    .content {
+      width: 100%;
+      margin: 0 auto;
+      max-width: 100%; /* Maximize space */
     }
   
     .post-box,
@@ -220,7 +242,9 @@
     }
   
     .content {
-      max-width: var(--content-width);
+      width: 100%;
+      margin: 0 auto;
+      max-width: 100%; /* Maximize space */
     }
   
     .post-box,
@@ -244,7 +268,9 @@
     }
   
     .content {
-      max-width: var(--content-width);
+      width: 100%;
+      margin: 0 auto;
+      max-width: 100%; /* Maximize space */
     }
   
     .post-box,

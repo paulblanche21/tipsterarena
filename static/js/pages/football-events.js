@@ -347,7 +347,7 @@ export function formatFootballTable(events) {
     `;
 
     leagueEvents.forEach((event, index) => {
-      const venue = event.venue.fullName || `${event.venue.address.city}, ${event.venue.address.state}`;
+      const venue = event.venue || "Location TBD"; // venue is a string
       const eventId = event.id || `${league}-${index}`;
       const timeOrScore = event.state === "in" && event.scores ?
         `<span class="live-score">${event.scores.homeScore} vs ${event.scores.awayScore}</span>` :
