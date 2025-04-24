@@ -1,6 +1,10 @@
+# core/management/commands/scrape_results.py
+import logging
 from django.core.management.base import BaseCommand
 from core.management.commands.rpscrape.scripts.rpscrape import scrape_results
 from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     help = 'Scrape horse racing results for a specific race type and date'
@@ -25,4 +29,5 @@ class Command(BaseCommand):
             scrape_results(race_type, date)
             self.stdout.write(self.style.SUCCESS(f"Successfully scraped {race_type} results for {date}"))
         except Exception as e:
-            self.stderr.write(self.style.ERROR(f"Error scraping results: {str(e)}"))
+            self.stderr.write(self.style.ERROR(f"Error scraping {race_type} results for {date}: {str(e)}"))
+            logger.error(f"Scrape error for {race_type} on {date}: {str(e)}", exc_info=True)

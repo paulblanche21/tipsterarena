@@ -575,8 +575,8 @@ class HorseRacingRace(models.Model):
 
 # Model for a horse
 class Horse(models.Model):
-    horse_id = models.IntegerField(unique=True)  # RacingPost horse ID
-    name = models.CharField(max_length=100)  # Horse name
+    horse_id = models.CharField(max_length=16, unique=True)
+    name = models.CharField(max_length=100)
     dob = models.DateField(blank=True, null=True)  # Date of birth
     age = models.IntegerField(blank=True, null=True)  # Age
     sex = models.CharField(max_length=50, blank=True, null=True)  # e.g., "gelding"
@@ -597,17 +597,16 @@ class Horse(models.Model):
 
 # Model for a trainer
 class Trainer(models.Model):
-    trainer_id = models.IntegerField(unique=True)  # RacingPost trainer ID
-    name = models.CharField(max_length=100)  # Trainer name
-    location = models.CharField(max_length=255, blank=True, null=True)  # Trainer location
+    trainer_id = models.CharField(max_length=16, unique=True)  # Changed to CharField
+    name = models.CharField(max_length=100)
+    location = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return self.name
 
-# Model for a jockey
 class Jockey(models.Model):
-    jockey_id = models.IntegerField(unique=True)  # RacingPost jockey ID
-    name = models.CharField(max_length=100)  # Jockey name
+    jockey_id = models.CharField(max_length=16, unique=True)  # Changed to CharField
+    name = models.CharField(max_length=100)
 
     def __str__(self):
         return self.name
