@@ -7,6 +7,7 @@ from . import views
 from core.views import FetchGolfEventsView, GolfEventsList
 
 
+
 # URL patterns for the Tipster Arena core app
 urlpatterns = [
     # General routes
