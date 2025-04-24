@@ -51,7 +51,7 @@ def signup_view(request):
             return redirect('kyc')
     else:
         form = CustomUserCreationForm()
-    return render(request, 'signup.html', {'form': form})
+    return render(request, 'core/signup.html', {'form': form})
 
 @login_required
 def kyc_view(request):
@@ -72,7 +72,7 @@ def kyc_view(request):
     else:
         form = KYCForm()
     
-    return render(request, 'kyc.html', {'form': form})
+    return render(request, 'core/kyc.html', {'form': form})
 
 @login_required
 def profile_setup_view(request):
@@ -87,7 +87,7 @@ def profile_setup_view(request):
             return redirect('payment')
     else:
         form = ProfileSetupForm(instance=request.user.userprofile)
-    return render(request, 'profile_setup.html', {'form': form})
+    return render(request, 'core/profile_setup.html', {'form': form})
 
 @login_required
 def skip_profile_setup(request):
