@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Setup - Tipster Arena</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/landing.css' %}">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-logo">
+            <img src="{% static 'img/tipster-arena-logo.png' %}" alt="Tipster Arena Logo" class="auth-logo-img">
+        </div>
+        <h1>Setup Your Profile</h1>
+        <p class="auth-subtitle">Step 3: Add an avatar and banner (optional)</p>
+
+        <!-- Profile Setup Form -->
+        <form method="post" enctype="multipart/form-data" class="auth-form" id="profileSetupForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="{{ form.avatar.id_for_label }}">Avatar</label>
+                {{ form.avatar }}
+                {% if form.avatar.errors %}
+                    <span class="error">{{ form.avatar.errors }}</span>
+                {% endif %}
+                <img id="avatar-preview" src="{% if user.userprofile.avatar %}{{ user.userprofile.avatar.url }}{% else %}{% static 'img/default-avatar.png' %}{% endif %}" alt="Avatar Preview" class="preview-image" style="max-width: 100px; border-radius: 50%; margin-top: 10px;">
+            </div>
+            <div class="form-group">
+                <label for="{{ form.banner.id_for_label }}">Banner</label>
+                {{ form.banner }}
+                {% if form.banner.errors %}
+                    <span class="error">{{ form.banner.errors }}</span>
+                {% endif %}
+                <img id="banner-preview" src="{% if user.userprofile.banner %}{{ user.userprofile.banner.url }}{% else %}{% static 'img/default-banner.png' %}{% endif %}" alt="Banner Preview" class="preview-image" style="max-width: 200px; border-radius: var(--border-radius); margin-top: 10px;">
+            </div>
+            <div class="landing-buttons">
+                <button type="submit" class="landing-button landing-button--primary" aria-label="Save Profile and Continue">Save and Continue</button>
+                <a href="{% url 'skip_profile_setup' %}" class="landing-button landing-button--secondary" aria-label="Skip Profile Setup">Skip for Now</a>
+            </div>
+        </form>
+
+        <p class="auth-links"><a href="{% url 'logout' %}" class="auth-link">Log out</a></p>
+    </div>
+
+    <script>
+        function previewImage(input, previewId) {
+            const preview = document.getElementById(previewId);
+            const file = input.files[0];
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File size exceeds 5MB.');
+                    input.value = '';
+                    return;
+                }
+                if (!file.type.startsWith('image/')) {
+                    alert('Please upload an image file.');
+                    input.value = '';
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    preview.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        document.getElementById('{{ form.avatar.id_for_label }}').addEventListener('change', (e) => previewImage(e.target, 'avatar-preview'));
+        document.getElementById('{{ form.banner.id_for_label }}').addEventListener('change', (e) => previewImage(e.target, 'banner-preview'));
+
+        const profileSetupForm = document.getElementById('profileSetupForm');
+        if (profileSetupForm) {
+            profileSetupForm.addEventListener('submit', (e) => {
+                const submitBtn = profileSetupForm.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Saving...';
+            });
+        }
+    </script>
+</body>
+</html>

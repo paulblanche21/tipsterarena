@@ -7,7 +7,7 @@ from django.db.models import Count, F, Q
 from .models import Tip, Like, Follow, Share, UserProfile, Comment, MessageThread, RaceMeeting, Message, TennisEvent
 from .models import FootballLeague, FootballTeam, TeamStats, FootballEvent, KeyEvent, BettingOdds, DetailedStats, GolfCourse, GolfEvent,GolfPlayer, GolfTour, LeaderboardEntry
 from .serializers import  GolfEventSerializer, FootballEventSerializer
-from .forms import UserProfileForm, CustomUserCreationForm
+from .forms import UserProfileForm, CustomUserCreationForm, KYCForm, ProfileSetupForm  
 from django.contrib.auth.forms import AuthenticationForm
 from django.conf import settings
 from django.views.decorators.http import require_POST
@@ -37,26 +37,65 @@ from django.utils.decorators import method_decorator
 
 logger = logging.getLogger(__name__)
 
-# View for the landing page
 def landing(request):
     if request.user.is_authenticated:
         return redirect('home')
     return render(request, 'core/landing.html')
 
-# View for user signup
-def signup(request):
-    if request.user.is_authenticated:
-        return redirect('home')
+def signup_view(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect('home')
+            return redirect('kyc')
     else:
         form = CustomUserCreationForm()
-    return render(request, 'core/signup.html', {'form': form})
+    return render(request, 'signup.html', {'form': form})
 
+@login_required
+def kyc_view(request):
+    """Handle manual KYC form submission."""
+    if request.user.userprofile.kyc_completed:
+        return redirect('profile_setup')
+    
+    if request.method == 'POST':
+        form = KYCForm(request.POST)
+        if form.is_valid():
+            profile = request.user.userprofile
+            profile.full_name = form.cleaned_data['full_name']
+            profile.date_of_birth = form.cleaned_data['date_of_birth']
+            profile.location = form.cleaned_data['address']
+            profile.kyc_completed = True
+            profile.save()
+            return redirect('profile_setup')
+    else:
+        form = KYCForm()
+    
+    return render(request, 'kyc.html', {'form': form})
+
+@login_required
+def profile_setup_view(request):
+    if request.user.userprofile.profile_completed:
+        return redirect('payment')
+    if request.method == 'POST':
+        form = ProfileSetupForm(request.POST, request.FILES, instance=request.user.userprofile)
+        if form.is_valid():
+            form.save()
+            request.user.userprofile.profile_completed = True
+            request.user.userprofile.save()
+            return redirect('payment')
+    else:
+        form = ProfileSetupForm(instance=request.user.userprofile)
+    return render(request, 'profile_setup.html', {'form': form})
+
+@login_required
+def skip_profile_setup(request):
+    if not request.user.userprofile.profile_completed:
+        request.user.userprofile.profile_completed = True
+        request.user.userprofile.save()
+    return redirect('payment')
+    
 # View for user login
 def login_view(request):
     if request.user.is_authenticated:

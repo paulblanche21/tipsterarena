@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',       # Token authentication for REST framework
     "csp",                            # Content Security Policy enforcement
     "django_vite",                    # Integration with Vite for frontend assets
-    'django_crontab',                 # Cron job management
+    'django_crontab',                 # Cron job management  
+    'social_django'                   # Social authentication support                     
 ]
 
 MIDDLEWARE = [
@@ -235,3 +236,17 @@ LOGGING = {
         },
     },
 }
+
+# Social auth pipeline to handle UserProfile creation
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.user.create_user',
+    'yourapp.pipeline.create_user_profile',  # Custom pipeline to set handle
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+)

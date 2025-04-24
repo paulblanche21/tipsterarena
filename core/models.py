@@ -2,7 +2,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-
 # Model representing a user's tip
 class Tip(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)  # Tip author
@@ -104,20 +103,21 @@ class Tip(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.sport}: {self.text[:20]}"  # String representation for admin/debugging
 
-# Model extending the default User with profile-specific fields
+
+
 class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)  # Link to Django User model
-    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)  # Profile picture
-    banner = models.ImageField(upload_to='banners/', blank=True, null=True)  # Profile banner image
-    description = models.TextField(blank=True)  # User bio
-    location = models.CharField(max_length=255, blank=True)  # Optional user location
-    date_of_birth = models.DateField(blank=True, null=True)  # Optional birth date
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
+    banner = models.ImageField(upload_to='banners/', blank=True, null=True)
+    description = models.TextField(blank=True)
+    location = models.CharField(max_length=255, blank=True)
+    date_of_birth = models.DateField(blank=True, null=True)
     handle = models.CharField(
         max_length=15,
         unique=True,
         blank=True,
         help_text="Your unique handle starting with @ (e.g., @username)"
-    )  # Unique social handle
+    )
     allow_messages = models.CharField(
         max_length=20,
         choices=[
@@ -125,23 +125,24 @@ class UserProfile(models.Model):
             ('followers', 'Followers'),
             ('everyone', 'Everyone'),
         ],
-        default='everyone',
-        help_text="Who can send you message requests"
-    )  # Message permission setting
-    # New fields for user metrics
-    win_rate = models.FloatField(default=0.0)  # Percentage of tips won
-    total_tips = models.PositiveIntegerField(default=0)  # Total number of tips (won or lost)
-    wins = models.PositiveIntegerField(default=0)  # Number of tips won
+        default='everyone'
+    )
+    win_rate = models.FloatField(default=0.0)
+    total_tips = models.PositiveIntegerField(default=0)
+    wins = models.PositiveIntegerField(default=0)
+    kyc_completed = models.BooleanField(default=False)
+    payment_completed = models.BooleanField(default=False)
+    profile_completed = models.BooleanField(default=False)
+    full_name = models.CharField(max_length=100, blank=True)  # New field for KYC
 
     @property
     def followers_count(self):
-        """Calculate the number of followers for this user."""
         return Follow.objects.filter(followed=self.user).count()
 
     def __str__(self):
-        return f"{self.user.username}'s profile"  # String representation for admin/debugging
+        return f"{self.user.username}'s profile"
 
-# (Remaining models - Like, Follow, Share, Comment, MessageThread, Message, RaceMeeting, RaceResult - unchanged)
+
 class Like(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='likes')
     tip = models.ForeignKey(Tip, on_delete=models.CASCADE, related_name='likes', null=True, blank=True)
@@ -662,7 +663,7 @@ class HorseRacingResult(models.Model):
     horse = models.ForeignKey(Horse, on_delete=models.CASCADE, related_name='results')
     trainer = models.ForeignKey(Trainer, on_delete=models.SET_NULL, null=True, related_name='results')
     jockey = models.ForeignKey(Jockey, on_delete=models.SET_NULL, null=True, related_name='results')
-    position = models.IntegerField(blank=True, null=True)  # Finishing position
+    position = models.CharField(max_length=10, blank=True, null=True)  # Changed to CharField
     draw = models.IntegerField(blank=True, null=True)  # Draw position
     ovr_btn = models.FloatField(blank=True, null=True)  # Overall beaten distance
     btn = models.FloatField(blank=True, null=True)  # Beaten distance to previous horse

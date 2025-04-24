@@ -1,5 +1,5 @@
 # core/urls.py
-from django.urls import path
+from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
@@ -22,8 +22,12 @@ urlpatterns = [
 
     # Authentication routes
     path('login/', views.login_view, name='login'),
-    path('signup/', views.signup, name='signup'),
     path('logout/', auth_views.LogoutView.as_view(next_page='landing'), name='logout'),
+    path('social-auth/', include('social_django.urls', namespace='social')),
+    path('signup/', views.signup_view, name='signup'),
+    path('kyc/', views.kyc_view, name='kyc'),
+     path('profile-setup/', views.profile_setup_view, name='profile_setup'),
+    path('profile-setup/skip/', views.skip_profile_setup, name='skip_profile_setup'),
 
     # Messaging routes
     path('messages/', views.messages_view, name='messages'),

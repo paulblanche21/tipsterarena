@@ -2,262 +2,273 @@
 
 /* Reset CSS for consistent styling across elements */
 * {
-    margin: 0;           /* Remove default margins */
-    padding: 0;          /* Remove default padding */
-    box-sizing: border-box;  /* Include padding and borders in element dimensions */
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 /* Custom CSS variables for consistent theming */
 :root {
-    --primary-bg: #001f3f;         /* Dark blue background for the site */
-    --secondary-bg: #ffffff;       /* White background for content areas */
-    --border-color: #e1e8ed;       /* Light gray for borders */
-    --twitter-blue: #1DA1F2;       /* Twitter-inspired blue accent */
-    --red-accent: #ff4136;         /* Red accent for highlights */
-    --gray-light: #d1d1d1;         /* Light gray for secondary text */
-    --shadow-light: 0 1px 3px rgba(0, 0, 0, 0.1);  /* Subtle shadow */
-    --shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.15); /* Enhanced shadow on hover */
-    --padding-small: 12px;         /* Small padding for spacing */
-    --margin-small: 10px;          /* Small margin for spacing */
-    --border-radius: 12px;         /* Consistent rounded corners */
-    --font-default: 'Helvetica Neue', Arial, sans-serif;  /* Default font stack */
-    --font-size-base: 14px;        /* Base font size */
+    --primary-bg: #001f3f;
+    --secondary-bg: #ffffff;
+    --border-color: #e1e8ed;
+    --twitter-blue: #1DA1F2;
+    --red-accent: #ff4136;
+    --gray-light: #d1d1d1;
+    --shadow-light: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.15);
+    --padding-small: 12px;
+    --margin-small: 10px;
+    --border-radius: 12px;
+    --font-default: 'Helvetica Neue', Arial, sans-serif;
+    --font-size-base: 14px;
 }
 
 /* Base body styles */
 body {
-    font-family: var(--font-default);  /* Apply default font */
-    font-size: var(--font-size-base);  /* Set base font size */
-    background-color: var(--primary-bg);  /* Dark blue background */
-    color: #ffffff;  /* White text for contrast */
+    font-family: var(--font-default);
+    font-size: var(--font-size-base);
+    background-color: var(--primary-bg);
+    color: #ffffff;
 }
 
 /* Container for the entire landing page content */
 .landing-full-container {
-    min-height: calc(100vh - 60px);  /* Full height minus nav bar */
-    background-color: var(--primary-bg);  /* Dark blue background */
-    padding: 20px 0;  /* Vertical padding */
+    min-height: calc(100vh - 60px);
+    background-color: var(--primary-bg);
+    padding: 20px 0;
 }
 
 /* Fixed top navigation bar for landing page */
 .landing-nav {
-    position: fixed;    /* Fixed at the top */
-    top: 0;             /* Align to top edge */
-    left: 0;            /* Align to left edge */
-    width: 100%;        /* Full width */
-    height: 60px;       /* Fixed height */
-    background-color: var(--primary-bg);  /* Dark blue background */
-    display: flex;      /* Flex layout for alignment */
-    justify-content: space-between;  /* Space out children */
-    align-items: center;  /* Center vertically */
-    padding: 0 var(--padding-small);  /* Horizontal padding */
-    z-index: 1000;      /* High z-index to stay above content */
-    box-shadow: var(--shadow-light);  /* Subtle shadow */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background-color: var(--primary-bg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 var(--padding-small);
+    z-index: 1000;
+    box-shadow: var(--shadow-light);
 }
 
 /* Branding section of the landing nav */
 .landing-nav-brand {
-    flex: 1;  /* Take available space */
+    flex: 1;
 }
 
 /* Container for navigation buttons */
 .landing-nav-buttons {
-    display: flex;  /* Flex layout for buttons */
-    gap: 20px;      /* Space between buttons */
+    display: flex;
+    gap: 20px;
 }
 
 /* Logo in the landing nav */
 .landing-nav-logo {
-    max-width: 200px;  /* Limit logo width */
-    height: auto;      /* Maintain aspect ratio */
+    max-width: 200px;
+    height: auto;
 }
 
 /* Zigzag layout for landing page sections */
 .landing-zigzag {
-    display: flex;         /* Flex layout for sections */
-    flex-direction: column;  /* Stack sections vertically */
-    gap: 40px;             /* Space between sections */
-    padding-top: 80px;     /* Offset for fixed nav */
-    max-width: 1200px;     /* Constrain width */
-    margin: 0 auto;        /* Center horizontally */
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    padding-top: 80px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 /* Base styles for landing page sections */
 .landing-section {
-    display: flex;      /* Flex layout for text and image */
-    align-items: center;  /* Center vertically */
-    gap: 40px;          /* Space between text and image */
-    padding: var(--padding-small);  /* Consistent padding */
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    padding: var(--padding-small);
 }
 
 /* Left-aligned section layout */
 .landing-section.left {
-    flex-direction: row;  /* Text then image */
+    flex-direction: row;
 }
 
 /* Right-aligned section layout */
 .landing-section.right {
-    flex-direction: row-reverse;  /* Image then text */
+    flex-direction: row-reverse;
 }
 
 /* Text content within sections */
 .landing-text {
-    flex: 1;         /* Take available space */
-    text-align: left;  /* Left-align text */
+    flex: 1;
+    text-align: left;
 }
 
 /* Image container within sections */
 .landing-image {
-    flex: 1;            /* Take available space */
-    display: flex;      /* Flex for centering */
-    justify-content: center;  /* Center image horizontally */
+    flex: 1;
+    display: flex;
+    justify-content: center;
 }
 
 /* Image within landing sections */
 .landing-section-image {
-    max-width: 400px;   /* Limit image width */
-    height: auto;       /* Maintain aspect ratio */
-    border-radius: var(--border-radius);  /* Rounded corners */
-    box-shadow: var(--shadow-hover);  /* Enhanced shadow */
-    transition: transform 0.3s ease;  /* Smooth hover effect */
+    max-width: 400px;
+    height: auto;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-hover);
+    transition: transform 0.3s ease;
 }
 
 /* Hover state for section images */
 .landing-section-image:hover {
-    transform: scale(1.05);  /* Slight zoom on hover */
+    transform: scale(1.05);
 }
 
 /* Section title styles */
 .landing-section-title {
-    font-size: clamp(24px, 4vw, 32px);  /* Responsive font size */
-    font-weight: bold;                  /* Bold for emphasis */
-    margin-bottom: 15px;                /* Space below title */
-    color: var(--red-accent);           /* Red to stand out */
+    font-size: clamp(24px, 4vw, 32px);
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: var(--red-accent);
 }
 
 /* Section description styles */
 .landing-section-description {
-    font-size: clamp(16px, 2vw, 18px);  /* Responsive font size */
-    line-height: 1.6;                   /* Comfortable line spacing */
-    color: #ffffff;                     /* White text */
-    margin-bottom: 20px;                /* Space below description */
+    font-size: clamp(16px, 2vw, 18px);
+    line-height: 1.6;
+    color: #ffffff;
+    margin-bottom: 20px;
 }
 
 /* Base styles for landing page buttons */
 .landing-button {
-    width: auto;           /* Fit content width */
-    padding: var(--padding-small) 20px;  /* Consistent padding with wider sides */
-    border: none;          /* No border */
-    border-radius: var(--border-radius);  /* Rounded corners */
-    color: white;          /* White text */
-    font-size: 1.1em;      /* Slightly larger font */
-    cursor: pointer;       /* Indicate clickability */
-    transition: background-color 0.3s, transform 0.2s;  /* Smooth transitions */
-    text-decoration: none; /* No underline */
-    display: inline-block; /* Inline-block for button behavior */
+    width: auto;
+    padding: var(--padding-small) 20px;
+    border: none;
+    border-radius: var(--border-radius);
+    color: white;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    text-decoration: none;
+    display: inline-block;
 }
 
 /* Primary button variant */
 .landing-button--primary {
-    background-color: var(--red-accent);  /* Red background */
+    background-color: var(--red-accent);
 }
 
 /* Hover state for primary button */
 .landing-button--primary:hover {
-    background-color: #d9362e;  /* Darker red on hover */
-    transform: translateY(-2px);  /* Slight lift effect */
+    background-color: #d9362e;
+    transform: translateY(-2px);
+}
+
+/* Disabled state for buttons */
+.landing-button--primary:disabled {
+    background-color: #b3322b;
+    cursor: not-allowed;
+    opacity: 0.7;
 }
 
 /* Secondary button variant */
 .landing-button--secondary {
-    background-color: var(--secondary-bg);  /* White background */
-    color: var(--primary-bg);  /* Navy text */
+    background-color: var(--secondary-bg);
+    color: var(--primary-bg);
 }
 
 /* Hover state for secondary button */
 .landing-button--secondary:hover {
-    background-color: #e6e6e6;  /* Light gray on hover */
-    transform: translateY(-2px);  /* Slight lift effect */
+    background-color: #e6e6e6;
+    transform: translateY(-2px);
 }
 
 /* Call-to-action section */
 .landing-cta {
-    text-align: center;    /* Center-align content */
-    padding: 40px 20px;    /* Generous padding */
-    background-color: var(--secondary-bg);  /* White background */
-    color: var(--primary-bg);  /* Navy text */
-    border-radius: var(--border-radius);  /* Rounded corners */
-    margin: 40px auto;     /* Center with vertical spacing */
-    max-width: 800px;      /* Constrain width */
+    text-align: center;
+    padding: 40px 20px;
+    background-color: var(--secondary-bg);
+    color: var(--primary-bg);
+    border-radius: var(--border-radius);
+    margin: 40px auto;
+    max-width: 800px;
 }
 
 /* CTA title styles */
 .landing-cta-title {
-    font-size: clamp(28px, 5vw, 36px);  /* Responsive font size */
-    font-weight: bold;                  /* Bold for emphasis */
-    margin-bottom: 10px;                /* Space below title */
-    color: var(--primary-bg);           /* Navy text */
+    font-size: clamp(28px, 5vw, 36px);
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: var(--primary-bg);
 }
 
 /* CTA description styles */
 .landing-cta-description {
-    font-size: clamp(16px, 2vw, 18px);  /* Responsive font size */
-    margin-bottom: 20px;                /* Space below description */
-    color: var(--gray-light);           /* Light gray text */
+    font-size: clamp(16px, 2vw, 18px);
+    margin-bottom: 20px;
+    color: var(--gray-light);
 }
 
 /* Container for CTA buttons */
 .landing-buttons {
-    display: flex;         /* Flex layout for buttons */
-    gap: 20px;             /* Space between buttons */
-    justify-content: center;  /* Center buttons */
+    display: flex;
+    gap: 20px;
+    justify-content: center;
 }
 
 /* Footer styles */
 .landing-footer {
-    background-color: var(--primary-bg);  /* Dark blue background */
-    color: #ffffff;        /* White text */
-    text-align: center;    /* Center-align text */
-    padding: var(--padding-small);  /* Consistent padding */
-    font-size: 14px;       /* Base font size */
+    background-color: var(--primary-bg);
+    color: #ffffff;
+    text-align: center;
+    padding: var(--padding-small);
+    font-size: 14px;
 }
 
 /* Responsive adjustments for smaller screens */
 @media (max-width: 768px) {
     .landing-section {
-        flex-direction: column;  /* Stack content vertically */
-        text-align: center;      /* Center-align text */
+        flex-direction: column;
+        text-align: center;
     }
 
     .landing-section.left,
     .landing-section.right {
-        flex-direction: column;  /* Override direction for mobile */
+        flex-direction: column;
     }
 
     .landing-section-image {
-        max-width: 100%;  /* Full width on mobile */
+        max-width: 100%;
     }
 
     .landing-text {
-        padding: 0 var(--padding-small);  /* Consistent padding */
+        padding: 0 var(--padding-small);
     }
 
     .landing-button {
-        width: 100%;         /* Full width on mobile */
-        max-width: 200px;    /* Limit width for aesthetics */
+        width: 100%;
+        max-width: 200px;
     }
 
     .landing-buttons {
-        flex-direction: column;  /* Stack buttons vertically */
-        gap: 10px;               /* Reduced gap */
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .profile-edit-modal-content {
+        width: 90%;
     }
 }
 
 /* Animation for landing sections */
 .landing-section {
-    opacity: 0;                /* Start invisible */
-    transform: translateY(20px);  /* Start shifted down */
-    animation: fadeInUp 0.6s ease forwards;  /* Fade in and slide up */
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease forwards;
 }
 
 /* Staggered animation delays for sections */
@@ -272,162 +283,365 @@ body {
 /* Keyframes for fade-in animation */
 @keyframes fadeInUp {
     to {
-        opacity: 1;             /* Fully visible */
-        transform: translateY(0);  /* Return to original position */
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
 /* Styles for authentication container (login/signup) */
 .auth-container {
-    max-width: 400px;      /* Constrain width */
-    margin: 50px auto;     /* Center with top/bottom spacing */
-    padding: var(--padding-small);  /* Consistent padding */
-    text-align: center;    /* Center-align content */
-    background: var(--secondary-bg);  /* White background */
-    border-radius: var(--border-radius);  /* Rounded corners */
-    box-shadow: var(--shadow-light);  /* Subtle shadow */
-    color: var(--primary-bg);  /* Navy text */
+    max-width: 400px;
+    margin: 50px auto;
+    padding: var(--padding-small);
+    text-align: center;
+    background: var(--secondary-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-light);
+    color: var(--primary-bg);
 }
 
 /* Heading within auth container */
 .auth-container h1 {
-    margin-bottom: 20px;   /* Space below heading */
-    font-size: 2em;        /* Larger font size */
+    margin-bottom: 20px;
+    font-size: 2em;
 }
 
 /* Subtitle within auth container */
 .auth-subtitle {
-    font-size: 1em;        /* Standard font size */
-    margin-bottom: 20px;   /* Space below subtitle */
-    color: var(--gray-light);  /* Light gray text */
+    font-size: 1em;
+    margin-bottom: 20px;
+    color: var(--gray-light);
 }
 
 /* Logo within auth container */
 .auth-logo {
-    margin-bottom: 20px;   /* Space below logo */
+    margin-bottom: 20px;
 }
 
 /* Logo image styles */
 .auth-logo-img {
-    max-width: 200px;      /* Limit logo width */
-    height: auto;          /* Maintain aspect ratio */
+    max-width: 200px;
+    height: auto;
 }
 
 /* Form styles for auth pages */
 .auth-form {
-    display: flex;         /* Flex layout */
-    flex-direction: column;  /* Stack inputs vertically */
-    gap: 15px;             /* Space between form elements */
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
-/* Form group styles */
+/* Form group styles (merged from form.css) */
 .form-group {
-    margin-bottom: 15px;   /* Space below each group */
-    text-align: left;      /* Left-align labels and inputs */
+    margin-bottom: 15px;
+    text-align: left;
 }
 
 /* Label styles within form groups */
 .form-group label {
-    display: block;        /* Block display for stacking */
-    margin-bottom: 5px;    /* Space below label */
-    font-weight: bold;     /* Bold text */
-    color: var(--primary-bg);  /* Navy text */
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: var(--primary-bg);
 }
 
-/* Input styles within form groups */
-.form-group input {
-    width: 100%;           /* Full width */
-    padding: 8px;          /* Internal padding */
-    border: 1px solid #ccc;  /* Light gray border */
-    border-radius: 4px;    /* Slightly rounded corners */
-    font-size: 14px;       /* Base font size */
+/* Input and textarea styles within form groups */
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: var(--font-size-base);
+}
+
+/* Textarea-specific styles */
+.form-group textarea {
+    min-height: 100px;
+    resize: vertical;
 }
 
 /* Focus state for form inputs */
-.form-group input:focus {
-    outline: none;         /* Remove default outline */
-    border-color: var(--red-accent);  /* Red border on focus */
-    box-shadow: 0 0 5px rgba(255, 65, 54, 0.3);  /* Red glow */
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--red-accent);
+    box-shadow: 0 0 5px rgba(255, 65, 54, 0.3);
 }
 
 /* Error message styles */
 .error {
-    color: var(--red-accent);  /* Red text for errors */
-    font-size: 0.9em;          /* Slightly smaller font */
-    margin-top: 5px;           /* Space above error */
-    display: block;            /* Block display */
+    color: var(--red-accent);
+    font-size: 0.9em;
+    margin-top: 5px;
+    display: block;
 }
 
 /* Links within auth container */
 .auth-links {
-    margin-top: 20px;      /* Space above links */
-    font-size: 0.9em;      /* Slightly smaller font */
+    margin-top: 20px;
+    font-size: 0.9em;
 }
 
 /* Styles for auth links */
 .auth-link {
-    color: var(--gray-light);  /* Light gray text */
-    text-decoration: none;     /* No underline */
+    color: var(--gray-light);
+    text-decoration: none;
 }
 
 /* Hover state for auth links */
 .auth-link:hover {
-    color: #5a6268;         /* Darker gray on hover */
-    text-decoration: underline;  /* Underline on hover */
+    color: #5a6268;
+    text-decoration: underline;
 }
 
 /* Mid-page call-to-action section */
 .landing-mid-cta {
-    text-align: center;    /* Center-align content */
-    padding: 30px 20px;    /* Padding for spacing */
-    background-color: var(--red-accent);  /* Red background */
-    color: white;          /* White text */
-    border-radius: var(--border-radius);  /* Rounded corners */
-    margin: 40px auto;     /* Center with vertical spacing */
-    max-width: 600px;      /* Constrain width */
+    text-align: center;
+    padding: 30px 20px;
+    background-color: var(--red-accent);
+    color: white;
+    border-radius: var(--border-radius);
+    margin: 40px auto;
+    max-width: 600px;
 }
 
-/* Smash odds section (possibly a variant) */
+/* Smash odds section */
 .smash-odds {
-    background-color: var(--primary-bg);  /* Dark blue background */
-    border: 2px solid var(--red-accent);  /* Red border */
+    background-color: var(--primary-bg);
+    border: 2px solid var(--red-accent);
 }
 
 /* Pricing grid layout */
 .pricing-grid {
-    display: grid;         /* Grid layout */
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));  /* Responsive columns */
-    gap: 20px;             /* Space between items */
-    padding: 20px;         /* Internal padding */
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 20px;
 }
 
 /* Individual pricing items */
 .pricing-item {
-    text-align: center;    /* Center-align content */
-    padding: 20px;         /* Internal padding */
-    background: rgba(255, 255, 255, 0.1);  /* Semi-transparent white */
-    border-radius: var(--border-radius);   /* Rounded corners */
+    text-align: center;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius);
 }
 
 /* Heading within pricing items */
 .pricing-item h3 {
-    font-size: 1.2em;      /* Slightly larger font */
-    margin-bottom: 10px;   /* Space below heading */
-    color: var(--red-accent);  /* Red text */
+    font-size: 1.2em;
+    margin-bottom: 10px;
+    color: var(--red-accent);
 }
 
 /* Pricing section container */
 .pricing {
-    text-align: center;    /* Center-align content */
+    text-align: center;
 }
 
 /* Button within pricing section */
 .pricing .landing-button {
-    margin-top: 20px;      /* Space above button */
-    display: inline-block; /* Inline-block for button behavior */
+    margin-top: 20px;
+    display: inline-block;
 }
 
 /* Utility class for centering text */
 .center {
-    text-align: center;    /* Center-align text */
+    text-align: center;
+}
+
+/* Social login buttons */
+.social-login {
+    display: flex;
+    flex-direction: column;
+    gap: var(--margin-small);
+    margin-bottom: 20px;
+}
+
+.social-login .landing-button--secondary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background-color: var(--secondary-bg);
+    color: var(--primary-bg);
+    border: 1px solid var(--border-color);
+}
+
+.social-login .landing-button--secondary:hover {
+    box-shadow: var(--shadow-hover);
+}
+
+/* Divider for social login */
+.auth-divider {
+    text-align: center;
+    margin: 15px 0;
+    color: var(--gray-light);
+}
+
+/* Image preview styles */
+.preview-image {
+    display: block;
+    margin-top: 10px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-light);
+}
+
+/* File input styles */
+.form-group input[type="file"] {
+    padding: 8px;
+    border: none;
+}
+
+/* Profile edit modal styles */
+.profile-edit-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1003;
+    justify-content: center;
+    align-items: center;
+}
+
+.profile-edit-modal-content {
+    background-color: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    max-width: 100%; /* Prevent overflow */
+    margin: 0 auto;
+    padding: 20px;
+    width: 900px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+    color: var(--primary-bg);
+}
+
+.profile-edit-modal-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    color: var(--gray-light);
+    cursor: pointer;
+    border: none;
+    background: none;
+}
+
+.profile-edit-modal-close:hover {
+    color: var(--red-accent);
+}
+
+.profile-edit-note {
+    color: var(--gray-light);
+    font-size: 12px;
+    margin-top: 10px;
+}
+
+.profile-edit-note a {
+    color: var(--twitter-blue);
+    text-decoration: none;
+}
+
+.profile-edit-note a:hover {
+    text-decoration: underline;
+}
+
+.profile-edit-modal-content .form-group {
+    margin-bottom: 15px;
+}
+
+.profile-edit-modal-content label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: var(--primary-bg);
+}
+
+.profile-edit-btn, .post-submit {
+    background-color: var(--red-accent);
+    border: none;
+    border-radius: var(--border-radius);
+    padding: var(--padding-small) 20px;
+    font-size: var(--font-size-base);
+    color: var(--secondary-bg);
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.profile-edit-btn:hover, .post-submit:hover {
+    background-color: #d9362e;
+    transform: translateY(-2px);
+}
+
+.profile-edit-btn:disabled, .post-submit:disabled {
+    background-color: #b3322b;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.profile-edit-modal-content .profile-edit-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.profile-edit-modal-content .profile-edit-banner {
+    position: relative;
+    width: 100%;
+    height: 150px;
+    margin-bottom: 20px;
+}
+
+.profile-edit-modal-content .profile-edit-banner img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: var(--border-radius);
+}
+
+.profile-edit-modal-content .profile-edit-avatar {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 20px;
+}
+
+.profile-edit-modal-content .profile-edit-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 4px solid var(--secondary-bg);
+    object-fit: cover;
+}
+
+.edit-profile-form {
+    margin-top: 20px;
+}
+
+.profile-edit-modal-content .profile-edit-action-btn {
+    background-color: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    color: var(--gray-light);
+}
+
+.profile-edit-modal-content .profile-edit-action-btn:hover {
+    border-color: var(--red-accent);
+    color: var(--red-accent);
 }

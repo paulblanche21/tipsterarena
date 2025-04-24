@@ -16,46 +16,50 @@ def get_racecards_json():
         start_date = today - timedelta(days=7)
         end_date = today + timedelta(days=1)
         
+        logger.debug(f"Querying meetings from {start_date} to {end_date}")
         meetings = HorseRacingMeeting.objects.filter(
             date__range=[start_date, end_date]
-        ).select_related('course').prefetch_related('races__results', 'races__runners').order_by('date', 'course__name')
+        ).select_related('course').prefetch_related('races__results').order_by('date', 'course__name')
+        
+        logger.debug(f"Found {len(meetings)} meetings")
         
         data = []
         for meeting in meetings:
             races = []
+            logger.debug(f"Processing meeting: {meeting.course.name} on {meeting.date}, Races: {meeting.races.count()}")
             for race in meeting.races.all():
-                runners = race.runners.all()
-                result = race.results.first()
+                results = race.results.all()
+                winner = next((result.horse.name for result in results if result.position == '1'), None)
                 horses = [
                     {
-                        'number': runner.number,
-                        'name': runner.horse.name,
-                        'jockey': runner.jockey.name if runner.jockey else 'Unknown',
-                        'trainer': runner.trainer.name if runner.trainer else 'Unknown',
-                        'owner': runner.owner or 'Unknown',
+                        'number': idx + 1,  # Fallback number
+                        'name': result.horse.name,
+                        'jockey': result.jockey.name if result.jockey else 'Unknown',
+                        'trainer': result.trainer.name if result.trainer else 'Unknown',
+                        'owner': 'Unknown',
                         'odds': 'N/A',
-                        'form': runner.form or 'N/A',
-                        'rpr': runner.rpr or 'N/A',
-                        'spotlight': runner.spotlight or 'N/A',
+                        'form': 'N/A',
+                        'rpr': result.rpr or 'N/A',
+                        'spotlight': 'N/A',
                         'trainer_14_days': {
-                            'runs': runner.trainer_14_days_runs or 0,
-                            'wins': runner.trainer_14_days_wins or 0,
-                            'percent': runner.trainer_14_days_percent or 0
+                            'runs': 0,
+                            'wins': 0,
+                            'percent': 0
                         },
-                        'finish_status': result.position if result and result.horse == runner.horse else runner.number
+                        'finish_status': str(result.position) if result.position else 'Unknown'
                     }
-                    for runner in runners
+                    for idx, result in enumerate(results)
                 ]
                 races.append({
                     'race_time': race.off_time,
                     'name': race.name or 'Unnamed Race',
                     'horses': horses,
                     'result': {
-                        'winner': result.horse.name if result else None,
+                        'winner': winner,
                         'positions': [
                             {'position': result.position, 'name': result.horse.name}
-                            for result in race.results.all()
-                        ] if result else []
+                            for result in results
+                        ]
                     },
                     'going_data': race.going or 'N/A',
                     'runners': f"{race.field_size or len(horses)} runners",

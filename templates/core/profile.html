@@ -226,35 +226,26 @@
         </div>
     </div>
 
-    <!-- Modal for editing profile -->
+    <!-- In profile.html, update the modal -->
     <div id="editProfileModal" class="profile-edit-modal">
         <div class="profile-edit-modal-content">
-            <span class="profile-edit-modal-close">×</span>
+            <span class="profile-edit-modal-close" aria-label="Close Edit Profile Modal" role="button" tabindex="0">×</span>
             <h2>Edit Profile</h2>
             <div class="edit-profile-header">
                 <div class="profile-edit-banner">
-                    {% if user_profile.banner %}
-                        <img src="{{ user_profile.banner.url }}" alt="Banner Image" class="profile-edit-banner-img" onerror="this.style.display='none'; this.src=window.default_banner_url;">
-                    {% else %}
-                        <img src="{% static 'img/default-banner.png' %}" alt="Default Banner Image" class="profile-edit-banner-img">
-                    {% endif %}
+                    <img id="banner-preview" src="{% if user_profile.banner %}{{ user_profile.banner.url }}{% else %}{% static 'img/default-banner.png' %}{% endif %}" alt="Banner Image" class="profile-edit-banner-img" data-default-src="{% static 'img/default-banner.png' %}">
                     <div class="profile-edit-actions">
-                        <button class="profile-edit-action-btn" data-action="add-banner"><i class="fas fa-camera"></i></button>
-                        <button class="profile-edit-action-btn" data-action="delete-banner"><i class="fas fa-times"></i></button>
+                        <button class="profile-edit-action-btn" data-action="add-banner" aria-label="Upload Banner Image"><i class="fas fa-camera"></i></button>
+                        <button class="profile-edit-action-btn" data-action="delete-banner" aria-label="Delete Banner Image"><i class="fas fa-times"></i></button>
                     </div>
-                    <div class="profile-edit-avatar">
-                        {% if user_profile.avatar %}
-                            <img src="{{ user_profile.avatar.url }}" alt="Avatar" class="profile-edit-avatar-img" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
-                        {% else %}
-                            <img src="{% static 'img/default-avatar.png' %}" alt="Avatar" class="profile-edit-avatar-img">
-                        {% endif %}
-                        <div class="profile-edit-actions">
-                            <button class="profile-edit-action-btn" data-action="add-avatar"><i class="fas fa-camera"></i></button>
-                        </div>
+                </div>
+                <div class="profile-edit-avatar">
+                    <img id="avatar-preview" src="{% if user_profile.avatar %}{{ user_profile.avatar.url }}{% else %}{% static 'img/default-avatar.png' %}{% endif %}" alt="Avatar" class="profile-edit-avatar-img" data-default-src="{% static 'img/default-avatar.png' %}">
+                    <div class="profile-edit-actions">
+                        <button class="profile-edit-action-btn" data-action="add-avatar" aria-label="Upload Avatar Image"><i class="fas fa-camera"></i></button>
                     </div>
                 </div>
             </div>
-            <!-- Form for updating profile details -->
             <div class="edit-profile-form">
                 <form method="post" enctype="multipart/form-data" id="editProfileForm">
                     {% csrf_token %}
@@ -274,12 +265,18 @@
                     <div class="form-group">
                         <label for="id_banner">Banner</label>
                         {{ form.banner }}
+                        {% if form.banner.errors %}
+                            <span class="error">{{ form.banner.errors }}</span>
+                        {% endif %}
                     </div>
                     <div class="form-group">
                         <label for="id_avatar">Avatar</label>
                         {{ form.avatar }}
+                        {% if form.avatar.errors %}
+                            <span class="error">{{ form.avatar.errors }}</span>
+                        {% endif %}
                     </div>
-                    <button type="submit" class="post-submit">Save Changes</button>
+                    <button type="submit" class="post-submit" aria-label="Save Profile Changes">Save Changes</button>
                 </form>
             </div>
         </div>
