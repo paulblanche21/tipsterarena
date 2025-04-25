@@ -104,7 +104,6 @@ class Tip(models.Model):
         return f"{self.user.username} - {self.sport}: {self.text[:20]}"  # String representation for admin/debugging
 
 
-
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
@@ -112,28 +111,20 @@ class UserProfile(models.Model):
     description = models.TextField(blank=True)
     location = models.CharField(max_length=255, blank=True)
     date_of_birth = models.DateField(blank=True, null=True)
-    handle = models.CharField(
-        max_length=15,
-        unique=True,
-        blank=True,
-        help_text="Your unique handle starting with @ (e.g., @username)"
-    )
-    allow_messages = models.CharField(
-        max_length=20,
-        choices=[
-            ('no_one', 'No one'),
-            ('followers', 'Followers'),
-            ('everyone', 'Everyone'),
-        ],
-        default='everyone'
-    )
+    handle = models.CharField(max_length=15, unique=True, blank=True)
+    allow_messages = models.CharField(max_length=20, choices=[
+        ('no_one', 'No one'),
+        ('followers', 'Followers'),
+        ('everyone', 'Everyone'),
+    ], default='everyone')
     win_rate = models.FloatField(default=0.0)
     total_tips = models.PositiveIntegerField(default=0)
     wins = models.PositiveIntegerField(default=0)
     kyc_completed = models.BooleanField(default=False)
     payment_completed = models.BooleanField(default=False)
     profile_completed = models.BooleanField(default=False)
-    full_name = models.CharField(max_length=100, blank=True)  # New field for KYC
+    full_name = models.CharField(max_length=100, blank=True)
+    stripe_customer_id = models.CharField(max_length=255, blank=True)  # New field
 
     @property
     def followers_count(self):
@@ -141,7 +132,6 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.username}'s profile"
-
 
 class Like(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='likes')

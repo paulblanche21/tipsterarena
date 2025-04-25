@@ -6,8 +6,6 @@ from django.conf.urls.static import static
 from . import views
 from core.views import FetchGolfEventsView, GolfEventsList
 
-
-
 # URL patterns for the Tipster Arena core app
 urlpatterns = [
     # General routes
@@ -19,7 +17,7 @@ urlpatterns = [
 
     # Profile routes
     path('profile/<str:username>/', views.profile, name='profile'),
-    path('profile/<str:username>/edit/', views.profile_edit, name='profile_edit'),
+    path('profile/<str:username>/edit/', views.profile_edit_view, name='profile_edit'),  # Corrected from profile_edit
 
     # Authentication routes
     path('login/', views.login_view, name='login'),
@@ -27,8 +25,12 @@ urlpatterns = [
     path('social-auth/', include('social_django.urls', namespace='social')),
     path('signup/', views.signup_view, name='signup'),
     path('kyc/', views.kyc_view, name='kyc'),
-     path('profile-setup/', views.profile_setup_view, name='profile_setup'),
+    path('profile-setup/', views.profile_setup_view, name='profile_setup'),
     path('profile-setup/skip/', views.skip_profile_setup, name='skip_profile_setup'),
+    path('payment/', views.payment_view, name='payment'),
+    path('payment/create-checkout-session/', views.create_checkout_session, name='create_checkout_session'),
+    path('payment/success/', views.payment_success, name='payment_success'),
+    path('payment/skip/', views.skip_payment, name='skip_payment'),
 
     # Messaging routes
     path('messages/', views.messages_view, name='messages'),

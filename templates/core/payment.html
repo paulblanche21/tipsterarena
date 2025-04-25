@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - Tipster Arena</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/landing.css' %}">
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-logo">
+            <img src="{% static 'img/tipster-arena-logo.png' %}" alt="Tipster Arena Logo" class="auth-logo-img">
+        </div>
+        <h1>Complete Your Subscription</h1>
+        <p class="auth-subtitle">Step 4: Choose your plan to join Tipster Arena</p>
+
+        <!-- Payment Form -->
+        <form class="payment-form" id="payment-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="plan">Select Plan</label>
+                <select id="plan" name="plan" class="form-control">
+                    <option value="monthly">Monthly (€5/month)</option>
+                    <option value="yearly">Yearly (€40/year)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="card-element">Credit or Debit Card</label>
+                <div id="card-element" class="card-element"></div>
+                <div id="card-errors" class="error" role="alert"></div>
+            </div>
+            <button type="submit" class="landing-button landing-button--primary" id="submit-payment" aria-label="Complete Payment">Pay Now</button>
+        </form>
+
+        <p class="auth-links"><a href="{% url 'skip_payment' %}" class="landing-button landing-button--secondary" aria-label="Skip Payment">Skip for Now</a></p>
+        <p class="auth-links"><a href="{% url 'logout' %}" class="auth-link">Log out</a></p>
+    </div>
+
+    <script>
+        const stripe = Stripe('{{ stripe_publishable_key }}');
+        const elements = stripe.elements();
+        const card = elements.create('card');
+        card.mount('#card-element');
+
+        const form = document.getElementById('payment-form');
+        const submitButton = document.getElementById('submit-payment');
+        const cardErrors = document.getElementById('card-errors');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            submitButton.disabled = true;
+            submitButton.textContent = 'Processing...';
+
+            const plan = document.getElementById('plan').value;
+            const { paymentMethod, error } = await stripe.createPaymentMethod({
+                type: 'card',
+                card: card,
+            });
+
+            if (error) {
+                cardErrors.textContent = error.message;
+                submitButton.disabled = false;
+                submitButton.textContent = 'Pay Now';
+            } else {
+                fetch('/payment/create-checkout-session/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}',
+                    },
+                    body: JSON.stringify({
+                        plan: plan,
+                        payment_method_id: paymentMethod.id,
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        cardErrors.textContent = data.error;
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Pay Now';
+                    } else {
+                        stripe.redirectToCheckout({ sessionId: data.session_id });
+                    }
+                })
+                .catch(error => {
+                    cardErrors.textContent = 'An error occurred. Please try again.';
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Pay Now';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -6,7 +6,6 @@
     <title>KYC - Tipster Arena</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/landing.css' %}">
-    <link rel="stylesheet" href="{% static 'css/form.css' %}">
 </head>
 <body>
     <div class="auth-container">
@@ -16,7 +15,7 @@
         <h1>Verify Your Identity</h1>
         <p class="auth-subtitle">Step 2: Enter your details to proceed</p>
 
-        <!-- Manual KYC Form -->
+        <!-- KYC Form -->
         <form method="post" class="auth-form">
             {% csrf_token %}
             <div class="form-group">
@@ -27,20 +26,60 @@
                 {% endif %}
             </div>
             <div class="form-group">
-                <label for="{{ form.date_of_birth.id_for_label }}">{{ form.date_of_birth.label }}</label>
-                {{ form.date_of_birth }}
-                {% if form.date_of_birth.errors %}
-                    <span class="error">{{ form.date_of_birth.errors }}</span>
+                <label>Date of Birth</label>
+                <div class="dob-container" style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        {{ form.dob_day }}
+                        {% if form.dob_day.errors %}
+                            <span class="error">{{ form.dob_day.errors }}</span>
+                        {% endif %}
+                    </div>
+                    <div style="flex: 1;">
+                        {{ form.dob_month }}
+                        {% if form.dob_month.errors %}
+                            <span class="error">{{ form.dob_month.errors }}</span>
+                        {% endif %}
+                    </div>
+                    <div style="flex: 2;">
+                        {{ form.dob_year }}
+                        {% if form.dob_year.errors %}
+                            <span class="error">{{ form.dob_year.errors }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if form.non_field_errors %}
+                    <span class="error">{{ form.non_field_errors }}</span>
                 {% endif %}
             </div>
             <div class="form-group">
-                <label for="{{ form.address.id_for_label }}">{{ form.address.label }}</label>
-                {{ form.address }}
-                {% if form.address.errors %}
-                    <span class="error">{{ form.address.errors }}</span>
+                <label for="{{ form.street_address.id_for_label }}">{{ form.street_address.label }}</label>
+                {{ form.street_address }}
+                {% if form.street_address.errors %}
+                    <span class="error">{{ form.street_address.errors }}</span>
                 {% endif %}
             </div>
-            <button type="submit" class="landing-button landing-button--primary">Submit and Continue</button>
+            <div class="form-group">
+                <label for="{{ form.city.id_for_label }}">{{ form.city.label }}</label>
+                {{ form.city }}
+                {% if form.city.errors %}
+                    <span class="error">{{ form.city.errors }}</span>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.postal_code.id_for_label }}">{{ form.postal_code.label }}</label>
+                {{ form.postal_code }}
+                {% if form.postal_code.errors %}
+                    <span class="error">{{ form.postal_code.errors }}</span>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.country.id_for_label }}">{{ form.country.label }}</label>
+                {{ form.country }}
+                {% if form.country.errors %}
+                    <span class="error">{{ form.country.errors }}</span>
+                {% endif %}
+            </div>
+            <button type="submit" class="landing-button landing-button--primary" aria-label="Submit KYC Details">Submit and Continue</button>
         </form>
 
         <p class="auth-links"><a href="{% url 'logout' %}" class="auth-link">Log out</a></p>

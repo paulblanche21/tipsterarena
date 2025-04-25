@@ -1,5 +1,7 @@
 /* landing.css */
 
+/* ------------------- Global Styles ------------------- */
+
 /* Reset CSS for consistent styling across elements */
 * {
     margin: 0;
@@ -31,6 +33,8 @@ body {
     background-color: var(--primary-bg);
     color: #ffffff;
 }
+
+/* ------------------- Landing Page Styles ------------------- */
 
 /* Container for the entire landing page content */
 .landing-full-container {
@@ -143,48 +147,21 @@ body {
     margin-bottom: 20px;
 }
 
-/* Base styles for landing page buttons */
-.landing-button {
-    width: auto;
-    padding: var(--padding-small) 20px;
-    border: none;
-    border-radius: var(--border-radius);
-    color: white;
-    font-size: 1.1em;
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.2s;
-    text-decoration: none;
-    display: inline-block;
-}
-
-/* Primary button variant */
-.landing-button--primary {
+/* Mid-page call-to-action section */
+.landing-mid-cta {
+    text-align: center;
+    padding: 30px 20px;
     background-color: var(--red-accent);
+    color: white;
+    border-radius: var(--border-radius);
+    margin: 40px auto;
+    max-width: 600px;
 }
 
-/* Hover state for primary button */
-.landing-button--primary:hover {
-    background-color: #d9362e;
-    transform: translateY(-2px);
-}
-
-/* Disabled state for buttons */
-.landing-button--primary:disabled {
-    background-color: #b3322b;
-    cursor: not-allowed;
-    opacity: 0.7;
-}
-
-/* Secondary button variant */
-.landing-button--secondary {
-    background-color: var(--secondary-bg);
-    color: var(--primary-bg);
-}
-
-/* Hover state for secondary button */
-.landing-button--secondary:hover {
-    background-color: #e6e6e6;
-    transform: translateY(-2px);
+/* Smash odds section */
+.smash-odds {
+    background-color: var(--primary-bg);
+    border: 2px solid var(--red-accent);
 }
 
 /* Call-to-action section */
@@ -220,6 +197,40 @@ body {
     justify-content: center;
 }
 
+/* Pricing grid layout */
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+/* Individual pricing items */
+.pricing-item {
+    text-align: center;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius);
+}
+
+/* Heading within pricing items */
+.pricing-item h3 {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+    color: var(--red-accent);
+}
+
+/* Pricing section container */
+.pricing {
+    text-align: center;
+}
+
+/* Button within pricing section */
+.pricing .landing-button {
+    margin-top: 20px;
+    display: inline-block;
+}
+
 /* Footer styles */
 .landing-footer {
     background-color: var(--primary-bg);
@@ -227,6 +238,35 @@ body {
     text-align: center;
     padding: var(--padding-small);
     font-size: 14px;
+}
+
+/* Utility class for centering text */
+.center {
+    text-align: center;
+}
+
+/* Animation for landing sections */
+.landing-section {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+/* Staggered animation delays for sections */
+.landing-section:nth-child(1) { animation-delay: 0.2s; }
+.landing-section:nth-child(2) { animation-delay: 0.4s; }
+.landing-section:nth-child(3) { animation-delay: 0.6s; }
+.landing-section:nth-child(4) { animation-delay: 0.8s; }
+.landing-section:nth-child(5) { animation-delay: 1.0s; }
+.landing-section:nth-child(6) { animation-delay: 1.2s; }
+.landing-section:nth-child(7) { animation-delay: 1.4s; }
+
+/* Keyframes for fade-in animation */
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Responsive adjustments for smaller screens */
@@ -264,29 +304,7 @@ body {
     }
 }
 
-/* Animation for landing sections */
-.landing-section {
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeInUp 0.6s ease forwards;
-}
-
-/* Staggered animation delays for sections */
-.landing-section:nth-child(1) { animation-delay: 0.2s; }
-.landing-section:nth-child(2) { animation-delay: 0.4s; }
-.landing-section:nth-child(3) { animation-delay: 0.6s; }
-.landing-section:nth-child(4) { animation-delay: 0.8s; }
-.landing-section:nth-child(5) { animation-delay: 1.0s; }
-.landing-section:nth-child(6) { animation-delay: 1.2s; }
-.landing-section:nth-child(7) { animation-delay: 1.4s; }
-
-/* Keyframes for fade-in animation */
-@keyframes fadeInUp {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
+/* ------------------- Auth Page Styles ------------------- */
 
 /* Styles for authentication container (login/signup) */
 .auth-container {
@@ -395,62 +413,6 @@ body {
     text-decoration: underline;
 }
 
-/* Mid-page call-to-action section */
-.landing-mid-cta {
-    text-align: center;
-    padding: 30px 20px;
-    background-color: var(--red-accent);
-    color: white;
-    border-radius: var(--border-radius);
-    margin: 40px auto;
-    max-width: 600px;
-}
-
-/* Smash odds section */
-.smash-odds {
-    background-color: var(--primary-bg);
-    border: 2px solid var(--red-accent);
-}
-
-/* Pricing grid layout */
-.pricing-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    padding: 20px;
-}
-
-/* Individual pricing items */
-.pricing-item {
-    text-align: center;
-    padding: 20px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: var(--border-radius);
-}
-
-/* Heading within pricing items */
-.pricing-item h3 {
-    font-size: 1.2em;
-    margin-bottom: 10px;
-    color: var(--red-accent);
-}
-
-/* Pricing section container */
-.pricing {
-    text-align: center;
-}
-
-/* Button within pricing section */
-.pricing .landing-button {
-    margin-top: 20px;
-    display: inline-block;
-}
-
-/* Utility class for centering text */
-.center {
-    text-align: center;
-}
-
 /* Social login buttons */
 .social-login {
     display: flex;
@@ -480,6 +442,50 @@ body {
     color: var(--gray-light);
 }
 
+/* Base styles for landing page buttons */
+.landing-button {
+    width: auto;
+    padding: var(--padding-small) 20px;
+    border: none;
+    border-radius: var(--border-radius);
+    color: white;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    text-decoration: none;
+    display: inline-block;
+}
+
+/* Primary button variant */
+.landing-button--primary {
+    background-color: var(--red-accent);
+}
+
+/* Hover state for primary button */
+.landing-button--primary:hover {
+    background-color: #d9362e;
+    transform: translateY(-2px);
+}
+
+/* Disabled state for buttons */
+.landing-button--primary:disabled {
+    background-color: #b3322b;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Secondary button variant */
+.landing-button--secondary {
+    background-color: var(--secondary-bg);
+    color: var(--primary-bg);
+}
+
+/* Hover state for secondary button */
+.landing-button--secondary:hover {
+    background-color: #e6e6e6;
+    transform: translateY(-2px);
+}
+
 /* Image preview styles */
 .preview-image {
     display: block;
@@ -494,7 +500,9 @@ body {
     border: none;
 }
 
-/* Profile edit modal styles */
+/* ------------------- Profile Edit Styles ------------------- */
+
+/* Profile edit modal overlay */
 .profile-edit-modal {
     display: none;
     position: fixed;
@@ -508,14 +516,13 @@ body {
     align-items: center;
 }
 
+/* Profile edit modal content */
 .profile-edit-modal-content {
     background-color: var(--secondary-bg);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
-    max-width: 100%; /* Prevent overflow */
-    margin: 0 auto;
     padding: 20px;
-    width: 900px;
+    width: 500px;
     max-height: 80vh;
     overflow-y: auto;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -523,6 +530,7 @@ body {
     color: var(--primary-bg);
 }
 
+/* Close button for profile edit modal */
 .profile-edit-modal-close {
     position: absolute;
     top: 10px;
@@ -534,29 +542,35 @@ body {
     background: none;
 }
 
+/* Hover state for close button */
 .profile-edit-modal-close:hover {
     color: var(--red-accent);
 }
 
+/* Note text within profile edit modal */
 .profile-edit-note {
     color: var(--gray-light);
     font-size: 12px;
     margin-top: 10px;
 }
 
+/* Links within profile edit note */
 .profile-edit-note a {
     color: var(--twitter-blue);
     text-decoration: none;
 }
 
+/* Hover state for profile edit note links */
 .profile-edit-note a:hover {
     text-decoration: underline;
 }
 
+/* Form groups within profile edit modal */
 .profile-edit-modal-content .form-group {
     margin-bottom: 15px;
 }
 
+/* Labels within profile edit modal form */
 .profile-edit-modal-content label {
     display: block;
     margin-bottom: 5px;
@@ -564,6 +578,7 @@ body {
     color: var(--primary-bg);
 }
 
+/* Profile edit and submit buttons */
 .profile-edit-btn, .post-submit {
     background-color: var(--red-accent);
     border: none;
@@ -575,17 +590,20 @@ body {
     transition: background-color 0.3s, transform 0.2s;
 }
 
+/* Hover state for profile edit and submit buttons */
 .profile-edit-btn:hover, .post-submit:hover {
     background-color: #d9362e;
     transform: translateY(-2px);
 }
 
+/* Disabled state for profile edit and submit buttons */
 .profile-edit-btn:disabled, .post-submit:disabled {
     background-color: #b3322b;
     cursor: not-allowed;
     opacity: 0.7;
 }
 
+/* Actions container for profile edit modal */
 .profile-edit-modal-content .profile-edit-actions {
     position: absolute;
     top: 10px;
@@ -594,6 +612,7 @@ body {
     gap: 10px;
 }
 
+/* Banner section in profile edit modal */
 .profile-edit-modal-content .profile-edit-banner {
     position: relative;
     width: 100%;
@@ -601,6 +620,7 @@ body {
     margin-bottom: 20px;
 }
 
+/* Banner image in profile edit modal */
 .profile-edit-modal-content .profile-edit-banner img {
     width: 100%;
     height: 150px;
@@ -608,6 +628,7 @@ body {
     border-radius: var(--border-radius);
 }
 
+/* Avatar section in profile edit modal */
 .profile-edit-modal-content .profile-edit-avatar {
     position: relative;
     width: 120px;
@@ -615,6 +636,7 @@ body {
     margin: 0 auto 20px;
 }
 
+/* Avatar image in profile edit modal */
 .profile-edit-modal-content .profile-edit-avatar img {
     width: 100%;
     height: 100%;
@@ -623,10 +645,12 @@ body {
     object-fit: cover;
 }
 
+/* Form container in profile edit modal */
 .edit-profile-form {
     margin-top: 20px;
 }
 
+/* Action buttons in profile edit modal */
 .profile-edit-modal-content .profile-edit-action-btn {
     background-color: var(--secondary-bg);
     border: 1px solid var(--border-color);
@@ -641,7 +665,33 @@ body {
     color: var(--gray-light);
 }
 
+/* Hover state for action buttons */
 .profile-edit-modal-content .profile-edit-action-btn:hover {
     border-color: var(--red-accent);
     color: var(--red-accent);
+}
+
+/* ------------------- Payment Styles ------------------- */
+
+/* Payment form for subscription selection and card input */
+.payment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Stripe card element */
+.card-element {
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background-color: var(--secondary-bg);
+    font-size: var(--font-size-base);
+}
+
+/* Focus state for card element */
+.card-element:focus {
+    outline: none;
+    border-color: var(--red-accent);
+    box-shadow: 0 0 5px rgba(255, 65, 54, 0.3);
 }
