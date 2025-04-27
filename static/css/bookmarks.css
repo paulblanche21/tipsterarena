@@ -11,8 +11,8 @@
   padding: 20px 20px;         /* Internal padding */
   position: fixed;           /* Fixed to top */
   top: 0;                    /* Align to top */
-  max-width: 700px;          /* Matches .content max-width */
-  width: 660px;              /* Fixed width (initially matches profile-header-top) */
+  max-width: 900px;          /* Matches .content max-width */
+  width: 100%;              /* Fixed width (initially matches profile-header-top) */
   margin-left: 10px;           
   box-sizing: border-box;    /* Include padding/borders */
   z-index: 1000;             /* High z-index */

@@ -83,7 +83,7 @@
                 {% endif %}
                 <div class="user-info">
                     <span class="user-display-name">{{ request.user.username|default:"Guest" }}</span>
-                    <span class="user-handle">{{ request.user.userprofile.handle|default:"@guest" }}</span>
+                    <span class="user-handle-nav">{{ request.user.userprofile.handle|default:"@guest" }}</span>
                 </div>
                 <span class="nav-menu-icon">⋯</span>
             </div>

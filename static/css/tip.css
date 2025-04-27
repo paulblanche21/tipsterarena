@@ -129,13 +129,12 @@
   
   /* Hover state for tip username */
   .tip-username:hover {
-    color: var(--red-accent);
     text-decoration: underline;
   }
   
   /* Styles for the user handle */
-  .user-handle {
-    color: var(--gray-light);
+  .user-handle-tip {
+    color: var(--primary-bg);
     font-size: clamp(12px, 3vw, 14px);
     margin-left: clamp(4px, 1vw, 5px);
   }
@@ -160,7 +159,7 @@
   .tip-timestamp {
     display: block;
     font-size: clamp(10px, 2vw, 12px);
-    color: var(--gray-light);
+    color: var(--primary-bg);
     margin-top: var(--margin-small);
   }
   
@@ -380,7 +379,7 @@
     flex-wrap: wrap;
     gap: clamp(6px, 1vw, 8px);
     font-size: clamp(12px, 3vw, 14px);
-    color: var(--gray-light);
+    color: var(--black);
     width: 100%;
   }
   

@@ -11,7 +11,7 @@ b {
   
   /* Styles for character count display */
   .char-count {
-    color: var(--gray-light);
+    color: var(--black);
     font-size: clamp(10px, 2vw, 12px);
   }
   

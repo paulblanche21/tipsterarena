@@ -1269,8 +1269,9 @@ class GolfEventsList(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        category = self.request.query_params.get('category', 'fixtures')
-        today = timezone.now()
+        state = self.request.query_params.get('state', 'pre')
+        tour_id = self.request.query_params.get('tour_id')
+        today = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)  # Start of today
         seven_days_ago = today - timedelta(days=7)
         seven_days_future = today + timedelta(days=7)
 
@@ -1278,12 +1279,16 @@ class GolfEventsList(generics.ListAPIView):
             'tour', 'course'
         ).prefetch_related('leaderboard__player')
 
-        if category == 'fixtures':
-            return queryset.filter(state='pre', date__gt=today, date__lte=seven_days_future)
-        elif category == 'inplay':
-            return queryset.filter(state='in')
-        elif category == 'results':
-            return queryset.filter(state='post', date__gte=seven_days_ago, date__lte=today)
+        if state in ['pre', 'in', 'post']:
+            queryset = queryset.filter(state=state)
+            if state == 'pre':
+                queryset = queryset.filter(date__gte=today, date__lte=seven_days_future)
+            elif state == 'post':
+                queryset = queryset.filter(date__gte=seven_days_ago, date__lte=today)
+
+        if tour_id:
+            queryset = queryset.filter(tour__tour_id=tour_id)
+
         return queryset
     
 # Configuration for football leagues (mirrors SPORT_CONFIG in upcoming-events.js)

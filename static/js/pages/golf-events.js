@@ -1,22 +1,32 @@
 // static/js/pages/golf-events.js
 
-export async function fetchEvents(category = 'fixtures') {
-    console.log(`Fetching golf events for category: ${category}`);
+export async function fetchEvents(state = 'pre', tourId = null) {
+    console.log(`Fetching golf events for state: ${state}, tour: ${tourId || 'all'}`);
     try {
-        const response = await fetch(`/api/golf/events/?category=${category}`, {
+        let url = `/api/golf/events/?state=${state}`;
+        if (tourId) {
+            url += `&tour_id=${tourId}`;
+        }
+        const response = await fetch(url, {
             headers: {
                 'Authorization': `Token ${localStorage.getItem('authToken') || 'ba59ecf8d26672d59c949b70453c361e74c2eec8'}`
             },
             credentials: 'include'
         });
-        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+        console.log(`API status for ${state}: ${response.status} ${response.statusText}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error: ${response.status} ${response.statusText}`);
+        }
         const data = await response.json();
-        console.log(`Raw API response for ${category} (length: ${data.length}):`, data);
-        console.log(`Fetched ${data.length} golf events for ${category}`);
+        if (!Array.isArray(data)) {
+            console.error(`API response is not an array for ${state}:`, data);
+            return [];
+        }
+        console.log(`Raw API response for ${state} (length: ${data.length}):`, JSON.stringify(data, null, 2));
+        console.log(`Fetched ${data.length} golf events for ${state}`);
 
-        // Deduplicate events based on event_id
         const uniqueEvents = Array.from(new Map(data.map(event => [event.event_id, event])).values());
-        console.log(`After deduplication, ${uniqueEvents.length} unique events for ${category}`);
+        console.log(`After deduplication, ${uniqueEvents.length} unique events for ${state}`);
 
         const mappedEvents = uniqueEvents.map(event => ({
             id: event.event_id,
@@ -54,39 +64,38 @@ export async function fetchEvents(category = 'fixtures') {
                 status: entry.status
             }))
         }));
-        console.log(`Mapped ${mappedEvents.length} events for ${category}:`, mappedEvents);
+        console.log(`Mapped ${mappedEvents.length} events for ${state}:`, mappedEvents);
         return mappedEvents;
     } catch (error) {
-        console.error(`Error fetching golf events: ${error}`);
+        console.error(`Error fetching golf events for ${state}, tour: ${tourId || 'all'}: ${error}`);
         return [];
     }
 }
 
+
 export async function fetchLeaderboard(eventId, sport, apiLeague) {
-    console.log(`Fetching leaderboard for event ${eventId}`);
+    console.log(`Fetching leaderboard for event ${eventId}, tour: ${apiLeague}`);
     try {
-        const response = await fetch(`/api/golf/events/?category=inplay`, {
+        const response = await fetch(`/api/golf/events/?state=in`, {
             headers: {
                 'Authorization': `Token ${localStorage.getItem('authToken') || 'ba59ecf8d26672d59c949b70453c361e74c2eec8'}`
             },
             credentials: 'include'
         });
-        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-        const data = await response.json();
-        const event = data.find(e => e.event_id === eventId);
-        if (!event) {
-            console.log(`Event ${eventId} not found in inplay events`);
-            const responseResults = await fetch(`/api/golf/events/?category=results`, {
+        console.log(`Leaderboard API status: ${response.status} ${response.statusText}`);
+        if (!response.ok) {
+            // Fallback to results
+            const responseResults = await fetch(`/api/golf/events/?state=post`, {
                 headers: {
                     'Authorization': `Token ${localStorage.getItem('authToken') || 'ba59ecf8d26672d59c949b70453c361e74c2eec8'}`
                 },
                 credentials: 'include'
             });
-            if (!responseResults.ok) throw new Error(`HTTP error: ${responseResults.status}`);
-            const resultsData = await responseResults.json();
-            const resultEvent = resultsData.find(e => e.event_id === eventId);
-            if (!resultEvent) throw new Error(`Event ${eventId} not found in results`);
-            return resultEvent.leaderboard.map(entry => ({
+            if (!responseResults.ok) throw new Error(`HTTP error: ${responseResults.status} ${response.statusText}`);
+            const data = await responseResults.json();
+            const event = data.find(e => e.event_id === eventId);
+            if (!event) throw new Error(`Event ${eventId} not found in results`);
+            return event.leaderboard.map(entry => ({
                 position: entry.position,
                 playerName: entry.player.name,
                 score: entry.score,
@@ -96,6 +105,9 @@ export async function fetchLeaderboard(eventId, sport, apiLeague) {
                 status: entry.status
             }));
         }
+        const data = await response.json();
+        const event = data.find(e => e.event_id === eventId);
+        if (!event) throw new Error(`Event ${eventId} not found in inplay events`);
         return event.leaderboard.map(entry => ({
             position: entry.position,
             playerName: entry.player.name,
@@ -213,12 +225,16 @@ export async function formatEventList(events, sportKey, category, isCentralFeed 
 // In-memory cache for leaderboard data
 const leaderboardCache = new Map();
 
-export async function setupLeaderboardUpdates() {
+export async function setupLeaderboardUpdates(retryCount = 0, maxRetries = 5) {
     console.log('Setting up leaderboard updates');
     const leaderboardTables = document.querySelectorAll('.leaderboard-table');
     if (leaderboardTables.length === 0) {
-        console.log('No leaderboard tables found, scheduling retry');
-        setTimeout(setupLeaderboardUpdates, 1000);
+        if (retryCount < maxRetries) {
+            console.log(`No leaderboard tables found, scheduling retry ${retryCount + 1}/${maxRetries}`);
+            setTimeout(() => setupLeaderboardUpdates(retryCount + 1, maxRetries), 5000);
+        } else {
+            console.log('Max retries reached, stopping leaderboard updates');
+        }
         return;
     }
 

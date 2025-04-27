@@ -14,6 +14,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 from decouple import config  # For environment variable management
+from dotenv import load_dotenv
+import os
 
 
 # Define the base directory of the project
@@ -252,8 +254,11 @@ SOCIAL_AUTH_PIPELINE = (
 )
 
 
-# settings.py
-STRIPE_PUBLISHABLE_KEY = 'pk_test_51RHmhNQw8xcAbMPa4btnvHm9hieglCYxAbaOwGf3srQftvfVHXYzVs2T9kZMSqBTCREAujDIaPhOXjtgcDEPlxkw00z8KPrYdE'
-STRIPE_SECRET_KEY = 'sk_test_51RHmhNQw8xcAbMPa80ldjQPo3OZadmu9dgzOwadnaFHF3voUinj9rKR3FRPCVkUeGdSCxXfRn2DocUrPRjXXUE5A00wnNAdjg4'
-STRIPE_MONTHLY_PRICE_ID = 'sub_1RHnfHQw8xcAbMPafF4NYLiF'  # From Stripe Dashboard
-STRIPE_YEARLY_PRICE_ID = 'price_yearly_id'    # From Stripe Dashboard
+# Load environment variables from .env file
+load_dotenv(os.path.join(BASE_DIR, '.env'))
+
+# Stripe settings
+STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY')
+STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
+STRIPE_MONTHLY_PRICE_ID = os.getenv('STRIPE_MONTHLY_PRICE_ID')
+STRIPE_YEARLY_PRICE_ID = os.getenv('STRIPE_YEARLY_PRICE_ID')

@@ -105,15 +105,14 @@
     flex-grow: 1;
   }
   
-  .user-display-name,
-  .user-handle {
+  .user-display-name{
     display: block;
     color: #ffffff;
     font-size: clamp(12px, 2vw, 14px);
   }
   
-  .user-handle {
-    color: var(--gray-light);
+  .user-handle-nav {
+    color: var(--secondary-bg);
   }
   
   .nav-menu-icon {

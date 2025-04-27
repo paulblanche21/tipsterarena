@@ -1,4 +1,3 @@
-// static/js/pages/upcoming-events.js
 import { getCSRFToken } from './utils.js';
 import { fetchEvents as fetchFootballEvents, formatEventList as formatFootballList, formatFootballTable } from './football-events.js';
 import { fetchEvents as fetchTennisEvents, formatEventList as formatTennisList } from './tennis-events.js';
@@ -160,6 +159,23 @@ async function fetchEventsForSport(sport) {
     } else if (sport === "horse_racing") {
         allEvents = await module.fetch();
         console.log(`Horse Racing: Fetched ${allEvents.length} events`, allEvents);
+    } else if (sport === "golf") {
+        const states = ['pre', 'in', 'post'];
+        for (const state of states) {
+            for (const config of sportConfigs) {
+                try {
+                    const leagueEvents = await module.fetch(state, config.league);
+                    if (!Array.isArray(leagueEvents)) {
+                        console.error(`fetchEvents returned non-array for ${config.name} (${state}):`, leagueEvents);
+                        continue;
+                    }
+                    console.log(`${config.name}: Fetched ${leagueEvents.length} ${state} events`);
+                    allEvents = allEvents.concat(leagueEvents);
+                } catch (error) {
+                    console.error(`Error fetching ${config.name} (${state}):`, error);
+                }
+            }
+        }
     } else {
         const categories = ['fixtures', 'inplay', 'results'];
         for (const category of categories) {
@@ -244,7 +260,7 @@ function filterEvents(events, category, sportKey) {
                 .filter(meeting => meeting.races.length > 0);
         }
     } else {
-        return events.filter(event => {
+        const filteredEvents = events.filter(event => {
             const eventDate = new Date(event.date);
             if (category === 'fixtures') {
                 return event.state === 'pre' && eventDate > currentTime && eventDate <= sevenDaysFuture;
@@ -261,6 +277,8 @@ function filterEvents(events, category, sportKey) {
             }
             return new Date(b.date) - new Date(a.date);
         });
+        console.log(`Filtered ${filteredEvents.length} ${category} events for ${sportKey}:`, filteredEvents);
+        return filteredEvents;
     }
     return [];
 }
@@ -349,7 +367,7 @@ async function populateModal(sport, category) {
             : category.charAt(0).toUpperCase() + category.slice(1);
         modalTitle.textContent = `${sportName} ${categoryName}`;
 
-        modalBody.innerHTML = '';  // Clear previous content
+        modalBody.innerHTML = ''; // Clear previous content
         modalBody.innerHTML = '<p>Loading events...</p>';
 
         if (!globalEvents[sport]) {
@@ -372,7 +390,7 @@ async function populateModal(sport, category) {
         setupExpandableCards();
         if (sport === 'golf' && (category === 'inplay' || category === 'results') && filteredEvents.length > 0) {
             if (typeof setupLeaderboardUpdates === 'function') {
-                setupLeaderboardUpdates();
+                setTimeout(() => setupLeaderboardUpdates(), 1000); // Delay to ensure DOM update
             } else {
                 console.warn('setupLeaderboardUpdates is not defined');
             }
@@ -498,17 +516,21 @@ export async function initButtons() {
     buttonsContainer.removeEventListener('click', handleButtonClick);
     buttonsContainer.addEventListener('click', handleButtonClick);
 
+    let debounceTimeout;
     function handleButtonClick(e) {
         const button = e.target.closest('.event-btn');
         if (!button) return;
 
         console.log(`Button clicked: ${button.dataset.category || button.dataset.horseRacing}`);
-        const buttons = buttonsContainer.querySelectorAll('.event-btn');
-        buttons.forEach(btn => btn.classList.remove('active'));
-        button.classList.add('active');
-        const category = activeSport === 'horse_racing' ? button.dataset.horseRacing : button.dataset.category;
+        clearTimeout(debounceTimeout);
+        debounceTimeout = setTimeout(() => {
+            const buttons = buttonsContainer.querySelectorAll('.event-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            const category = activeSport === 'horse_racing' ? button.dataset.horseRacing : button.dataset.category;
 
-        populateModal(activeSport, category);
+            populateModal(activeSport, category);
+        }, 300); // 300ms debounce
     }
 
     modalCloseBtn.addEventListener('click', () => {
