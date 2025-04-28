@@ -19,16 +19,18 @@ class GolfPlayerSerializer(serializers.ModelSerializer):
         fields = ['name', 'world_ranking']
 
 class LeaderboardEntrySerializer(serializers.ModelSerializer):
-    player = GolfPlayerSerializer()
+    player = GolfPlayerSerializer(read_only=True)
+    rounds = serializers.JSONField()
 
     class Meta:
         model = LeaderboardEntry
         fields = ['position', 'player', 'score', 'rounds', 'strokes', 'status']
+        depth = 1  # This ensures the player relationship is properly serialized
 
 class GolfEventSerializer(serializers.ModelSerializer):
     tour = GolfTourSerializer()
     course = GolfCourseSerializer()
-    leaderboard = LeaderboardEntrySerializer(many=True)
+    leaderboard = LeaderboardEntrySerializer(many=True, read_only=True)
 
     class Meta:
         model = GolfEvent
@@ -37,6 +39,7 @@ class GolfEventSerializer(serializers.ModelSerializer):
             'tour', 'course', 'purse', 'broadcast', 'current_round', 'total_rounds', 'is_playoff',
             'weather_condition', 'weather_temperature', 'leaderboard'
         ]
+        depth = 2  # This ensures nested relationships are properly serialized
         
 # Serializers for FootballEvent and related models
 class FootballLeagueSerializer(ModelSerializer):

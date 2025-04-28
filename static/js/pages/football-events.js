@@ -84,32 +84,68 @@ export async function fetchEvents(data, config) {
       const summaryData = await response.json();
 
       const plays = summaryData.plays || [];
-      const keyEventsFallback = plays.filter(play => play.type.text.toLowerCase().includes("goal") || play.yellowCard || play.redCard).map(play => ({
-        type: play.type.text || "Unknown",
+      const keyEventsFallback = plays?.filter(play => {
+        const playType = play.type?.text?.toLowerCase() || '';
+        const playTypeId = play.type?.id?.toString() || '';
+        return (
+          play.scoringPlay ||
+          playType.includes('goal') ||
+          playTypeId === '28' || playTypeId === '29' || playTypeId === '30' ||
+          playType === 'penalty goal' || playType === 'own goal' || playType === 'free kick goal' || playType === 'header goal' ||
+          play.yellowCard || play.redCard ||
+          playType === 'yellow card' || playType === 'red card' ||
+          playTypeId === '70' || playTypeId === '71'
+        );
+      }).map(play => ({
+        type: play.type?.text || "Unknown",
         time: play.clock?.displayValue || "N/A",
         team: play.team?.displayName || "Unknown",
         player: play.participants?.[0]?.athlete?.displayName || "Unknown",
-        isGoal: play.type.text.toLowerCase().includes("goal"),
-        isYellowCard: play.yellowCard,
-        isRedCard: play.redCard,
-      }));
+        isGoal: play.scoringPlay || 
+                (play.type?.text?.toLowerCase().includes('goal')) ||
+                ['28', '29', '30'].includes(play.type?.id?.toString()) ||
+                ['penalty goal', 'own goal', 'free kick goal', 'header goal'].includes(play.type?.text?.toLowerCase()),
+        isYellowCard: play.yellowCard || 
+                     play.type?.text?.toLowerCase() === 'yellow card' ||
+                     play.type?.id?.toString() === '70',
+        isRedCard: play.redCard || 
+                  play.type?.text?.toLowerCase() === 'red card' ||
+                  play.type?.id?.toString() === '71'
+      })) || [];
 
-      const keyEvents = event.keyEvents.length ? event.keyEvents : keyEventsFallback;
-      console.log(`Event ${event.name}: Using ${keyEvents.length} key events (${event.keyEvents.length} from details, ${keyEventsFallback.length} from plays)`);
+      // For completed matches, always use the fallback key events
+      const keyEvents = event.state === "post" ? keyEventsFallback : (event.keyEvents?.length ? event.keyEvents : keyEventsFallback);
+      console.log(`Event ${event.name}: Using ${keyEvents.length} key events (${event.keyEvents?.length || 0} from details, ${keyEventsFallback.length} from plays)`);
 
-      const goals = plays.filter(play => play.type.text.toLowerCase().includes("goal")).map(event => ({
-        scorer: event.participants?.[0]?.athlete?.displayName || event.scorer || "Unknown",
-        team: event.team?.displayName || event.team || "Unknown",
-        time: event.clock?.displayValue || event.time || "N/A",
-        assist: event.participants?.[1]?.athlete?.displayName || event.assist || "Unassisted",
-      }));
+      const goals = plays?.filter(play => {
+        const playType = play.type?.text?.toLowerCase() || '';
+        const playTypeId = play.type?.id?.toString() || '';
+        return (
+          play.scoringPlay ||
+          playType.includes('goal') ||
+          playTypeId === '28' || playTypeId === '29' || playTypeId === '30' ||
+          playType === 'penalty goal' || playType === 'own goal' || playType === 'free kick goal' || playType === 'header goal'
+        );
+      }).map(play => {
+        const scorer = play.participants?.[0]?.athlete?.displayName;
+        const team = play.team?.displayName;
+        const time = play.clock?.displayValue;
+        const assist = play.participants?.[1]?.athlete?.displayName;
+        
+        return {
+          scorer: scorer || "Unknown",
+          team: team || "Unknown",
+          time: time || "N/A",
+          assist: assist || "Unassisted"
+        };
+      }) || [];
 
       const oddsData = summaryData.header?.competitions?.[0]?.odds?.[0] || {};
       const odds = {
-        homeOdds: oddsData.homeTeamOdds?.moneyLine || "N/A",
-        awayOdds: oddsData.awayTeamOdds?.moneyLine || "N/A",
-        drawOdds: oddsData.drawOdds?.moneyLine || "N/A",
-        provider: oddsData.provider?.name || "Unknown Provider",
+        home: oddsData.homeTeamOdds?.moneyLine || "N/A",
+        away: oddsData.awayTeamOdds?.moneyLine || "N/A",
+        draw: oddsData.drawOdds?.moneyLine || "N/A",
+        provider: oddsData.provider?.name || "Unknown Provider"
       };
 
       const detailedStats = {
@@ -126,6 +162,9 @@ export async function fetchEvents(data, config) {
         keyEvents,
         odds,
         detailedStats,
+        clock: summaryData.header?.competitions?.[0]?.status?.type?.detail || event.clock,
+        period: summaryData.header?.competitions?.[0]?.status?.period || event.period,
+        broadcast: summaryData.header?.competitions?.[0]?.broadcasts?.[0]?.media?.shortName || event.broadcast
       };
     } catch (error) {
       console.error(`Error fetching detailed stats for ${event.name}:`, error);
@@ -189,9 +228,9 @@ export function formatEventList(events, sportKey, showLocation = false) {
       const oddsContent = event.odds ? `
         <div class="betting-odds">
           <p><strong>Betting Odds (${event.odds.provider}):</strong></p>
-          <p>${event.homeTeam.name}: ${event.odds.homeOdds}</p>
-          <p>${event.awayTeam.name}: ${event.odds.awayOdds}</p>
-          <p>Draw: ${event.odds.drawOdds}</p>
+          <p>${event.homeTeam.name}: ${event.odds.home}</p>
+          <p>${event.awayTeam.name}: ${event.odds.away}</p>
+          <p>Draw: ${event.odds.draw}</p>
         </div>
       ` : "<p>Betting odds not available.</p>";
 
@@ -229,10 +268,22 @@ export function formatEventList(events, sportKey, showLocation = false) {
         `;
         console.log(`formatEventList: Added .match-details for in-progress match (ID: ${eventId})`);
       } else if (event.state === "post") {
-        const goalsList = event.keyEvents.filter(e => e.isGoal).length ?
+        console.log(`Formatting post event: ${event.homeTeam.name} vs ${event.awayTeam.name}, Scores: ${event.homeTeam.score} - ${event.awayTeam.score}, KeyEvents: ${event.keyEvents.length}`);
+        
+        const homeGoals = event.detailedStats?.goals?.filter(goal => goal.team === event.homeTeam.name) || [];
+        const awayGoals = event.detailedStats?.goals?.filter(goal => goal.team === event.awayTeam.name) || [];
+
+        const homeGoalsList = homeGoals.length ?
           `<ul class="goal-list">${
-            event.keyEvents.filter(e => e.isGoal).map(goal => `
-              <li>${goal.player} (${goal.team}) - ${goal.time}</li>
+            homeGoals.map(goal => `
+              <li>${goal.scorer} - ${goal.time}${goal.assist && goal.assist !== "Unassisted" ? `, Assist: ${goal.assist}` : ""}</li>
+            `).join("")
+          }</ul>` : "<span class='no-goals'>No goals</span>";
+
+        const awayGoalsList = awayGoals.length ?
+          `<ul class="goal-list">${
+            awayGoals.map(goal => `
+              <li>${goal.scorer} - ${goal.time}${goal.assist && goal.assist !== "Unassisted" ? `, Assist: ${goal.assist}` : ""}</li>
             `).join("")
           }</ul>` : "<span class='no-goals'>No goals</span>";
 
@@ -254,8 +305,14 @@ export function formatEventList(events, sportKey, showLocation = false) {
                 <p><strong>Fouls:</strong> ${event.homeTeam.stats.fouls} - ${event.awayTeam.stats.fouls}</p>
               </div>
               <div class="key-events">
-                <p><strong>Goals:</strong></p>
-                ${goalsList}
+                <div class="team-goals">
+                  <p><strong>${event.homeTeam.name} Goals:</strong></p>
+                  ${homeGoalsList}
+                </div>
+                <div class="team-goals">
+                  <p><strong>${event.awayTeam.name} Goals:</strong></p>
+                  ${awayGoalsList}
+                </div>
                 <p><strong>Cards:</strong></p>
                 ${cardsList}
               </div>
@@ -358,9 +415,9 @@ export function formatFootballTable(events) {
       const oddsContent = event.odds ? `
         <div class="betting-odds">
           <p><strong>Betting Odds (${event.odds.provider}):</strong></p>
-          <p>${event.homeTeam.name}: ${event.odds.homeOdds}</p>
-          <p>${event.awayTeam.name}: ${event.odds.awayOdds}</p>
-          <p>Draw: ${event.odds.drawOdds}</p>
+          <p>${event.homeTeam.name}: ${event.odds.home}</p>
+          <p>${event.awayTeam.name}: ${event.odds.away}</p>
+          <p>Draw: ${event.odds.draw}</p>
         </div>
       ` : "<p>Betting odds not available.</p>";
 
@@ -415,11 +472,22 @@ export function formatFootballTable(events) {
         `;
         console.log(`Added .match-details for in-progress match (ID: ${eventId})`);
       } else if (event.state === "post") {
-        console.log(`Formatting post event: ${event.name}, Scores: ${event.homeTeam.score} - ${event.awayTeam.score}, KeyEvents: ${event.keyEvents.length}`);
-        const goalsList = event.keyEvents.filter(e => e.isGoal).length ?
+        console.log(`Formatting post event: ${event.homeTeam.name} vs ${event.awayTeam.name}, Scores: ${event.homeTeam.score} - ${event.awayTeam.score}, KeyEvents: ${event.keyEvents.length}`);
+        
+        const homeGoals = event.detailedStats?.goals?.filter(goal => goal.team === event.homeTeam.name) || [];
+        const awayGoals = event.detailedStats?.goals?.filter(goal => goal.team === event.awayTeam.name) || [];
+
+        const homeGoalsList = homeGoals.length ?
           `<ul class="goal-list">${
-            event.keyEvents.filter(e => e.isGoal).map(goal => `
-              <li>${goal.player} (${goal.team}) - ${goal.time}</li>
+            homeGoals.map(goal => `
+              <li>${goal.scorer} - ${goal.time}${goal.assist && goal.assist !== "Unassisted" ? `, Assist: ${goal.assist}` : ""}</li>
+            `).join("")
+          }</ul>` : "<span class='no-goals'>No goals</span>";
+
+        const awayGoalsList = awayGoals.length ?
+          `<ul class="goal-list">${
+            awayGoals.map(goal => `
+              <li>${goal.scorer} - ${goal.time}${goal.assist && goal.assist !== "Unassisted" ? `, Assist: ${goal.assist}` : ""}</li>
             `).join("")
           }</ul>` : "<span class='no-goals'>No goals</span>";
 
@@ -441,8 +509,14 @@ export function formatFootballTable(events) {
                 <p><strong>Fouls:</strong> ${event.homeTeam.stats.fouls} - ${event.awayTeam.stats.fouls}</p>
               </div>
               <div class="key-events">
-                <p><strong>Goals:</strong></p>
-                ${goalsList}
+                <div class="team-goals">
+                  <p><strong>${event.homeTeam.name} Goals:</strong></p>
+                  ${homeGoalsList}
+                </div>
+                <div class="team-goals">
+                  <p><strong>${event.awayTeam.name} Goals:</strong></p>
+                  ${awayGoalsList}
+                </div>
                 <p><strong>Cards:</strong></p>
                 ${cardsList}
               </div>

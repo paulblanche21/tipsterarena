@@ -1,7 +1,9 @@
 # core/horse_racing_events.py
 import logging
-from core.models import HorseRacingMeeting
 from datetime import datetime, timedelta
+from django.db.utils import DatabaseError, OperationalError
+
+from core.models import HorseRacingMeeting
 
 logger = logging.getLogger(__name__)
 
@@ -16,17 +18,17 @@ def get_racecards_json():
         start_date = today - timedelta(days=7)
         end_date = today + timedelta(days=1)
         
-        logger.debug(f"Querying meetings from {start_date} to {end_date}")
+        logger.debug("Querying meetings from %s to %s", start_date, end_date)
         meetings = HorseRacingMeeting.objects.filter(
             date__range=[start_date, end_date]
         ).select_related('course').prefetch_related('races__results').order_by('date', 'course__name')
         
-        logger.debug(f"Found {len(meetings)} meetings")
+        logger.debug("Found %d meetings", len(meetings))
         
         data = []
         for meeting in meetings:
             races = []
-            logger.debug(f"Processing meeting: {meeting.course.name} on {meeting.date}, Races: {meeting.races.count()}")
+            logger.debug("Processing meeting: %s on %s, Races: %d", meeting.course.name, meeting.date, meeting.races.count())
             for race in meeting.races.all():
                 results = race.results.all()
                 winner = next((result.horse.name for result in results if result.position == '1'), None)
@@ -73,10 +75,10 @@ def get_racecards_json():
                 'races': races
             })
         
-        logger.info(f"Fetched {len(data)} meetings from database")
-        logger.debug(f"Sample meeting: {data[0] if data else 'None'}")
+        logger.info("Fetched %d meetings from database", len(data))
+        logger.debug("Sample meeting: %s", data[0] if data else 'None')
         return data
 
-    except Exception as e:
-        logger.error(f"Error in get_racecards_json: {str(e)}", exc_info=True)
+    except (DatabaseError, OperationalError) as e:
+        logger.error("Error in get_racecards_json: %s", str(e), exc_info=True)
         return []

@@ -1,52 +1,67 @@
+"""Core views for the Tipster Arena application.
+
+This module contains all the view functions and classes that handle HTTP requests
+and responses for the Tipster Arena application, including user interactions,
+sports events, and social features.
+"""
+
+from datetime import datetime, timedelta
+import json
+import logging
+import time
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib.auth.forms import AuthenticationForm
 from django.http import JsonResponse, HttpResponse
 from django.db.models import Count, F, Q
-from .models import Tip, Like, Follow, Share, UserProfile, Comment, MessageThread, RaceMeeting, Message, TennisEvent
-from .models import FootballLeague, FootballTeam, TeamStats, FootballEvent, KeyEvent, BettingOdds, DetailedStats, GolfCourse, GolfEvent,GolfPlayer, GolfTour, LeaderboardEntry
-from .serializers import  GolfEventSerializer, FootballEventSerializer
-from .forms import UserProfileForm, CustomUserCreationForm, KYCForm
-from django.contrib.auth.forms import AuthenticationForm
 from django.conf import settings
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.views import APIView
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
-from rest_framework.response import Response
-from rest_framework import generics, status
-from rest_framework.serializers import ModelSerializer
-from datetime import datetime, timedelta
-from .horse_racing_events import get_racecards_json
-from urllib3.util.retry import Retry
-from requests.adapters import HTTPAdapter
-import json
-import requests
-import logging
-import bleach
-import pytz 
-import time
-import stripe
 from django.utils import timezone
 from django.template.loader import render_to_string
 from django.core.exceptions import ValidationError
 from django.utils.decorators import method_decorator
 
 
+from rest_framework.views import APIView
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import generics, status
+from rest_framework.serializers import ModelSerializer
+from rest_framework.decorators import api_view, permission_classes
+
+from urllib3.util.retry import Retry
+from requests.adapters import HTTPAdapter
+import requests
+import bleach
+import pytz
+import stripe
+
+from .models import (
+    Tip, Like, Follow, Share, UserProfile, Comment, MessageThread, RaceMeeting, Message, TennisEvent,
+    FootballLeague, FootballTeam, TeamStats, FootballEvent, KeyEvent, BettingOdds, DetailedStats,
+    GolfCourse, GolfEvent, GolfPlayer, GolfTour, LeaderboardEntry, Notification
+)
+from .serializers import GolfEventSerializer, FootballEventSerializer
+from .forms import UserProfileForm, CustomUserCreationForm, KYCForm
+from .horse_racing_events import get_racecards_json
 
 logger = logging.getLogger(__name__)
 
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
 def landing(request):
+    """Render the landing page for unauthenticated users."""
     if request.user.is_authenticated:
         return redirect('home')
     return render(request, 'core/landing.html')
 
-stripe.api_key = settings.STRIPE_SECRET_KEY
-
 def signup_view(request):
+    """Handle user registration and account creation."""
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
@@ -59,6 +74,7 @@ def signup_view(request):
 
 @login_required
 def kyc_view(request):
+    """Handle KYC (Know Your Customer) verification process."""
     if request.user.userprofile.kyc_completed:
         return redirect('profile_setup')
     if request.method == 'POST':
@@ -74,8 +90,10 @@ def kyc_view(request):
     else:
         form = KYCForm()
     return render(request, 'core/kyc.html', {'form': form})
+
 @login_required
 def profile_setup_view(request):
+    """Handle user profile setup and customization."""
     if request.user.userprofile.profile_completed:
         return redirect('payment')
     if request.method == 'POST':
@@ -91,6 +109,7 @@ def profile_setup_view(request):
 
 @login_required
 def skip_profile_setup(request):
+    """Allow users to skip profile setup and proceed to payment."""
     if not request.user.userprofile.profile_completed:
         request.user.userprofile.profile_completed = True
         request.user.userprofile.save()
@@ -98,6 +117,7 @@ def skip_profile_setup(request):
 
 @login_required
 def payment_view(request):
+    """Handle payment processing and subscription setup."""
     if request.user.userprofile.payment_completed:
         return redirect('home')
     return render(request, 'core/payment.html', {
@@ -106,6 +126,7 @@ def payment_view(request):
 
 @login_required
 def create_checkout_session(request):
+    """Create a Stripe checkout session for subscription payment."""
     if request.method != 'POST':
         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
@@ -145,12 +166,14 @@ def create_checkout_session(request):
 
 @login_required
 def payment_success(request):
+    """Handle successful payment completion."""
     request.user.userprofile.payment_completed = True
     request.user.userprofile.save()
     return redirect('home')
 
 @login_required
 def skip_payment(request):
+    """Allow users to skip payment and proceed to home page."""
     if not request.user.userprofile.payment_completed:
         request.user.userprofile.payment_completed = True
         request.user.userprofile.save()
@@ -159,6 +182,7 @@ def skip_payment(request):
     
 # View for user login
 def login_view(request):
+    """Handle user authentication and login."""
     if request.user.is_authenticated:
         return redirect('home')
     if request.method == 'POST':
@@ -177,6 +201,7 @@ def login_view(request):
 # View for the home page
 @login_required
 def home(request):
+    """Render the home page with tips, trending content, and user suggestions."""
     tips = Tip.objects.all().order_by('-created_at')[:20]
     for tip in tips:
         if not hasattr(tip.user, 'userprofile'):
@@ -227,6 +252,7 @@ def home(request):
 
 # View for sport-specific pages
 def sport_view(request, sport):
+    """Render sport-specific page with relevant tips."""
     valid_sports = ['football', 'golf', 'tennis', 'horse_racing']
     if sport not in valid_sports:
         return render(request, 'core/404.html', status=404)
@@ -239,6 +265,7 @@ def sport_view(request, sport):
 
 # View for the explore page
 def explore(request):
+    """Render explore page with latest tips from all sports."""
     tips = Tip.objects.all().order_by('-created_at')[:20]
     for tip in tips:
         if not hasattr(tip.user, 'userprofile'):
@@ -253,22 +280,22 @@ def explore(request):
 @login_required
 @require_POST
 def follow_user(request):
-    follower = request.user
-    followed_username = request.POST.get('username')
-    if not followed_username:
-        return JsonResponse({'success': False, 'error': 'No username provided'}, status=400)
-
-    followed = get_object_or_404(User, username=followed_username)
-    if follower == followed:
-        return JsonResponse({'success': False, 'error': 'Cannot follow yourself'}, status=400)
-
-    follow, created = Follow.objects.get_or_create(follower=follower, followed=followed)
-    if created:
-        return JsonResponse({'success': True, 'message': f'Now following {followed_username}'})
-    return JsonResponse({'success': True, 'message': f'Already following {followed_username}'})
+    """Handle following/unfollowing a user."""
+    username = request.POST.get('username')
+    user_to_follow = get_object_or_404(User, username=username)
+    profile = user_to_follow.profile
+    if request.user == user_to_follow:
+        return JsonResponse({'success': False, 'message': 'Cannot follow yourself'})
+    if profile.followers.filter(id=request.user.id).exists():
+        profile.followers.remove(request.user)
+        return JsonResponse({'success': True, 'message': 'Unfollowed', 'is_following': False})
+    else:
+        profile.followers.add(request.user)
+        return JsonResponse({'success': True, 'message': 'Followed', 'is_following': True})
 
 @login_required
 def profile(request, username):
+    """Render user profile page with tips and statistics."""
     user = get_object_or_404(User, username=username)
     try:
         user_profile = user.userprofile
@@ -336,13 +363,13 @@ def profile(request, username):
         'win_rate': win_rate,
         'total_tips': total_tips,
         'wins': wins,
-        'average_odds': average_odds,  # New stat
+        'average_odds': average_odds,
     })
 
 # View to handle profile editing
-
 @login_required
 def profile_edit_view(request, username):
+    """Handle user profile editing and updates."""
     user = get_object_or_404(User, username=username)
     if request.user.username != username:
         return redirect('profile', username=username)
@@ -360,6 +387,7 @@ def profile_edit_view(request, username):
 @login_required
 @require_POST
 def like_tip(request):
+    """Handle liking and unliking tips."""
     tip_id = request.POST.get('tip_id')
     tip = get_object_or_404(Tip, id=tip_id)
     user = request.user
@@ -375,6 +403,7 @@ def like_tip(request):
 @login_required
 @require_POST
 def share_tip(request):
+    """Handle sharing and unsharing tips."""
     tip_id = request.POST.get('tip_id')
     tip = get_object_or_404(Tip, id=tip_id)
     user = request.user
@@ -390,14 +419,15 @@ def share_tip(request):
 @login_required
 @require_POST
 def comment_tip(request):
+    """Handle adding comments to tips."""
     tip_id = request.POST.get('tip_id')
     comment_text = request.POST.get('comment_text', '')
     parent_id = request.POST.get('parent_id')
     gif_url = request.POST.get('gif', '')
-    logger.info(f"Received comment_tip request: tip_id={tip_id}, comment_text={comment_text}, parent_id={parent_id}")
+    logger.info("Received comment_tip request: tip_id=%s, comment_text=%s, parent_id=%s", tip_id, comment_text, parent_id)
 
     if not tip_id:
-        logger.error(f"Missing tip_id: tip_id={tip_id}")
+        logger.error("Missing tip_id: tip_id=%s", tip_id)
         return JsonResponse({'success': False, 'error': 'Missing tip_id'}, status=400)
 
     try:
@@ -411,7 +441,7 @@ def comment_tip(request):
             image=request.FILES.get('image'),
             gif_url=gif_url
         )
-        logger.info(f"Comment created successfully for tip_id: {tip_id}, comment_id: {comment.id}")
+        logger.info("Comment created successfully for tip_id: %s, comment_id=%s", tip_id, comment.id)
 
         avatar_url = (request.user.userprofile.avatar.url
                       if hasattr(request.user, 'userprofile') and request.user.userprofile.avatar
@@ -438,19 +468,19 @@ def comment_tip(request):
             'data': comment_data
         })
     except Tip.DoesNotExist:
-        logger.error(f"Tip not found: tip_id={tip_id}")
+        logger.error("Tip not found: tip_id=%s", tip_id)
         return JsonResponse({'success': False, 'error': 'Tip not found'}, status=404)
     except Comment.DoesNotExist:
-        logger.error(f"Parent comment not found: parent_id={parent_id}")
+        logger.error("Parent comment not found: parent_id=%s", parent_id)
         return JsonResponse({'success': False, 'error': 'Parent comment not found'}, status=404)
     except Exception as e:
-        logger.error(f"Error creating comment: {str(e)}")
+        logger.error("Error creating comment: %s", str(e))
         return JsonResponse({'success': False, 'error': 'An error occurred while commenting.'}, status=500)
 
 # View to fetch comments for a tip
 @login_required
 def get_tip_comments(request, tip_id):
-    logger.info(f"Fetching comments for tip_id: {tip_id}")
+    logger.info("Fetching comments for tip_id: %s", tip_id)
     try:
         tip = Tip.objects.get(id=tip_id)
         comments = tip.comments.all().order_by('-created_at')
@@ -475,10 +505,10 @@ def get_tip_comments(request, tip_id):
                 'image': comment.image.url if comment.image else None,
                 'gif_url': comment.gif_url if comment.gif_url else None
             })
-        logger.info(f"Found {len(comments_data)} comments (including replies)")
+        logger.info("Found %s comments (including replies)", len(comments_data))
         return JsonResponse({'success': True, 'comments': comments_data})
     except Tip.DoesNotExist:
-        logger.error(f"Tip not found: tip_id={tip_id}")
+        logger.error("Tip not found: tip_id=%s", tip_id)
         return JsonResponse({'success': False, 'error': 'Tip not found'}, status=404)
 
 # View to handle liking a comment
@@ -514,12 +544,27 @@ def share_comment(request):
 # View for the bookmarks page
 @login_required
 def bookmarks(request):
+    """Display all bookmarked tips for the current user.
+    
+    Args:
+        request: HTTP request
+        
+    Returns:
+        Rendered template with bookmarked tips
+    """
     bookmarked_tips = Tip.objects.filter(bookmarks=request.user).select_related('user__userprofile')
     return render(request, 'core/bookmarks.html', {'tips': bookmarked_tips})
 
-# View to toggle bookmark status on a tip
 @login_required
 def toggle_bookmark(request):
+    """Toggle bookmark status for a tip.
+    
+    Args:
+        request: HTTP request containing tip_id
+        
+    Returns:
+        JsonResponse with bookmark status and count
+    """
     if request.method == 'POST':
         tip_id = request.POST.get('tip_id')
         try:
@@ -543,6 +588,15 @@ def toggle_bookmark(request):
 # View for the messages page
 @login_required
 def messages_view(request, thread_id=None):
+    """Display message threads and individual thread messages.
+    
+    Args:
+        request: HTTP request
+        thread_id: Optional ID of a specific thread to display
+        
+    Returns:
+        Rendered template with message threads and optional specific thread
+    """
     user = request.user
     message_threads = (MessageThread.objects.filter(participants=user)
                       .order_by('-updated_at')[:20]
@@ -577,11 +631,16 @@ def messages_view(request, thread_id=None):
     }
     return render(request, 'core/messages.html', context)
 
-# View to send a new message
-@login_required
-@require_POST
 @csrf_exempt
 def send_message(request):
+    """Handle sending a new message or creating a new message thread.
+    
+    Args:
+        request: HTTP request containing thread_id (optional) and recipient_username (if new thread)
+        
+    Returns:
+        JsonResponse with message details or error status
+    """
     thread_id = request.POST.get('thread_id')
     recipient_username = request.POST.get('recipient_username')
     content = request.POST.get('content')
@@ -643,6 +702,14 @@ def get_thread_messages(request, thread_id):
 # View for the notifications page
 @login_required
 def notifications(request):
+    """Display notifications for likes, follows, and shares.
+    
+    Args:
+        request: HTTP request
+        
+    Returns:
+        Rendered template with notifications
+    """
     user = request.user
     like_notifications = (Like.objects.filter(tip__user=user)
                          .order_by('-created_at')[:20]
@@ -678,10 +745,10 @@ def suggested_users_api(request):
     try:
         if not request.user.is_authenticated:
             return JsonResponse({'success': False, 'error': 'User not authenticated'}, status=401)
-        logger.info(f"Fetching suggested users for user: {request.user.username}")
+        logger.info("Fetching suggested users for user: %s", request.user.username)
         current_user = request.user
         followed_users = Follow.objects.filter(follower=current_user).values_list('followed_id', flat=True)
-        logger.debug(f"Followed users: {list(followed_users)}")
+        logger.debug("Followed users: %s", list(followed_users))
         suggested_users = User.objects.filter(
             tip__isnull=False
         ).exclude(
@@ -689,7 +756,7 @@ def suggested_users_api(request):
         ).exclude(
             id=current_user.id
         ).distinct()[:10]
-        logger.debug(f"Suggested users count: {suggested_users.count()}")
+        logger.debug("Suggested users count: %s", suggested_users.count())
 
         users_data = []
         for user in suggested_users:
@@ -703,10 +770,10 @@ def suggested_users_api(request):
                 'profile_url': f"/profile/{user.username}/"
             })
 
-        logger.info(f"Returning {len(users_data)} suggested users")
+        logger.info("Returning %s suggested users", len(users_data))
         return JsonResponse({'success': True, 'users': users_data})
     except Exception as e:
-        logger.error(f"Error in suggested_users_api: {str(e)}")
+        logger.error("Error in suggested_users_api: %s", str(e))
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 class TipSerializer(ModelSerializer):
@@ -803,7 +870,7 @@ def post_tip(request):
             }
             return JsonResponse(response_data)
         except Exception as e:
-            logger.error(f"Error posting tip: {str(e)}")
+            logger.error("Error posting tip: %s", str(e))
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
     return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
 
@@ -886,14 +953,14 @@ def trending_tips_api(request):
     try:
         if not request.user.is_authenticated:
             return JsonResponse({'success': False, 'error': 'User not authenticated'}, status=401)
-        logger.info(f"Fetching trending tips for user: {request.user.username}")
+        logger.info("Fetching trending tips for user: %s", request.user.username)
         trending_tips = Tip.objects.annotate(
             total_likes=Count('likes'),
             total_shares=Count('shares')
         ).annotate(
             total_engagement=F('total_likes') + F('total_shares')
         ).order_by('-total_engagement')[:4]
-        logger.debug(f"Trending tips count: {trending_tips.count()}")
+        logger.debug("Trending tips count: %s", trending_tips.count())
 
         tips_data = []
         for tip in trending_tips:
@@ -909,10 +976,10 @@ def trending_tips_api(request):
                 'profile_url': f"/profile/{tip.user.username}/",
             })
 
-        logger.info(f"Returning {len(tips_data)} trending tips")
+        logger.info("Returning %s trending tips", len(tips_data))
         return JsonResponse({'success': True, 'trending_tips': tips_data})
     except Exception as e:
-        logger.error(f"Error in trending_tips_api: {str(e)}")
+        logger.error("Error in trending_tips_api: %s", str(e))
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 # API view for current user info
@@ -931,8 +998,8 @@ def current_user_api(request):
             'username': user.username,
             'is_admin': user.is_staff or user.is_superuser
         })
-    except Exception as e:
-        logger.error(f"Error in current_user_api: {str(e)}")
+    except (ValueError, TypeError) as e:
+        logger.error("Error in current_user_api: %s", str(e))
         return JsonResponse({'success': False, 'error': 'Internal server error'}, status=500)
     
 
@@ -955,9 +1022,16 @@ def tip_detail(request, tip_id):
     except Tip.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Tip not found'}, status=404)
 
-# View to handle CSP violation reports
 @csrf_exempt
 def csp_report(request):
+    """Handle Content Security Policy violation reports.
+    
+    Args:
+        request: HTTP request containing CSP violation data
+        
+    Returns:
+        HTTP response with appropriate status code
+    """
     if request.method == "POST":
         report = json.loads(request.body.decode("utf-8"))
         print("CSP Violation:", report)
@@ -967,6 +1041,14 @@ def csp_report(request):
 # View to render message settings
 @login_required
 def message_settings_view(request):
+    """Render message notification settings page.
+    
+    Args:
+        request: HTTP request
+        
+    Returns:
+        Rendered template with message settings
+    """
     user = request.user
     if not hasattr(user, 'userprofile'):
         UserProfile.objects.get_or_create(user=user)
@@ -981,6 +1063,14 @@ def message_settings_view(request):
 # View for search functionality
 @login_required
 def search(request):
+    """Search for users and tips based on query.
+    
+    Args:
+        request: HTTP request containing search query
+        
+    Returns:
+        JsonResponse with matching users and tips
+    """
     query = request.GET.get('q', '').strip()
     if not query:
         return JsonResponse({'success': False, 'error': 'Query parameter is required'}, status=400)
@@ -1046,11 +1136,11 @@ def racecards_json_view(request):
     try:
         logger.debug("Entering racecards_json_view")
         data = get_racecards_json()
-        logger.info(f"Returning racecards data: {len(data)} meetings")
-        logger.debug(f"Sample data: {data[0] if data else 'Empty'}")
+        logger.info("Returning racecards data: %s meetings", len(data))
+        logger.debug("Sample data: %s", data[0] if data else 'Empty')
         return JsonResponse(data, safe=False)
     except Exception as e:
-        logger.error(f"Error in racecards_json_view: {str(e)}", exc_info=True)
+        logger.error("Error in racecards_json_view: %s", str(e), exc_info=True)
         return JsonResponse([], safe=False)
     
 
@@ -1062,6 +1152,12 @@ GOLF_TOURS = [
 
 # Helper function to fetch and store golf events
 def fetch_and_store_golf_events():
+    """Fetch and store golf events from ESPN API.
+    
+    This function fetches golf events from the ESPN API for the current week
+    and stores them in the database. It handles both completed and upcoming
+    events."""
+    
     today = datetime.now().date()
     start_date = today - timedelta(days=7)  # 7 days past for results
     end_date = today + timedelta(days=7)  # 7 days future for fixtures
@@ -1074,12 +1170,12 @@ def fetch_and_store_golf_events():
         try:
             response = requests.get(url)
             if not response.ok:
-                logger.error(f"Failed to fetch {tour_config['name']}: {response.status_code}")
+                logger.error("Failed to fetch %s: %s", tour_config['name'], response.status_code)
                 continue
             data = response.json()
 
             # Log the raw API response for debugging
-            logger.info(f"API response for {tour_config['name']}: {data}")
+            logger.info("API response for %s: %s", tour_config['name'], data)
 
             # Ensure tour exists in database
             tour, _ = GolfTour.objects.get_or_create(
@@ -1122,7 +1218,9 @@ def fetch_and_store_golf_events():
                 yardage = str(course_details.get('yardage', 'N/A'))
 
                 broadcasts = event.get('broadcasts', [])
-                broadcast = broadcasts[0].get('media', 'N/A') if broadcasts else 'N/A'
+                broadcast = 'N/A'
+                if broadcasts and broadcasts[0].get('names'):
+                    broadcast = ', '.join(broadcasts[0]['names'])
                 purse = str(event.get('purse', 'N/A'))
 
                 # Fallback for Zurich Classic of New Orleans
@@ -1135,10 +1233,11 @@ def fetch_and_store_golf_events():
                     yardage = "7425"
                     purse = "8800000"
                     broadcast = "Golf Channel"
-                    logger.info(f"Using hardcoded values for event {event_id}")
+                    logger.info("Using hardcoded values for event %s", event_id)
 
                 # Log extracted data for debugging
-                logger.info(f"Final extracted data for Event {name} (ID: {event_id}): venue={venue_name}, city={city}, state={state_location}, course={course_name}, par={par}, yardage={yardage}, purse={purse}, broadcast={broadcast}")
+                logger.info("Final extracted data for Event %s (ID: %s): venue=%s, city=%s, state=%s, course=%s, par=%s, yardage=%s, purse=%s, broadcast=%s", 
+                    name, event_id, venue_name, city, state_location, course_name, par, yardage, purse, broadcast)
 
                 # Create or update course
                 course, created = GolfCourse.objects.get_or_create(
@@ -1152,10 +1251,10 @@ def fetch_and_store_golf_events():
                     course.par = par
                     course.yardage = yardage
                     course.save()
-                    logger.info(f"Updated course {course_name}: par={par}, yardage={yardage}")
+                    logger.info("Updated course %s: par=%s, yardage=%s", course_name, par, yardage)
 
                 # Log the course object after saving
-                logger.info(f"Saved course for event {event_id}: {course.__dict__}")
+                logger.info("Saved course for event %s: %s", event_id, course.__dict__)
 
                 # Create or update event
                 event_obj, created = GolfEvent.objects.get_or_create(
@@ -1201,7 +1300,7 @@ def fetch_and_store_golf_events():
                     event_obj.weather_temperature = weather.get('temperature', 'N/A')
                     event_obj.last_updated = timezone.now()
                     event_obj.save()
-                    logger.info(f"Updated event {event_id} with new details: {event_obj.__dict__}")
+                    logger.info("Updated event %s with new details: %s", event_id, event_obj.__dict__)
 
                 # Fetch and store leaderboard for in-progress or completed events
                 if event_obj.state in ['in', 'post']:
@@ -1224,30 +1323,51 @@ def fetch_and_store_golf_events():
                                     }
                                 )
 
-                                rounds_stat = [round.get('value', 'N/A') for round in competitor.get('linescores', [])]
-                                rounds_stat += ["N/A"] * (4 - len(rounds_stat))  # Pad rounds to 4
-                                strokes = competitor.get('strokes', 'N/A')
+                                # Get position and score
+                                position = competitor.get('position', {}).get('displayValue', 'N/A')
+                                score = competitor.get('score', {}).get('displayValue', 'N/A')
+                                
+                                # Get round scores
+                                rounds_stat = []
+                                for round_data in competitor.get('linescores', []):
+                                    value = round_data.get('value', 'N/A')
+                                    if value != 'N/A':
+                                        try:
+                                            value = float(value)
+                                        except (ValueError, TypeError):
+                                            value = 'N/A'
+                                    rounds_stat.append(value)
+                                
+                                # Pad rounds to 4 if needed
+                                rounds_stat += ["N/A"] * (4 - len(rounds_stat))
+                                
+                                # Calculate total strokes
+                                strokes = 'N/A'
                                 if rounds_stat and all(r != "N/A" for r in rounds_stat[:len([r for r in rounds_stat if r != "N/A"])]):
                                     try:
                                         strokes = sum(float(r) for r in rounds_stat if r != "N/A")
                                     except (ValueError, TypeError):
                                         strokes = 'N/A'
 
+                                # Get player status
+                                status = competitor.get('status', {}).get('type', 'active')
+
+                                # Create leaderboard entry
                                 LeaderboardEntry.objects.create(
                                     event=event_obj,
                                     player=player,
-                                    position=competitor.get('position', 'N/A'),
-                                    score=competitor.get('score', 'N/A'),
+                                    position=position,
+                                    score=score,
                                     rounds=rounds_stat,
                                     strokes=str(strokes),
-                                    status=competitor.get('status', 'active')
+                                    status=status
                                 )
 
                     except requests.RequestException as e:
-                        logger.error(f"Error fetching leaderboard for event {event['id']}: {str(e)}")
+                        logger.error("Error fetching leaderboard for event %s: %s", event['id'], str(e))
 
         except requests.RequestException as e:
-            logger.error(f"Error fetching {tour_config['name']}: {str(e)}")
+            logger.error("Error fetching %s: %s", tour_config['name'], str(e))
 
 # API view to trigger fetching and storing golf events
 @method_decorator(csrf_exempt, name='dispatch')
@@ -1260,37 +1380,41 @@ class FetchGolfEventsView(APIView):
             fetch_and_store_golf_events()
             return Response({'success': True, 'message': 'Golf events fetched and stored'}, status=status.HTTP_200_OK)
         except Exception as e:
-            logger.error(f"Error fetching golf events: {str(e)}")
+            logger.error("Error fetching golf events: %s", str(e))
             return Response({'success': False, 'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-class GolfEventsList(generics.ListAPIView):
-    serializer_class = GolfEventSerializer
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+class GolfEventsList(APIView):
+    def get(self, request):
+        # Get state and tour_id from query parameters
+        state = request.query_params.get('state', 'pre')
+        tour_id = request.query_params.get('tour_id')
 
-    def get_queryset(self):
-        state = self.request.query_params.get('state', 'pre')
-        tour_id = self.request.query_params.get('tour_id')
-        today = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)  # Start of today
-        seven_days_ago = today - timedelta(days=7)
-        seven_days_future = today + timedelta(days=7)
-
+        # Base queryset for filtering
         queryset = GolfEvent.objects.all().select_related(
             'tour', 'course'
-        ).prefetch_related('leaderboard__player')
+        ).prefetch_related(
+            'leaderboard', 'leaderboard__player'
+        )
 
-        if state in ['pre', 'in', 'post']:
-            queryset = queryset.filter(state=state)
-            if state == 'pre':
-                queryset = queryset.filter(date__gte=today, date__lte=seven_days_future)
-            elif state == 'post':
-                queryset = queryset.filter(date__gte=seven_days_ago, date__lte=today)
-
+        # Apply tour filter if specified
         if tour_id:
             queryset = queryset.filter(tour__tour_id=tour_id)
 
-        return queryset
-    
+        # Filter based on state
+        if state == 'pre':
+            queryset = queryset.filter(state='pre', completed=False)
+        elif state == 'in':
+            queryset = queryset.filter(state='in', completed=False)
+        elif state == 'post':
+            queryset = queryset.filter(completed=True)
+
+        # Order by date
+        queryset = queryset.order_by('-date')
+
+        # Serialize the data
+        serializer = GolfEventSerializer(queryset, many=True)
+        return Response(serializer.data)
+
 # Configuration for football leagues (mirrors SPORT_CONFIG in upcoming-events.js)
 
 
@@ -1307,7 +1431,7 @@ def fetch_and_store_football_events():
     end_date = today + timedelta(days=7)
     start_date_str = start_date.strftime('%Y%m%d')
     end_date_str = end_date.strftime('%Y%m%d')
-    logger.info(f"Fetching events for date range: {start_date_str}-{end_date_str}")
+    logger.info("Fetching events for date range: %s-%s", start_date_str, end_date_str)
 
     session = requests.Session()
     retries = Retry(total=5, backoff_factor=3, status_forcelist=[429, 500, 502, 503, 504])
@@ -1319,11 +1443,11 @@ def fetch_and_store_football_events():
         try:
             response = session.get(url)
             if not response.ok:
-                logger.error(f"Failed to fetch {league_config['name']}: {response.status_code} - {response.text}")
+                logger.error("Failed to fetch %s: %s - %s", league_config['name'], response.status_code, response.text)
                 continue
             data = response.json()
-            logger.info(f"ESPN API response for {league_config['name']}: {data}")
-            logger.debug(f"Scoreboard data for {league_config['name']}: {data.keys()}")
+            logger.info("ESPN API response for %s: %s", league_config['name'], data)
+            logger.debug("Scoreboard data for %s: %s", league_config['name'], data.keys())
 
             league, _ = FootballLeague.objects.get_or_create(
                 league_id=league_id,
@@ -1400,18 +1524,18 @@ def fetch_and_store_football_events():
                     detailed_response = session.get(detailed_url)
                     if detailed_response.ok:
                         summary_data = detailed_response.json()
-                        logger.info(f"Event {event['id']} summary data: {summary_data}")
-                        logger.debug(f"Event {event['id']} summary data keys: {list(summary_data.keys())}")
-                        logger.debug(f"Event {event['id']} state: {event.get('status', {}).get('type', {}).get('state', 'unknown')}")
+                        logger.info("Event %s summary data: %s", event['id'], summary_data)
+                        logger.debug("Event %s summary data keys: %s", event['id'], list(summary_data.keys()))
+                        logger.debug("Event %s state: %s", event['id'], event.get('status', {}).get('type', {}).get('state', 'unknown'))
 
                         plays = summary_data.get('plays', [])
-                        logger.debug(f"Event {event['id']} total plays: {len(plays)}")
+                        logger.debug("Event %s total plays: %s", event['id'], len(plays))
                         if not plays and event.get('status', {}).get('type', {}).get('state') == 'post':
-                            logger.warning(f"Event {event['id']} has empty plays array despite being post-game")
+                            logger.warning("Event %s has empty plays array despite being post-game", event['id'])
                         key_events = []
                         if event.get('status', {}).get('type', {}).get('state') == 'post':
                             for play in plays:
-                                logger.debug(f"Event {event['id']} play: {play}")
+                                logger.debug("Event %s play: %s", event['id'], play)
                                 is_goal = False
                                 is_yellow_card = False
                                 is_red_card = False
@@ -1424,20 +1548,20 @@ def fetch_and_store_football_events():
                                     play_type in ['penalty goal', 'own goal', 'free kick goal', 'header goal'] or
                                     'goal' in play.get('text', '').lower()):
                                     is_goal = True
-                                    logger.info(f"Event {event['id']} detected goal: {play}")
+                                    logger.info("Event %s detected goal: %s", event['id'], play)
 
                                 if (play.get('yellowCard', False) or
                                     play_type == 'yellow card' or
                                     play_type_id == '70' or
                                     'yellow card' in play.get('text', '').lower()):
                                     is_yellow_card = True
-                                    logger.info(f"Event {event['id']} detected yellow card: {play}")
+                                    logger.info("Event %s detected yellow card: %s", event['id'], play)
                                 if (play.get('redCard', False) or
                                     play_type == 'red card' or
                                     play_type_id == '71' or
                                     'red card' in play.get('text', '').lower()):
                                     is_red_card = True
-                                    logger.info(f"Event {event['id']} detected red card: {play}")
+                                    logger.info("Event %s detected red card: %s", event['id'], play)
 
                                 if is_goal or is_yellow_card or is_red_card:
                                     key_events.append({
@@ -1451,14 +1575,15 @@ def fetch_and_store_football_events():
                                         'is_red_card': is_red_card
                                     })
 
-                        logger.debug(f"Event {event['id']} key events: {key_events}")
+                        logger.debug("Event %s key events: %s", event['id'], key_events)
                         if key_events:
-                            logger.info(f"Event {event['id']} saving {len(key_events)} key events")
+                            logger.info("Event %s saving %s key events", event['id'], len(key_events))
                             event_obj.key_events.all().delete()
                             for ke in key_events:
                                 KeyEvent.objects.create(event=event_obj, **ke)
                         else:
-                            logger.warning(f"No key events found for event {event['id']} - plays array: {len(plays)} plays, state: {event.get('status', {}).get('type', {}).get('state')}")
+                            logger.warning("No key events found for event %s - plays array: %s plays, state: %s", 
+                                event['id'], len(plays), event.get('status', {}).get('type', {}).get('state'))
 
                         goals = [
                             {
@@ -1483,7 +1608,7 @@ def fetch_and_store_football_events():
                         )
 
                         odds_data = summary_data.get('header', {}).get('competitions', [{}])[0].get('odds', [{}])[0]
-                        logger.debug(f"Event {event['id']} odds data: {odds_data}")
+                        logger.debug("Event %s odds data: %s", event['id'], odds_data)
                         if odds_data:
                             BettingOdds.objects.update_or_create(
                                 event=event_obj,
@@ -1494,18 +1619,25 @@ def fetch_and_store_football_events():
                                     'provider': odds_data.get('provider', {}).get('name', 'Unknown Provider')
                                 }
                             )
-                            logger.info(f"Event {event['id']} saved betting odds: home={odds_data.get('homeTeamOdds', {}).get('moneyLine', 'N/A')}, away={odds_data.get('awayTeamOdds', {}).get('moneyLine', 'N/A')}, draw={odds_data.get('drawOdds', {}).get('moneyLine', 'N/A')}")
+                            logger.info("Event %s saved betting odds: home=%s, away=%s, draw=%s", 
+                                event['id'],
+                                odds_data.get('homeTeamOdds', {}).get('moneyLine', 'N/A'),
+                                odds_data.get('awayTeamOdds', {}).get('moneyLine', 'N/A'),
+                                odds_data.get('drawOdds', {}).get('moneyLine', 'N/A'))
                         else:
-                            logger.warning(f"No betting odds found for event {event['id']} - state: {event.get('status', {}).get('type', {}).get('state')}")
+                            logger.warning("No betting odds found for event %s - state: %s", 
+                                event['id'],
+                                event.get('status', {}).get('type', {}).get('state'))
 
                     else:
-                        logger.error(f"Failed to fetch summary for event {event['id']}: {detailed_response.status_code} - Response: {detailed_response.text}")
+                        logger.error("Failed to fetch summary for event %s: %s - Response: %s", 
+                            event['id'], detailed_response.status_code, detailed_response.text)
                 except requests.RequestException as e:
-                    logger.error(f"Error fetching detailed data for event {event['id']}: {str(e)}")
+                    logger.error("Error fetching detailed data for event %s: %s", event['id'], str(e))
                 time.sleep(2)
 
         except requests.RequestException as e:
-            logger.error(f"Error fetching {league_config['name']}: {str(e)}")
+            logger.error("Error fetching %s: %s", league_config['name'], str(e))
 
 # API view to trigger fetching and storing events
 @method_decorator(csrf_exempt, name='dispatch')
@@ -1518,7 +1650,7 @@ class FetchFootballEventsView(APIView):
             fetch_and_store_football_events()
             return Response({'success': True, 'message': 'Football events fetched and stored'}, status=status.HTTP_200_OK)
         except Exception as e:
-            logger.error(f"Error fetching football events: {str(e)}")
+            logger.error("Error fetching football events: %s", str(e))
             return Response({'success': False, 'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # API view to retrieve football events
@@ -1602,3 +1734,193 @@ def tennis_event_stats(request, event_id):
         })
     except TennisEvent.DoesNotExist:
         return JsonResponse({'error': 'Event not found'}, status=404)
+
+@login_required
+def get_comments(request, tip_id):
+    """Retrieve comments for a specific tip."""
+    tip = get_object_or_404(Tip, id=tip_id)
+    comments = Comment.objects.filter(tip=tip, parent=None).order_by('-created_at')
+    comments_data = []
+    for comment in comments:
+        comments_data.append({
+            'id': comment.id,
+            'text': comment.text,
+            'user': comment.user.username,
+            'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'gif_url': comment.gif_url,
+            'replies': [{
+                'id': reply.id,
+                'text': reply.text,
+                'user': reply.user.username,
+                'created_at': reply.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                'gif_url': reply.gif_url
+            } for reply in comment.replies.all()]
+        })
+    return JsonResponse({'comments': comments_data})
+
+@login_required
+@require_POST
+def delete_comment(request):
+    """Handle deletion of comments."""
+    comment_id = request.POST.get('comment_id')
+    comment = get_object_or_404(Comment, id=comment_id)
+    if comment.user != request.user:
+        return JsonResponse({'success': False, 'message': 'Unauthorized'})
+    comment.delete()
+    return JsonResponse({'success': True, 'message': 'Comment deleted'})
+
+@login_required
+@require_POST
+def edit_comment(request):
+    """Handle editing of comments."""
+    comment_id = request.POST.get('comment_id')
+    new_text = request.POST.get('new_text')
+    comment = get_object_or_404(Comment, id=comment_id)
+    if comment.user != request.user:
+        return JsonResponse({'success': False, 'message': 'Unauthorized'})
+    comment.text = new_text
+    comment.save()
+    return JsonResponse({'success': True, 'message': 'Comment updated'})
+
+@login_required
+@require_POST
+def delete_tip(request):
+    """Handle deletion of tips."""
+    tip_id = request.POST.get('tip_id')
+    tip = get_object_or_404(Tip, id=tip_id)
+    if tip.user != request.user:
+        return JsonResponse({'success': False, 'message': 'Unauthorized'})
+    tip.delete()
+    return JsonResponse({'success': True, 'message': 'Tip deleted'})
+
+@login_required
+@require_POST
+def edit_tip(request):
+    """Handle editing of tips."""
+    tip_id = request.POST.get('tip_id')
+    new_text = request.POST.get('new_text')
+    tip = get_object_or_404(Tip, id=tip_id)
+    if tip.user != request.user:
+        return JsonResponse({'success': False, 'message': 'Unauthorized'})
+    tip.text = new_text
+    tip.save()
+    return JsonResponse({'success': True, 'message': 'Tip updated'})
+
+@login_required
+def get_tip_details(request, tip_id):
+    """Retrieve detailed information about a specific tip."""
+    tip = get_object_or_404(Tip, id=tip_id)
+    tip_data = {
+        'id': tip.id,
+        'text': tip.text,
+        'user': tip.user.username,
+        'created_at': tip.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+        'likes': tip.likes.count(),
+        'shares': tip.shares.count(),
+        'comments': tip.comments.count(),
+        'is_liked': tip.likes.filter(id=request.user.id).exists(),
+        'is_shared': tip.shares.filter(id=request.user.id).exists()
+    }
+    return JsonResponse({'tip': tip_data})
+
+@login_required
+def get_user_tips(request, username):
+    """Retrieve all tips posted by a specific user."""
+    user = get_object_or_404(User, username=username)
+    tips = Tip.objects.filter(user=user).order_by('-created_at')
+    tips_data = []
+    for tip in tips:
+        tips_data.append({
+            'id': tip.id,
+            'text': tip.text,
+            'created_at': tip.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'likes': tip.likes.count(),
+            'shares': tip.shares.count(),
+            'comments': tip.comments.count(),
+            'is_liked': tip.likes.filter(id=request.user.id).exists(),
+            'is_shared': tip.shares.filter(id=request.user.id).exists()
+        })
+    return JsonResponse({'tips': tips_data})
+
+@login_required
+def get_user_profile(request, username):
+    """Retrieve profile information for a specific user."""
+    user = get_object_or_404(User, username=username)
+    profile = user.profile
+    profile_data = {
+        'username': user.username,
+        'bio': profile.bio,
+        'location': profile.location,
+        'website': profile.website,
+        'followers': profile.followers.count(),
+        'following': profile.following.count(),
+        'is_following': profile.followers.filter(id=request.user.id).exists()
+    }
+    return JsonResponse({'profile': profile_data})
+
+@login_required
+def get_followers(request, username):
+    """Retrieve all followers of a specific user."""
+    user = get_object_or_404(User, username=username)
+    followers = user.profile.followers.all()
+    followers_data = [{'username': follower.username} for follower in followers]
+    return JsonResponse({'followers': followers_data})
+
+@login_required
+def get_following(request, username):
+    """Retrieve all users that a specific user is following."""
+    user = get_object_or_404(User, username=username)
+    following = user.profile.following.all()
+    following_data = [{'username': following_user.username} for following_user in following]
+    return JsonResponse({'following': following_data})
+
+@login_required
+def get_user_feed(request):
+    """Retrieve a feed of tips from users that the current user is following."""
+    following = request.user.profile.following.all()
+    tips = Tip.objects.filter(user__in=following).order_by('-created_at')
+    tips_data = []
+    for tip in tips:
+        tips_data.append({
+            'id': tip.id,
+            'text': tip.text,
+            'user': tip.user.username,
+            'created_at': tip.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'likes': tip.likes.count(),
+            'shares': tip.shares.count(),
+            'comments': tip.comments.count(),
+            'is_liked': tip.likes.filter(id=request.user.id).exists(),
+            'is_shared': tip.shares.filter(id=request.user.id).exists()
+        })
+    return JsonResponse({'tips': tips_data})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_notifications(request):
+    """Retrieve unread notifications for the authenticated user."""
+    try:
+        notifications = Notification.objects.filter(
+            recipient=request.user,
+            is_read=False
+        ).order_by('-created_at')
+        
+        data = [{
+            'id': notification.id,
+            'message': notification.message,
+            'created_at': notification.created_at,
+            'notification_type': notification.notification_type,
+            'is_read': notification.is_read,
+            'related_tip_id': notification.related_tip.id if notification.related_tip else None,
+            'related_user_id': notification.related_user.id if notification.related_user else None
+        } for notification in notifications]
+        
+        return Response(data)
+    except (Notification.DoesNotExist, AttributeError) as e:
+        logger.error(f"Error fetching notifications: {str(e)}")
+        return Response([], status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Unexpected error in get_user_notifications: {str(e)}")
+        return Response(
+            {'error': 'An unexpected error occurred'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

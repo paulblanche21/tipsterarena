@@ -1,9 +1,15 @@
+"""Core models for Tipster Arena.
+
+Contains database models for user profiles, tips, and sports events.
+"""
+
 # models.py
 from django.db import models
 from django.contrib.auth.models import User
 
 # Model representing a user's tip
 class Tip(models.Model):
+    """Represents a betting tip posted by a user."""
     user = models.ForeignKey(User, on_delete=models.CASCADE)  # Tip author
     sport = models.CharField(
         max_length=20,
@@ -672,3 +678,19 @@ class HorseRacingResult(models.Model):
 
     class Meta:
         unique_together = ('race', 'horse')
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    type = models.CharField(max_length=50)  # e.g., 'like', 'comment', 'follow'
+    content = models.TextField()  # Notification message
+    read = models.BooleanField(default=False)  # Whether notification has been read
+    created_at = models.DateTimeField(auto_now_add=True)  # When notification was created
+    related_tip = models.ForeignKey(Tip, on_delete=models.CASCADE, null=True, blank=True)  # Related tip if any
+    related_comment = models.ForeignKey(Comment, on_delete=models.CASCADE, null=True, blank=True)  # Related comment if any
+    related_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='related_notifications')  # Related user if any
+
+    def __str__(self):
+        return f"Notification for {self.user.username}: {self.content[:50]}"
+
+    class Meta:
+        ordering = ['-created_at']  # Most recent notifications first

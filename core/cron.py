@@ -2,6 +2,7 @@ import logging
 from core.views import fetch_and_store_football_events
 from core.models import FootballEvent
 from django.utils import timezone
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +47,7 @@ def check_inplay_matches():
                     logger.error(f"Failed to fetch in-play data for {league_config['name']}: {response.status_code}")
                     continue
                 data = response.json()
+                logger.debug(f"API Response for {league_config['name']}:\n{json.dumps(data, indent=2)}")
                 inplay_events = [event for event in data.get('events', []) if event.get('status', {}).get('type', {}).get('state') == 'in']
                 logger.info(f"Fetched {len(inplay_events)} in-play events for {league_config['name']}")
                 # Update only in-play events to minimize database writes

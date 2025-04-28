@@ -1,10 +1,12 @@
+"""URL configuration for the core app of Tipster Arena."""
+
 # core/urls.py
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
-from . import views
 from core.views import FetchGolfEventsView, GolfEventsList
+from . import views
 
 # URL patterns for the Tipster Arena core app
 urlpatterns = [
@@ -16,8 +18,12 @@ urlpatterns = [
     path('search/', views.search, name='search'),
 
     # Profile routes
-    path('profile/<str:username>/', views.profile, name='profile'),
-    path('profile/<str:username>/edit/', views.profile_edit_view, name='profile_edit'),  # Corrected from profile_edit
+    path('profile/<str:username>/',
+        views.profile,
+        name='profile'),
+    path('profile/<str:username>/edit/',
+        views.profile_edit_view,
+        name='profile_edit'),
 
     # Authentication routes
     path('login/', views.login_view, name='login'),
@@ -28,7 +34,9 @@ urlpatterns = [
     path('profile-setup/', views.profile_setup_view, name='profile_setup'),
     path('profile-setup/skip/', views.skip_profile_setup, name='skip_profile_setup'),
     path('payment/', views.payment_view, name='payment'),
-    path('payment/create-checkout-session/', views.create_checkout_session, name='create_checkout_session'),
+    path('payment/create-checkout-session/',
+         views.create_checkout_session,
+         name='create_checkout_session'),
     path('payment/success/', views.payment_success, name='payment_success'),
     path('payment/skip/', views.skip_payment, name='skip_payment'),
 
@@ -69,13 +77,20 @@ urlpatterns = [
     path('api/current-user/', views.current_user_api, name='current_user_api'),
     path('horse-racing/cards-json/', views.racecards_json_view, name='racecards_json'),
     path('csp-report/', views.csp_report, name='csp_report'),
-    path('api/fetch-football-events/', views.FetchFootballEventsView.as_view(), name='fetch_football_events'),
-    path('api/football-events/', views.FootballEventsList.as_view(), name='football_events'),
+    path('api/fetch-football-events/',
+         views.FetchFootballEventsView.as_view(),
+         name='fetch_football_events'),
+    path('api/football-events/',
+         views.FootballEventsList.as_view(),
+         name='football_events'),
     path('api/golf/events/fetch/', FetchGolfEventsView.as_view(), name='fetch_golf_events'),
     path('api/golf/events/', GolfEventsList.as_view(), name='golf_events_list'),
     path('api/tennis-events/', views.tennis_events, name='tennis_events'),
-    path('api/tennis-events/<str:event_id>/stats/', views.tennis_event_stats, name='tennis_event_stats'),
+    path('api/tennis-events/<str:event_id>/stats/',
+         views.tennis_event_stats,
+         name='tennis_event_stats'),
 ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
