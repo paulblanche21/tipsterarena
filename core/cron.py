@@ -1,6 +1,12 @@
+"""
+Cron jobs for updating and checking sports events data.
+Handles periodic tasks for football events and in-play matches.
+"""
+
 import logging
 from core.views import fetch_and_store_football_events
 from core.models import FootballEvent
+from core.constants import FOOTBALL_LEAGUES
 from django.utils import timezone
 import json
 
@@ -36,7 +42,6 @@ def check_inplay_matches():
         start_date_str = start_date.strftime('%Y%m%d')
         end_date_str = end_date.strftime('%Y%m%d')
 
-        from core.views import FOOTBALL_LEAGUES
         for league_config in FOOTBALL_LEAGUES:
             league_id = league_config['league_id']
             url = f"https://site.api.espn.com/apis/site/v2/sports/soccer/{league_id}/scoreboard?dates={start_date_str}-{end_date_str}"

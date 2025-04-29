@@ -19,62 +19,145 @@
     background: var(--secondary-bg);
     border-radius: var(--border-radius);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    width: calc(100% - 20px); /* Match .tip-feed */
-    max-height: 80vh;
+    width: 100%;
+    max-height: 90vh;
     overflow-y: auto;
+    padding: 20px;
     position: relative;
-    padding: var(--padding-small);
-    box-sizing: border-box;
-    margin: 0 10px 10px 10px; /* Match .tip-feed margins */
 }
 
 /* Close button */
 .event-modal-close {
     position: absolute;
     top: 10px;
-    right: 15px;
+    right: 10px;
     font-size: 24px;
     cursor: pointer;
-    color: var(--primary-bg);
+    color: #666;
+    background: none;
+    border: none;
+    padding: 5px;
+}
+
+.event-modal-close:hover {
+    color: #333;
 }
 
 /* Modal title */
 #event-modal-title {
-    margin: 0 0 15px;
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--primary-bg);
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: var(--text-color);
 }
 
 /* Modal body */
 #event-modal-body {
-    font-size: var(--font-size-base);
-    color: var(--primary-bg);
+    padding: 10px 0;
 }
 
-/* Shared modal content styles */
+/* Event feed */
 .event-feed {
     display: flex;
     flex-direction: column;
     gap: 15px;
 }
 
-.league-group {
-    margin-bottom: 20px;
+/* Expandable event cards */
+.expandable-card {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: all 0.3s ease;
 }
 
-.league-header {
-    font-size: 1.3rem;
-    font-weight: bold;
+.expandable-card.expanded {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.expandable-card .card-header {
+    padding: 15px;
+    background: #f8f9fa;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+}
+
+.expandable-card .card-header:hover {
+    background: #f0f0f0;
+}
+
+.expandable-card .card-header::after {
+    content: '▼';
+    font-size: 0.8em;
+    transition: transform 0.3s ease;
+}
+
+.expandable-card.expanded .card-header::after {
+    transform: rotate(180deg);
+}
+
+.expandable-card .match-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex: 1;
+    padding: 0 15px;
+}
+
+.expandable-card .teams {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.expandable-card .team {
     display: flex;
     align-items: center;
     gap: 8px;
-    color: var(--primary-bg);
-    padding: 8px 0;
 }
 
-.sport-icon {
-    font-size: 1.3rem;
+.expandable-card .team-name {
+    font-weight: 500;
+}
+
+.expandable-card .score {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #333;
+}
+
+.expandable-card .match-details {
+    display: none;
+    padding: 15px;
+    background: #f9f9f9;
+    border-top: 1px solid #eee;
+}
+
+.expandable-card.expanded .match-details {
+    display: block;
+}
+
+.expandable-card .match-meta {
+    display: flex;
+    justify-content: space-between;
+    color: #666;
+    font-size: 0.9em;
+    margin-top: 10px;
+}
+
+/* Live match styling */
+.expandable-card.live-match .card-header {
+    background: #ffe6e6;
+}
+
+.live-score {
+    color: #e63946;
+    font-weight: bold;
 }
 
 /* Comment modal styles (moved from tip.css and comment.css) */
@@ -460,25 +543,22 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    .event-modal,
-    .comment-modal {
+    .event-modal {
         left: 0;
         right: 0;
     }
 
-    .event-modal-content,
-    .comment-modal-content {
-        width: 90%;
-        margin: 0 5%;
+    .event-modal-content {
+        padding: 15px;
+    }
+
+    .expandable-card .card-header {
         padding: 10px;
     }
 
-    .league-header {
-        font-size: 1.1rem;
-    }
-
-    .sport-icon {
-        font-size: 1.1rem;
+    .expandable-card .match-info {
+        flex-direction: column;
+        gap: 10px;
     }
 
     .comment-list .comment .comment-avatar {

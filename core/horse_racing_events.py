@@ -2,6 +2,7 @@
 import logging
 from datetime import datetime, timedelta
 from django.db.utils import DatabaseError, OperationalError
+from django.db import models
 
 from core.models import HorseRacingMeeting
 
@@ -19,7 +20,7 @@ def get_racecards_json():
         end_date = today + timedelta(days=1)
         
         logger.debug("Querying meetings from %s to %s", start_date, end_date)
-        meetings = HorseRacingMeeting.objects.filter(
+        meetings: models.QuerySet[HorseRacingMeeting] = HorseRacingMeeting.objects.filter(  # type: ignore[attr-defined]
             date__range=[start_date, end_date]
         ).select_related('course').prefetch_related('races__results').order_by('date', 'course__name')
         

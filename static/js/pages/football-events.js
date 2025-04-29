@@ -1,376 +1,262 @@
 // football-events.js
 
-export async function fetchEvents(data, config) {
-  const events = (data.events || []).map(event => {
-    const competitions = event.competitions && event.competitions[0] ? event.competitions[0] : {};
-    const competitors = competitions.competitors || [];
-    const home = competitors.find(c => c?.homeAway?.toLowerCase() === "home") || competitors[0] || {};
-    const away = competitors.find(c => c?.homeAway?.toLowerCase() === "away") || competitors[1] || {};
+console.log('FETCH EVENTS CALLED!');
 
-    console.log(`Parsing event: ${event.shortName || event.name}, State: ${event.status?.type?.state}, Home Score: ${home.score}, Away Score: ${away.score}`);
-
-    const getTeamStats = (team) => {
-      const stats = team.statistics || [];
-      return {
-        possession: stats.find(s => s.name === "possessionPct")?.displayValue || "N/A",
-        shots: stats.find(s => s.name === "totalShots")?.displayValue || "N/A",
-        shotsOnTarget: stats.find(s => s.name === "shotsOnTarget")?.displayValue || "N/A",
-        corners: stats.find(s => s.name === "wonCorners")?.displayValue || "N/A",
-        fouls: stats.find(s => s.name === "foulsCommitted")?.displayValue || "N/A",
-      };
-    };
-
-    const details = competitions.details || [];
-    const keyEvents = details.map(detail => ({
-      type: detail.type.text || "Unknown",
-      time: detail.clock?.displayValue || "N/A",
-      team: detail.team?.displayName || "Unknown",
-      player: detail.athletesInvolved?.[0]?.displayName || "Unknown",
-      isGoal: detail.scoringPlay,
-      isYellowCard: detail.yellowCard,
-      isRedCard: detail.redCard,
-    }));
-
-    return {
-      id: event.id,
-      name: event.shortName || event.name,
-      date: event.date,
-      displayDate: new Date(event.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-      time: new Date(event.date).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "GMT" }),
-      state: event.status && event.status.type ? event.status.type.state : "unknown",
-      statusDescription: event.status?.type?.description || "Unknown",
-      statusDetail: event.status?.type?.detail || "N/A",
-      competitors: competitors,
-      venue: competitions.venue || { fullName: "Location TBD", address: { city: "Unknown", state: "Unknown" } },
-      league: config.name,
-      icon: config.icon,
-      priority: config.priority || 999,
-      homeTeam: {
-        name: home.team?.displayName || "TBD",
-        logo: home.team?.logo || "",
-        score: home.score || "0",
-        form: home.form || "N/A",
-        record: home.records?.[0]?.summary || "N/A",
-        stats: getTeamStats(home),
-      },
-      awayTeam: {
-        name: away.team?.displayName || "TBD",
-        logo: away.team?.logo || "",
-        score: away.score || "0",
-        form: away.form || "N/A",
-        record: away.records?.[0]?.summary || "N/A",
-        stats: getTeamStats(away),
-      },
-      keyEvents: keyEvents,
-      scores: event.status.type.state === "in" ? {
-        homeScore: home.score || "0",
-        awayScore: away.score || "0",
-        clock: event.status.type.clock || "0:00",
-        period: event.status.type.period || 0,
-        statusDetail: event.status.type.detail || "In Progress"
-      } : event.status.type.state === "post" ? {
-        homeScore: home.score || "0",
-        awayScore: away.score || "0",
-        statusDetail: event.status.type.detail || "Final"
-      } : null,
-      broadcast: competitions.geoBroadcasts?.[0]?.media?.shortName || "N/A",
-    };
-  });
-
-  const detailedEvents = await Promise.all(events.map(async event => {
-    try {
-      const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${config.league}/summary?event=${event.id}`);
-      if (!response.ok) throw new Error(`Failed to fetch summary for event ${event.id}`);
-      const summaryData = await response.json();
-
-      const plays = summaryData.plays || [];
-      const keyEventsFallback = plays?.filter(play => {
-        const playType = play.type?.text?.toLowerCase() || '';
-        const playTypeId = play.type?.id?.toString() || '';
-        return (
-          play.scoringPlay ||
-          playType.includes('goal') ||
-          playTypeId === '28' || playTypeId === '29' || playTypeId === '30' ||
-          playType === 'penalty goal' || playType === 'own goal' || playType === 'free kick goal' || playType === 'header goal' ||
-          play.yellowCard || play.redCard ||
-          playType === 'yellow card' || playType === 'red card' ||
-          playTypeId === '70' || playTypeId === '71'
-        );
-      }).map(play => ({
-        type: play.type?.text || "Unknown",
-        time: play.clock?.displayValue || "N/A",
-        team: play.team?.displayName || "Unknown",
-        player: play.participants?.[0]?.athlete?.displayName || "Unknown",
-        isGoal: play.scoringPlay || 
-                (play.type?.text?.toLowerCase().includes('goal')) ||
-                ['28', '29', '30'].includes(play.type?.id?.toString()) ||
-                ['penalty goal', 'own goal', 'free kick goal', 'header goal'].includes(play.type?.text?.toLowerCase()),
-        isYellowCard: play.yellowCard || 
-                     play.type?.text?.toLowerCase() === 'yellow card' ||
-                     play.type?.id?.toString() === '70',
-        isRedCard: play.redCard || 
-                  play.type?.text?.toLowerCase() === 'red card' ||
-                  play.type?.id?.toString() === '71'
-      })) || [];
-
-      // For completed matches, always use the fallback key events
-      const keyEvents = event.state === "post" ? keyEventsFallback : (event.keyEvents?.length ? event.keyEvents : keyEventsFallback);
-      console.log(`Event ${event.name}: Using ${keyEvents.length} key events (${event.keyEvents?.length || 0} from details, ${keyEventsFallback.length} from plays)`);
-
-      const goals = plays?.filter(play => {
-        const playType = play.type?.text?.toLowerCase() || '';
-        const playTypeId = play.type?.id?.toString() || '';
-        return (
-          play.scoringPlay ||
-          playType.includes('goal') ||
-          playTypeId === '28' || playTypeId === '29' || playTypeId === '30' ||
-          playType === 'penalty goal' || playType === 'own goal' || playType === 'free kick goal' || playType === 'header goal'
-        );
-      }).map(play => {
-        const scorer = play.participants?.[0]?.athlete?.displayName;
-        const team = play.team?.displayName;
-        const time = play.clock?.displayValue;
-        const assist = play.participants?.[1]?.athlete?.displayName;
-        
-        return {
-          scorer: scorer || "Unknown",
-          team: team || "Unknown",
-          time: time || "N/A",
-          assist: assist || "Unassisted"
+export class FootballEventsHandler {
+    constructor() {
+        this.config = {
+            leagues: [
+                { sport: "soccer", league: "eng.1", icon: "⚽", name: "Premier League", priority: 1 },
+                { sport: "soccer", league: "esp.1", icon: "⚽", name: "La Liga", priority: 2 },
+                { sport: "soccer", league: "ita.1", icon: "⚽", name: "Serie A", priority: 3 },
+            ],
+            timePeriods: {
+                results: 7,  // 7 days for football results
+                fixtures: 14 // 14 days for football fixtures
+            }
         };
-      }) || [];
-
-      const oddsData = summaryData.header?.competitions?.[0]?.odds?.[0] || {};
-      const odds = {
-        home: oddsData.homeTeamOdds?.moneyLine || "N/A",
-        away: oddsData.awayTeamOdds?.moneyLine || "N/A",
-        draw: oddsData.drawOdds?.moneyLine || "N/A",
-        provider: oddsData.provider?.name || "Unknown Provider"
-      };
-
-      const detailedStats = {
-        goals: goals,
-        possession: summaryData.header?.competitions?.[0]?.possession?.text || event.homeTeam.stats.possession + " - " + event.awayTeam.stats.possession,
-        shots: {
-          home: summaryData.boxscore?.teams?.[0]?.statistics?.find(stat => stat.name === "shots")?.displayValue || event.homeTeam.stats.shots,
-          away: summaryData.boxscore?.teams?.[1]?.statistics?.find(stat => stat.name === "shots")?.displayValue || event.awayTeam.stats.shots,
-        },
-      };
-
-      return {
-        ...event,
-        keyEvents,
-        odds,
-        detailedStats,
-        clock: summaryData.header?.competitions?.[0]?.status?.type?.detail || event.clock,
-        period: summaryData.header?.competitions?.[0]?.status?.period || event.period,
-        broadcast: summaryData.header?.competitions?.[0]?.broadcasts?.[0]?.media?.shortName || event.broadcast
-      };
-    } catch (error) {
-      console.error(`Error fetching detailed stats for ${event.name}:`, error);
-      return event;
     }
-  }));
 
-  return detailedEvents;
-}
+    async fetchEvents(category) {
+        try {
+            const response = await fetch(`/api/football-events/?category=${category}`, {
+                headers: {
+                    'Authorization': `Token ${localStorage.getItem('authToken') || 'ba59ecf8d26672d59c949b70453c361e74c2eec8'}`
+                },
+                credentials: 'include'
+            });
+            if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+            const events = await response.json();
+            return this.mapEvents(events);
+        } catch (error) {
+            console.error(`Error fetching football events (${category}):`, error);
+            return [];
+        }
+    }
 
-export function formatEventList(events, sportKey, showLocation = false) {
-  if (!events || !events.length) {
-    console.log(`No events to format for ${sportKey} event list`);
-    return `<p>No upcoming ${sportKey} fixtures available.</p>`;
-  }
-  const currentTime = new Date();
-  const sevenDaysFuture = new Date();
-  sevenDaysFuture.setDate(currentTime.getDate() + 7);
+    mapEvents(events) {
+        return events
+            .map(event => ({
+                id: event.event_id,
+                name: event.name,
+                date: event.date,
+                state: event.state,
+                status_description: event.status_description,
+                status_detail: event.status_detail,
+                league: {
+                    id: event.league.league_id,
+                    name: event.league.name,
+                    icon: event.league.icon,
+                    priority: event.league.priority
+                },
+                venue: event.venue,
+                home_team: {
+                    name: event.home_team.name,
+                    logo: event.home_team.logo || window.default_avatar_url || '/static/img/default-avatar.png'
+                },
+                away_team: {
+                    name: event.away_team.name,
+                    logo: event.away_team.logo || window.default_avatar_url || '/static/img/default-avatar.png'
+                },
+                home_score: event.home_score,
+                away_score: event.away_score,
+                home_stats: event.home_stats,
+                away_stats: event.away_stats,
+                clock: event.clock,
+                period: event.period,
+                broadcast: event.broadcast,
+                key_events: event.key_events,
+                odds: event.odds,
+                detailed_stats: event.detailed_stats
+            }))
+            .sort((a, b) => {
+                // First sort by date
+                const dateComparison = new Date(a.date) - new Date(b.date);
+                if (dateComparison !== 0) return dateComparison;
+                
+                // Then sort by league priority
+                const leaguePriorityComparison = a.league.priority - b.league.priority;
+                if (leaguePriorityComparison !== 0) return leaguePriorityComparison;
+                
+                // Finally sort by league name
+                return a.league.name.localeCompare(b.league.name);
+            });
+    }
 
-  const upcomingEvents = events
-    .filter(event => {
-      const eventDate = new Date(event.date);
-      return (eventDate > currentTime && eventDate <= sevenDaysFuture) || event.state === "in";
-    })
-    .sort((a, b) => {
-      if (a.state === "in" && b.state !== "in") return -1;
-      if (a.state !== "in" && b.state === "in") return 1;
-      if (a.priority !== b.priority) return a.priority - b.priority;
-      return new Date(a.date) - new Date(b.date);
-    });
-
-  if (!upcomingEvents.length) {
-    console.log(`No upcoming events after filtering for ${sportKey}`);
-    return `<p>No upcoming ${sportKey} fixtures available.</p>`;
-  }
-
-  let eventItems = '';
-  const eventsByLeague = upcomingEvents.reduce((acc, event) => {
-    const league = event.league || "Other";
-    if (!acc[league]) acc[league] = [];
-    acc[league].push(event);
-    return acc;
-  }, {});
-
-  let totalEvents = 0;
-  for (const league in eventsByLeague) {
-    if (totalEvents >= 4) break;
-    const leagueEvents = eventsByLeague[league];
-    const eventsToShow = leagueEvents.slice(0, 4 - totalEvents);
-    const icon = leagueEvents[0].icon || "⚽";
-
-    const leagueItems = eventsToShow.map((event, index) => {
-      const venue = event.venue.fullName || `${event.venue.address.city}, ${event.venue.address.state}`;
-      const eventId = event.id || `${league}-${index}`;
-
-      let displayText = event.state === "in" && event.scores ?
-        `<span class="live-score" style="color: #e63946; font-weight: bold;">${event.scores.homeScore} - ${event.scores.awayScore} (${event.scores.statusDetail})</span>` :
-        event.state === "post" ? `${event.homeTeam.score} - ${event.awayTeam.score} (${event.statusDetail})` :
-        `${event.displayDate} ${event.time}`;
-
-      const oddsContent = event.odds ? `
-        <div class="betting-odds">
-          <p><strong>Betting Odds (${event.odds.provider}):</strong></p>
-          <p>${event.homeTeam.name}: ${event.odds.home}</p>
-          <p>${event.awayTeam.name}: ${event.odds.away}</p>
-          <p>Draw: ${event.odds.draw}</p>
-        </div>
-      ` : "<p>Betting odds not available.</p>";
-
-      let detailsContent = '';
-      if (event.state === "in" && event.detailedStats) {
-        const goalsList = event.detailedStats.goals.length ?
-          `<ul class="goal-list">${
-            event.detailedStats.goals.map(goal => `
-              <li>${goal.scorer} (${goal.team}) - ${goal.time}${goal.assist && goal.assist !== "Unassisted" ? `, Assist: ${goal.assist}` : ""}</li>
-            `).join("")
-          }</ul>` : "<span class='no-goals'>No goals</span>";
-
-        detailsContent = `
-          <div class="match-details" style="display: none;">
-            <div class="match-stats">
-              <div class="team-stats">
-                <p><strong>${event.homeTeam.name}:</strong> Form: ${event.homeTeam.form} | Record: ${event.homeTeam.record}</p>
-                <p><strong>${event.awayTeam.name}:</strong> Form: ${event.awayTeam.form} | Record: ${event.awayTeam.record}</p>
-              </div>
-              <div class="game-stats">
-                <p>Possession: ${event.detailedStats.possession}</p>
-                <p>Shots (On Target): ${event.detailedStats.shots.home} (${event.homeTeam.stats.shotsOnTarget}) - ${event.detailedStats.shots.away} (${event.awayTeam.stats.shotsOnTarget})</p>
-                <p>Corners: ${event.homeTeam.stats.corners} - ${event.awayTeam.stats.corners}</p>
-                <p>Fouls: ${event.homeTeam.stats.fouls} - ${event.awayTeam.stats.fouls}</p>
-              </div>
-              <div class="key-events">
-                ${goalsList}
-              </div>
-              <div class="broadcast-info">
-                <p>Broadcast: ${event.broadcast}</p>
-              </div>
-              ${oddsContent}
-            </div>
-          </div>
-        `;
-        console.log(`formatEventList: Added .match-details for in-progress match (ID: ${eventId})`);
-      } else if (event.state === "post") {
-        console.log(`Formatting post event: ${event.homeTeam.name} vs ${event.awayTeam.name}, Scores: ${event.homeTeam.score} - ${event.awayTeam.score}, KeyEvents: ${event.keyEvents.length}`);
+    filterEvents(events, category) {
+        const currentTime = new Date();
+        const resultsDaysAgo = new Date(currentTime);
+        resultsDaysAgo.setDate(currentTime.getDate() - this.config.timePeriods.results);
         
-        const homeGoals = event.detailedStats?.goals?.filter(goal => goal.team === event.homeTeam.name) || [];
-        const awayGoals = event.detailedStats?.goals?.filter(goal => goal.team === event.awayTeam.name) || [];
+        const fixturesDaysAgo = new Date(currentTime);
+        fixturesDaysAgo.setDate(currentTime.getDate() + this.config.timePeriods.fixtures);
 
-        const homeGoalsList = homeGoals.length ?
-          `<ul class="goal-list">${
-            homeGoals.map(goal => `
-              <li>${goal.scorer} - ${goal.time}${goal.assist && goal.assist !== "Unassisted" ? `, Assist: ${goal.assist}` : ""}</li>
-            `).join("")
-          }</ul>` : "<span class='no-goals'>No goals</span>";
+        let filteredEvents = events;
 
-        const awayGoalsList = awayGoals.length ?
-          `<ul class="goal-list">${
-            awayGoals.map(goal => `
-              <li>${goal.scorer} - ${goal.time}${goal.assist && goal.assist !== "Unassisted" ? `, Assist: ${goal.assist}` : ""}</li>
-            `).join("")
-          }</ul>` : "<span class='no-goals'>No goals</span>";
+        if (category === 'fixtures') {
+            filteredEvents = events.filter(match => {
+                const matchDate = new Date(match.date);
+                return match.state === "pre" && 
+                       matchDate > currentTime && 
+                       matchDate <= fixturesDaysAgo;
+            });
+        } else if (category === 'inplay') {
+            filteredEvents = events.filter(match => match.state === "in");
+        } else if (category === 'results') {
+            filteredEvents = events.filter(match => {
+                const matchDate = new Date(match.date);
+                return (match.state === "post" || match.completed) && 
+                       matchDate >= resultsDaysAgo;
+            });
+        }
 
-        const cardsList = event.keyEvents.filter(e => e.isYellowCard || e.isRedCard).length ?
-          `<ul class="card-list">${
-            event.keyEvents.filter(e => e.isYellowCard || e.isRedCard).map(card => `
-              <li class="${card.isRedCard ? 'red-card' : 'yellow-card'}">${card.player} (${card.team}) - ${card.time} (${card.type})</li>
-            `).join("")
-          }</ul>` : "<span class='no-cards'>No cards</span>";
+        // Sort events based on category
+        if (category === 'fixtures') {
+            filteredEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
+        } else {
+            filteredEvents.sort((a, b) => new Date(b.date) - new Date(a.date));
+        }
 
-        detailsContent = `
-          <div class="match-details" style="display: none;">
-            <div class="match-stats">
-              <div class="game-stats">
-                <p><strong>Final Score:</strong> ${event.homeTeam.score} - ${event.awayTeam.score} (${event.statusDetail})</p>
-                <p><strong>Possession:</strong> ${event.homeTeam.stats.possession} - ${event.awayTeam.stats.possession}</p>
-                <p><strong>Shots (On Target):</strong> ${event.homeTeam.stats.shots} (${event.homeTeam.stats.shotsOnTarget}) - ${event.awayTeam.stats.shots} (${event.awayTeam.stats.shotsOnTarget})</p>
-                <p><strong>Corners:</strong> ${event.homeTeam.stats.corners} - ${event.awayTeam.stats.corners}</p>
-                <p><strong>Fouls:</strong> ${event.homeTeam.stats.fouls} - ${event.awayTeam.stats.fouls}</p>
-              </div>
-              <div class="key-events">
-                <div class="team-goals">
-                  <p><strong>${event.homeTeam.name} Goals:</strong></p>
-                  ${homeGoalsList}
+        return filteredEvents;
+    }
+
+    formatEvents(events, category, isCentralFeed = false) {
+        const defaultAvatar = window.default_avatar_url || '/static/img/default-avatar.png';
+        
+        // Group events by date
+        const eventsByDate = events.reduce((acc, event) => {
+            const date = new Date(event.date).toLocaleDateString('en-GB', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long'
+            });
+            if (!acc[date]) {
+                acc[date] = [];
+            }
+            acc[date].push(event);
+            return acc;
+        }, {});
+
+        // Sort dates
+        const sortedDates = Object.keys(eventsByDate).sort((a, b) => {
+            return new Date(a) - new Date(b);
+        });
+
+        // Generate HTML for each date group
+        return sortedDates.map(date => {
+            const dateEvents = eventsByDate[date];
+            const eventsHtml = dateEvents.map(event => {
+                const home_team = event.home_team || { name: 'Unknown Team', logo: defaultAvatar };
+                const away_team = event.away_team || { name: 'Unknown Team', logo: defaultAvatar };
+                
+                // Validate logo URLs
+                const home_logo = home_team.logo && home_team.logo.startsWith('http') ? home_team.logo : defaultAvatar;
+                const away_logo = away_team.logo && away_team.logo.startsWith('http') ? away_team.logo : defaultAvatar;
+                
+                const eventClass = this.getEventClass(event);
+                const matchDetails = this.formatMatchDetails(event);
+                
+                return `
+                    <div class="expandable-card ${eventClass}" data-event-id="${event.id}">
+                        <div class="card-header">
+                            <div class="match-info">
+                                <div class="teams">
+                                    <div class="team">
+                                        <img src="${home_logo}" alt="${home_team.name}" onerror="this.src='${defaultAvatar}'">
+                                        <span class="team-name">${home_team.name}</span>
+                                    </div>
+                                    <div class="score">
+                                        ${event.state === 'in' ? `<span class="live-score">${event.home_score} - ${event.away_score}</span>` : ''}
+                                    </div>
+                                    <div class="team">
+                                        <img src="${away_logo}" alt="${away_team.name}" onerror="this.src='${defaultAvatar}'">
+                                        <span class="team-name">${away_team.name}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="match-meta">
+                                <span class="location">${event.venue}</span>
+                            </div>
+                        </div>
+                        <div class="match-details">
+                            ${matchDetails}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            return `
+                <div class="date-group">
+                    <h3 class="date-header">${date}</h3>
+                    <div class="events-container">
+                        ${eventsHtml}
+                    </div>
                 </div>
-                <div class="team-goals">
-                  <p><strong>${event.awayTeam.name} Goals:</strong></p>
-                  ${awayGoalsList}
+            `;
+        }).join('');
+    }
+
+    formatMatchDetails(event) {
+        let html = '<div class="match-stats">';
+
+        // Team Stats
+        if (event.home_stats && event.away_stats) {
+            html += `
+                <div class="team-stats">
+                    <p>Possession: ${event.home_stats.possession} - ${event.away_stats.possession}</p>
+                    <p>Shots: ${event.home_stats.shots} - ${event.away_stats.shots}</p>
+                    <p>Shots on Target: ${event.home_stats.shots_on_target} - ${event.away_stats.shots_on_target}</p>
+                    <p>Corners: ${event.home_stats.corners} - ${event.away_stats.corners}</p>
+                    <p>Fouls: ${event.home_stats.fouls} - ${event.away_stats.fouls}</p>
                 </div>
-                <p><strong>Cards:</strong></p>
-                ${cardsList}
-              </div>
-              <div class="team-stats">
-                <p><strong>${event.homeTeam.name}:</strong> Form: ${event.homeTeam.form} | Record: ${event.homeTeam.record}</p>
-                <p><strong>${event.awayTeam.name}:</strong> Form: ${event.awayTeam.form} | Record: ${event.awayTeam.record}</p>
-              </div>
-              <div class="broadcast-info">
-                <p><strong>Broadcast:</strong> ${event.broadcast}</p>
-              </div>
-              ${oddsContent}
+            `;
+        }
+
+        // Key Events
+        if (event.key_events && event.key_events.length) {
+            html += `
+                <div class="key-events">
+                    <h4>Key Events</h4>
+                    <ul>
+                        ${event.key_events.map(ke => `
+                            <li class="${this.getEventClass(ke)}">
+                                ${ke.time} - ${ke.player} (${ke.team}) - ${ke.type}
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+
+        // Match Meta
+        html += `
+            <div class="match-meta">
+                <span class="datetime">${new Date(event.date).toLocaleString()}</span>
+                <span class="location">${event.venue}</span>
             </div>
-          </div>
         `;
-        console.log(`formatEventList: Added .match-details for completed match (ID: ${eventId})`);
-      } else {
-        detailsContent = `
-          <div class="match-details" style="display: none;">
-            <div class="match-stats">
-              <div class="team-stats">
-                <p><strong>${event.homeTeam.name}:</strong> Form: ${event.homeTeam.form} | Record: ${event.homeTeam.record}</p>
-                <p><strong>${event.awayTeam.name}:</strong> Form: ${event.awayTeam.form} | Record: ${event.awayTeam.record}</p>
-              </div>
-              <div class="game-stats">
-                <p>Match stats will be available once the game starts.</p>
-              </div>
-              <div class="broadcast-info">
-                <p>Broadcast: ${event.broadcast}</p>
-              </div>
-              ${oddsContent}
-            </div>
-          </div>
-        `;
-        console.log(`formatEventList: Added .match-details for pre-state match (ID: ${eventId})`);
-      }
 
-      return `
-        <div class="carousel-event-card expandable-card ${event.state === "in" ? 'live-match' : ''}" data-event-id="${eventId}">
-          <div class="card-header" style="display: flex; justify-content: ${showLocation ? 'space-between' : 'flex-start'}; align-items: center; cursor: pointer;">
-            <span>
-              ${event.homeTeam.logo ? `<img src="${event.homeTeam.logo}" alt="${event.homeTeam.name} Crest" class="team-crest" style="width: 20px; height: 20px; margin-right: 5px;">` : ""}
-              ${event.homeTeam.name} vs 
-              ${event.awayTeam.logo ? `<img src="${event.awayTeam.logo}" alt="${event.awayTeam.name} Crest" class="team-crest" style="width: 20px; height: 20px; margin-right: 5px;">` : ""}
-              ${event.awayTeam.name} - ${displayText}
-            </span>
-            ${showLocation ? `<span class="event-location">${venue}</span>` : ""}
-          </div>
-          ${detailsContent}
-        </div>
-      `;
-    }).join("");
+        html += '</div>';
+        return html;
+    }
 
-    eventItems += `<div class="league-group"><p class="league-header"><span class="sport-icon">${icon}</span> <strong>${league}</strong></p>${leagueItems}</div>`;
-    totalEvents += eventsToShow.length;
-  }
-
-  return eventItems || `<p>No upcoming ${sportKey} fixtures available.</p>`;
+    getEventClass(event) {
+        if (event.is_goal) return 'goal';
+        if (event.is_yellow_card) return 'yellow-card';
+        if (event.is_red_card) return 'red-card';
+        return '';
+    }
 }
+
+// Create and export a singleton instance
+const footballHandler = new FootballEventsHandler();
+
+// Export the handler instance and its methods
+export const formatEvents = (events, category, isCentralFeed) => footballHandler.formatEvents(events, category, isCentralFeed);
+export const fetchEvents = (category) => footballHandler.fetchEvents(category);
+export const formatEventList = (events, sportKey, showLocation) => footballHandler.formatEventList(events, sportKey, showLocation);
+export const formatMatchDetails = (event) => footballHandler.formatMatchDetails(event);
+export const getEventClass = (event) => footballHandler.getEventClass(event);
 
 export function formatFootballTable(events) {
   if (!events || !events.length) {
@@ -409,7 +295,7 @@ export function formatFootballTable(events) {
       const timeOrScore = event.state === "in" && event.scores ?
         `<span class="live-score">${event.scores.homeScore} vs ${event.scores.awayScore}</span>` :
         event.state === "post" ?
-        `<span class="final-score">${event.homeTeam.score} vs ${event.awayTeam.score} (${event.statusDetail})</span>` :
+        `<span class="final-score">${event.homeTeam.score} vs ${event.awayTeam.score}</span>` :
         `${event.displayDate} ${event.time}`;
 
       const oddsContent = event.odds ? `
@@ -423,8 +309,8 @@ export function formatFootballTable(events) {
 
       let detailsContent = '';
       if (event.state === "in" && event.detailedStats) {
-        const homeGoals = event.detailedStats.goals.filter(goal => goal.team === event.homeTeam.name);
-        const awayGoals = event.detailedStats.goals.filter(goal => goal.team === event.awayTeam.name);
+        const homeGoals = event.goals?.filter(goal => goal.team === event.homeTeam.name) || [];
+        const awayGoals = event.goals?.filter(goal => goal.team === event.awayTeam.name) || [];
 
         const homeGoalsList = homeGoals.length ?
           `<ul class="goal-list">${
@@ -439,6 +325,17 @@ export function formatFootballTable(events) {
               <li>${goal.scorer} - ${goal.time}${goal.assist && goal.assist !== "Unassisted" ? `, Assist: ${goal.assist}` : ""}</li>
             `).join("")
           }</ul>` : "<span class='no-goals'>No goals</span>";
+
+        const cards = event.cards || [];
+        const cardsList = cards.length
+          ? `<ul class="card-list">${
+              cards.map(card => `
+                <li class="${card.isRedCard ? 'red-card' : 'yellow-card'}">
+                  ${card.player} (${card.team}) - ${card.time} (${card.type})
+                </li>
+              `).join("")
+            }</ul>`
+          : "<span class='no-cards'>No cards</span>";
 
         detailsContent = `
           <div class="match-details" style="display: none;">
@@ -458,8 +355,8 @@ export function formatFootballTable(events) {
                 <p><strong>${event.awayTeam.name}:</strong> Form: ${event.awayTeam.form} | Record: ${event.awayTeam.record}</p>
               </div>
               <div class="game-stats">
-                <p>Possession: ${event.detailedStats.possession}</p>
-                <p>Shots (On Target): ${event.detailedStats.shots.home} (${event.homeTeam.stats.shotsOnTarget}) - ${event.detailedStats.shots.away} (${event.awayTeam.stats.shotsOnTarget})</p>
+                <p>Possession: ${event.homeTeam.stats.possession} - ${event.awayTeam.stats.possession}</p>
+                <p>Shots (On Target): ${event.homeTeam.stats.shots} (${event.homeTeam.stats.shotsOnTarget}) - ${event.awayTeam.stats.shots} (${event.awayTeam.stats.shotsOnTarget})</p>
                 <p>Corners: ${event.homeTeam.stats.corners} - ${event.awayTeam.stats.corners}</p>
                 <p>Fouls: ${event.homeTeam.stats.fouls} - ${event.awayTeam.stats.fouls}</p>
               </div>
@@ -474,8 +371,8 @@ export function formatFootballTable(events) {
       } else if (event.state === "post") {
         console.log(`Formatting post event: ${event.homeTeam.name} vs ${event.awayTeam.name}, Scores: ${event.homeTeam.score} - ${event.awayTeam.score}, KeyEvents: ${event.keyEvents.length}`);
         
-        const homeGoals = event.detailedStats?.goals?.filter(goal => goal.team === event.homeTeam.name) || [];
-        const awayGoals = event.detailedStats?.goals?.filter(goal => goal.team === event.awayTeam.name) || [];
+        const homeGoals = event.goals?.filter(goal => goal.team === event.homeTeam.name) || [];
+        const awayGoals = event.goals?.filter(goal => goal.team === event.awayTeam.name) || [];
 
         const homeGoalsList = homeGoals.length ?
           `<ul class="goal-list">${
@@ -491,18 +388,22 @@ export function formatFootballTable(events) {
             `).join("")
           }</ul>` : "<span class='no-goals'>No goals</span>";
 
-        const cardsList = event.keyEvents.filter(e => e.isYellowCard || e.isRedCard).length ?
-          `<ul class="card-list">${
-            event.keyEvents.filter(e => e.isYellowCard || e.isRedCard).map(card => `
-              <li class="${card.isRedCard ? 'red-card' : 'yellow-card'}">${card.player} (${card.team}) - ${card.time} (${card.type})</li>
-            `).join("")
-          }</ul>` : "<span class='no-cards'>No cards</span>";
+        const cards = event.cards || [];
+        const cardsList = cards.length
+          ? `<ul class="card-list">${
+              cards.map(card => `
+                <li class="${card.isRedCard ? 'red-card' : 'yellow-card'}">
+                  ${card.player} (${card.team}) - ${card.time} (${card.type})
+                </li>
+              `).join("")
+            }</ul>`
+          : "<span class='no-cards'>No cards</span>";
 
         detailsContent = `
           <div class="match-details" style="display: none;">
             <div class="match-stats">
               <div class="game-stats">
-                <p><strong>Final Score:</strong> ${event.homeTeam.score} - ${event.awayTeam.score} (${event.statusDetail})</p>
+                <p><strong>Final Score:</strong> ${event.homeTeam.score} - ${event.awayTeam.score} </p>
                 <p><strong>Possession:</strong> ${event.homeTeam.stats.possession} - ${event.awayTeam.stats.possession}</p>
                 <p><strong>Shots (On Target):</strong> ${event.homeTeam.stats.shots} (${event.homeTeam.stats.shotsOnTarget}) - ${event.awayTeam.stats.shots} (${event.awayTeam.stats.shotsOnTarget})</p>
                 <p><strong>Corners:</strong> ${event.homeTeam.stats.corners} - ${event.awayTeam.stats.corners}</p>

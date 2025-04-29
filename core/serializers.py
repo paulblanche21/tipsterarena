@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from .models import GolfTour, GolfCourse, GolfPlayer, GolfEvent, LeaderboardEntry
 from .models import FootballLeague, FootballTeam, TeamStats, KeyEvent, BettingOdds, DetailedStats, FootballEvent
+from .models import TennisLeague, TennisTournament, TennisPlayer, TennisVenue, TennisEvent, TennisBettingOdds
+from .models import HorseRacingMeeting, HorseRacingRace, HorseRacingResult, Horse, Trainer, Jockey
 from rest_framework.serializers import ModelSerializer
 
 class GolfTourSerializer(serializers.ModelSerializer):
@@ -89,3 +91,92 @@ class FootballEventSerializer(ModelSerializer):
             'home_team', 'away_team', 'home_score', 'away_score', 'home_stats', 'away_stats', 'clock',
             'period', 'broadcast', 'key_events', 'odds', 'detailed_stats'
         ]
+
+class TennisLeagueSerializer(ModelSerializer):
+    class Meta:
+        model = TennisLeague
+        fields = ['league_id', 'name', 'icon', 'priority']
+
+class TennisTournamentSerializer(ModelSerializer):
+    league = TennisLeagueSerializer()
+    
+    class Meta:
+        model = TennisTournament
+        fields = ['tournament_id', 'name', 'league', 'start_date', 'end_date']
+
+class TennisPlayerSerializer(ModelSerializer):
+    class Meta:
+        model = TennisPlayer
+        fields = ['name', 'short_name', 'world_ranking']
+
+class TennisVenueSerializer(ModelSerializer):
+    class Meta:
+        model = TennisVenue
+        fields = ['name', 'court']
+
+class TennisBettingOddsSerializer(ModelSerializer):
+    class Meta:
+        model = TennisBettingOdds
+        fields = ['player1_odds', 'player2_odds', 'provider']
+
+class TennisEventSerializer(ModelSerializer):
+    tournament = TennisTournamentSerializer()
+    player1 = TennisPlayerSerializer()
+    player2 = TennisPlayerSerializer()
+    venue = TennisVenueSerializer()
+    odds = TennisBettingOddsSerializer(many=True)
+
+    class Meta:
+        model = TennisEvent
+        fields = [
+            'event_id', 'tournament', 'date', 'state', 'completed',
+            'player1', 'player2', 'score', 'sets', 'stats', 'clock',
+            'period', 'round_name', 'venue', 'match_type',
+            'player1_rank', 'player2_rank', 'odds'
+        ]
+
+class HorseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Horse
+        fields = ['name', 'age', 'sex', 'colour', 'region']
+
+class TrainerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Trainer
+        fields = ['name', 'location']
+
+class JockeySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Jockey
+        fields = ['name']
+
+class HorseRacingResultSerializer(serializers.ModelSerializer):
+    horse = HorseSerializer()
+    trainer = TrainerSerializer()
+    jockey = JockeySerializer()
+
+    class Meta:
+        model = HorseRacingResult
+        fields = [
+            'position', 'horse', 'trainer', 'jockey', 'time', 'prize',
+            'official_rating', 'rpr', 'comment'
+        ]
+
+class HorseRacingRaceSerializer(serializers.ModelSerializer):
+    results = HorseRacingResultSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = HorseRacingRace
+        fields = [
+            'race_id', 'off_time', 'name', 'distance_round', 'distance',
+            'pattern', 'race_class', 'type', 'age_band', 'rating_band',
+            'prize', 'field_size', 'going', 'rail_movements', 'stalls',
+            'weather', 'surface', 'results'
+        ]
+
+class HorseRacingMeetingSerializer(serializers.ModelSerializer):
+    races = HorseRacingRaceSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = HorseRacingMeeting
+        fields = ['date', 'course', 'races']

@@ -1,0 +1,70 @@
+.football-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.match-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+}
+
+.match-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.match-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.team {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.team-logo-container {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.team-logo {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.team-name {
+    flex: 1;
+    font-weight: 500;
+}
+
+.team-score {
+    font-weight: bold;
+    min-width: 2rem;
+    text-align: center;
+}
+
+.match-status {
+    margin-top: 0.5rem;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.clock, .period {
+    margin: 0 0.5rem;
+} 

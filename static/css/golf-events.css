@@ -8,10 +8,10 @@
 
 .golf-card.expandable-card {
   border: 1px solid #ddd;
-  border-radius: 5px;
+  border-radius: 8px;
   background-color: #fff;
   transition: all 0.3s ease;
-  box-sizing: border-box;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .golf-card.expanded {
@@ -32,15 +32,17 @@
   color: #28a745;
   font-weight: bold;
   animation: blink 1s infinite;
+  margin-left: 8px;
 }
 
 .golf-card .card-header {
-  padding: 10px 15px;
+  padding: 15px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   position: relative;
   transition: background-color 0.3s ease;
+  gap: 8px;
 }
 
 .golf-card .card-header:hover {
@@ -51,98 +53,197 @@
   content: '▼';
   font-size: 0.8em;
   position: absolute;
-  right: 10px;
+  right: 15px;
   top: 50%;
   transform: translateY(-50%);
   transition: transform 0.3s ease;
+  color: #666;
 }
 
 .golf-card .event-info {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 1em;
+  font-size: 1.1em;
+}
+
+.golf-card .tour-icon {
+  font-size: 1.2em;
 }
 
 .golf-card .event-info .event-name {
   font-weight: bold;
+  flex: 1;
 }
 
 .golf-card .event-info .event-status {
   color: #666;
-}
-
-.golf-card .event-info .live-indicator {
   font-size: 0.9em;
 }
 
 .golf-card .event-meta {
   display: flex;
-  justify-content: space-between;
-  font-size: 0.85em;
+  align-items: center;
+  gap: 15px;
+  font-size: 0.9em;
   color: #666;
-  margin-top: 5px;
+  flex-wrap: wrap;
+}
+
+.golf-card .event-meta span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.golf-card .event-meta i {
+  color: #28a745;
+}
+
+.golf-card .tour-name {
+  font-weight: 500;
+  color: #444;
 }
 
 .golf-card .card-content {
-  padding: 15px;
+  padding: 20px;
   border-top: 1px solid #eee;
   background-color: #f9f9f9;
 }
 
 .event-details p {
-  margin: 5px 0;
-  font-size: 0.9em;
-  color: #555;
+  margin: 8px 0;
+  font-size: 0.95em;
+  color: #444;
+  line-height: 1.4;
+}
+
+.event-details p strong {
+  color: #28a745;
+  margin-right: 5px;
 }
 
 .leaderboard-content {
-  margin-bottom: 10px;
+  margin: 15px 0;
 }
 
-.leaderboard-table, .full-leaderboard-table {
+.leaderboard-content h4 {
+  color: #28a745;
+  margin-bottom: 15px;
+  font-size: 1.1em;
+}
+
+.leaderboard-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.85em;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+  background: var(--card-bg);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.leaderboard-table th, .full-leaderboard-table th {
-  background-color: #f4f4f4;
-  padding: 8px;
+.leaderboard-table th {
+  background: var(--primary-color);
+  color: white;
+  padding: 0.75rem;
   text-align: left;
-  border-bottom: 2px solid #ddd;
+  font-weight: 600;
 }
 
-.leaderboard-table td, .full-leaderboard-table td {
-  padding: 8px;
-  border-bottom: 1px solid #eee;
+.leaderboard-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
 }
 
-.leaderboard-table tr:hover, .full-leaderboard-table tr:hover {
-  background-color: #f9f9f9;
+.leaderboard-table tr:last-child td {
+  border-bottom: none;
 }
 
-.leaderboard-table tr.player-active {
-  background-color: #e6ffe6; /* Highlight active players */
+.leaderboard-table tr:hover {
+  background: var(--hover-bg);
 }
 
-.leaderboard-table tr.player-inactive {
-  opacity: 0.7; /* Dim inactive players */
+.player-active {
+  background: var(--success-bg);
+}
+
+.player-inactive {
+  opacity: 0.7;
+}
+
+.player-active td:first-child {
+  position: relative;
+}
+
+.player-active td:first-child::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--success-color);
+}
+
+.leaderboard-status {
+  text-align: center;
+  padding: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
 }
 
 .view-full-leaderboard {
-  margin-top: 10px;
-  padding: 6px 12px;
-  background-color: #28a745;
-  color: #fff;
+  display: block;
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 1rem;
+  background: var(--primary-color);
+  color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 0.9em;
+  font-weight: 600;
+  transition: background-color 0.2s;
 }
 
 .view-full-leaderboard:hover {
-  background-color: #218838;
+  background: var(--primary-hover);
+}
+
+.full-leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+  background: var(--card-bg);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.full-leaderboard-table th {
+  background: var(--primary-color);
+  color: white;
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+}
+
+.full-leaderboard-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.full-leaderboard-table tr:last-child td {
+  border-bottom: none;
+}
+
+.full-leaderboard-table tr:hover {
+  background: var(--hover-bg);
 }
 
 @keyframes blink {
@@ -157,11 +258,17 @@
   }
 
   .golf-card .card-header {
-    padding: 8px 12px;
+    padding: 12px;
   }
 
   .golf-card .card-content {
-    padding: 10px;
+    padding: 15px;
+  }
+
+  .golf-card .event-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
   }
 
   .leaderboard-table, .full-leaderboard-table {
@@ -170,6 +277,6 @@
 
   .leaderboard-table th, .leaderboard-table td,
   .full-leaderboard-table th, .full-leaderboard-table td {
-    padding: 6px;
+    padding: 8px 6px;
   }
 }

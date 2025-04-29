@@ -1,4 +1,170 @@
 // tennis-events.js
+export class TennisEventsHandler {
+    constructor() {
+        this.events = [];
+        this.config = {
+            sport: "tennis",
+            leagues: [
+                { league: "atp", icon: "🎾", name: "ATP Tour", priority: 1 },
+                { league: "wta", icon: "🎾", name: "WTA Tour", priority: 2 },
+            ]
+        };
+    }
+
+    async fetchEvents(category) {
+        console.log(`Fetching tennis events for category: ${category}`);
+        try {
+            const endpoint = `/api/tennis-events/?category=${category}`;
+            const response = await fetch(endpoint, {
+                headers: {
+                    'Authorization': `Token ${localStorage.getItem('authToken') || 'ba59ecf8d26672d59c949b70453c361e74c2eec8'}`
+                },
+                credentials: 'include'
+            });
+            
+            if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+            const events = await response.json();
+            console.log(`Fetched ${events.length} ${category} tennis events`);
+
+            return this.mapEvents(events);
+        } catch (error) {
+            console.error(`Error fetching tennis events (${category}):`, error);
+            return [];
+        }
+    }
+
+    mapEvents(events) {
+        return events
+            .filter(event => {
+                if (!event || !event.event_id || !event.tournament || !event.tournament.id) {
+                    console.warn(`Skipping invalid tennis event:`, event);
+                    return false;
+                }
+                return true;
+            })
+            .map(event => ({
+                id: event.event_id,
+                tournamentId: event.tournament.id,
+                tournamentName: event.tournament.name,
+                date: event.date,
+                displayDate: new Date(event.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+                time: new Date(event.date).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "GMT" }),
+                state: event.state,
+                completed: event.completed,
+                player1: event.player1.name,
+                player2: event.player2.name,
+                player1_rank: event.player1.world_ranking,
+                player2_rank: event.player2.world_ranking,
+                score: event.score,
+                sets: event.sets || [],
+                clock: event.clock,
+                period: event.period,
+                round: event.round,
+                venue: event.venue || "Location TBD",
+                league: event.tournament.league.name,
+                icon: event.tournament.league.icon,
+                priority: event.tournament.league.priority || 1,
+                stats: event.stats || {}
+            }));
+    }
+
+    filterEvents(events, category) {
+        if (!events || !Array.isArray(events)) {
+            console.error('Invalid tennis events data:', events);
+            return [];
+        }
+
+        const currentTime = new Date();
+        const thirtyDaysAgo = new Date(currentTime);
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+        let filteredEvents = events;
+
+        if (category === 'fixtures') {
+            filteredEvents = events.filter(match => match.state === "pre" && new Date(match.date) > currentTime);
+        } else if (category === 'inplay') {
+            filteredEvents = events.filter(match => match.state === "in");
+        } else if (category === 'results') {
+            filteredEvents = events.filter(match => {
+                const matchDate = new Date(match.date);
+                return match.state === "post" && matchDate >= thirtyDaysAgo;
+            });
+        }
+
+        return filteredEvents;
+    }
+
+    formatEvents(events, category, isCentralFeed = false) {
+        // Tennis-specific formatting logic
+        if (!events || !events.length) {
+            return `<p>No ${category} tennis matches available.</p>`;
+        }
+
+        // Group by tournament
+        const eventsByTournament = events.reduce((acc, event) => {
+            const tournament = event.tournamentName || "Other";
+            if (!acc[tournament]) acc[tournament] = [];
+            acc[tournament].push(event);
+            return acc;
+        }, {});
+
+        let html = '<div class="tennis-feed">';
+        
+        for (const tournament in eventsByTournament) {
+            const tournamentEvents = eventsByTournament[tournament];
+            html += `
+                <div class="tournament-group">
+                    <p class="tournament-header"><span class="sport-icon">🎾</span> ${tournament}</p>
+                </div>
+            `;
+
+            // Sort matches: In Play first, then Fixtures, then Results (newest first)
+            const sortedMatches = tournamentEvents.sort((a, b) => {
+                if (a.state === "in" && b.state !== "in") return -1;
+                if (a.state !== "in" && b.state === "in") return 1;
+                if (a.state === "pre" && b.state !== "pre") return -1;
+                if (a.state !== "pre" && b.state === "pre") return 1;
+                return new Date(b.date) - new Date(a.date);
+            });
+
+            for (const match of sortedMatches) {
+                const setsDisplay = match.sets && match.sets.length
+                    ? `
+                        <div class="sets-display">
+                            <div class="sets-row">${match.sets.map(set => `<span>${set.team1Score}</span>`).join(' ')}</div>
+                            <div class="sets-row">${match.sets.map(set => `<span>${set.team2Score}</span>`).join(' ')}</div>
+                        </div>`
+                    : `<span class="score-fallback">${match.score}</span>`;
+
+                const timeOrScore = match.state === "in" ? `(Set ${match.period}, ${match.clock})` : '';
+
+                html += `
+                    <div class="tennis-card expandable-card ${match.state === "in" ? 'live-match' : match.state === "post" ? 'result' : 'fixture'}" data-match-id="${match.id}">
+                        <div class="card-header" style="cursor: pointer;">
+                            <div class="match-info">
+                                <div class="players vertical">
+                                    <span class="player-name">${match.player1} ${match.player1_rank ? `(${match.player1_rank})` : ''}</span>
+                                    <span class="player-name">${match.player2} ${match.player2_rank ? `(${match.player2_rank})` : ''}</span>
+                                </div>
+                                <div class="score vertical">
+                                    ${match.state === "pre" ? '<span>vs</span><span></span>' : setsDisplay}
+                                    ${match.state === "in" ? `<span class="inplay-meta">${timeOrScore}</span>` : ''}
+                                </div>
+                            </div>
+                            <div class="match-meta">
+                                <span class="round">${match.round}</span>
+                                <span class="datetime">${match.displayDate}${match.state === "pre" ? ' ' + match.time : ''}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        html += '</div>';
+        return html;
+    }
+}
 
 // Cache for failed match IDs to avoid repeated failed requests
 export async function fetchEvents(category) {
@@ -27,13 +193,13 @@ export async function fetchMatchDetails(matchId) {
               throw new Error(`HTTP error: ${response.status}`);
           }
           const data = await response.json();
-          console.log(`Fetched details for match ${matchId}: ${data.sets.length} sets`);
+          console.log(`Fetched details for match ${matchId}:`, data);
           return {
               sets: data.sets || [],
               stats: data.stats || {
-                  aces: { team1: 0, team2: 0 },
-                  doubleFaults: { team1: 0, team2: 0 },
-                  servicePointsWon: { team1: 0, team2: 0 },
+                  aces: { team1: data.player1_aces || 0, team2: data.player2_aces || 0 },
+                  doubleFaults: { team1: data.player1_double_faults || 0, team2: data.player2_double_faults || 0 },
+                  servicePointsWon: { team1: data.player1_service_points_won || 0, team2: data.player2_service_points_won || 0 },
               },
           };
       } catch (error) {
@@ -62,7 +228,12 @@ export async function formatEventList(events, sportKey = 'tennis', category, isC
 
   let filteredEvents = [];
   if (category === 'fixtures') {
-    filteredEvents = events.filter(match => match.state === "pre" && new Date(match.date) > currentTime && new Date(match.date) <= sevenDaysFuture);
+    console.log('Current time:', currentTime.toISOString());
+    filteredEvents = events.filter(match => {
+      const matchDate = new Date(match.date);
+      console.log(`Match ${match.id} - Date: ${match.date}, Parsed: ${matchDate.toISOString()}, State: ${match.state}`);
+      return match.state === "pre" && matchDate > currentTime;
+    });
   } else if (category === 'inplay') {
     filteredEvents = events.filter(match => match.state === "in");
   } else if (category === 'results') {
@@ -102,8 +273,8 @@ export async function formatEventList(events, sportKey = 'tennis', category, isC
         <div class="card-header">
           <div class="match-info">
             <div class="players vertical">
-              <span class="player-name">${match.player1}</span>
-              <span class="player-name">${match.player2}</span>
+              <span class="player-name">${match.player1} ${match.player1_rank ? `(${match.player1_rank})` : ''}</span>
+              <span class="player-name">${match.player2} ${match.player2_rank ? `(${match.player2_rank})` : ''}</span>
             </div>
             <div class="score vertical">
               ${category === 'fixtures' ? '<span>vs</span><span></span>' : setsDisplay}
@@ -190,8 +361,8 @@ export async function formatEventTable(matches, sportKey = 'tennis') {
           <div class="card-header" style="cursor: pointer;">
             <div class="match-info">
               <div class="players vertical">
-                <span class="player-name">${match.player1}</span>
-                <span class="player-name">${match.player2}</span>
+                <span class="player-name">${match.player1} ${match.player1_rank ? `(${match.player1_rank})` : ''}</span>
+                <span class="player-name">${match.player2} ${match.player2_rank ? `(${match.player2_rank})` : ''}</span>
               </div>
               <div class="score vertical">
                 ${match.state === "pre" ? '<span>vs</span><span></span>' : setsDisplay}
@@ -217,17 +388,23 @@ export async function formatEventTable(matches, sportKey = 'tennis') {
 document.addEventListener('click', async (e) => {
   if (e.target.classList.contains('load-stats')) {
     const matchId = e.target.getAttribute('data-match-id');
-    e.target.textContent = 'Loading stats...';
-    const matchDetails = await fetchMatchDetails(matchId);
-    const stats = matchDetails.stats || {};
-    const statsContent = stats && Object.keys(stats).length
-      ? `
-        <div class="match-stats">
-          <p>Aces: ${stats.aces.team1 || 0} - ${stats.aces.team2 || 0}</p>
-          <p>Double Faults: ${stats.doubleFaults.team1 || 0} - ${stats.doubleFaults.team2 || 0}</p>
-          <p>Service Points Won: ${stats.servicePointsWon.team1 || 0} - ${stats.servicePointsWon.team2 || 0}</p>
-        </div>`
-      : "<p>No stats available</p>";
-    e.target.outerHTML = statsContent;
+    const statsElement = e.target;
+    statsElement.textContent = 'Loading stats...';
+    try {
+      const matchDetails = await fetchMatchDetails(matchId);
+      const stats = matchDetails.stats || {};
+      const statsContent = stats && Object.keys(stats).length
+        ? `
+          <div class="match-stats">
+            <p>Aces: ${stats.aces.team1 || 0} - ${stats.aces.team2 || 0}</p>
+            <p>Double Faults: ${stats.doubleFaults.team1 || 0} - ${stats.doubleFaults.team2 || 0}</p>
+            <p>Service Points Won: ${stats.servicePointsWon.team1 || 0} - ${stats.servicePointsWon.team2 || 0}</p>
+          </div>`
+        : "<p>No stats available</p>";
+      statsElement.outerHTML = statsContent;
+    } catch (error) {
+      console.error('Error loading stats:', error);
+      statsElement.textContent = 'Error loading stats';
+    }
   }
 });

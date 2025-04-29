@@ -5,7 +5,7 @@ from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
-from core.views import FetchGolfEventsView, GolfEventsList
+from core.views import FetchGolfEventsView, GolfEventsList, FetchFootballEventsView
 from . import views
 
 # URL patterns for the Tipster Arena core app
@@ -89,6 +89,7 @@ urlpatterns = [
     path('api/tennis-events/<str:event_id>/stats/',
          views.tennis_event_stats,
          name='tennis_event_stats'),
+    path('api/horse-racing-events/', views.horse_racing_events, name='horse_racing_events'),
 ]
 
 if settings.DEBUG:

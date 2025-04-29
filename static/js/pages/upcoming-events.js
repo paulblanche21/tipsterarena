@@ -1,343 +1,140 @@
 import { getCSRFToken } from './utils.js';
-import { fetchEvents as fetchFootballEvents, formatEventList as formatFootballList, formatFootballTable } from './football-events.js';
-import { fetchEvents as fetchTennisEvents, formatEventList as formatTennisList } from './tennis-events.js';
-import { fetchEvents as fetchGolfEvents, formatEventList as formatGolfList, setupLeaderboardUpdates } from './golf-events.js';
-import { fetchEvents as fetchHorseRacingEvents, formatEventList as formatHorseRacingList } from './horse-racing-events.js';
+import { FootballEventsHandler } from './football-events.js';
+import { TennisEventsHandler } from './tennis-events.js';
+import { GolfEventsHandler } from './golf-events.js';
+import { HorseRacingEventsHandler } from './horse-racing-events.js';
 
 // Configuration for sports and their respective leagues
 const SPORT_CONFIG = {
-    football: [
-        { sport: "soccer", league: "eng.1", icon: "⚽", name: "Premier League", priority: 1 },
-        { sport: "soccer", league: "esp.1", icon: "⚽", name: "La Liga", priority: 2 },
-        { sport: "soccer", league: "ita.1", icon: "⚽", name: "Serie A", priority: 3 },
-    ],
-    golf: [
-        { sport: "golf", league: "pga", icon: "⛳", name: "PGA Tour", priority: 1 },
-        { sport: "golf", league: "lpga", icon: "⛳", name: "LPGA Tour", priority: 2 }
-    ],
-    tennis: [
-        { sport: "tennis", league: "atp", icon: "🎾", name: "ATP Tour", priority: 1 },
-        { sport: "tennis", league: "wta", icon: "🎾", name: "WTA Tour", priority: 2 },
-    ],
-    horse_racing: [
-        { sport: "horse_racing", league: "uk_irish", icon: "🏇", name: "UK & Irish Racing" }
-    ]
+    football: {
+        leagues: new FootballEventsHandler().config.leagues,
+        timePeriods: new FootballEventsHandler().config.timePeriods
+    },
+    tennis: {
+        leagues: new TennisEventsHandler().config.leagues,
+        timePeriods: new TennisEventsHandler().config.timePeriods
+    },
+    golf: {
+        leagues: new GolfEventsHandler().config.leagues,
+        timePeriods: new GolfEventsHandler().config.timePeriods
+    },
+    horse_racing: {
+        leagues: new HorseRacingEventsHandler().config.leagues,
+        timePeriods: new HorseRacingEventsHandler().config.timePeriods
+    }
 };
 
-// Mapping of sports to their fetch and format functions
-const SPORT_MODULES = {
-    football: { fetch: fetchFootballEvents, format: formatFootballList, formatCentral: formatFootballTable },
-    golf: { fetch: fetchGolfEvents, format: formatGolfList, formatCentral: formatGolfList },
-    tennis: { fetch: fetchTennisEvents, format: formatTennisList },
-    horse_racing: { fetch: fetchHorseRacingEvents, format: formatHorseRacingList, formatCentral: formatHorseRacingList }
+// Sport-specific handlers
+const SPORT_HANDLERS = {
+    football: new FootballEventsHandler(),
+    tennis: new TennisEventsHandler(),
+    golf: new GolfEventsHandler(),
+    horse_racing: new HorseRacingEventsHandler()
 };
 
-// Formatters for modal rendering
-const FORMATTERS = {
-    football: formatFootballTable,
-    golf: formatGolfList,
-    tennis: formatTennisList,
-    horse_racing: renderHorseRacingEvents
-};
-
+// Global variables
 let globalEvents = {};
 let isInitialized = false;
 
-async function fetchEventsForSport(sport) {
-    console.log(`Fetching events for ${sport}`);
-    const sportConfigs = SPORT_CONFIG[sport];
-    const module = SPORT_MODULES[sport];
-    if (!module || !sportConfigs.length) {
-        console.warn(`No module or configs for ${sport}`);
+// Main function to fetch events for a sport
+async function fetchEventsForSport(sport, category) {
+    try {
+        if (SPORT_HANDLERS[sport]) {
+            const events = await SPORT_HANDLERS[sport].fetchEvents(category);
+            const filteredEvents = SPORT_HANDLERS[sport].filterEvents(events, category);
+            globalEvents[sport] = filteredEvents; // Store filtered events in global cache
+            return filteredEvents;
+        }
+        return [];
+    } catch (error) {
+        console.error(`Error fetching ${sport} events:`, error);
+        return [];
+    }
+}
+
+// Function to filter events based on category and sport
+function filterEvents(events, category, sportKey) {
+    if (!events || !Array.isArray(events)) {
+        console.error('Invalid events data:', events);
         return [];
     }
 
-    let allEvents = [];
-    if (sport === "football" || sport === "tennis") {
-        const categories = ['fixtures', 'inplay', 'results'];
-        for (const category of categories) {
-            try {
-                const endpoint = sport === "football" ? `/api/football-events/?category=${category}` : `/api/tennis-events/?category=${category}`;
-                const response = await fetch(endpoint);
-                if (!response.ok) throw new Error(`HTTP error: ${response.status} for ${category}`);
-                const events = await response.json();
-                console.log(`Raw API response for ${sport} (${category}):`, events);
-                console.log(`Fetched ${events.length} ${category} events from backend for ${sport}`);
-
-                let mappedEvents;
-                if (sport === "football") {
-                    mappedEvents = events
-                        .filter(event => {
-                            if (!event || !event.event_id || !event.league) {
-                                console.warn(`Skipping invalid event:`, event);
-                                return false;
-                            }
-                            return true;
-                        })
-                        .map(event => ({
-                            id: event.event_id,
-                            tournamentId: event.league.league_id,
-                            tournamentName: event.league.name,
-                            date: event.date,
-                            displayDate: new Date(event.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-                            time: new Date(event.date).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "GMT" }),
-                            state: event.state,
-                            completed: event.state === 'post',
-                            player1: event.home_team.name,
-                            player2: event.away_team.name,
-                            score: event.home_score && event.away_score ? `${event.home_score}-${event.away_score}` : null,
-                            sets: [],
-                            clock: event.clock,
-                            period: event.period,
-                            round: null,
-                            venue: event.venue || "Location TBD",
-                            league: event.league.name,
-                            icon: event.league.icon,
-                            priority: event.league.priority,
-                            stats: {
-                                home: event.home_stats,
-                                away: event.away_stats
-                            },
-                            homeTeam: {
-                                name: event.home_team.name,
-                                logo: event.home_team.logo,
-                                score: event.home_score,
-                                form: event.home_team.form,
-                                record: event.home_team.record,
-                                stats: event.home_stats
-                            },
-                            awayTeam: {
-                                name: event.away_team.name,
-                                logo: event.away_team.logo,
-                                score: event.away_score,
-                                form: event.away_team.form,
-                                record: event.away_team.record,
-                                stats: event.away_stats
-                            },
-                            broadcast: event.broadcast,
-                            keyEvents: event.key_events,
-                            odds: event.odds,
-                            detailedStats: event.detailed_stats
-                        }));
-                } else if (sport === "tennis") {
-                    mappedEvents = events
-                        .filter(event => {
-                            if (!event || !event.event_id || !event.tournament || !event.tournament.id) {
-                                console.warn(`Skipping invalid event:`, event);
-                                return false;
-                            }
-                            return true;
-                        })
-                        .map(event => ({
-                            id: event.event_id,
-                            tournamentId: event.tournament.id,
-                            tournamentName: event.tournament.name,
-                            date: event.date,
-                            displayDate: new Date(event.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-                            time: new Date(event.date).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "GMT" }),
-                            state: event.state,
-                            completed: event.completed,
-                            player1: event.player1_name,
-                            player2: event.player2_name,
-                            score: event.score,
-                            sets: event.sets || [],
-                            clock: event.clock,
-                            period: event.period,
-                            round: event.round_name,
-                            venue: event.venue?.name || "Location TBD",
-                            league: event.tournament.league.name,
-                            icon: event.tournament.league.icon,
-                            priority: event.tournament.league.priority,
-                            stats: event.stats || {}
-                        }));
-                }
-                allEvents = allEvents.concat(mappedEvents);
-            } catch (error) {
-                console.error(`Error fetching ${category} for ${sport}:`, error);
-            }
-        }
-    } else if (sport === "horse_racing") {
-        allEvents = await module.fetch();
-        console.log(`Horse Racing: Fetched ${allEvents.length} events`, allEvents);
-    } else if (sport === "golf") {
-        const states = ['pre', 'in', 'post'];
-        for (const state of states) {
-            for (const config of sportConfigs) {
-                try {
-                    const leagueEvents = await module.fetch(state, config.league);
-                    if (!Array.isArray(leagueEvents)) {
-                        console.error(`fetchEvents returned non-array for ${config.name} (${state}):`, leagueEvents);
-                        continue;
-                    }
-                    console.log(`${config.name}: Fetched ${leagueEvents.length} ${state} events`);
-                    allEvents = allEvents.concat(leagueEvents);
-                } catch (error) {
-                    console.error(`Error fetching ${config.name} (${state}):`, error);
-                }
-            }
-        }
-    } else {
-        const categories = ['fixtures', 'inplay', 'results'];
-        for (const category of categories) {
-            for (const config of sportConfigs) {
-                try {
-                    const leagueEvents = await module.fetch(category);
-                    console.log(`${config.name}: Fetched ${leagueEvents.length} ${category} events`);
-                    allEvents = allEvents.concat(leagueEvents);
-                } catch (error) {
-                    console.error(`Error fetching ${config.name} (${category}):`, error);
-                }
-            }
-        }
-    }
-
     const currentTime = new Date();
-    const sevenDaysAgo = new Date();
-    const sevenDaysFuture = new Date();
-    sevenDaysAgo.setDate(currentTime.getDate() - 7);
-    sevenDaysFuture.setDate(currentTime.getDate() + 7);
-    allEvents = allEvents.filter(event => {
-        const eventDate = new Date(event.date);
-        const isWithinRange = eventDate >= sevenDaysAgo && eventDate <= sevenDaysFuture;
-        if (!isWithinRange) {
-            console.log(`Excluding event: ${event.name || event.venue}, Date: ${event.date}`);
+    
+    // Sport-specific time periods
+    const timePeriods = {
+        football: {
+            results: 7,  // 7 days for football results
+            fixtures: 14 // 14 days for football fixtures
+        },
+        tennis: {
+            results: 30, // 30 days for tennis results
+            fixtures: 30 // 30 days for tennis fixtures
+        },
+        golf: {
+            results: 14, // 14 days for golf results
+            fixtures: 30 // 30 days for golf fixtures
+        },
+        horse_racing: {
+            results: 7,  // 7 days for horse racing results
+            fixtures: 7  // 7 days for horse racing fixtures
         }
-        return isWithinRange;
-    });
+    };
 
-    console.log(`Events before deduplication for ${sport}:`, allEvents);
-    let uniqueEvents;
-    if (sport === 'horse_racing') {
-        // Deduplicate horse racing events by date and venue
-        uniqueEvents = Array.from(new Map(allEvents.map(event => [`${event.date}_${event.venue}`, event])).values());
-    } else {
-        // Deduplicate other sports by event ID
-        uniqueEvents = Array.from(new Map(allEvents.map(event => [event.id, event])).values());
-    }
-    globalEvents[sport] = uniqueEvents;
-    console.log(`Total ${sport} events fetched (after deduplication): ${uniqueEvents.length}`);
-    console.log(`Final events for ${sport}:`, uniqueEvents);
-    return uniqueEvents;
-}
+    const sportPeriod = timePeriods[sportKey] || { results: 7, fixtures: 14 }; // Default to 7 days if sport not specified
+    const resultsDaysAgo = new Date(currentTime);
+    resultsDaysAgo.setDate(currentTime.getDate() - sportPeriod.results);
+    
+    const fixturesDaysAgo = new Date(currentTime);
+    fixturesDaysAgo.setDate(currentTime.getDate() + sportPeriod.fixtures);
 
-function filterEvents(events, category, sportKey) {
-    console.log(`Filtering events for ${sportKey}, category: ${category}`);
-    const currentTime = new Date();
-    const sevenDaysAgo = new Date();
-    const sevenDaysFuture = new Date();
-    sevenDaysAgo.setDate(currentTime.getDate() - 7);
-    sevenDaysFuture.setDate(currentTime.getDate() + 7);
+    let filteredEvents = events;
 
-    if (sportKey === 'horse_racing') {
-        if (category === 'upcoming_meetings') {
-            return events.filter(meeting => {
-                const meetingDate = new Date(meeting.date);
-                const today = new Date(currentTime.setHours(0, 0, 0, 0));
-                const tomorrow = new Date(today);
-                tomorrow.setDate(today.getDate() + 1);
-                const isTodayOrTomorrow = meetingDate >= today && meetingDate <= tomorrow;
-                console.log(`Meeting ${meeting.venue} (${meeting.date}): isTodayOrTomorrow=${isTodayOrTomorrow}`);
-                return isTodayOrTomorrow;
-            });
-        } else if (category === 'at_the_post') {
-            return events
-                .filter(meeting => new Date(meeting.date).toDateString() === currentTime.toDateString())
-                .map(meeting => ({
-                    ...meeting,
-                    races: (meeting.races || []).filter(race => {
-                        const raceTime = new Date(`${meeting.date}T${race.race_time}`);
-                        const timeDiff = Math.abs(raceTime - currentTime) / (1000 * 60);
-                        return timeDiff <= 30;
-                    })
-                }))
-                .filter(meeting => meeting.races.length > 0);
-        } else if (category === 'race_results') {
-            return events
-                .map(meeting => ({
-                    ...meeting,
-                    races: (meeting.races || []).filter(race => race.result && race.result.positions.length > 0)
-                }))
-                .filter(meeting => meeting.races.length > 0);
-        }
-    } else {
-        const filteredEvents = events.filter(event => {
-            const eventDate = new Date(event.date);
-            if (category === 'fixtures') {
-                return event.state === 'pre' && eventDate > currentTime && eventDate <= sevenDaysFuture;
-            } else if (category === 'inplay') {
-                return event.state === 'in';
-            } else if (category === 'results') {
-                const isWithinSevenDays = eventDate >= sevenDaysAgo && eventDate <= currentTime;
-                return event.state === 'post' && isWithinSevenDays;
-            }
-            return false;
-        }).sort((a, b) => {
-            if (sportKey === 'tennis' || sportKey === 'football') {
-                if (a.priority !== b.priority) return a.priority - b.priority;
-            }
-            return new Date(b.date) - new Date(a.date);
+    if (category === 'fixtures') {
+        filteredEvents = events.filter(match => {
+            const matchDate = new Date(match.date);
+            return match.state === "pre" && 
+                   matchDate > currentTime && 
+                   matchDate <= fixturesDaysAgo;
         });
-        console.log(`Filtered ${filteredEvents.length} ${category} events for ${sportKey}:`, filteredEvents);
-        return filteredEvents;
+    } else if (category === 'inplay') {
+        filteredEvents = events.filter(match => match.state === "in");
+    } else if (category === 'results') {
+        filteredEvents = events.filter(match => {
+            const matchDate = new Date(match.date);
+            return (match.state === "post" || match.completed) && 
+                   matchDate >= resultsDaysAgo;
+        });
     }
-    return [];
+
+    // Sort events based on category
+    if (category === 'fixtures') {
+        filteredEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
+    } else {
+        filteredEvents.sort((a, b) => new Date(b.date) - new Date(a.date));
+    }
+
+    return filteredEvents;
 }
 
-// Renders horse racing events for modal
-async function renderHorseRacingEvents(events, sport, category) {
-    console.log(`Rendering horse racing events for ${category}, count: ${events.length}`);
+// Function to format events for display
+function formatEvents(events, category, isCentralFeed = false) {
     if (!events || events.length === 0) {
         return `<p>No ${category.replace(/_/g, ' ')} available.</p>`;
     }
 
-    let html = '<div class="racecard-feed">';
-    events.forEach(event => {
-        html += `
-            <div class="meeting-card expandable-card">
-                <div class="card-header">
-                    <div class="meeting-info">
-                        <span class="meeting-name">${event.venue} - ${event.displayDate}</span>
-                        <a href="${event.url}" target="_blank">View Full Card</a>
-                    </div>
-                </div>
-                <div class="card-content" style="display: none;">
-                    ${event.races.map(race => `
-                        <div class="race-card">
-                            <div class="race-header">
-                                <p class="race-title"><strong>${race.race_time} - ${race.name}</strong></p>
-                                <p class="race-meta">Runners: ${race.runners} | Going: ${race.going_data} | TV: ${race.tv}</p>
-                            </div>
-                            ${category === 'race_results' && race.result ? `
-                                <div class="race-result">
-                                    <p><strong>Winner:</strong> ${race.result.winner || 'None'}</p>
-                                    <p><strong>Placed:</strong> ${race.result.positions.map(p => `${p.position}. ${p.name}`).join(', ')}</p>
-                                </div>
-                            ` : ''}
-                            <div class="horses-list">
-                                <ul>
-                                    ${race.horses.map(h => `
-                                        <li>
-                                            <strong>${h.finish_status === h.number ? h.number : `${h.number} (${h.finish_status})`}. ${h.name}</strong>
-                                            <span class="jockey">Jockey: ${h.jockey}</span>
-                                            <span class="trainer">Trainer: ${h.trainer}</span>
-                                            <span class="owner">Owner: ${h.owner}</span>
-                                            <span class="odds">Odds: ${h.odds}</span>
-                                            <span>Form: ${h.form}</span>
-                                            <span>RPR: ${h.rpr}</span>
-                                            <span>Spotlight: ${h.spotlight}</span>
-                                            <span>Trainer 14 Days: ${h.trainer_14_days.runs ? `${h.trainer_14_days.wins}/${h.trainer_14_days.runs} (${h.trainer_14_days.percent}%)` : 'N/A'}</span>
-                                        </li>
-                                    `).join('')}
-                                </ul>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-        `;
-    });
-    html += '</div>';
-    return html;
+    const sport = events[0]?.sport;
+    if (SPORT_HANDLERS[sport]) {
+        return SPORT_HANDLERS[sport].formatEvents(events, category, isCentralFeed);
+    }
+
+    // Fallback for sports without handlers
+    return events.map(event => `
+        <div class="event-card">
+            <h3>${event.name}</h3>
+            <p>${event.date}</p>
+        </div>
+    `).join('');
 }
 
 // Populates modal with events
@@ -370,31 +167,20 @@ async function populateModal(sport, category) {
         modalBody.innerHTML = ''; // Clear previous content
         modalBody.innerHTML = '<p>Loading events...</p>';
 
-        if (!globalEvents[sport]) {
-            console.log(`No cached events for ${sport}, fetching...`);
-            await fetchEventsForSport(sport);
-        }
-        const events = globalEvents[sport] || [];
-        console.log(`Found ${events.length} events for ${sport}`);
-        const filteredEvents = filterEvents(events, category, sport);
-        console.log(`Filtered ${filteredEvents.length} events for ${category}`);
-        const formatter = FORMATTERS[sport];
-        if (!formatter) {
-            console.warn(`No formatter for ${sport}`);
-            modalBody.innerHTML = `<p>No ${categoryName.toLowerCase()} available for ${sportName}.</p>`;
-            return;
-        }
-        const html = await formatter(filteredEvents, sport, category, true);
+        // Always fetch fresh events for the requested category
+        const events = await fetchEventsForSport(sport, category);
+        console.log(`Fetched ${events.length} events for ${sport} ${category}`);
+        
+        const html = SPORT_HANDLERS[sport].formatEvents(events, category, true);
         modalBody.innerHTML = html || `<p>No ${categoryName.toLowerCase()} available for ${sportName}.</p>`;
         console.log(`Modal populated for ${sport} ${category}`);
+        
         setupExpandableCards();
-        if (sport === 'golf' && (category === 'inplay' || category === 'results') && filteredEvents.length > 0) {
-            if (typeof setupLeaderboardUpdates === 'function') {
-                setTimeout(() => setupLeaderboardUpdates(), 1000); // Delay to ensure DOM update
-            } else {
-                console.warn('setupLeaderboardUpdates is not defined');
-            }
+        
+        if (sport === 'golf' && (category === 'inplay' || category === 'results') && events.length > 0) {
+            await SPORT_HANDLERS[sport].setupLeaderboardUpdates();
         }
+        
         modal.style.display = 'flex';
     } catch (error) {
         console.error(`Error populating modal for ${sport} ${category}:`, error);

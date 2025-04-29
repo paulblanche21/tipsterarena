@@ -1,7 +1,7 @@
 # core/management/commands/populate_tennis.py
 import requests
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.core.management.base import BaseCommand
 from requests.exceptions import RequestException
 from core.models import TennisLeague, TennisTournament, TennisPlayer, TennisVenue, TennisEvent
@@ -19,10 +19,13 @@ class Command(BaseCommand):
             raise
 
     def fetch_and_store_tennis_events(self):
+        # Get today's date in YYYYMMDD format
+        today = datetime.now().strftime('%Y%m%d')
+        
         # Define ATP and WTA leagues
         leagues = [
-            {'league_id': 'atp', 'name': 'ATP Tour', 'url': 'https://site.api.espn.com/apis/site/v2/sports/tennis/atp/scoreboard', 'priority': 1},
-            {'league_id': 'wta', 'name': 'WTA Tour', 'url': 'https://site.api.espn.com/apis/site/v2/sports/tennis/wta/scoreboard', 'priority': 2},
+            {'league_id': 'atp', 'name': 'ATP Tour', 'url': f'https://site.api.espn.com/apis/site/v2/sports/tennis/atp/scoreboard?dates={today}', 'priority': 1},
+            {'league_id': 'wta', 'name': 'WTA Tour', 'url': f'https://site.api.espn.com/apis/site/v2/sports/tennis/wta/scoreboard?dates={today}', 'priority': 2},
         ]
 
         headers = {

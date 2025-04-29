@@ -6,64 +6,243 @@
     height: 24px;
     vertical-align: middle;
     margin: 0 5px;
-  }
-  
-  .league-group {
-    margin-bottom: 15px;
-  }
-  
-  .league-header {
-    font-size: 16px;
-    font-weight: 600;
-    color: #001f3f;
-    margin: 10px 0 5px;
-    background-color: #f0f0f0;
-    padding: 10px 15px;
-    border-radius: 5px 5px 0 0;
+    object-fit: contain;
+}
+
+.team-logo-container {
+    width: 24px;
+    height: 24px;
     display: flex;
     align-items: center;
-    gap: 5px;
-  }
-  
-  .league-header .sport-icon {
+    justify-content: center;
+    margin: 0 5px;
+}
+
+.team-logo {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.league-group {
+    margin-bottom: 20px;
+}
+
+.league-header {
     font-size: 1.2em;
-  }
-  
-  .live-score {
-    color: #e63946;
-    font-weight: bold;
-  }
-  
-  .goal-list,
-  .card-list {
-    margin: 5px 0;
-    padding-left: 20px;
-  }
-  
-  .goal-list li,
-  .card-list li {
-    margin-bottom: 3px;
-    font-size: 1em; /* Slightly larger for prominence */
-    font-weight: 500; /* Inspired by ha-teamtracker */
-  }
-  
-  .no-goals {
-    font-style: italic;
+    font-weight: 600;
     color: #666;
-  }
-  
-  .yellow-card {
-    color: #ffcc00;
-    font-weight: bold;
-  }
-  
-  .red-card {
-    color: #ff0000;
-    font-weight: bold;
-  }
-  
-  /* Styles for center feed event cards (e.g., event-feed or event-table) */
-  .event-card.expandable-card {
+    padding: 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 2px solid #eee;
+    margin-bottom: 10px;
+}
+
+.sport-icon {
+    font-size: 1.2em;
+}
+
+.expandable-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.expandable-card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.expandable-card.expanded {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.card-header {
+    padding: 12px 15px;
+    background: #f8f9fa;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+}
+
+.card-header::after {
+    content: '▼';
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.8em;
+    color: #666;
+    transition: transform 0.2s ease;
+}
+
+.expandable-card.expanded .card-header::after {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+.match-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.teams {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex: 1;
+}
+
+.team {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 150px;
+}
+
+.team-logo-container {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.team-logo {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.team-name {
+    font-weight: 500;
+    color: #333;
+    font-size: 1em;
+}
+
+.score {
+    font-weight: 600;
+    font-size: 1.1em;
+    color: #333;
+    min-width: 60px;
+    text-align: center;
+}
+
+.live-score {
+    color: #e63946;
+    animation: pulse 2s infinite;
+}
+
+.match-details {
+    display: none;
+    padding: 15px;
+    background: #fff;
+    border-top: 1px solid #eee;
+}
+
+.expandable-card.expanded .match-details {
+    display: block;
+}
+
+.match-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.team-stats {
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 6px;
+}
+
+.team-stats p {
+    margin: 5px 0;
+    color: #666;
+}
+
+.key-events {
+    margin-top: 10px;
+}
+
+.key-events h4 {
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.key-events ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.key-events li {
+    padding: 4px 0;
+    color: #666;
+}
+
+.key-events li.goal {
+    color: #28a745;
+}
+
+.key-events li.yellow-card {
+    color: #ffc107;
+}
+
+.key-events li.red-card {
+    color: #dc3545;
+}
+
+.match-meta {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    color: #666;
+    font-size: 0.9em;
+}
+
+/* Live match styling */
+.expandable-card.live-match .card-header {
+    background: #fff5f5;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.8; }
+    100% { opacity: 1; }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .teams {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .team {
+        min-width: unset;
+    }
+
+    .score {
+        min-width: 40px;
+    }
+
+    .match-meta {
+        flex-direction: column;
+        gap: 5px;
+    }
+}
+
+/* Styles for center feed event cards (e.g., event-feed or event-table) */
+.event-card.expandable-card {
     width: 100%;
     border: 1px solid #ddd;
     border-radius: 5px;
@@ -72,19 +251,19 @@
     transition: all 0.3s ease;
     box-sizing: border-box;
     min-height: 120px; /* Increased height for better visibility, inspired by ha-teamtracker */
-  }
-  
-  .event-card.expanded {
+}
+
+.event-card.expanded {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     border-color: #007bff;
     background-color: #f0f8ff;
-  }
-  
-  .event-card.expanded .card-header::after {
+}
+
+.event-card.expanded .card-header::after {
     transform: rotate(180deg);
-  }
-  
-  .event-card .card-header {
+}
+
+.event-card .card-header {
     padding: 15px;
     cursor: pointer;
     display: flex;
@@ -93,27 +272,13 @@
     z-index: 1;
     pointer-events: auto;
     transition: background-color 0.3s ease;
-  }
-  
-  .event-card .card-header:hover {
+}
+
+.event-card .card-header:hover {
     background-color: #f5f5f5;
-  }
-  
-  .event-card .card-header::after {
-    content: '▼';
-    font-size: 0.8em;
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    transition: transform 0.3s ease;
-  }
-  
-  .event-card.live-match .card-header {
-    background-color: #ffe6e6;
-  }
-  
-  .event-card .match-info {
+}
+
+.event-card .match-info {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -121,13 +286,13 @@
     gap: 8px;
     pointer-events: none;
     flex-wrap: wrap; /* Allow wrapping if needed */
-  }
-  
-  .event-card .match-info > * {
+}
+
+.event-card .match-info > * {
     pointer-events: auto;
-  }
-  
-  .event-card .match-info .teams {
+}
+
+.event-card .match-info .teams {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -135,25 +300,32 @@
     text-align: center;
     flex-wrap: wrap;
     color: #001f3f; /* Dark blue for team names */
-  }
-  
-  .event-card .match-info .team-name {
-    font-size: 1.1em; /* Inspired by ha-teamtracker */
-  }
-  
-  .event-card .match-info .score {
+}
+
+.event-card .match-info .team {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.event-card .match-info .team-name {
+    font-size: 1.1em;
+    white-space: nowrap;
+}
+
+.event-card .match-info .score {
     font-size: 1.2em;
     font-weight: bold;
     color: #333;
-  }
+}
 
-  .match-details .team-goals {
+.match-details .team-goals {
     background-color: #f0f8ff;
     padding: 10px;
     border-radius: 5px;
-  }
-  
-  .event-card .match-meta {
+}
+
+.event-card .match-meta {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -161,59 +333,24 @@
     font-size: 0.85em; /* Smaller font for date and venue */
     color: #666;
     gap:10px;
-  }
-  
-  .event-card .match-meta .datetime {
+}
+
+.event-card .match-meta .datetime {
     flex: 0 0 auto;
-  }
-  
-  .event-card .match-meta .location {
+}
+
+.event-card .match-meta .location {
     flex: 0 0 auto;
-  }
-  
-  .event-card .match-details {
+}
+
+.event-card .match-details {
     padding: 15px;
     border-top: 1px solid #eee;
     background-color: #f9f9f9;
-  }
-  
-  /* Shared match-details content styles */
-  .match-details .match-stats {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
-  
-  .match-details .team-goals {
-    margin-bottom: 10px;
-  }
-  
-  .match-details .team-goals p {
-    font-size: 1em;
-    font-weight: bold;
-    margin-bottom: 5px;
-  }
-  
-  .match-details .key-events {
-    margin-bottom: 10px;
-  }
-  
-  .match-details .team-stats,
-  .match-details .game-stats,
-  .match-details .broadcast-info {
-    margin-bottom: 10px;
-  }
-  
-  .match-details .team-stats p,
-  .match-details .game-stats p,
-  .match-details .broadcast-info p {
-    margin: 5px 0;
-    font-size: 0.9em;
-    color: #555; /* Less prominent, inspired by ha-teamtracker */
-  }
-  
-  /* Carousel event cards (for home.html) */
-  .carousel-event-card.expandable-card {
+}
+
+/* Carousel event cards (for home.html) */
+.carousel-event-card.expandable-card {
     width: 100%;
     border: 1px solid #ddd;
     border-radius: 5px;
@@ -223,19 +360,19 @@
     box-sizing: border-box;
     position: relative;
     overflow: hidden;
-  }
-  
-  .carousel-event-card.expanded {
+}
+
+.carousel-event-card.expanded {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     border-color: #007bff;
     background-color: #f0f8ff;
-  }
-  
-  .carousel-event-card.expanded .card-header::after {
+}
+
+.carousel-event-card.expanded .card-header::after {
     transform: rotate(180deg);
-  }
-  
-  .carousel-event-card .card-header {
+}
+
+.carousel-event-card .card-header {
     padding: 8px;
     cursor: pointer;
     display: flex;
@@ -245,20 +382,20 @@
     z-index: 1;
     pointer-events: auto;
     transition: background-color 0.3s ease;
-  }
-  
-  .carousel-event-card .card-header:hover {
+}
+
+.carousel-event-card .card-header:hover {
     background-color: #f5f5f5;
-  }
-  
-  .carousel-event-card .card-header::after {
+}
+
+.carousel-event-card .card-header::after {
     content: '▼';
     font-size: 0.8em;
     margin-left: 8px;
     transition: transform 0.3s ease;
-  }
-  
-  .carousel-event-card .card-header > span {
+}
+
+.carousel-event-card .card-header > span {
     flex: 1;
     display: flex;
     align-items: center;
@@ -267,56 +404,56 @@
     white-space: normal;
     max-width: 100%;
     font-size: 14px;
-  }
-  
-  .carousel-event-card .card-header > span img.team-crest {
+}
+
+.carousel-event-card .card-header > span img.team-crest {
     flex-shrink: 0;
-  }
-  
-  .carousel-event-card .card-header > span .live-score {
+}
+
+.carousel-event-card .card-header > span .live-score {
     white-space: nowrap;
-  }
-  
-  .carousel-event-card.live-match .card-header {
+}
+
+.carousel-event-card.live-match .card-header {
     background-color: #ffe6e6;
-  }
-  
-  .carousel-event-card .match-details {
+}
+
+.carousel-event-card .match-details {
     padding: 10px;
     border-top: 1px solid #eee;
     background-color: #f9f9f9;
     max-height: 200px;
     overflow-y: auto;
     position: relative;
-  }
-  
-  /* Carousel container and slide styles (for home.html) */
-  .carousel-container {
+}
+
+/* Carousel container and slide styles (for home.html) */
+.carousel-container {
     position: relative;
     flex: 1;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-  }
-  
-  .carousel-slide {
+}
+
+.carousel-slide {
     display: none;
     padding: 5px 0;
     height: 100%;
     overflow: hidden;
-  }
-  
-  .carousel-slide.active {
+}
+
+.carousel-slide.active {
     display: block;
     animation: fadeIn 0.5s ease-in-out;
-  }
-  
-  @keyframes fadeIn {
+}
+
+@keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
-  }
-  
-  .carousel-slide .event-list {
+}
+
+.carousel-slide .event-list {
     margin: 0;
     padding: 0;
     max-height: 280px;
@@ -324,34 +461,97 @@
     overflow-x: hidden;
     width: 100%;
     box-sizing: border-box;
-  }
-  
-  /* Responsive adjustments */
-  @media (max-width: 768px) {
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
     .event-card.expandable-card,
     .carousel-event-card.expandable-card {
-      margin: 5px 0;
+        margin: 5px 0;
     }
-  
+
     .event-card .card-header,
     .carousel-event-card .card-header {
-      padding: 8px;
+        padding: 8px;
     }
-  
+
     .event-card .match-details,
     .carousel-event-card .match-details {
-      padding: 8px;
+        padding: 8px;
     }
-  
+
     .carousel-event-card .match-details {
-      max-height: 150px;
+        max-height: 150px;
     }
-  
+
     .carousel-slide .event-list {
-      max-height: 200px;
+        max-height: 200px;
     }
-  
+
     .carousel-event-card .card-header > span {
-      font-size: 0.9em;
+        font-size: 0.9em;
     }
-  }
+}
+
+.expandable-card .team img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    border-radius: 4px;
+    margin-right: 8px;
+}
+
+.expandable-card .team {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+}
+
+.expandable-card .team-name {
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.expandable-card .teams {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 8px;
+}
+
+.expandable-card .score {
+    font-size: 16px;
+    font-weight: 600;
+    min-width: 60px;
+    text-align: center;
+}
+
+.date-group {
+    margin-bottom: 2rem;
+}
+
+.date-header {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #001f3f; /* Navy color */
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.events-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.expandable-card {
+    width: 100%;
+    margin-bottom: 1rem;
+}
