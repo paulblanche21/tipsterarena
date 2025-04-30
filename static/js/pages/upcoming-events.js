@@ -198,11 +198,11 @@ async function populateModal(sport, category) {
 // Adds toggle functionality for expandable cards
 export function setupExpandableCards() {
     console.log('Setting up expandable cards');
-    const cards = document.querySelectorAll('.event-item.expandable-card, .tennis-card.expandable-card, .event-card.expandable-card, .golf-card.expandable-card, .meeting-card.expandable-card');
+    const cards = document.querySelectorAll('.expandable-card');
     console.log(`Found ${cards.length} expandable cards`);
     cards.forEach((card, index) => {
         const header = card.querySelector('.card-header');
-        const details = card.querySelector('.card-content, .match-details');
+        const details = card.querySelector('.match-details');
         if (!header || !details) return;
 
         if (header._toggleHandler) {
@@ -223,8 +223,8 @@ export function setupExpandableCards() {
 
     if (!document._cardCloseListener) {
         const closeHandler = (e) => {
-            if (!e.target.closest('.event-item.expandable-card, .tennis-card.expandable-card, .event-card.expandable-card, .golf-card.expandable-card, .meeting-card.expandable-card')) {
-                document.querySelectorAll('.card-content, .match-details').forEach(details => {
+            if (!e.target.closest('.expandable-card')) {
+                document.querySelectorAll('.match-details').forEach(details => {
                     details.style.display = 'none';
                 });
                 document.querySelectorAll('.expandable-card').forEach(card => {

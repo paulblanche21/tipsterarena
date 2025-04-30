@@ -331,6 +331,9 @@ def profile(request, username):
         for tip in user_own_tips:
             print(f"Processing tip ID {tip.id}: Odds = {tip.odds}, Format = {tip.odds_format}")
             try:
+                if tip.odds is None or tip.odds_format is None:
+                    print(f"  Skipping tip ID {tip.id}: Odds or format is None")
+                    continue
                 if tip.odds_format.lower() == 'decimal':
                     odds_value = float(tip.odds)
                 elif tip.odds_format.lower() == 'fractional':
@@ -1558,43 +1561,62 @@ class FootballEventsList(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        # Get category and league_id from query parameters
-        category = request.query_params.get('category', 'fixtures')
-        league_id = request.query_params.get('league_id')
-
-        # First, fetch and store the latest events
         try:
-            fetch_and_store_football_events()
+            # Get category and league_id from query parameters
+            category = request.query_params.get('category', 'fixtures')
+            league_id = request.query_params.get('league_id')
+
+            # Try to fetch fresh events if needed
+            try:
+                fetch_and_store_football_events()
+            except Exception as e:
+                logger.error(f"Error fetching football events: {str(e)}")
+                # Continue with existing data if fetch fails
+
+            # Base queryset for filtering
+            queryset = FootballEvent.objects.all().select_related(
+                'league', 'home_team', 'away_team', 'home_stats', 'away_stats'
+            ).prefetch_related(
+                'key_events', 'odds', 'detailed_stats'
+            )
+
+            # Apply league filter if specified
+            if league_id:
+                queryset = queryset.filter(league__league_id=league_id)
+
+            # Apply category filter
+            current_time = timezone.now()
+            if category == 'fixtures':
+                # Future matches that haven't started
+                queryset = queryset.filter(state='pre', date__gt=current_time)
+            elif category == 'inplay':
+                # Currently ongoing matches
+                queryset = queryset.filter(state='in')
+            elif category == 'results':
+                # Completed matches from the last 7 days
+                seven_days_ago = current_time - timedelta(days=7)
+                queryset = queryset.filter(
+                    state='post',
+                    date__lt=current_time,  # Only matches that have ended
+                    date__gte=seven_days_ago
+                )
+
+            # Order by date (ascending for fixtures, descending for results)
+            if category == 'fixtures':
+                queryset = queryset.order_by('date')
+            else:
+                queryset = queryset.order_by('-date')
+
+            # Serialize the data
+            serializer = FootballEventSerializer(queryset, many=True)
+            return Response(serializer.data)
+            
         except Exception as e:
-            logger.error(f"Error fetching football events: {str(e)}")
-            # Continue with existing data if fetch fails
-
-        # Base queryset for filtering
-        queryset = FootballEvent.objects.all().select_related(
-            'league', 'home_team', 'away_team', 'home_stats', 'away_stats'
-        ).prefetch_related(
-            'key_events', 'odds', 'detailed_stats'
-        )
-
-        # Apply league filter if specified
-        if league_id:
-            queryset = queryset.filter(league__league_id=league_id)
-
-        # Apply category filter
-        current_time = timezone.now()
-        if category == 'fixtures':
-            queryset = queryset.filter(state='pre', date__gt=current_time)
-        elif category == 'inplay':
-            queryset = queryset.filter(state='in')
-        elif category == 'results':
-            queryset = queryset.filter(state='post', date__lte=current_time)
-
-        # Order by date
-        queryset = queryset.order_by('date')
-
-        # Serialize the data
-        serializer = FootballEventSerializer(queryset, many=True)
-        return Response(serializer.data)
+            logger.error(f"Error in FootballEventsList: {str(e)}")
+            return Response(
+                {'error': 'An error occurred while fetching events'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 @api_view(['GET'])
 # Remove authentication requirement for GET requests to allow public access to tennis events

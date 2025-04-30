@@ -101,12 +101,21 @@ export class FootballEventsHandler {
                        matchDate <= fixturesDaysAgo;
             });
         } else if (category === 'inplay') {
-            filteredEvents = events.filter(match => match.state === "in");
+            filteredEvents = events.filter(match => {
+                const matchDate = new Date(match.date);
+                // Only show matches that are currently in progress
+                return match.state === "in" && 
+                       matchDate <= currentTime && 
+                       matchDate >= new Date(currentTime.getTime() - 3 * 60 * 60 * 1000); // Within last 3 hours
+            });
         } else if (category === 'results') {
             filteredEvents = events.filter(match => {
                 const matchDate = new Date(match.date);
-                return (match.state === "post" || match.completed) && 
-                       matchDate >= resultsDaysAgo;
+                // Only show completed matches from the last 7 days
+                return (match.state === "post" || match.completed || 
+                       (match.home_score !== null && match.away_score !== null)) && 
+                       matchDate >= resultsDaysAgo && 
+                       matchDate <= currentTime;
             });
         }
 
@@ -156,6 +165,14 @@ export class FootballEventsHandler {
                 const eventClass = this.getEventClass(event);
                 const matchDetails = this.formatMatchDetails(event);
                 
+                // Determine score display based on event state
+                let scoreDisplay = '';
+                if (event.state === 'in') {
+                    scoreDisplay = `<span class="live-score">${event.home_score} - ${event.away_score}</span>`;
+                } else if (event.state === 'post' || event.completed) {
+                    scoreDisplay = `<span class="final-score">${event.home_score} - ${event.away_score}</span>`;
+                }
+                
                 return `
                     <div class="expandable-card ${eventClass}" data-event-id="${event.id}">
                         <div class="card-header">
@@ -166,7 +183,7 @@ export class FootballEventsHandler {
                                         <span class="team-name">${home_team.name}</span>
                                     </div>
                                     <div class="score">
-                                        ${event.state === 'in' ? `<span class="live-score">${event.home_score} - ${event.away_score}</span>` : ''}
+                                        ${scoreDisplay}
                                     </div>
                                     <div class="team">
                                         <img src="${away_logo}" alt="${away_team.name}" onerror="this.src='${defaultAvatar}'">
@@ -197,7 +214,24 @@ export class FootballEventsHandler {
     }
 
     formatMatchDetails(event) {
+        console.log('Match Details for event:', event);
         let html = '<div class="match-stats">';
+
+        // Goalscorers section for completed matches
+        if ((event.state === 'post' || event.completed) && event.key_events && event.key_events.length) {
+            const goals = event.key_events.filter(ke => ke.is_goal);
+            if (goals.length) {
+                html += `<div class="goals-section">
+                    <h4>Goals</h4>
+                    <ul class="goals-list">
+                        ${goals.map(goal => {
+                            let assist = goal.assist && goal.assist !== 'Unassisted' ? ` (Assist: ${goal.assist})` : '';
+                            return `<li><strong>${goal.time}</strong> – ${goal.player}${assist} <span class="goal-team">[${goal.team}]</span></li>`;
+                        }).join('')}
+                    </ul>
+                </div>`;
+            }
+        }
 
         // Team Stats
         if (event.home_stats && event.away_stats) {
@@ -212,20 +246,23 @@ export class FootballEventsHandler {
             `;
         }
 
-        // Key Events
+        // Key Events (other than goals)
         if (event.key_events && event.key_events.length) {
-            html += `
-                <div class="key-events">
-                    <h4>Key Events</h4>
-                    <ul>
-                        ${event.key_events.map(ke => `
-                            <li class="${this.getEventClass(ke)}">
-                                ${ke.time} - ${ke.player} (${ke.team}) - ${ke.type}
-                            </li>
-                        `).join('')}
-                    </ul>
-                </div>
-            `;
+            const nonGoalEvents = event.key_events.filter(ke => !ke.is_goal);
+            if (nonGoalEvents.length) {
+                html += `
+                    <div class="key-events">
+                        <h4>Key Events</h4>
+                        <ul>
+                            ${nonGoalEvents.map(ke => `
+                                <li class="${this.getEventClass(ke)}">
+                                    ${ke.time} - ${ke.player} (${ke.team}) - ${ke.type}
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
         }
 
         // Match Meta

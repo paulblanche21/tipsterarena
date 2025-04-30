@@ -336,6 +336,7 @@ class KeyEvent(models.Model):
     time = models.CharField(max_length=10, default="N/A")  # e.g., "45:00"
     team = models.CharField(max_length=100, default="Unknown")  # Team involved
     player = models.CharField(max_length=100, default="Unknown")  # Player involved
+    assist = models.CharField(max_length=100, blank=True, null=True)
     is_goal = models.BooleanField(default=False)
     is_yellow_card = models.BooleanField(default=False)
     is_red_card = models.BooleanField(default=False)
