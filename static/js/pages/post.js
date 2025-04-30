@@ -418,8 +418,7 @@ function setupCentralFeedPost() {
     // Enable/disable button based on input and odds (no change needed here)
     function updateSubmitButton() {
         const textValid = postInput.value.trim().length > 0;
-        const oddsValid = validateOdds(oddsType.value, oddsInputDecimal.value.trim(), oddsNumerator.value.trim(), oddsDenominator.value.trim());
-        postSubmitBtn.disabled = !(textValid && oddsValid);
+        postSubmitBtn.disabled = !textValid;
         const charCount = postBox.querySelector('.char-count');
         if (charCount) {
             charCount.textContent = `${postInput.value.length}/280`;
@@ -427,10 +426,7 @@ function setupCentralFeedPost() {
     }
 
     postInput.addEventListener('input', updateSubmitButton);
-    oddsType.addEventListener('change', updateSubmitButton);
-    oddsInputDecimal.addEventListener('input', updateSubmitButton);
-    oddsNumerator.addEventListener('input', updateSubmitButton);
-    oddsDenominator.addEventListener('input', updateSubmitButton);
+    // Remove unnecessary event listeners for odds validation
 
     // Track location separately for form submission
     let locationData = '';
@@ -533,7 +529,7 @@ function setupCentralFeedPost() {
         const oddsTypeValue = oddsType.value;
         const bet = betType.value;
         const eachWayValue = eachWay.value;
-        const confidenceValue = confidence.value; // Replaced stake with confidenceValue
+        const confidenceValue = confidence.value;
 
         let odds;
         if (oddsTypeValue === 'decimal') {
@@ -549,11 +545,6 @@ function setupCentralFeedPost() {
             return;
         }
 
-        if (!validateOdds(oddsTypeValue, oddsInputDecimal.value.trim(), oddsNumerator.value.trim(), oddsDenominator.value.trim())) {
-            alert('Please enter valid odds in the correct format (e.g., 2.5 for decimal, 3 and 2 for fractional).');
-            return;
-        }
-
         if (!sport) {
             alert('Sport is not defined. Please select a sport or ensure the page is configured correctly.');
             return;
@@ -564,22 +555,24 @@ function setupCentralFeedPost() {
         formData.append('audience', audience);
         formData.append('sport', sport);
         formData.append('odds_type', oddsTypeValue);
-        if (oddsTypeValue === 'decimal') {
+        if (oddsTypeValue === 'decimal' && odds) {
             formData.append('odds-input-decimal', odds);
-        } else {
+        } else if (oddsTypeValue === 'fractional' && oddsNumerator.value.trim() && oddsDenominator.value.trim()) {
             formData.append('odds-numerator', oddsNumerator.value.trim());
             formData.append('odds-denominator', oddsDenominator.value.trim());
         }
         formData.append('bet_type', bet);
         formData.append('each_way', eachWayValue);
-        if (confidenceValue) formData.append('confidence', confidenceValue); // Replaced stake with confidence
+        if (confidenceValue) formData.append('confidence', confidenceValue);
 
-        if (postInput.dataset.imageFile && imageInput.files[0]) {
-            formData.append('image', imageInput.files[0]);
+        const modalImageInput = document.querySelectorAll('input[type="file"]')[1];
+        if (postInput.dataset.imageFile && modalImageInput && modalImageInput.files[0]) {
+            formData.append('image', modalImageInput.files[0]);
         }
         if (postInput.dataset.gifUrl) {
             formData.append('gif', postInput.dataset.gifUrl);
         }
+        let locationData = postInput.value.match(/\[Location: ([\d.,]+)\]/)?.[1] || '';
         if (locationData) {
             formData.append('location', locationData);
         }
@@ -606,7 +599,7 @@ function setupCentralFeedPost() {
                 confidence.value = '3'; // Reset to default (3 stars)
                 postInput.dataset.gifUrl = '';
                 postInput.dataset.imageFile = '';
-                imageInput.value = '';
+                if (modalImageInput) modalImageInput.value = '';
                 locationData = '';
                 previewDiv.style.display = 'none';
                 location.reload();
@@ -631,7 +624,7 @@ function setupCentralFeedPost() {
                                 <span>Odds: ${data.tip.odds} (${data.tip.odds_format})</span>
                                 <span>Bet Type: ${data.tip.bet_type}</span>
                                 ${data.tip.each_way === 'yes' ? '<span>Each Way: Yes</span>' : ''}
-                                ${data.tip.confidence ? `<span>Confidence: ${data.tip.confidence} Stars</span>` : ''} <!-- Replaced stake with confidence -->
+                                ${data.tip.confidence ? `<span>Confidence: ${data.tip.confidence} Stars</span>` : ''}
                                 <span>Status: ${data.tip.status}</span>
                             </div>
                             ${data.tip.image ? `<img src="${data.tip.image}" alt="Tip Image" class="tip-image">` : ''}
@@ -722,15 +715,11 @@ function setupPostModal() {
             // Enable/disable button based on input and odds
             function updateModalSubmitButton() {
                 const textValid = modalInput.value.trim().length > 0;
-                const oddsValid = validateOdds(oddsType.value, oddsInputDecimal.value.trim(), oddsNumerator.value.trim(), oddsDenominator.value.trim());
-                modalSubmitBtn.disabled = !(textValid && oddsValid);
+                modalSubmitBtn.disabled = !textValid;
             }
 
             modalInput.addEventListener('input', updateModalSubmitButton);
-            oddsType.addEventListener('change', updateModalSubmitButton);
-            oddsInputDecimal.addEventListener('input', updateModalSubmitButton);
-            oddsNumerator.addEventListener('input', updateModalSubmitButton);
-            oddsDenominator.addEventListener('input', updateModalSubmitButton);
+            // Remove unnecessary event listeners for odds validation
 
             // Bold button functionality for modal
             modalBoldBtn.addEventListener('click', (e) => {
@@ -867,11 +856,6 @@ function handleModalPostSubmit() {
         return;
     }
 
-    if (!validateOdds(oddsTypeValue, oddsInputDecimal.value.trim(), oddsNumerator.value.trim(), oddsDenominator.value.trim())) {
-        alert('Please enter valid odds in the correct format (e.g., 2.5 for decimal, 3 and 2 for fractional).');
-        return;
-    }
-
     if (!sport) {
         alert('Sport is not defined. Please select a sport or ensure the page is configured correctly.');
         return;
@@ -882,9 +866,9 @@ function handleModalPostSubmit() {
     formData.append('audience', audience);
     formData.append('sport', sport);
     formData.append('odds_type', oddsTypeValue);
-    if (oddsTypeValue === 'decimal') {
+    if (oddsTypeValue === 'decimal' && odds) {
         formData.append('odds-input-decimal', odds);
-    } else {
+    } else if (oddsTypeValue === 'fractional' && oddsNumerator.value.trim() && oddsDenominator.value.trim()) {
         formData.append('odds-numerator', oddsNumerator.value.trim());
         formData.append('odds-denominator', oddsDenominator.value.trim());
     }

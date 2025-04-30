@@ -335,4 +335,7 @@
 
 {% block extra_js %}
     <script type="module" src="{% static 'js/pages/upcoming-events.js' %}"></script>
+    {% if sport == 'golf' %}
+        <script type="module" src="{% static 'js/pages/golf-events.js' %}"></script>
+    {% endif %}
 {% endblock %}

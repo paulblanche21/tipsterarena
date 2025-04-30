@@ -3,17 +3,12 @@
 export async function fetchEvents(state = 'pre', tourId = null) {
     console.log(`Fetching golf events for state: ${state}, tour: ${tourId || 'all'}`);
     try {
-        let url = `/api/golf/events/?state=${state}`;
+        let url = `/api/golf-events/?state=${state}`;
         if (tourId) {
             url += `&tour_id=${tourId}`;
         }
         console.log(`Making API request to: ${url}`);
-        const response = await fetch(url, {
-            headers: {
-                'Authorization': `Token ${localStorage.getItem('authToken') || 'ba59ecf8d26672d59c949b70453c361e74c2eec8'}`
-            },
-            credentials: 'include'
-        });
+        const response = await fetch(url);
         console.log(`API status for ${state}: ${response.status} ${response.statusText}`);
         if (!response.ok) {
             throw new Error(`HTTP error: ${response.status} ${response.statusText}`);
@@ -26,11 +21,49 @@ export async function fetchEvents(state = 'pre', tourId = null) {
         }
         console.log(`Fetched ${data.length} golf events for ${state}`);
 
-        const uniqueEvents = Array.from(new Map(data.map(event => [event.event_id, event])).values());
-        console.log(`After deduplication, ${uniqueEvents.length} unique events for ${state}`);
-        console.log('Unique events:', uniqueEvents);
-
-        const mappedEvents = uniqueEvents.map(event => {
+        // Create a Map to store unique events based on event ID
+        const uniqueEvents = new Map();
+        
+        // First pass: collect all events and their data completeness score
+        data.forEach(event => {
+            const eventKey = `${event.event_id}`; // Use event_id as unique identifier
+            const dataCompletenessScore = [
+                event.tour !== null,
+                event.venue !== null,
+                event.course !== null,
+                event.leaderboard?.length > 0
+            ].filter(Boolean).length;
+            
+            if (!uniqueEvents.has(eventKey)) {
+                uniqueEvents.set(eventKey, { event, score: dataCompletenessScore });
+            } else {
+                const existing = uniqueEvents.get(eventKey);
+                // Keep the event with more complete data
+                if (dataCompletenessScore > existing.score) {
+                    uniqueEvents.set(eventKey, { event, score: dataCompletenessScore });
+                }
+            }
+        });
+        
+        console.log(`Found ${uniqueEvents.size} unique events out of ${data.length} total events`);
+        
+        // Convert Map values back to array, extract events, and sort by start time
+        const events = Array.from(uniqueEvents.values())
+            .map(item => item.event)
+            .sort((a, b) => {
+                const dateA = new Date(a.date);
+                const dateB = new Date(b.date);
+                return dateA - dateB;
+            });
+        
+        console.log('Deduplicated and sorted events:', events.map(e => ({
+            id: e.event_id,
+            name: e.name,
+            date: e.date,
+            tour: e.tour?.name || 'Unknown Tour'
+        })));
+        
+        const mappedEvents = events.map(event => {
             const mapped = {
                 id: event.event_id,
                 name: event.name,
@@ -92,21 +125,11 @@ export async function fetchEvents(state = 'pre', tourId = null) {
 export async function fetchLeaderboard(eventId, sport, apiLeague) {
     console.log(`Fetching leaderboard for event ${eventId}, tour: ${apiLeague}`);
     try {
-        const response = await fetch(`/api/golf/events/?state=in`, {
-            headers: {
-                'Authorization': `Token ${localStorage.getItem('authToken') || 'ba59ecf8d26672d59c949b70453c361e74c2eec8'}`
-            },
-            credentials: 'include'
-        });
+        const response = await fetch(`/api/golf-events/?state=in`);
         console.log(`Leaderboard API status: ${response.status} ${response.statusText}`);
         if (!response.ok) {
             // Fallback to results
-            const responseResults = await fetch(`/api/golf/events/?state=post`, {
-                headers: {
-                    'Authorization': `Token ${localStorage.getItem('authToken') || 'ba59ecf8d26672d59c949b70453c361e74c2eec8'}`
-                },
-                credentials: 'include'
-            });
+            const responseResults = await fetch(`/api/golf-events/?state=post`);
             if (!responseResults.ok) throw new Error(`HTTP error: ${responseResults.status} ${response.statusText}`);
             const data = await responseResults.json();
             const event = data.find(e => e.event_id === eventId);
@@ -134,7 +157,7 @@ export async function fetchLeaderboard(eventId, sport, apiLeague) {
             status: entry.status
         }));
     } catch (error) {
-        console.error(`Error fetching leaderboard for event ${eventId}: ${error}`);
+        console.error(`Error fetching leaderboard for event ${eventId}:`, error);
         return [];
     }
 }
@@ -149,95 +172,106 @@ export async function formatEventList(events, sportKey, category, isCentralFeed 
         console.log(`Formatting event: ${event.name}, ID: ${event.id}, League: ${event.apiLeague}`);
         const venue = event.venue.fullName || `${event.venue.address.city}, ${event.venue.address.state}`;
         let contentHtml = '';
-        if (category === 'inplay' || category === 'results') {
-            const leaderboard = event.leaderboard || [];  // Ensure leaderboard is an array
-            contentHtml = leaderboard.length > 0 ? `
-                <div class="leaderboard-content">
-                    <h4>${category === 'inplay' ? 'Live Leaderboard' : 'Final Leaderboard'}</h4>
-                    <div class="leaderboard-controls">
-                        <div class="leaderboard-filter">
-                            <label for="player-filter">Filter Players:</label>
-                            <input type="text" id="player-filter" placeholder="Search players..." class="player-filter-input">
-                        </div>
-                        <div class="leaderboard-sort">
-                            <label for="sort-by">Sort By:</label>
-                            <select id="sort-by" class="sort-select">
-                                <option value="position">Position</option>
-                                <option value="score">Score</option>
-                                <option value="name">Player Name</option>
-                                <option value="rounds">Current Round</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="leaderboard-wrapper">
-                        <table class="leaderboard-table" data-event-id="${event.id}" data-api-league="${event.apiLeague || 'pga'}">
-                            <thead>
-                                <tr>
-                                    <th data-sort="position">Pos</th>
-                                    <th data-sort="name">Player</th>
-                                    <th data-sort="score">Score</th>
-                                    <th>R1</th>
-                                    <th>R2</th>
-                                    <th>R3</th>
-                                    <th>R4</th>
-                                    <th data-sort="total">Total</th>
-                                    <th data-sort="rank">Rank</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${leaderboard.slice(0, 10).map(player => `
-                                    <tr class="${player.status === 'active' ? 'player-active' : 'player-inactive'}" 
-                                        data-player="${player.playerName.toLowerCase()}"
-                                        data-position="${player.position}"
-                                        data-score="${player.score}"
-                                        data-total="${player.strokes}"
-                                        data-rank="${player.worldRanking}">
-                                        <td>${player.position}</td>
-                                        <td>${player.playerName}</td>
-                                        <td>${player.score}</td>
-                                        <td>${player.rounds[0] || "N/A"}</td>
-                                        <td>${player.rounds[1] || "N/A"}</td>
-                                        <td>${player.rounds[2] || "N/A"}</td>
-                                        <td>${player.rounds[3] || "N/A"}</td>
-                                        <td>${player.strokes}</td>
-                                        <td>${player.worldRanking}</td>
-                                    </tr>
-                                `).join("")}
-                            </tbody>
-                        </table>
-                        <button class="view-full-leaderboard" data-event-id="${event.id}" data-api-league="${event.apiLeague || 'pga'}">View Full Leaderboard</button>
-                    </div>
-                    ${category === 'inplay' ? '<p class="leaderboard-status">Updating...</p>' : ''}
-                </div>
-            ` : `
-                <div class="leaderboard-content">
-                    <h4>${category === 'inplay' ? 'Live Leaderboard' : 'Final Leaderboard'}</h4>
-                    <p>No leaderboard data available.</p>
-                </div>
-            `;
-        } else {
+        
+        // For fixtures, only show tournament details
+        if (category === 'fixtures') {
             contentHtml = `
                 <div class="event-details">
-                    <p><strong>Event:</strong> ${event.name}</p>
+                    <p><strong>Tournament:</strong> ${event.name || 'Tournament Name TBA'}</p>
                     <p><strong>Date:</strong> ${event.displayDate}</p>
-                    <p><strong>Location:</strong> ${venue}</p>
+                    <p><strong>Venue:</strong> ${venue}</p>
                     <p><strong>Course:</strong> ${event.course.name}</p>
                     <p><strong>Par:</strong> ${event.course.par}</p>
                     <p><strong>Yardage:</strong> ${event.course.yardage}</p>
                     <p><strong>Purse:</strong> ${event.purse}</p>
                     <p><strong>Broadcast:</strong> ${event.broadcast}</p>
-                    <p><strong>Weather:</strong> ${event.weather.condition}, ${event.weather.temperature}</p>
+                    <p><strong>Tour:</strong> ${event.tour.name}</p>
+                </div>
+            `;
+        } else if (category === 'inplay' || category === 'results') {
+            // For inplay and results, show leaderboard
+            const leaderboard = event.leaderboard || [];
+            contentHtml = `
+                <div class="leaderboard-content">
+                    <div class="tournament-info">
+                        <p><strong>Tournament:</strong> ${event.name || 'Tournament Name TBA'}</p>
+                        <p><strong>Round:</strong> ${event.currentRound}/${event.totalRounds}</p>
+                        ${event.weather ? `
+                            <p><strong>Weather:</strong> ${event.weather.condition}, ${event.weather.temperature}</p>
+                        ` : ''}
+                    </div>
+                    ${leaderboard.length > 0 ? `
+                        <h4>${category === 'inplay' ? 'Live Leaderboard' : 'Final Leaderboard'}</h4>
+                        <div class="leaderboard-controls">
+                            <div class="leaderboard-filter">
+                                <label for="player-filter">Filter Players:</label>
+                                <input type="text" id="player-filter" placeholder="Search players..." class="player-filter-input">
+                            </div>
+                            <div class="leaderboard-sort">
+                                <label for="sort-by">Sort By:</label>
+                                <select id="sort-by" class="sort-select">
+                                    <option value="position">Position</option>
+                                    <option value="score">Score</option>
+                                    <option value="name">Player Name</option>
+                                    <option value="rounds">Current Round</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="leaderboard-wrapper">
+                            <table class="leaderboard-table" data-event-id="${event.id}" data-api-league="${event.apiLeague || 'pga'}">
+                                <thead>
+                                    <tr>
+                                        <th data-sort="position">Pos</th>
+                                        <th data-sort="name">Player</th>
+                                        <th data-sort="score">Score</th>
+                                        <th>R1</th>
+                                        <th>R2</th>
+                                        <th>R3</th>
+                                        <th>R4</th>
+                                        <th data-sort="total">Total</th>
+                                        <th data-sort="rank">Rank</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${leaderboard.slice(0, 10).map(player => `
+                                        <tr class="${player.status === 'active' ? 'player-active' : 'player-inactive'}" 
+                                            data-player="${player.playerName.toLowerCase()}"
+                                            data-position="${player.position}"
+                                            data-score="${player.score}"
+                                            data-total="${player.strokes}"
+                                            data-rank="${player.worldRanking}">
+                                            <td>${player.position}</td>
+                                            <td>${player.playerName}</td>
+                                            <td>${player.score}</td>
+                                            <td>${player.rounds[0] || "N/A"}</td>
+                                            <td>${player.rounds[1] || "N/A"}</td>
+                                            <td>${player.rounds[2] || "N/A"}</td>
+                                            <td>${player.rounds[3] || "N/A"}</td>
+                                            <td>${player.strokes}</td>
+                                            <td>${player.worldRanking}</td>
+                                        </tr>
+                                    `).join("")}
+                                </tbody>
+                            </table>
+                            <button class="view-full-leaderboard" data-event-id="${event.id}" data-api-league="${event.apiLeague || 'pga'}">View Full Leaderboard</button>
+                        </div>
+                        ${category === 'inplay' ? '<p class="leaderboard-status">Updating...</p>' : ''}
+                    ` : `
+                        <p>No leaderboard data available yet.</p>
+                    `}
                 </div>
             `;
         }
+
         const status = category === 'inplay' ? 'In Progress' : category === 'results' ? 'Completed' : 'Upcoming';
         const liveIndicator = category === 'inplay' ? '<span class="live-indicator">Live</span>' : '';
+        
         return `
             <div class="golf-card expandable-card ${category === 'inplay' ? 'live-event' : ''}">
                 <div class="card-header">
                     <div class="event-info">
                         <span class="tour-icon">${event.icon}</span>
-                        <span class="event-name">${event.name}</span>
+                        <span class="event-name">${event.name || 'Tournament Name TBA'}</span>
                         <span class="event-status">(${status})</span>
                         ${liveIndicator}
                     </div>
@@ -463,12 +497,7 @@ export class GolfEventsHandler {
 
     async fetchEvents(category) {
         try {
-            const response = await fetch(`/api/golf-events/?category=${category}`, {
-                headers: {
-                    'Authorization': `Token ${localStorage.getItem('authToken') || 'ba59ecf8d26672d59c949b70453c361e74c2eec8'}`
-                },
-                credentials: 'include'
-            });
+            const response = await fetch(`/api/golf-events/?state=${category}`);
             if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
             const events = await response.json();
             return this.mapEvents(events);
@@ -562,24 +591,68 @@ export class GolfEventsHandler {
 
         let html = '<div class="golf-feed">';
         events.forEach(event => {
+            const venue = event.venue ? `${event.venue}, ${event.city}, ${event.stateLocation}` : "Location TBD";
+            const status = category === 'inplay' ? 'In Progress' : category === 'results' ? 'Completed' : 'Upcoming';
+            const liveIndicator = category === 'inplay' ? '<span class="live-indicator">Live</span>' : '';
+            
             html += `
-                <div class="tournament-card">
-                    <div class="tournament-header">
-                        <span class="tour-name">${event.tour}</span>
-                        <span class="tournament-time">${event.time}</span>
-                    </div>
-                    <div class="tournament-content">
-                        <h3 class="tournament-name">${event.name}</h3>
-                        <div class="tournament-details">
-                            <p><strong>Course:</strong> ${event.course.name}</p>
-                            <p><strong>Location:</strong> ${event.venue}, ${event.city}, ${event.stateLocation}</p>
-                            <p><strong>Purse:</strong> ${event.purse}</p>
-                            <p><strong>Par:</strong> ${event.course.par} | <strong>Yardage:</strong> ${event.course.yardage}</p>
+                <div class="golf-card expandable-card ${category === 'inplay' ? 'live-event' : ''}">
+                    <div class="card-header">
+                        <div class="event-info">
+                            <span class="tour-icon">${event.tour.icon || '⛳'}</span>
+                            <span class="event-name">${event.name}</span>
+                            <span class="event-status">(${status})</span>
+                            ${liveIndicator}
                         </div>
-                        ${event.state === 'in' ? `
-                            <div class="tournament-status">
+                        <div class="event-meta">
+                            <span class="datetime"><i class="far fa-calendar-alt"></i> ${event.displayDate}</span>
+                            <span class="location"><i class="fas fa-map-marker-alt"></i> ${venue}</span>
+                            <span class="tour-name">${event.tour.name}</span>
+                        </div>
+                    </div>
+                    <div class="card-content" style="display: none;">
+                        <div class="event-details">
+                            <p><strong>Course:</strong> ${event.course.name}</p>
+                            <p><strong>Par:</strong> ${event.course.par}</p>
+                            <p><strong>Yardage:</strong> ${event.course.yardage}</p>
+                            <p><strong>Purse:</strong> ${event.purse}</p>
+                            <p><strong>Broadcast:</strong> ${event.broadcast}</p>
+                            ${event.state === 'in' ? `
                                 <p><strong>Current Round:</strong> ${event.currentRound}/${event.totalRounds}</p>
                                 <p><strong>Weather:</strong> ${event.weather.condition}, ${event.weather.temperature}</p>
+                            ` : ''}
+                        </div>
+                        ${event.leaderboard && event.leaderboard.length > 0 ? `
+                            <div class="leaderboard-content">
+                                <h4>${category === 'inplay' ? 'Live Leaderboard' : 'Final Leaderboard'}</h4>
+                                <table class="leaderboard-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Pos</th>
+                                            <th>Player</th>
+                                            <th>Score</th>
+                                            <th>R1</th>
+                                            <th>R2</th>
+                                            <th>R3</th>
+                                            <th>R4</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${event.leaderboard.map(player => `
+                                            <tr class="${player.status === 'active' ? 'player-active' : 'player-inactive'}">
+                                                <td>${player.position}</td>
+                                                <td>${player.playerName}</td>
+                                                <td>${player.score}</td>
+                                                <td>${player.rounds[0] || 'N/A'}</td>
+                                                <td>${player.rounds[1] || 'N/A'}</td>
+                                                <td>${player.rounds[2] || 'N/A'}</td>
+                                                <td>${player.rounds[3] || 'N/A'}</td>
+                                                <td>${player.strokes}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
                             </div>
                         ` : ''}
                     </div>

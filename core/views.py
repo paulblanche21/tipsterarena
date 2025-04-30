@@ -691,6 +691,7 @@ def send_message(request):
 # View to fetch messages for a thread
 @login_required
 def get_thread_messages(request, thread_id):
+    """Retrieve and return messages for a specific thread."""
     thread = get_object_or_404(MessageThread, id=thread_id, participants=request.user)
     messages = thread.messages.all().order_by('created_at')
     messages_data = [
@@ -812,25 +813,17 @@ def post_tip(request):
             confidence = request.POST.get('confidence')
 
             # Handle odds based on format
+            odds = None
             if odds_type == 'decimal':
                 odds = request.POST.get('odds-input-decimal')
             elif odds_type == 'fractional':
                 numerator = request.POST.get('odds-numerator')
                 denominator = request.POST.get('odds-denominator')
-                if not numerator or not denominator:
-                    return JsonResponse({'success': False, 'error': 'Both numerator and denominator are required for fractional odds'}, status=400)
-                odds = f"{numerator}/{denominator}"
-            else:
-                return JsonResponse({'success': False, 'error': 'Invalid odds type'}, status=400)
+                if numerator and denominator:
+                    odds = f"{numerator}/{denominator}"
 
             if not text:
                 return JsonResponse({'success': False, 'error': 'Tip text cannot be empty'}, status=400)
-            if not odds:
-                return JsonResponse({'success': False, 'error': 'Odds are required'}, status=400)
-            if not odds_type:
-                return JsonResponse({'success': False, 'error': 'Odds format is required'}, status=400)
-            if not bet_type:
-                return JsonResponse({'success': False, 'error': 'Bet type is required'}, status=400)
 
             allowed_tags = ['b', 'i']
             sanitized_text = bleach.clean(text, tags=allowed_tags, strip=True)
@@ -1159,13 +1152,12 @@ GOLF_TOURS = [
 def fetch_and_store_golf_events():
     """Fetch and store golf events from ESPN API.
     
-    This function fetches golf events from the ESPN API for the current week
-    and stores them in the database. It handles both completed and upcoming
-    events."""
+    This function fetches golf tournament events from the ESPN API for the current week
+    and stores them in the database. It handles both completed and upcoming tournaments."""
     
     for tour_config in GOLF_TOURS:
         tour_id = tour_config['tour_id']
-        url = f"https://site.api.espn.com/apis/site/v2/sports/golf/{tour_id}/events"
+        url = f"https://site.api.espn.com/apis/site/v2/sports/golf/{tour_id}/tournaments"
         try:
             response = requests.get(url)
             if not response.ok:
@@ -1186,55 +1178,26 @@ def fetch_and_store_golf_events():
                 }
             )
 
-            for event in data.get('events', []):
-                event_id = event.get('id')
-                name = event.get('name', '')
-                status = event.get('fullStatus', {})
+            for tournament in data.get('tournaments', []):
+                event_id = tournament.get('id')
+                name = tournament.get('name', '')
+                status = tournament.get('status', {})
                 state = status.get('type', {}).get('state', 'unknown')
                 completed = status.get('type', {}).get('completed', False)
 
-                # Get event name from competitors if available
-                if not name and event.get('competitors'):
-                    first_competitor = event['competitors'][0]
-                    second_competitor = event['competitors'][1] if len(event['competitors']) > 1 else None
-                    if second_competitor:
-                        name = f"{first_competitor['displayName']} vs {second_competitor['displayName']}"
-                    else:
-                        name = first_competitor['displayName']
-
-                # Initialize default values
-                venue_name = 'Location TBD'
-                city = 'Unknown'
-                state_location = 'Unknown'
-                course_name = 'Unknown Course'
-                par = 'N/A'
-                yardage = 'N/A'
-                purse = 'N/A'
-                broadcast = 'N/A'
-                weather = event.get('weather', {})
-
-                # Extract data from the event endpoint
-                competitions = event.get('competitions', [{}])[0]
-                venue = competitions.get('venue', {})
-                venue_name = venue.get('fullName', 'Location TBD')
-                venue_address = venue.get('address', {})
-                city = venue_address.get('city', 'Unknown')
-                state_location = venue_address.get('state', 'Unknown')
-
-                course_details = competitions.get('course', {})
+                # Get tournament details
+                venue_name = tournament.get('venue', {}).get('name', 'Location TBD')
+                city = tournament.get('venue', {}).get('address', {}).get('city', 'Unknown')
+                state_location = tournament.get('venue', {}).get('address', {}).get('state', 'Unknown')
+                
+                course_details = tournament.get('course', {})
                 course_name = course_details.get('name', 'Unknown Course')
                 par = str(course_details.get('par', 'N/A'))
                 yardage = str(course_details.get('yardage', 'N/A'))
 
-                broadcasts = event.get('broadcasts', [])
-                broadcast = 'N/A'
-                if broadcasts and broadcasts[0].get('names'):
-                    broadcast = ', '.join(broadcasts[0]['names'])
-                purse = str(event.get('purse', 'N/A'))
-
-                # Log extracted data for debugging
-                logger.info("Final extracted data for Event %s (ID: %s): venue=%s, city=%s, state=%s, course=%s, par=%s, yardage=%s, purse=%s, broadcast=%s", 
-                    name, event_id, venue_name, city, state_location, course_name, par, yardage, purse, broadcast)
+                purse = str(tournament.get('purse', {}).get('amount', 'N/A'))
+                broadcast = tournament.get('broadcast', {}).get('network', 'N/A')
+                weather = tournament.get('weather', {})
 
                 # Create or update course
                 course, created = GolfCourse.objects.get_or_create(
@@ -1248,18 +1211,14 @@ def fetch_and_store_golf_events():
                     course.par = par
                     course.yardage = yardage
                     course.save()
-                    logger.info("Updated course %s: par=%s, yardage=%s", course_name, par, yardage)
-
-                # Log the course object after saving
-                logger.info("Saved course for event %s: %s", event_id, course.__dict__)
 
                 # Create or update event
                 event_obj, created = GolfEvent.objects.get_or_create(
                     event_id=event_id,
                     defaults={
                         'name': name,
-                        'short_name': event.get('shortName', name),
-                        'date': datetime.strptime(event.get('date'), '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=pytz.UTC),
+                        'short_name': tournament.get('shortName', name),
+                        'date': datetime.strptime(tournament.get('startDate'), '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=pytz.UTC),
                         'state': state,
                         'completed': completed,
                         'venue': venue_name,
@@ -1269,9 +1228,9 @@ def fetch_and_store_golf_events():
                         'course': course,
                         'purse': purse,
                         'broadcast': broadcast,
-                        'current_round': status.get('period', 1),
-                        'total_rounds': event.get('format', {}).get('rounds', 4),
-                        'is_playoff': status.get('hadPlayoff', False),
+                        'current_round': status.get('round', 1),
+                        'total_rounds': tournament.get('rounds', 4),
+                        'is_playoff': status.get('playoff', False),
                         'weather_condition': weather.get('condition', 'N/A'),
                         'weather_temperature': weather.get('temperature', 'N/A'),
                         'last_updated': timezone.now()
@@ -1279,8 +1238,8 @@ def fetch_and_store_golf_events():
                 )
                 if not created:
                     event_obj.name = name
-                    event_obj.short_name = event.get('shortName', name)
-                    event_obj.date = datetime.strptime(event.get('date'), '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=pytz.UTC)
+                    event_obj.short_name = tournament.get('shortName', name)
+                    event_obj.date = datetime.strptime(tournament.get('startDate'), '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=pytz.UTC)
                     event_obj.state = state
                     event_obj.completed = completed
                     event_obj.venue = venue_name
@@ -1290,101 +1249,81 @@ def fetch_and_store_golf_events():
                     event_obj.course = course
                     event_obj.purse = purse
                     event_obj.broadcast = broadcast
-                    event_obj.current_round = status.get('period', 1)
-                    event_obj.total_rounds = event.get('format', {}).get('rounds', 4)
-                    event_obj.is_playoff = status.get('hadPlayoff', False)
+                    event_obj.current_round = status.get('round', 1)
+                    event_obj.total_rounds = tournament.get('rounds', 4)
+                    event_obj.is_playoff = status.get('playoff', False)
                     event_obj.weather_condition = weather.get('condition', 'N/A')
                     event_obj.weather_temperature = weather.get('temperature', 'N/A')
                     event_obj.last_updated = timezone.now()
                     event_obj.save()
-                    logger.info("Updated event %s with new details: %s", event_id, event_obj.__dict__)
 
                 # Fetch and store leaderboard for in-progress or completed events
                 if event_obj.state in ['in', 'post']:
-                    detailed_url = f"https://site.api.espn.com/apis/site/v2/sports/golf/{tour_id}/scoreboard/{event_id}"
+                    leaderboard_url = f"https://site.api.espn.com/apis/site/v2/sports/golf/{tour_id}/tournaments/{event_id}/leaderboard"
                     try:
-                        detailed_response = requests.get(detailed_url)
-                        if detailed_response.ok:
-                            summary_data = detailed_response.json()
-                            events_data = summary_data.get('events', [])
+                        leaderboard_response = requests.get(leaderboard_url)
+                        if leaderboard_response.ok:
+                            leaderboard_data = leaderboard_response.json()
+                            players = leaderboard_data.get('players', [])
                             
-                            if not events_data:
-                                logger.warning("No events data found in leaderboard response for event %s", event_id)
-                                continue
-                                
-                            leaderboard_data = events_data[0].get('competitors', [])
-                            
-                            if not leaderboard_data:
-                                logger.warning("No leaderboard data found for event %s", event_id)
+                            if not players:
+                                logger.warning("No leaderboard data found for tournament %s", event_id)
                                 continue
 
                             # Clear existing leaderboard entries for this event
                             event_obj.leaderboard.all().delete()
 
-                            for competitor in leaderboard_data:
+                            for player_data in players:
                                 try:
-                                    player_name = competitor.get('displayName', 'Unknown')
+                                    player_info = player_data.get('player', {})
+                                    player_name = player_info.get('name', 'Unknown')
                                     if not player_name:
-                                        logger.warning("Skipping competitor with no name in event %s", event_id)
                                         continue
 
                                     player, _ = GolfPlayer.objects.get_or_create(
                                         name=player_name,
                                         defaults={
-                                            'world_ranking': competitor.get('worldRanking', 'N/A')
+                                            'world_ranking': player_info.get('rank', 'N/A')
                                         }
                                     )
 
                                     # Get position and score
-                                    position = str(competitor.get('order', 'N/A'))
-                                    score = competitor.get('score', 'N/A')
+                                    position = str(player_data.get('position', 'N/A'))
+                                    total_score = player_data.get('total', 'N/A')
                                     
                                     # Get round scores
+                                    rounds = player_data.get('rounds', [])
                                     rounds_stat = []
-                                    for round_data in competitor.get('linescores', []):
-                                        value = round_data.get('value', 'N/A')
-                                        if value != 'N/A':
+                                    for round_info in rounds:
+                                        score = round_info.get('score', 'N/A')
+                                        if score != 'N/A':
                                             try:
-                                                value = float(value)
+                                                score = int(score)
                                             except (ValueError, TypeError):
-                                                value = 'N/A'
-                                        rounds_stat.append(value)
+                                                score = 'N/A'
+                                        rounds_stat.append(score)
                                     
                                     # Pad rounds to 4 if needed
-                                    rounds_stat += ["N/A"] * (4 - len(rounds_stat))
+                                    rounds_stat += ['N/A'] * (4 - len(rounds_stat))
                                     
                                     # Calculate total strokes
-                                    strokes = 'N/A'
-                                    valid_rounds = [r for r in rounds_stat if r != "N/A"]
-                                    if valid_rounds:
-                                        try:
-                                            strokes = sum(float(r) for r in valid_rounds)
-                                        except (ValueError, TypeError):
-                                            strokes = 'N/A'
-
-                                    # Get player status
-                                    status = competitor.get('status', {}).get('type', 'active')
-
+                                    total_strokes = player_data.get('strokes', 'N/A')
+                                    
                                     # Create leaderboard entry
                                     LeaderboardEntry.objects.create(
                                         event=event_obj,
                                         player=player,
                                         position=position,
-                                        score=score,
+                                        score=str(total_score),
                                         rounds=rounds_stat,
-                                        strokes=str(strokes),
-                                        status=status
+                                        strokes=str(total_strokes),
+                                        status=player_data.get('status', 'active')
                                     )
-                                    
-                                    logger.info("Created leaderboard entry for player %s in event %s", player_name, event_id)
-                                    
                                 except Exception as e:
-                                    logger.error("Error processing competitor for event %s: %s", event_id, str(e))
+                                    logger.error("Error processing player data for tournament %s: %s", event_id, str(e))
                                     continue
-
                     except requests.RequestException as e:
-                        logger.error("Error fetching leaderboard for event %s: %s", event_id, str(e))
-
+                        logger.error("Error fetching leaderboard for tournament %s: %s", event_id, str(e))
         except requests.RequestException as e:
             logger.error("Error fetching %s: %s", tour_config['name'], str(e))
 
@@ -1403,43 +1342,53 @@ class FetchGolfEventsView(APIView):
             return Response({'success': False, 'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class GolfEventsList(APIView):
+    authentication_classes = []  # Remove authentication requirement for GET requests
+    permission_classes = []  # Remove permission requirement for GET requests
+
     def get(self, request):
-        # Get state and tour_id from query parameters
-        state = request.query_params.get('state', 'pre')
-        tour_id = request.query_params.get('tour_id')
-
-        # First, fetch and store the latest events
         try:
-            fetch_and_store_golf_events()
+            # Get state and tour_id from query parameters
+            state = request.query_params.get('state', 'pre')
+            tour_id = request.query_params.get('tour_id')
+
+            # First, fetch and store the latest events
+            try:
+                fetch_and_store_golf_events()
+            except Exception as e:
+                logger.error(f"Error fetching golf events: {str(e)}")
+                # Continue with existing data if fetch fails
+
+            # Base queryset for filtering
+            queryset = GolfEvent.objects.all().select_related(
+                'tour', 'course'
+            ).prefetch_related(
+                'leaderboard', 'leaderboard__player'
+            )
+
+            # Apply tour filter if specified
+            if tour_id:
+                queryset = queryset.filter(tour__tour_id=tour_id)
+
+            # Apply state filter
+            if state == 'pre':
+                queryset = queryset.filter(state='pre', date__gt=timezone.now())
+            elif state == 'in':
+                queryset = queryset.filter(state='in')
+            elif state == 'post':
+                queryset = queryset.filter(state='post', completed=True)
+
+            # Order by date
+            queryset = queryset.order_by('date')
+
+            # Serialize the data
+            serializer = GolfEventSerializer(queryset, many=True)
+            return Response(serializer.data)
         except Exception as e:
-            logger.error(f"Error fetching golf events: {str(e)}")
-            # Continue with existing data if fetch fails
-
-        # Base queryset for filtering
-        queryset = GolfEvent.objects.all().select_related(
-            'tour', 'course'
-        ).prefetch_related(
-            'leaderboard', 'leaderboard__player'
-        )
-
-        # Apply tour filter if specified
-        if tour_id:
-            queryset = queryset.filter(tour__tour_id=tour_id)
-
-        # Apply state filter
-        if state == 'pre':
-            queryset = queryset.filter(state='pre', date__gt=timezone.now())
-        elif state == 'in':
-            queryset = queryset.filter(state='in')
-        elif state == 'post':
-            queryset = queryset.filter(state='post', completed=True)
-
-        # Order by date
-        queryset = queryset.order_by('date')
-
-        # Serialize the data
-        serializer = GolfEventSerializer(queryset, many=True)
-        return Response(serializer.data)
+            logger.error(f"Error in GolfEventsList view: {str(e)}")
+            return Response(
+                {'error': 'Internal server error', 'detail': str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 def fetch_and_store_football_events():
     """Fetch football events from ESPN API and store them in the database."""
@@ -1648,8 +1597,7 @@ class FootballEventsList(APIView):
         return Response(serializer.data)
 
 @api_view(['GET'])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
+# Remove authentication requirement for GET requests to allow public access to tennis events
 def tennis_events(request):
     try:
         # Try to fetch and store the latest tennis events
@@ -1691,6 +1639,7 @@ def tennis_events(request):
     return Response(serializer.data)
 
 @api_view(['GET'])
+# Remove authentication requirement for GET requests to allow public access to tennis event stats
 def tennis_event_stats(request, event_id):
     """
     Get detailed stats for a tennis event.

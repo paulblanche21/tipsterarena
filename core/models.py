@@ -40,13 +40,20 @@ class Tip(models.Model):
     )  # Visibility setting
     created_at = models.DateTimeField(auto_now_add=True)  # Timestamp of tip creation
     # Updated fields for tip details
-    odds = models.CharField(max_length=20)  # Store odds as a string (e.g., "2.5" or "2/1")
+    odds = models.CharField(
+        max_length=20,
+        null=True,
+        blank=True,
+        help_text="The odds for the tip (e.g., '2.5' or '2/1')"
+    )  # Store odds as a string (e.g., "2.5" or "2/1")
     odds_format = models.CharField(
         max_length=20,
         choices=[
             ('decimal', 'Decimal'),
             ('fractional', 'Fractional'),
-        ]
+        ],
+        null=True,
+        blank=True
     )  # Format of the odds
     bet_type = models.CharField(
         max_length=50,
@@ -72,7 +79,9 @@ class Tip(models.Model):
             ('goliath', 'Goliath'),
             ('super_heinz_singles', 'Super Heinz with Singles'),
             ('super_goliath', 'Super Goliath'),
-        ]
+        ],
+        null=True,
+        blank=True
     )  # Type of bet
     each_way = models.CharField(
         max_length=3,

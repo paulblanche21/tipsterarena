@@ -34,10 +34,23 @@ export class TennisEventsHandler {
     }
 
     mapEvents(events) {
+        console.log('Raw events received:', events);
         return events
             .filter(event => {
-                if (!event || !event.event_id || !event.tournament || !event.tournament.id) {
-                    console.warn(`Skipping invalid tennis event:`, event);
+                if (!event) {
+                    console.warn('Event is null or undefined');
+                    return false;
+                }
+                if (!event.event_id) {
+                    console.warn('Event missing event_id:', event);
+                    return false;
+                }
+                if (!event.tournament) {
+                    console.warn('Event missing tournament:', event);
+                    return false;
+                }
+                if (!event.tournament.id) {
+                    console.warn('Event tournament missing id:', event);
                     return false;
                 }
                 return true;
