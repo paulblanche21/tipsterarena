@@ -7,6 +7,7 @@
   .main-container {
     margin-left: var(--navbar-width);
     margin-right: 0;
+    margin-top: 60px;
   }
 
   .content {
@@ -39,8 +40,9 @@
   .mobile-header-left {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     width: 100%;
+    padding-left: 15px;
   }
   
   .mobile-logo {
@@ -48,6 +50,17 @@
     width: auto;
     max-width: 150px;
     object-fit: contain;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .nav-accordion-btn {
+    display: block;
+  }
+
+  .post-box {
+    margin-top: 20px;
+    z-index: 1;
   }
 }
 
@@ -106,6 +119,7 @@
   
   .main-container {
     margin-left: 60px;
+    margin-top: 60px;
   }
   
   .bottom-nav {
@@ -122,6 +136,14 @@
 
   .nav-brand {
     display: none;
+  }
+
+  .nav-accordion-btn {
+    display: block;
+  }
+
+  .post-box {
+    margin-top: 20px;
   }
 }
 
@@ -170,6 +192,8 @@
   
   .main-container {
     margin-left: 0;
+    margin-top: 60px;
+    margin-bottom: 60px;
   }
   
   .bottom-nav {
@@ -346,6 +370,18 @@
   .main-container.nav-active {
     transform: translateX(80%);
   }
+
+  .nav-accordion-btn {
+    display: none;
+  }
+
+  .mobile-header-left {
+    justify-content: center;
+  }
+
+  .post-box {
+    margin-top: 20px;
+  }
 }
 
 @media (max-width: 600px) {
@@ -377,6 +413,10 @@
 
   .tip-avatar {
     margin-bottom: var(--margin-small);
+  }
+
+  .nav-accordion-btn {
+    display: none;
   }
 }
 
@@ -472,4 +512,20 @@
     .messages-icon-base {
         font-size: 20px;
     }
+}
+
+.nav-accordion-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 10px;
+    margin-right: 10px;
+    transition: color 0.3s ease;
+}
+
+.nav-accordion-btn:hover {
+    color: var(--red-accent);
 }

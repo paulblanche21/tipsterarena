@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const overlay = document.getElementById('navbar-overlay');
   const mainContainer = document.getElementById('main-container');
   const mobileHeader = document.querySelector('.mobile-header');
+  const navAccordionBtn = document.getElementById('nav-accordion-btn');
 
   // Handle avatar click to show navbar
   if (mobileAvatar) {
@@ -15,11 +16,13 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Handle overlay click to hide navbar
-  overlay.addEventListener('click', function() {
-    navbar.classList.remove('active');
-    overlay.classList.remove('active');
-    mainContainer.classList.remove('nav-active');
-  });
+  if (overlay) {
+    overlay.addEventListener('click', function() {
+      navbar.classList.remove('active');
+      overlay.classList.remove('active');
+      mainContainer.classList.remove('nav-active');
+    });
+  }
 
   // Handle scroll behavior
   let lastScrollTop = 0;
@@ -36,4 +39,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     lastScrollTop = scrollTop;
   });
+
+  if (navAccordionBtn) {
+    navAccordionBtn.addEventListener('click', function() {
+      navbar.classList.toggle('active');
+      overlay.classList.toggle('active');
+      mainContainer.classList.toggle('nav-active');
+    });
+  }
 }); 
