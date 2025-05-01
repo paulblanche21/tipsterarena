@@ -49,9 +49,6 @@
     <div class="mobile-header">
       <div class="mobile-header-left">
         <img src="{% static 'img/mobile.png' %}" alt="Tipster Arena" class="mobile-logo">
-        {% if user.is_authenticated %}
-          <img src="{{ user.profile.avatar.url }}" alt="Profile" class="mobile-avatar" id="mobile-avatar">
-        {% endif %}
       </div>
     </div>
 

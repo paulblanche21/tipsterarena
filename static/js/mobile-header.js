@@ -3,17 +3,18 @@ document.addEventListener('DOMContentLoaded', function() {
   const navbar = document.querySelector('.navbar');
   const overlay = document.getElementById('navbar-overlay');
   const mainContainer = document.getElementById('main-container');
-  let lastScrollTop = 0;
+  const mobileHeader = document.querySelector('.mobile-header');
 
+  // Handle avatar click to show navbar
   if (mobileAvatar) {
-    mobileAvatar.addEventListener('click', function(e) {
-      e.preventDefault();
-      navbar.classList.toggle('active');
-      overlay.classList.toggle('active');
-      mainContainer.classList.toggle('nav-active');
+    mobileAvatar.addEventListener('click', function() {
+      navbar.classList.add('active');
+      overlay.classList.add('active');
+      mainContainer.classList.add('nav-active');
     });
   }
 
+  // Handle overlay click to hide navbar
   overlay.addEventListener('click', function() {
     navbar.classList.remove('active');
     overlay.classList.remove('active');
@@ -21,20 +22,18 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   // Handle scroll behavior
+  let lastScrollTop = 0;
   window.addEventListener('scroll', function() {
-    const st = window.pageYOffset || document.documentElement.scrollTop;
-    const mobileHeader = document.querySelector('.mobile-header');
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     
-    if (st > lastScrollTop) {
+    if (scrollTop > lastScrollTop) {
       // Scrolling down
       mobileHeader.classList.add('hidden');
-      mainContainer.classList.add('header-hidden');
     } else {
       // Scrolling up
       mobileHeader.classList.remove('hidden');
-      mainContainer.classList.remove('header-hidden');
     }
     
-    lastScrollTop = st <= 0 ? 0 : st;
+    lastScrollTop = scrollTop;
   });
 }); 
