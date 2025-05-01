@@ -23,7 +23,7 @@
     <link rel="stylesheet" href="http://localhost:3000/static/css/landing.css">
     <link rel="stylesheet" href="http://localhost:3000/static/css/misc.css">
     <link rel="stylesheet" href="http://localhost:3000/static/css/messages.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/football-events.css">
+    <link rel="stylesheet" href="http://localhost:3000/static/css/football.css">
     <link rel="stylesheet" href="http://localhost:3000/static/css/tennis-events.css">
     <link rel="stylesheet" href="http://localhost:3000/static/css/golf-events.css">
     <link rel="stylesheet" href="http://localhost:3000/static/css/horse-racing-events.css">
@@ -45,6 +45,19 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
+    <!-- Mobile Header -->
+    <div class="mobile-header">
+      <div class="mobile-header-left">
+        <img src="{% static 'img/mobile.png' %}" alt="Tipster Arena" class="mobile-logo">
+        {% if user.is_authenticated %}
+          <img src="{{ user.profile.avatar.url }}" alt="Profile" class="mobile-avatar" id="mobile-avatar">
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Navbar Overlay -->
+    <div class="navbar-overlay" id="navbar-overlay"></div>
+
     <!-- Navigation bar with links and user info -->
     <nav class="navbar">
         <div class="nav-brand">
@@ -56,18 +69,19 @@
                  width="209" 
                  height="40">
         </div>
+        
         <ul class="nav-menu">
             <!-- Main navigation links with icons -->
-            <li><a href="{% url 'home' %}"><i class="fas fa-home nav-icon"></i> Home</a></li>
-            <li><a href="{% url 'explore' %}"><i class="fas fa-search nav-icon"></i> Explore</a></li>
-            <li><a href="{% url 'notifications' %}"><i class="fas fa-bell nav-icon"></i> Notifications</a></li>
-            <li><a href="{% url 'sport' 'football' %}"><i class="fas fa-futbol nav-icon"></i> Football</a></li>
-            <li><a href="{% url 'sport' 'golf' %}"><i class="fas fa-golf-ball nav-icon"></i> Golf</a></li>
-            <li><a href="{% url 'sport' 'tennis' %}"><i class="fas fa-table-tennis nav-icon"></i> Tennis</a></li>
-            <li><a href="{% url 'sport' 'horse_racing' %}"><i class="fas fa-horse nav-icon"></i> Horse Racing</a></li>
-            <li><a href="{% url 'profile' request.user.username|default:'guest' %}"><i class="fas fa-user nav-icon"></i> Profile</a></li>
-            <li><a href="{% url 'messages' %}"><i class="fas fa-envelope nav-icon"></i> Messages</a></li>
-            <li><a href="{% url 'bookmarks' %}"><i class="fas fa-bookmark nav-icon"></i> Bookmarks</a></li>
+            <li><a href="{% url 'home' %}"><i class="fas fa-home nav-icon"></i><span>Home</span></a></li>
+            <li><a href="{% url 'explore' %}"><i class="fas fa-search nav-icon"></i><span>Explore</span></a></li>
+            <li><a href="{% url 'notifications' %}"><i class="fas fa-bell nav-icon"></i><span>Notifications</span></a></li>
+            <li><a href="{% url 'sport' 'football' %}" {% if request.resolver_match.url_name == 'sport' and request.resolver_match.kwargs.sport == 'football' %}class="active"{% endif %}><i class="fas fa-futbol nav-icon"></i><span>Football</span></a></li>
+            <li><a href="{% url 'sport' 'golf' %}"><i class="fas fa-golf-ball nav-icon"></i><span>Golf</span></a></li>
+            <li><a href="{% url 'sport' 'tennis' %}"><i class="fas fa-table-tennis nav-icon"></i><span>Tennis</span></a></li>
+            <li><a href="{% url 'sport' 'horse_racing' %}"><i class="fas fa-horse nav-icon"></i><span>Horse Racing</span></a></li>
+            <li><a href="{% url 'profile' request.user.username|default:'guest' %}"><i class="fas fa-user nav-icon"></i><span>Profile</span></a></li>
+            <li><a href="{% url 'messages' %}"><i class="fas fa-envelope nav-icon"></i><span>Messages</span></a></li>
+            <li><a href="{% url 'bookmarks' %}"><i class="fas fa-bookmark nav-icon"></i><span>Bookmarks</span></a></li>
         </ul>
         <div class="nav-post">
             <!-- Button to trigger the post tip modal -->
@@ -94,8 +108,31 @@
         </div>
     </nav>
 
+    <!-- Mobile Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}class="active"{% endif %}>
+            <i class="fas fa-home"></i>
+        </a>
+        <a href="{% url 'explore' %}" {% if request.resolver_match.url_name == 'explore' %}class="active"{% endif %}>
+            <i class="fas fa-search"></i>
+        </a>
+        <a href="{% url 'sport' 'football' %}" {% if request.resolver_match.url_name == 'sport' and request.resolver_match.kwargs.sport == 'football' %}class="active"{% endif %}>
+            <i class="fas fa-futbol"></i>
+        </a>
+        <a href="{% url 'sport' 'golf' %}" {% if request.resolver_match.url_name == 'sport' and request.resolver_match.kwargs.sport == 'golf' %}class="active"{% endif %}>
+            <i class="fas fa-golf-ball"></i>
+        </a>
+        <a href="{% url 'sport' 'tennis' %}" {% if request.resolver_match.url_name == 'sport' and request.resolver_match.kwargs.sport == 'tennis' %}class="active"{% endif %}>
+            <i class="fas fa-table-tennis"></i>
+        </a>
+        <a href="{% url 'sport' 'horse_racing' %}" {% if request.resolver_match.url_name == 'sport' and request.resolver_match.kwargs.sport == 'horse_racing' %}class="active"{% endif %}>
+            <i class="fas fa-horse"></i>
+        </a>
+    </nav>
+
+
     <!-- Main layout container for content and sidebar -->
-    <div class="main-container">
+    <div class="main-container" id="main-container">
         <!-- Primary content area, overridden by child templates -->
         <main class="content">
             {% block content %}{% endblock %}
@@ -149,16 +186,16 @@
                     </div>
                 </div>
             </div>
-            <!-- Quick access to messages -->
-            <div class="messages-container">
-                <a href="{% url 'messages' %}" class="messages-card">
-                    <span class="messages-text-base">Messages</span>
-                    <span class="messages-icon-base"><i class="fas fa-envelope"></i></span>
-                    <span class="messages-caret-base"><i class="fas fa-caret-down"></i></span>
-                </a>
-            </div>
         </aside>
         {% endblock %}
+
+        <!-- Messages container moved outside sidebar -->
+        <div class="messages-container">
+            <a href="{% url 'messages' %}" class="messages-card">
+                <span class="messages-text-base">Messages</span>
+                <span class="messages-icon-base"><i class="fas fa-envelope"></i></span>
+            </a>
+        </div>
 
         <!-- Modal for Events -->
         <div class="events-modal" id="events-modal" style="display: none;">
@@ -293,5 +330,30 @@
 
     <!-- Placeholder for page-specific JavaScript -->
     {% block extra_js %}{% endblock %}
+
+    <!-- Add JavaScript for mobile menu functionality -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const menuTrigger = document.getElementById('mobile-menu-trigger');
+        const navbar = document.querySelector('.navbar');
+        const overlay = document.getElementById('navbar-overlay');
+        const mainContainer = document.getElementById('main-container');
+
+        menuTrigger.addEventListener('click', function() {
+            navbar.classList.toggle('active');
+            overlay.classList.toggle('active');
+            mainContainer.classList.toggle('nav-active');
+        });
+
+        overlay.addEventListener('click', function() {
+            navbar.classList.remove('active');
+            overlay.classList.remove('active');
+            mainContainer.classList.remove('nav-active');
+        });
+    });
+    </script>
+
+    <!-- Scripts -->
+    <script src="{% static 'js/mobile-header.js' %}"></script>
 </body>
 </html>

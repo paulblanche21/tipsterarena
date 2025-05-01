@@ -813,8 +813,6 @@
     margin: 5px 0;             /* Vertical spacing */
 }
 
-
-
 /* Heading within thread header in user details */
 .user-details .thread-header h3 {
     font-size: 18px;           /* Larger font */
@@ -890,4 +888,64 @@
         width: 100%;             /* Full width */
         height: auto;            /* Auto height */
     }
+}
+
+/* Messages container */
+.messages-container {
+  position: fixed;
+  bottom: clamp(10px, 2vh, 20px);
+  right: clamp(10px, 2vw, 20px);
+  z-index: 1002;
+}
+
+.messages-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--red-accent);
+  border-radius: 50px;
+  padding: var(--padding-small) clamp(10px, 2vw, 15px);
+  text-decoration: none;
+  box-shadow: var(--shadow-light);
+  transition: all 0.2s ease;
+}
+
+.messages-card:hover {
+  background-color: #e63b31;
+  transform: scale(1.05);
+}
+
+.messages-text-base {
+  color: #ffffff;
+  font-size: clamp(14px, 2vw, 16px);
+  font-weight: 600;
+  margin-right: var(--padding-small);
+}
+
+.messages-icon-base {
+  color: #ffffff;
+  font-size: clamp(16px, 2.5vw, 18px);
+}
+
+/* Mobile styles */
+@media (max-width: 600px) {
+  .messages-container {
+    bottom: 70px; /* Position above bottom navigation */
+    right: 15px;
+  }
+
+  .messages-card {
+    padding: 12px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+  }
+
+  .messages-text-base {
+    display: none;
+  }
+
+  .messages-icon-base {
+    font-size: 18px;
+  }
 }

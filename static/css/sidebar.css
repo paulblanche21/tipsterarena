@@ -193,12 +193,6 @@
     border-top: 1px solid #eee;
     font-size: 12px;
   }
-  
-  .carousel-event-card.expandable-card {
-    padding: 8px;
-    margin-bottom: 8px;
-  }
-
 
 .card-header {
     display: flex;
@@ -552,36 +546,4 @@
     color: #b32d39;
 }
 
-/* Responsive Design for Policy */
-@media (max-width: 768px) {
-    .policy-container {
-        margin: 20px;
-        padding: 20px;
-    }
-
-    .policy-content h1 {
-        font-size: 2em;
-    }
-
-    .policy-content h2 {
-        font-size: 1.5em;
-    }
-
-    .policy-content h3 {
-        font-size: 1.2em;
-    }
-
-    .policy-content p,
-    .policy-content ul li {
-        font-size: 1em;
-    }
-
-    .policy-close-btn {
-        top: 15px;
-        right: 15px;
-        font-size: 24px;
-        width: 36px;
-        height: 36px;
-    }
-}
 
