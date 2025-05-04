@@ -9,10 +9,49 @@ from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
-from ..models import GolfEvent, GolfPlayer, GolfTournament, GolfRound, GolfScore
-from ..serializers import GolfEventSerializer, GolfPlayerSerializer, GolfTournamentSerializer
+from ..models import GolfEvent, GolfPlayer, GolfTour, LeaderboardEntry
+from ..serializers import GolfEventSerializer, GolfPlayerSerializer, GolfTourSerializer
 
 logger = logging.getLogger(__name__)
+
+class FetchGolfEventsView(APIView):
+    """API endpoint for fetching and updating golf events."""
+    authentication_classes = []
+    permission_classes = []
+    throttle_classes = [UserRateThrottle, AnonRateThrottle]
+    
+    def get(self, request):
+        """Fetch and update golf events."""
+        try:
+            # Get query parameters
+            start_date = request.query_params.get('start_date')
+            end_date = request.query_params.get('end_date')
+            tour_id = request.query_params.get('tour_id')
+            
+            # Build base query
+            queryset = GolfEvent.objects.all()
+            
+            # Apply filters
+            if start_date:
+                queryset = queryset.filter(start_date__gte=start_date)
+            if end_date:
+                queryset = queryset.filter(start_date__lte=end_date)
+            if tour_id:
+                queryset = queryset.filter(tour_id=tour_id)
+            
+            # Order by date
+            queryset = queryset.order_by('start_date')
+            
+            # Serialize data
+            serializer = GolfEventSerializer(queryset, many=True)
+            return Response(serializer.data)
+            
+        except Exception as e:
+            logger.error(f"Error in FetchGolfEventsView: {str(e)}")
+            return Response(
+                {'error': 'Internal server error', 'detail': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 class GolfEventsList(APIView):
     """View for listing golf events."""
@@ -114,12 +153,12 @@ def golf_player_stats(request, player_id):
         player = get_object_or_404(GolfPlayer, id=player_id)
         
         # Get recent tournament history
-        recent_tournaments = GolfScore.objects.filter(
+        recent_tournaments = LeaderboardEntry.objects.filter(
             player=player,
-            round__event__state='post'
+            event__state='post'
         ).select_related(
-            'round__event__tournament'
-        ).order_by('-round__event__start_date')[:10]
+            'event__tour'
+        ).order_by('-event__date')[:10]
 
         # Calculate stats
         tournament_history = []
@@ -128,24 +167,24 @@ def golf_player_stats(request, player_id):
         wins = 0
         top_10s = 0
 
-        for score in recent_tournaments:
-            event = score.round.event
-            position = score.final_position
+        for entry in recent_tournaments:
+            event = entry.event
+            position = entry.position
             
             tournament_history.append({
-                'tournament': event.tournament.name,
-                'date': event.start_date,
+                'tournament': event.tour.name,
+                'date': event.date,
                 'position': position,
-                'score': score.total_score,
-                'rounds': [r.score for r in score.round_scores.all()]
+                'score': entry.score,
+                'rounds': entry.rounds
             })
 
-            total_rounds += len(score.round_scores.all())
-            total_score += score.total_score
+            total_rounds += len(entry.rounds)
+            total_score += int(entry.score) if entry.score != "N/A" else 0
             
-            if position == 1:
+            if position == "1":
                 wins += 1
-            if position <= 10:
+            if position.isdigit() and int(position) <= 10:
                 top_10s += 1
 
         # Calculate averages
@@ -178,13 +217,13 @@ def golf_player_stats(request, player_id):
 def golf_tournament_history(request, tournament_id):
     """Get historical data for a golf tournament."""
     try:
-        tournament = get_object_or_404(GolfTournament, id=tournament_id)
+        tournament = get_object_or_404(GolfTour, id=tournament_id)
         
         # Get past events
         past_events = GolfEvent.objects.filter(
-            tournament=tournament,
+            tour=tournament,
             state='post'
-        ).order_by('-start_date')
+        ).order_by('-date')
 
         # Calculate tournament stats
         winners = []
@@ -192,35 +231,36 @@ def golf_tournament_history(request, tournament_id):
         course_records = {}
 
         for event in past_events:
-            winner_score = GolfScore.objects.filter(
-                round__event=event,
-                final_position=1
+            winner_entry = LeaderboardEntry.objects.filter(
+                event=event,
+                position="1"
             ).first()
             
-            if winner_score:
+            if winner_entry:
                 winners.append({
-                    'year': event.start_date.year,
-                    'player': winner_score.player.name,
-                    'score': winner_score.total_score
+                    'year': event.date.year,
+                    'player': winner_entry.player.name,
+                    'score': winner_entry.score
                 })
-                winning_scores.append(winner_score.total_score)
+                winning_scores.append(int(winner_entry.score) if winner_entry.score != "N/A" else 0)
 
             # Track course records
-            lowest_round = GolfRound.objects.filter(
-                event=event
-            ).order_by('score').first()
+            lowest_round = min(
+                (int(score) for score in winner_entry.rounds if score != "N/A"),
+                default=None
+            )
             
             if lowest_round:
                 course = event.course.name
-                if course not in course_records or lowest_round.score < course_records[course]['score']:
+                if course not in course_records or lowest_round < course_records[course]['score']:
                     course_records[course] = {
-                        'score': lowest_round.score,
-                        'player': lowest_round.player.name,
-                        'year': event.start_date.year
+                        'score': lowest_round,
+                        'player': winner_entry.player.name,
+                        'year': event.date.year
                     }
 
         stats = {
-            'tournament': GolfTournamentSerializer(tournament).data,
+            'tournament': GolfTourSerializer(tournament).data,
             'history': {
                 'winners': winners,
                 'average_winning_score': sum(winning_scores) / len(winning_scores) if winning_scores else None,

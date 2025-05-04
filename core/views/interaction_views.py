@@ -5,11 +5,12 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.contrib.auth.models import User
+import json
 
 
 from ..models import (
     Follow, MessageThread, Message, Like, Share,
-    UserProfile
+    UserProfile, Tip, Comment
 )
 
 logger = logging.getLogger(__name__)
@@ -157,4 +158,76 @@ def message_settings_view(request):
 
     return render(request, 'core/message_settings.html', {
         'user': user,
-    }) 
+    })
+
+@login_required
+def bookmarks(request):
+    """Display bookmarked tips for the current user."""
+    user = request.user
+    bookmarked_tips = Tip.objects.filter(bookmarks=user).order_by('-created_at')
+    
+    return render(request, 'core/bookmarks.html', {
+        'bookmarked_tips': bookmarked_tips,
+    })
+
+@login_required
+@require_POST
+def toggle_bookmark(request):
+    """Handle toggling bookmark status for a tip."""
+    try:
+        data = json.loads(request.body)
+        tip_id = data.get('tip_id')
+        
+        if not tip_id:
+            return JsonResponse({'success': False, 'error': 'Missing tip_id'}, status=400)
+            
+        tip = get_object_or_404(Tip, id=tip_id)
+        user = request.user
+        
+        if tip.bookmarks.filter(id=user.id).exists():
+            tip.bookmarks.remove(user)
+            return JsonResponse({
+                'success': True,
+                'message': 'Tip unbookmarked',
+                'is_bookmarked': False
+            })
+        else:
+            tip.bookmarks.add(user)
+            return JsonResponse({
+                'success': True,
+                'message': 'Tip bookmarked',
+                'is_bookmarked': True
+            })
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        logger.error("Error toggling bookmark: %s", str(e))
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+@login_required
+@require_POST
+def like_comment(request):
+    """Handle liking/unliking a comment."""
+    comment_id = request.POST.get('comment_id')
+    comment = get_object_or_404(Comment, id=comment_id)
+    
+    if comment.likes.filter(id=request.user.id).exists():
+        comment.likes.remove(request.user)
+        return JsonResponse({'success': True, 'message': 'Unliked', 'is_liked': False})
+    else:
+        comment.likes.add(request.user)
+        return JsonResponse({'success': True, 'message': 'Liked', 'is_liked': True})
+
+@login_required
+@require_POST
+def share_comment(request):
+    """Handle sharing a comment."""
+    comment_id = request.POST.get('comment_id')
+    comment = get_object_or_404(Comment, id=comment_id)
+    
+    Share.objects.create(
+        user=request.user,
+        comment=comment
+    )
+    
+    return JsonResponse({'success': True, 'message': 'Comment shared'}) 

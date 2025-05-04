@@ -2,12 +2,13 @@
 
 import logging
 import bleach
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Count, Q
 
 from ..models import Tip, Like, Share, Comment, UserProfile
 
@@ -280,4 +281,76 @@ def get_tip_comments(request, tip_id):
         return JsonResponse({'success': True, 'comments': comments_data})
     except Tip.DoesNotExist:
         logger.error("Tip not found: tip_id=%s", tip_id)
-        return JsonResponse({'success': False, 'error': 'Tip not found'}, status=404) 
+        return JsonResponse({'success': False, 'error': 'Tip not found'}, status=404)
+
+@login_required
+def tip_detail(request, tip_id):
+    """Display detailed view of a single tip."""
+    tip = get_object_or_404(Tip, id=tip_id)
+    comments = Comment.objects.filter(tip=tip, parent_comment=None).order_by('-created_at')
+    
+    # Get user's interaction status with the tip
+    is_liked = tip.likes.filter(id=request.user.id).exists()
+    is_shared = tip.shares.filter(id=request.user.id).exists()
+    is_bookmarked = tip.bookmarks.filter(id=request.user.id).exists()
+    
+    context = {
+        'tip': tip,
+        'comments': comments,
+        'is_liked': is_liked,
+        'is_shared': is_shared,
+        'is_bookmarked': is_bookmarked,
+        'like_count': tip.likes.count(),
+        'share_count': tip.shares.count(),
+        'comment_count': tip.comments.count(),
+    }
+    
+    return render(request, 'core/tip_detail.html', context)
+
+@login_required
+def tip_list(request):
+    """Display a list of tips with filtering options."""
+    try:
+        # Get filter parameters
+        sport = request.GET.get('sport')
+        user_id = request.GET.get('user_id')
+        search_query = request.GET.get('search')
+        
+        # Base queryset
+        tips = Tip.objects.select_related('user', 'user__userprofile').prefetch_related(
+            'likes', 'shares', 'comments'
+        ).order_by('-created_at')
+        
+        # Apply filters
+        if sport:
+            tips = tips.filter(sport=sport)
+        if user_id:
+            tips = tips.filter(user_id=user_id)
+        if search_query:
+            tips = tips.filter(
+                Q(text__icontains=search_query) |
+                Q(user__username__icontains=search_query)
+            )
+        
+        # Get interaction counts
+        tips = tips.annotate(
+            like_count=Count('likes'),
+            share_count=Count('shares'),
+            comment_count=Count('comments')
+        )
+        
+        context = {
+            'tips': tips,
+            'sport': sport,
+            'user_id': user_id,
+            'search_query': search_query
+        }
+        
+        return render(request, 'core/tip_list.html', context)
+        
+    except Exception as e:
+        logger.error(f"Error in tip_list view: {str(e)}")
+        return JsonResponse(
+            {'error': 'Internal server error', 'detail': str(e)},
+            status=500
+        ) 

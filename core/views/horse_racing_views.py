@@ -12,12 +12,14 @@ from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
+from django.db.models import Prefetch
 
 from ..models import (
-    HorseRacingMeeting, HorseRacingBettingOdds
+    HorseRacingMeeting, HorseRacingBettingOdds, HorseRacingRace
 )
 from ..serializers import (
-    HorseRacingMeetingSerializer, HorseRacingBettingOddsSerializer
+    HorseRacingMeetingSerializer, HorseRacingBettingOddsSerializer,
+    HorseRacingRaceSerializer
 )
 from ..horse_racing_events import get_racecards_json
 
@@ -191,6 +193,154 @@ class HorseRacingBettingOddsBulkUpsert(APIView):
             )
         except Exception as e:
             logger.error(f"Error in HorseRacingBettingOddsBulkUpsert view: {str(e)}")
+            return Response(
+                {'error': 'Internal server error', 'detail': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+class RaceMeetingList(APIView):
+    """API endpoint for retrieving a list of horse racing meetings."""
+    authentication_classes = []
+    permission_classes = []
+    throttle_classes = [UserRateThrottle, AnonRateThrottle]
+    
+    def get(self, request):
+        """Get a list of horse racing meetings."""
+        try:
+            # Get query parameters
+            date = request.query_params.get('date')
+            course_id = request.query_params.get('course_id')
+            
+            # Validate parameters
+            if date:
+                date = validate_date_param(date)
+            
+            # Build query
+            queryset = HorseRacingMeeting.objects.all()
+            if date:
+                queryset = queryset.filter(date__date=date)
+            if course_id:
+                queryset = queryset.filter(course__id=course_id)
+            
+            # Order by date and course
+            queryset = queryset.order_by('date', 'course__name')
+            
+            # Serialize data
+            serializer = HorseRacingMeetingSerializer(queryset, many=True)
+            return Response(serializer.data)
+            
+        except ValidationError as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            logger.error(f"Error in RaceMeetingList view: {str(e)}")
+            return Response(
+                {'error': 'Internal server error', 'detail': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+class HorseRacingRacesList(APIView):
+    """API endpoint for retrieving a list of horse racing races."""
+    authentication_classes = []
+    permission_classes = []
+    throttle_classes = [UserRateThrottle, AnonRateThrottle]
+    
+    def get(self, request):
+        """Get a list of horse racing races."""
+        try:
+            # Get query parameters
+            meeting_id = request.query_params.get('meeting_id')
+            date = request.query_params.get('date')
+            course_id = request.query_params.get('course_id')
+            
+            # Validate parameters
+            if date:
+                date = validate_date_param(date)
+            
+            # Build query
+            queryset = HorseRacingRace.objects.select_related(
+                'meeting', 'meeting__course'
+            ).prefetch_related(
+                'runners',
+                'runners__horse',
+                'runners__jockey',
+                'runners__trainer',
+                'results',
+                'results__horse',
+                'results__jockey',
+                'results__trainer'
+            )
+            
+            # Apply filters
+            if meeting_id:
+                queryset = queryset.filter(meeting_id=meeting_id)
+            if date:
+                queryset = queryset.filter(meeting__date__date=date)
+            if course_id:
+                queryset = queryset.filter(meeting__course__id=course_id)
+            
+            # Order by meeting date and race time
+            queryset = queryset.order_by('meeting__date', 'scheduled_time')
+            
+            # Serialize data
+            serializer = HorseRacingRaceSerializer(queryset, many=True)
+            return Response(serializer.data)
+            
+        except ValidationError as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            logger.error(f"Error in HorseRacingRacesList view: {str(e)}")
+            return Response(
+                {'error': 'Internal server error', 'detail': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+class HorseRacingRaceDetail(APIView):
+    """API endpoint for retrieving a single horse racing race."""
+    authentication_classes = []
+    permission_classes = []
+    throttle_classes = [UserRateThrottle, AnonRateThrottle]
+    
+    def get(self, request, race_id):
+        """Get a single horse racing race by ID."""
+        try:
+            # Extract numeric ID if string ID is provided
+            if isinstance(race_id, str) and race_id.startswith('horse_racing_race_'):
+                race_id = int(race_id.split('_')[-1])
+                
+            # Get the race with related data
+            race = get_object_or_404(
+                HorseRacingRace.objects.select_related(
+                    'meeting', 'meeting__course'
+                ).prefetch_related(
+                    'runners',
+                    'runners__horse',
+                    'runners__jockey',
+                    'runners__trainer',
+                    'results',
+                    'results__horse',
+                    'results__jockey',
+                    'results__trainer'
+                ),
+                id=race_id
+            )
+            
+            # Serialize the race
+            serializer = HorseRacingRaceSerializer(race)
+            return Response(serializer.data)
+            
+        except ValueError:
+            return Response(
+                {'error': 'Invalid race ID format'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            logger.error(f"Error in HorseRacingRaceDetail view: {str(e)}")
             return Response(
                 {'error': 'Internal server error', 'detail': str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR

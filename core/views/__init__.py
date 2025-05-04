@@ -8,7 +8,8 @@ __all__ = [
 
     # Tip views
     'post_tip', 'edit_tip', 'delete_tip', 'like_tip',
-    'share_tip', 'comment_tip', 'get_tip_comments',
+    'share_tip', 'comment_tip', 'get_tip_comments', 'tip_detail',
+    'tip_list',
 
     # Profile views
     'profile', 'profile_edit_view',
@@ -19,6 +20,7 @@ __all__ = [
     # Interaction views
     'follow_user', 'messages_view', 'send_message',
     'get_thread_messages', 'notifications', 'message_settings_view',
+    'bookmarks', 'like_comment', 'share_comment', 'toggle_bookmark',
 
     # API views
     'current_user_api', 'suggested_users_api',
@@ -29,6 +31,7 @@ __all__ = [
     'validate_date_param', 'horse_racing_fixtures',
     'racecards_json_view', 'horse_racing_events',
     'HorseRacingMeetingDetail', 'HorseRacingBettingOddsBulkUpsert',
+    'RaceMeetingList', 'HorseRacingRacesList', 'HorseRacingRaceDetail',
 
     # Tennis views
     'validate_state_param', 'TennisEventsList',
@@ -42,7 +45,7 @@ __all__ = [
 
     # Golf views
     'GolfEventsList', 'GolfEventDetail',
-    'golf_player_stats', 'golf_tournament_history',
+    'FetchGolfEventsView',
 
     # General views
     'landing', 'search', 'csp_report',
@@ -58,7 +61,8 @@ from .auth_views import (
 
 from .tip_views import (
     post_tip, edit_tip, delete_tip, like_tip,
-    share_tip, comment_tip, get_tip_comments
+    share_tip, comment_tip, get_tip_comments, tip_detail,
+    tip_list
 )
 
 from .profile_views import (
@@ -71,7 +75,8 @@ from .sport_views import (
 
 from .interaction_views import (
     follow_user, messages_view, send_message,
-    get_thread_messages, notifications, message_settings_view
+    get_thread_messages, notifications, message_settings_view,
+    bookmarks, like_comment, share_comment, toggle_bookmark
 )
 
 from .api_views import (
@@ -83,7 +88,8 @@ from .api_views import (
 from .horse_racing_views import (
     validate_date_param, horse_racing_fixtures,
     racecards_json_view, horse_racing_events,
-    HorseRacingMeetingDetail, HorseRacingBettingOddsBulkUpsert
+    HorseRacingMeetingDetail, HorseRacingBettingOddsBulkUpsert,
+    RaceMeetingList, HorseRacingRacesList, HorseRacingRaceDetail
 )
 
 from .tennis_views import (
@@ -100,7 +106,8 @@ from .football_views import (
 
 from .golf_views import (
     GolfEventsList, GolfEventDetail,
-    golf_player_stats, golf_tournament_history
+    golf_player_stats, golf_tournament_history,
+    FetchGolfEventsView
 )
 
 from .general_views import (
