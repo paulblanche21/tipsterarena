@@ -476,9 +476,9 @@ b {
   
   /* Styles for the post sport dropdown */
   .post-sport {
-    background-color: var(--primary-bg);
-    color: #ffffff;
-    border: 1px solid var(--primary-bg);
+    background-color: #f5f8fa;
+    color: #666666;
+    border: 1px solid #e1e8ed;
     border-radius: 9999px;
     padding: clamp(4px, 1vw, 6px) clamp(8px, 2vw, 12px);
     font-size: var(--font-size-base);
@@ -488,7 +488,7 @@ b {
     -webkit-appearance: none;
     -moz-appearance: none;
     position: relative;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff' width='18px' height='18px'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666666' width='18px' height='18px'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 8px center;
     background-size: 12px;
@@ -498,15 +498,15 @@ b {
   
   /* Hover state for post sport dropdown */
   .post-sport:hover {
-    background-color: #003087;
-    border-color: #003087;
+    background-color: #e1e8ed;
+    border-color: #ccd6dd;
   }
   
   /* Disabled state for post sport dropdown */
   .post-sport:disabled {
-    background-color: var(--gray-light);
-    border-color: var(--gray-light);
-    color: #ffffff;
+    background-color: #f5f8fa;
+    border-color: #e1e8ed;
+    color: #999999;
     cursor: not-allowed;
     opacity: 0.7;
   }
@@ -561,9 +561,9 @@ b {
   
   /* Styles for the post audience dropdown */
   .post-audience {
-    background-color: var(--primary-bg);
-    color: #ffffff;
-    border: 1px solid var(--primary-bg);
+    background-color: #f5f8fa;
+    color: #666666;
+    border: 1px solid #e1e8ed;
     border-radius: 9999px;
     padding: clamp(4px, 1vw, 6px) clamp(8px, 2vw, 12px);
     font-size: var(--font-size-base);
@@ -573,7 +573,7 @@ b {
     -webkit-appearance: none;
     -moz-appearance: none;
     position: relative;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff' width='18px' height='18px'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666666' width='18px' height='18px'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 8px center;
     background-size: 12px;
@@ -583,8 +583,8 @@ b {
   
   /* Hover state for post audience dropdown */
   .post-audience:hover {
-    background-color: #003087;
-    border-color: #003087;
+    background-color: #e1e8ed;
+    border-color: #ccd6dd;
   }
   
   /* Styles for the success popup overlay */

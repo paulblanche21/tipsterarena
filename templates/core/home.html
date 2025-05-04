@@ -130,14 +130,33 @@
                 {% endif %}
                 <div class="tip-content">
                     <div class="tip-header">
-                        <a href="{% url 'profile' tip.user.username %}" class="tip-username">
-                            <strong>{{ tip.user.username }}</strong>
-                            <span class="user-handle-tip">{{ tip.user.userprofile.handle }}</span>
-                        </a>
-                        {% if tip.sport == 'football' %}⚽{% endif %}
-                        {% if tip.sport == 'golf' %}⛳{% endif %}
-                        {% if tip.sport == 'tennis' %}🎾{% endif %}
-                        {% if tip.sport == 'horse_racing' %}🏇{% endif %}
+                        <div class="tip-header-left">
+                            <a href="{% url 'profile' tip.user.username %}" class="tip-username">
+                                <strong>{{ tip.user.username }}</strong>
+                                <span class="user-handle-tip">{{ tip.user.userprofile.handle }}</span>
+                            </a>
+                            {% if tip.sport == 'football' %}⚽{% endif %}
+                            {% if tip.sport == 'golf' %}⛳{% endif %}
+                            {% if tip.sport == 'tennis' %}🎾{% endif %}
+                            {% if tip.sport == 'horse_racing' %}🏇{% endif %}
+                        </div>
+                        {% if request.user == tip.user %}
+                        <div class="tip-options">
+                            <button class="tip-options-btn" aria-label="More options">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </button>
+                            <div class="tip-options-dropdown">
+                                <div class="tip-option-item edit">
+                                    <i class="fas fa-edit"></i>
+                                    Edit Tip
+                                </div>
+                                <div class="tip-option-item delete">
+                                    <i class="fas fa-trash-alt"></i>
+                                    Delete Tip
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                     <div class="tip-body">
                         <p>{{ tip.text|safe }}</p>

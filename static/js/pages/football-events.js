@@ -19,15 +19,23 @@ export class FootballEventsHandler {
 
     async fetchEvents(category) {
         try {
-            const response = await fetch(`/api/football-events/?category=${category}`, {
-                headers: {
-                    'Authorization': `Token ${localStorage.getItem('authToken') || 'ba59ecf8d26672d59c949b70453c361e74c2eec8'}`
-                },
-                credentials: 'include'
-            });
-            if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-            const events = await response.json();
-            return this.mapEvents(events);
+            let allEvents = [];
+            let nextUrl = `/api/football-events/?category=${category}`;
+            
+            while (nextUrl) {
+                const response = await fetch(nextUrl, {
+                    headers: {
+                        'Authorization': `Token ${localStorage.getItem('authToken') || 'b9e24e9c8e2247396e4062c2cb58dd76972fa790'}`
+                    },
+                    credentials: 'include'
+                });
+                if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+                const data = await response.json();
+                allEvents = allEvents.concat(data.results);
+                nextUrl = data.next;
+            }
+            
+            return this.mapEvents(allEvents);
         } catch (error) {
             console.error(`Error fetching football events (${category}):`, error);
             return [];

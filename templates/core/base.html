@@ -328,32 +328,10 @@
         window.default_banner_url = "{% static 'img/default-banner.png' %}";
     </script>
 
+    <!-- Load mobile header script first -->
+    <script src="{% static 'js/mobile-header.js' %}"></script>
+
     <!-- Placeholder for page-specific JavaScript -->
     {% block extra_js %}{% endblock %}
-
-    <!-- Add JavaScript for mobile menu functionality -->
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const menuTrigger = document.getElementById('mobile-menu-trigger');
-        const navbar = document.querySelector('.navbar');
-        const overlay = document.getElementById('navbar-overlay');
-        const mainContainer = document.getElementById('main-container');
-
-        menuTrigger.addEventListener('click', function() {
-            navbar.classList.toggle('active');
-            overlay.classList.toggle('active');
-            mainContainer.classList.toggle('nav-active');
-        });
-
-        overlay.addEventListener('click', function() {
-            navbar.classList.remove('active');
-            overlay.classList.remove('active');
-            mainContainer.classList.remove('nav-active');
-        });
-    });
-    </script>
-
-    <!-- Scripts -->
-    <script src="{% static 'js/mobile-header.js' %}"></script>
 </body>
 </html>

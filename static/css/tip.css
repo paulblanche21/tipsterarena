@@ -117,6 +117,14 @@
     align-items: center;
     gap: clamp(4px, 1vw, 5px);
     color: black;
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .tip-header-left {
+    display: flex;
+    align-items: center;
+    gap: clamp(4px, 1vw, 5px);
   }
   
   /* Styles for the tip username */
@@ -415,9 +423,138 @@
     color: #6c757d;
   }
   
-  /* Ensure other elements don’t overflow */
+  /* Ensure other elements don't overflow */
   .tip-body p,
   .tip-image {
     max-width: 100%;
     overflow-wrap: break-word;
+  }
+  
+  /* Styles for the tip options menu */
+  .tip-options {
+    position: relative;
+    margin-left: auto;
+  }
+  
+  .tip-options-btn {
+    background: none;
+    border: none;
+    color: #666666;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+  }
+  
+  .tip-options-btn:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: var(--primary-bg);
+  }
+  
+  .tip-options-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    min-width: 150px;
+    z-index: 1000;
+    display: none;
+  }
+  
+  .tip-options-dropdown.show {
+    display: block;
+  }
+  
+  .tip-option-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    color: var(--primary-bg);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s;
+  }
+  
+  .tip-option-item:hover {
+    background-color: #f5f8fa;
+  }
+  
+  .tip-option-item.delete {
+    color: #dc3545;
+  }
+  
+  .tip-option-item.delete:hover {
+    background-color: #fff5f5;
+  }
+  
+  /* Edit tip modal styles */
+  .edit-tip-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+  }
+  
+  .edit-tip-modal .modal-content {
+    background-color: var(--secondary-bg);
+    margin: 10% auto;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 500px;
+    width: 90%;
+    position: relative;
+  }
+  
+  .edit-tip-modal .modal-close {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666666;
+  }
+  
+  .edit-tip-modal h2 {
+    margin-bottom: 15px;
+    color: var(--primary-bg);
+  }
+  
+  .edit-tip-modal .edit-tip-input {
+    width: 100%;
+    min-height: 100px;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    margin-bottom: 15px;
+    font-size: var(--font-size-base);
+    resize: vertical;
+  }
+  
+  .edit-tip-modal .save-edit-btn {
+    background-color: var(--twitter-blue);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+  .edit-tip-modal .save-edit-btn:hover {
+    background-color: #0d8ddb;
+  }
+  
+  /* Show the modal when active */
+  .edit-tip-modal.show {
+    display: block;
   }

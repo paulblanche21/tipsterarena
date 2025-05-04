@@ -137,8 +137,16 @@
   font-size: 1.1em;
 }
 
+.leaderboard-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  margin-bottom: 1rem;
+  -webkit-overflow-scrolling: touch;
+}
+
 .leaderboard-table {
   width: 100%;
+  min-width: 800px;
   border-collapse: collapse;
   margin: 1rem 0;
   font-size: 0.9rem;
@@ -154,11 +162,21 @@
   padding: 0.75rem;
   text-align: left;
   font-weight: 600;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .leaderboard-table td {
   padding: 0.75rem;
   border-bottom: 1px solid #eee;
+  white-space: nowrap;
+}
+
+.leaderboard-table td:nth-child(2) {
+  white-space: normal;
+  min-width: 150px;
 }
 
 .leaderboard-table tr:last-child td {
@@ -255,7 +273,7 @@
   }
 
   .golf-card .card-header {
-    padding: 12px;
+    padding: 10px;
   }
 
   .golf-card .card-content {
@@ -265,15 +283,16 @@
   .golf-card .event-meta {
     flex-direction: column;
     align-items: flex-start;
-    gap: 5px;
+    gap: 8px;
   }
 
   .leaderboard-table {
-    font-size: 0.8em;
+    font-size: 0.85rem;
   }
 
-  .leaderboard-table th, .leaderboard-table td {
-    padding: 8px 6px;
+  .leaderboard-table th,
+  .leaderboard-table td {
+    padding: 0.5rem;
   }
 
   .leaderboard-controls {
@@ -281,7 +300,74 @@
     align-items: stretch;
   }
 
-  .player-filter-input, .sort-select {
+  .leaderboard-filter,
+  .leaderboard-sort {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .player-filter-input,
+  .sort-select {
     width: 100%;
   }
+
+  .tournament-info {
+    margin-bottom: 1rem;
+  }
+
+  .tournament-info p {
+    margin: 5px 0;
+  }
+}
+
+/* Add horizontal scroll indicator */
+.leaderboard-wrapper::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 50px;
+  height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.9));
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.leaderboard-wrapper.has-overflow::after {
+  opacity: 1;
+}
+
+/* Tournament info styles */
+.tournament-info {
+  background: #f5f5f5;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.tournament-info p {
+  margin: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tournament-info strong {
+  color: #28a745;
+}
+
+/* Weather info styles */
+.weather-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  background: #e6ffe6;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.weather-info i {
+  color: #28a745;
 }

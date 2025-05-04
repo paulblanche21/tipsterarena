@@ -387,8 +387,10 @@ class GolfCourse(models.Model):
 
 # Model for a golf player
 class GolfPlayer(models.Model):
+    player_id = models.CharField(max_length=50, unique=True)  # ESPN player ID
     name = models.CharField(max_length=100)  # Player name
-    world_ranking = models.CharField(max_length=10, default="N/A")  # World ranking
+    country = models.CharField(max_length=100, blank=True, null=True)  # Player's country
+    world_ranking = models.PositiveIntegerField(null=True, blank=True)  # World ranking
 
     def __str__(self):
         return self.name
@@ -530,15 +532,18 @@ class TennisBettingOdds(models.Model):
 
 # Model for a horse racing course
 class HorseRacingCourse(models.Model):
-    course_id = models.IntegerField(unique=True)  # RacingPost course ID
-    name = models.CharField(max_length=100)  # Course name, e.g., "Cheltenham"
-    region = models.CharField(max_length=50)  # Region, e.g., "GB", "IRE"
+    course_id = models.IntegerField(unique=True, null=True, blank=True)  # RacingPost course ID
+    name = models.CharField(max_length=100)
+    location = models.CharField(max_length=100, default="Unknown")
+    track_type = models.CharField(max_length=50)  # e.g., "Flat", "National Hunt"
+    surface = models.CharField(max_length=50)  # e.g., "Turf", "All Weather"
+    region = models.CharField(max_length=10, default="GB")  # e.g., "GB", "IRE", "FR"
 
     def __str__(self):
-        return f"{self.name} ({self.region})"
+        return self.name
 
     class Meta:
-        unique_together = ('course_id', 'region')
+        ordering = ['name']
 
 # Model for a horse racing meeting (replaces RaceMeeting)
 class HorseRacingMeeting(models.Model):
@@ -621,33 +626,35 @@ class Jockey(models.Model):
 # Model for a runner in a race
 class RaceRunner(models.Model):
     race = models.ForeignKey(HorseRacingRace, on_delete=models.CASCADE, related_name='runners')
-    horse = models.ForeignKey(Horse, on_delete=models.CASCADE, related_name='races')
-    trainer = models.ForeignKey(Trainer, on_delete=models.SET_NULL, null=True, related_name='runners')
-    jockey = models.ForeignKey(Jockey, on_delete=models.SET_NULL, null=True, related_name='runners')
-    number = models.IntegerField(blank=True, null=True)  # Runner number
-    draw = models.IntegerField(blank=True, null=True)  # Draw position
-    headgear = models.CharField(max_length=50, blank=True, null=True)  # Headgear
-    headgear_first = models.CharField(max_length=50, blank=True, null=True)  # First-time headgear
-    lbs = models.IntegerField(blank=True, null=True)  # Weight carried (pounds)
-    official_rating = models.IntegerField(blank=True, null=True)  # Official rating (ofr)
+    horse = models.ForeignKey(Horse, on_delete=models.CASCADE)
+    trainer = models.ForeignKey(Trainer, on_delete=models.CASCADE, null=True, blank=True)
+    jockey = models.ForeignKey(Jockey, on_delete=models.CASCADE, null=True, blank=True)
+    weight = models.DecimalField(max_digits=5, decimal_places=2, default=0.0)  # Weight in stones and pounds
+    number = models.IntegerField(default=0)  # Race card number
+    draw = models.IntegerField(null=True, blank=True)  # Stall draw number
+    headgear = models.CharField(max_length=50, blank=True, null=True)  # e.g., "b", "p", "t"
+    headgear_first = models.BooleanField(default=False)  # First time wearing headgear
+    lbs = models.IntegerField(blank=True, null=True)  # Weight in pounds
+    official_rating = models.IntegerField(blank=True, null=True)  # Official rating
     rpr = models.IntegerField(blank=True, null=True)  # Racing Post Rating
-    topspeed = models.IntegerField(blank=True, null=True)  # Topspeed rating (ts)
-    form = models.CharField(max_length=100, blank=True, null=True)  # Recent form
-    last_run = models.CharField(max_length=100, blank=True, null=True)  # Days since last run
-    trainer_rtf = models.CharField(max_length=100, blank=True, null=True)  # Trainer run-to-form
+    topspeed = models.IntegerField(blank=True, null=True)  # Topspeed rating
+    form = models.CharField(max_length=50, blank=True, null=True)  # Recent form
+    last_run = models.DateField(blank=True, null=True)  # Date of last run
+    trainer_rtf = models.CharField(max_length=50, blank=True, null=True)  # Trainer RTF
     trainer_14_days_runs = models.IntegerField(blank=True, null=True)  # Trainer runs in last 14 days
     trainer_14_days_wins = models.IntegerField(blank=True, null=True)  # Trainer wins in last 14 days
-    trainer_14_days_percent = models.IntegerField(blank=True, null=True)  # Trainer win percentage
-    owner = models.CharField(max_length=255, blank=True, null=True)  # Owner name
+    trainer_14_days_percent = models.FloatField(blank=True, null=True)  # Trainer win percentage in last 14 days
+    owner = models.CharField(max_length=100, blank=True, null=True)  # Owner name
     comment = models.TextField(blank=True, null=True)  # Comment on horse
     spotlight = models.TextField(blank=True, null=True)  # Spotlight comment
-    stats = models.JSONField(default=dict)  # Stats (course, distance, going, jockey, trainer)
+    stats = models.JSONField(default=dict)  # Additional stats
 
     def __str__(self):
-        return f"{self.horse.name} in {self.race.name}"
+        return f"{self.horse.name} ({self.number})"
 
     class Meta:
-        unique_together = ('race', 'horse')
+        ordering = ['number']
+        unique_together = ('race', 'number')
 
 # Model for runner quotes
 class RunnerQuote(models.Model):
@@ -704,3 +711,17 @@ class Notification(models.Model):
 
     class Meta:
         ordering = ['-created_at']  # Most recent notifications first
+
+class HorseRacingBettingOdds(models.Model):
+    runner = models.ForeignKey(RaceRunner, on_delete=models.CASCADE, related_name='odds')
+    bookmaker = models.CharField(max_length=100)  # Bookmaker name
+    odds = models.DecimalField(max_digits=7, decimal_places=2)  # Odds value
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.bookmaker} odds for {self.runner}"
+
+    class Meta:
+        unique_together = ('runner', 'bookmaker')
+        ordering = ['bookmaker', '-updated_at']

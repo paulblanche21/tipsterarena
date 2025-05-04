@@ -5,7 +5,6 @@ from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
-from core.views import FetchGolfEventsView, GolfEventsList, FetchFootballEventsView
 from . import views
 
 # URL patterns for the Tipster Arena core app
@@ -58,6 +57,8 @@ urlpatterns = [
     # API routes for user interactions
     path('api/suggested-users/', views.suggested_users_api, name='suggested_users_api'),
     path('api/post-tip/', views.post_tip, name='api_post_tip'),
+    path('api/edit-tip/', views.edit_tip, name='edit_tip'),
+    path('api/delete-tip/', views.delete_tip, name='delete_tip'),
     path('api/follow/', views.follow_user, name='follow_user'),
     path('api/like-tip/', views.like_tip, name='like_tip'),
     path('api/share-tip/', views.share_tip, name='share_tip'),
@@ -65,7 +66,7 @@ urlpatterns = [
     path('api/tip/<int:tip_id>/comments/', views.get_tip_comments, name='get_tip_comments'),
     path('api/like-comment/', views.like_comment, name='like_comment'),
     path('api/share-comment/', views.share_comment, name='share_comment'),
-    path('api/tip/<int:tip_id>/', views.tip_detail, name='tip_detail'),
+    path('api/tip/<int:tip_id>/', views.tip_detail, name='tip-detail'),
     path('toggle-bookmark/', views.toggle_bookmark, name='toggle_bookmark'),
     path('send-message/', views.send_message, name='send_message'),
     path('api/verify-tip/', views.VerifyTipView.as_view(), name='verify_tip'),
@@ -82,14 +83,55 @@ urlpatterns = [
          name='fetch_football_events'),
     path('api/football-events/',
          views.FootballEventsList.as_view(),
-         name='football_events'),
+         name='football-events-list'),
+    path('api/football-events/<str:event_id>/',
+         views.FootballEventDetail.as_view(),
+         name='football-event-detail'),
     path('api/golf-events/fetch/', views.FetchGolfEventsView.as_view(), name='fetch_golf_events'),
-    path('api/golf-events/', views.GolfEventsList.as_view(), name='golf_events_list'),
-    path('api/tennis-events/', views.tennis_events, name='tennis_events'),
+    path('api/golf-events/', views.GolfEventsList.as_view(), name='golf-events-list'),
+    path('api/golf-events/<str:event_id>/', views.GolfEventDetail.as_view(), name='golf-event-detail'),
+    path('api/tennis-events/', views.TennisEventsList.as_view(), name='tennis-events-list'),
+    path('api/tennis-events/<str:event_id>/', views.TennisEventDetail.as_view(), name='tennis-event-detail'),
     path('api/tennis-events/<str:event_id>/stats/',
          views.tennis_event_stats,
-         name='tennis_event_stats'),
-    path('api/horse-racing-events/', views.horse_racing_events, name='horse_racing_events'),
+         name='tennis-event-stats'),
+    path('api/horse-racing-events/', views.horse_racing_events, name='horse-racing-events'),
+    path('api/tips/', views.tip_list, name='tip_list'),
+    path('api/tips/<int:tip_id>/', views.tip_detail, name='tip_detail'),
+    path('api/tips/<int:tip_id>/like/', views.like_tip, name='like_tip'),
+    path('api/tips/<int:tip_id>/comments/', views.get_tip_comments, name='tip_comments'),
+
+    # Authentication endpoints
+    path('api/auth/login/', views.login_view, name='login'),
+    path('api/auth/logout/', auth_views.LogoutView.as_view(), name='logout'),
+
+    # User profile endpoints
+    path('api/users/profile/', views.profile, name='user_profile'),
+    path('api/users/kyc/', views.kyc_view, name='kyc'),
+    path('api/users/notifications/', views.notifications, name='user_notifications'),
+
+    # Sports events endpoints
+    path('api/events/golf/', views.GolfEventsList.as_view(), name='golf_events'),
+    path('api/events/golf/<str:event_id>/', views.GolfEventDetail.as_view(), name='golf_event_detail'),
+    path('api/events/football/', views.FootballEventsList.as_view(), name='football_events'),
+    path('api/events/football/<str:event_id>/', views.FootballEventDetail.as_view(), name='football_event_detail'),
+    path('api/events/tennis/', views.TennisEventsList.as_view(), name='tennis_events'),
+    path('api/events/tennis/<str:event_id>/', views.TennisEventDetail.as_view(), name='tennis_event_detail'),
+    path('api/events/horse-racing/', views.horse_racing_events, name='horse_racing_events'),
+    path('api/events/horse-racing/<str:meeting_id>/', views.HorseRacingMeetingDetail.as_view(), name='horse_racing_meeting_detail'),
+    path('api/events/horse-racing/<str:meeting_id>/races/', views.HorseRacingRacesList.as_view(), name='horse_racing_races'),
+    path('api/events/horse-racing/<str:meeting_id>/races/<str:race_id>/', views.HorseRacingRaceDetail.as_view(), name='horse_racing_race_detail'),
+
+    # Tips endpoints
+    path('api/tips/', views.tip_list, name='tip_list'),
+    path('api/tips/<int:tip_id>/', views.tip_detail, name='tip_detail'),
+    path('api/tips/<int:tip_id>/like/', views.like_tip, name='like_tip'),
+
+
+    # Horse Racing endpoints
+    path('api/horse-racing/betting-odds/bulk-upsert/',
+         views.HorseRacingBettingOddsBulkUpsert.as_view(),
+         name='horse_racing_betting_odds_bulk_upsert'),
 ]
 
 if settings.DEBUG:

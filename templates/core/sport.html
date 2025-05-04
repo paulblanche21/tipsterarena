@@ -341,4 +341,8 @@
     {% if sport == 'golf' %}
         <script type="module" src="{% static 'js/pages/golf-events.js' %}"></script>
     {% endif %}
+    {% if sport == 'tennis' %}
+        <script type="module" src="{% static 'js/pages/tennis-events.js' %}"></script>
+    {% endif %}
+    <script src="{% static 'js/mobile-header.js' %}"></script>
 {% endblock %}

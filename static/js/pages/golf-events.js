@@ -3,151 +3,58 @@
 export async function fetchEvents(state = 'pre', tourId = null) {
     console.log(`Fetching golf events for state: ${state}, tour: ${tourId || 'all'}`);
     try {
-        let url = `/api/golf-events/?state=${state}`;
+        // Map category names to state values
+        const stateMap = {
+            'fixtures': 'pre',
+            'inplay': 'in',
+            'results': 'post'
+        };
+        const mappedState = stateMap[state] || state;
+
+        const url = new URL('/api/golf-events/', window.location.origin);
+        url.searchParams.append('state', mappedState);
         if (tourId) {
-            url += `&tour_id=${tourId}`;
+            url.searchParams.append('tour_id', tourId);
         }
-        console.log(`Making API request to: ${url}`);
+
         const response = await fetch(url);
-        console.log(`API status for ${state}: ${response.status} ${response.statusText}`);
         if (!response.ok) {
-            throw new Error(`HTTP error: ${response.status} ${response.statusText}`);
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        console.log(`Raw API response for ${state}:`, data);
-        if (!Array.isArray(data)) {
-            console.error(`API response is not an array for ${state}:`, data);
-            return [];
-        }
-        console.log(`Fetched ${data.length} golf events for ${state}`);
+        console.log('Raw API response:', data);
 
-        // Create a Map to store unique events based on event ID
-        const uniqueEvents = new Map();
-        
-        // First pass: collect all events and their data completeness score
-        data.forEach(event => {
-            const eventKey = `${event.event_id}`; // Use event_id as unique identifier
-            const dataCompletenessScore = [
-                event.tour !== null,
-                event.venue !== null,
-                event.course !== null,
-                event.leaderboard?.length > 0
-            ].filter(Boolean).length;
-            
-            if (!uniqueEvents.has(eventKey)) {
-                uniqueEvents.set(eventKey, { event, score: dataCompletenessScore });
+        // Handle paginated response
+        if (data && typeof data === 'object') {
+            if (Array.isArray(data)) {
+                return data;  // Direct array response
+            } else if (data.results && Array.isArray(data.results)) {
+                return data.results;  // Paginated response
             } else {
-                const existing = uniqueEvents.get(eventKey);
-                // Keep the event with more complete data
-                if (dataCompletenessScore > existing.score) {
-                    uniqueEvents.set(eventKey, { event, score: dataCompletenessScore });
-                }
+                console.warn('Unexpected API response format:', data);
+                return [];
             }
-        });
-        
-        console.log(`Found ${uniqueEvents.size} unique events out of ${data.length} total events`);
-        
-        // Convert Map values back to array, extract events, and sort by start time
-        const events = Array.from(uniqueEvents.values())
-            .map(item => item.event)
-            .sort((a, b) => {
-                const dateA = new Date(a.date);
-                const dateB = new Date(b.date);
-                return dateA - dateB;
-            });
-        
-        console.log('Deduplicated and sorted events:', events.map(e => ({
-            id: e.event_id,
-            name: e.name,
-            date: e.date,
-            tour: e.tour?.name || 'Unknown Tour'
-        })));
-        
-        const mappedEvents = events.map(event => {
-            const mapped = {
-                id: event.event_id,
-                name: event.name,
-                shortName: event.short_name,
-                date: event.date,
-                displayDate: new Date(event.date).toLocaleDateString("en-US", { 
-                    weekday: 'long',
-                    month: "long", 
-                    day: "numeric", 
-                    year: "numeric",
-                    hour: "numeric",
-                    minute: "2-digit",
-                    timeZoneName: "short"
-                }),
-                state: event.state,
-                completed: event.completed,
-                venue: {
-                    fullName: event.venue,
-                    address: { city: event.city, state: event.state_location }
-                },
-                tour: event.tour,
-                course: event.course,
-                purse: event.purse,
-                broadcast: event.broadcast,
-                currentRound: event.current_round,
-                totalRounds: event.total_rounds,
-                isPlayoff: event.is_playoff,
-                weather: {
-                    condition: event.weather_condition,
-                    temperature: event.weather_temperature
-                },
-                league: event.tour?.name || 'Unknown Tour',
-                icon: event.tour?.icon || '🏌️‍♂️',
-                priority: event.tour?.priority || 999,
-                apiLeague: event.tour?.tour_id || 'pga',
-                leaderboard: (event.leaderboard || []).map(entry => ({
-                    position: entry.position,
-                    playerName: entry.player?.name || 'Unknown Player',
-                    score: entry.score,
-                    rounds: entry.rounds || [],
-                    strokes: entry.strokes,
-                    worldRanking: entry.player?.world_ranking || 'N/A',
-                    status: entry.status || 'active'
-                }))
-            };
-            console.log(`Mapped event ${event.event_id}:`, mapped);
-            return mapped;
-        });
-
-        console.log(`Mapped ${mappedEvents.length} events for ${state}`);
-        return mappedEvents;
+        }
+        return [];
     } catch (error) {
-        console.error(`Error fetching golf events for ${state}:`, error);
+        console.error('Error fetching golf events:', error);
         return [];
     }
 }
 
-
 export async function fetchLeaderboard(eventId, sport, apiLeague) {
     console.log(`Fetching leaderboard for event ${eventId}, tour: ${apiLeague}`);
     try {
-        const response = await fetch(`/api/golf-events/?state=in`);
+        const response = await fetch(`/api/golf-events/${eventId}/`);
         console.log(`Leaderboard API status: ${response.status} ${response.statusText}`);
         if (!response.ok) {
-            // Fallback to results
-            const responseResults = await fetch(`/api/golf-events/?state=post`);
-            if (!responseResults.ok) throw new Error(`HTTP error: ${responseResults.status} ${response.statusText}`);
-            const data = await responseResults.json();
-            const event = data.find(e => e.event_id === eventId);
-            if (!event) throw new Error(`Event ${eventId} not found in results`);
-            return event.leaderboard.map(entry => ({
-                position: entry.position,
-                playerName: entry.player.name,
-                score: entry.score,
-                rounds: entry.rounds,
-                strokes: entry.strokes,
-                worldRanking: entry.player.world_ranking,
-                status: entry.status
-            }));
+            throw new Error(`HTTP error: ${response.status} ${response.statusText}`);
         }
         const data = await response.json();
-        const event = data.find(e => e.event_id === eventId);
-        if (!event) throw new Error(`Event ${eventId} not found in inplay events`);
-        return event.leaderboard.map(entry => ({
+        if (!data.leaderboard) {
+            throw new Error(`No leaderboard data found for event ${eventId}`);
+        }
+        return data.leaderboard.map(entry => ({
             position: entry.position,
             playerName: entry.player.name,
             score: entry.score,
@@ -169,8 +76,8 @@ export async function formatEventList(events, sportKey, category, isCentralFeed 
     }
     console.log(`Events to render for ${category} (length: ${events.length}):`, events);
     const eventItems = await Promise.all(events.map(async event => {
-        console.log(`Formatting event: ${event.name}, ID: ${event.id}, League: ${event.apiLeague}`);
-        const venue = event.venue.fullName || `${event.venue.address.city}, ${event.venue.address.state}`;
+        console.log(`Formatting event: ${event.name}, ID: ${event.event_id}, League: ${event.tour.name}`);
+        const venue = event.venue || 'Venue TBA';
         let contentHtml = '';
         
         // For fixtures, only show tournament details
@@ -178,14 +85,14 @@ export async function formatEventList(events, sportKey, category, isCentralFeed 
             contentHtml = `
                 <div class="event-details">
                     <p><strong>Tournament:</strong> ${event.name || 'Tournament Name TBA'}</p>
-                    <p><strong>Date:</strong> ${event.displayDate}</p>
+                    <p><strong>Date:</strong> ${new Date(event.date).toLocaleDateString()}</p>
                     <p><strong>Venue:</strong> ${venue}</p>
-                    <p><strong>Course:</strong> ${event.course.name}</p>
-                    <p><strong>Par:</strong> ${event.course.par}</p>
-                    <p><strong>Yardage:</strong> ${event.course.yardage}</p>
-                    <p><strong>Purse:</strong> ${event.purse}</p>
-                    <p><strong>Broadcast:</strong> ${event.broadcast}</p>
-                    <p><strong>Tour:</strong> ${event.tour.name}</p>
+                    <p><strong>Course:</strong> ${event.course?.name || 'Course TBA'}</p>
+                    <p><strong>Par:</strong> ${event.course?.par || 'TBA'}</p>
+                    <p><strong>Yardage:</strong> ${event.course?.yardage || 'TBA'}</p>
+                    <p><strong>Purse:</strong> ${event.purse || 'TBA'}</p>
+                    <p><strong>Broadcast:</strong> ${event.broadcast || 'TBA'}</p>
+                    <p><strong>Tour:</strong> ${event.tour?.name || 'Tour TBA'}</p>
                 </div>
             `;
         } else if (category === 'inplay' || category === 'results') {
@@ -195,9 +102,9 @@ export async function formatEventList(events, sportKey, category, isCentralFeed 
                 <div class="leaderboard-content">
                     <div class="tournament-info">
                         <p><strong>Tournament:</strong> ${event.name || 'Tournament Name TBA'}</p>
-                        <p><strong>Round:</strong> ${event.currentRound}/${event.totalRounds}</p>
-                        ${event.weather ? `
-                            <p><strong>Weather:</strong> ${event.weather.condition}, ${event.weather.temperature}</p>
+                        <p><strong>Round:</strong> ${event.current_round}/${event.total_rounds}</p>
+                        ${event.weather_condition ? `
+                            <p><strong>Weather:</strong> ${event.weather_condition}, ${event.weather_temperature}</p>
                         ` : ''}
                     </div>
                     ${leaderboard.length > 0 ? `
@@ -218,7 +125,7 @@ export async function formatEventList(events, sportKey, category, isCentralFeed 
                             </div>
                         </div>
                         <div class="leaderboard-wrapper">
-                            <table class="leaderboard-table" data-event-id="${event.id}" data-api-league="${event.apiLeague || 'pga'}">
+                            <table class="leaderboard-table" data-event-id="${event.event_id}" data-api-league="${event.tour?.tour_id || 'pga'}">
                                 <thead>
                                     <tr>
                                         <th data-sort="position">Pos</th>
@@ -235,25 +142,25 @@ export async function formatEventList(events, sportKey, category, isCentralFeed 
                                 <tbody>
                                     ${leaderboard.slice(0, 10).map(player => `
                                         <tr class="${player.status === 'active' ? 'player-active' : 'player-inactive'}" 
-                                            data-player="${player.playerName.toLowerCase()}"
+                                            data-player="${player.player.name.toLowerCase()}"
                                             data-position="${player.position}"
                                             data-score="${player.score}"
                                             data-total="${player.strokes}"
-                                            data-rank="${player.worldRanking}">
+                                            data-rank="${player.player.world_ranking}">
                                             <td>${player.position}</td>
-                                            <td>${player.playerName}</td>
+                                            <td>${player.player.name}</td>
                                             <td>${player.score}</td>
                                             <td>${player.rounds[0] || "N/A"}</td>
                                             <td>${player.rounds[1] || "N/A"}</td>
                                             <td>${player.rounds[2] || "N/A"}</td>
                                             <td>${player.rounds[3] || "N/A"}</td>
                                             <td>${player.strokes}</td>
-                                            <td>${player.worldRanking}</td>
+                                            <td>${player.player.world_ranking}</td>
                                         </tr>
                                     `).join("")}
                                 </tbody>
                             </table>
-                            <button class="view-full-leaderboard" data-event-id="${event.id}" data-api-league="${event.apiLeague || 'pga'}">View Full Leaderboard</button>
+                            <button class="view-full-leaderboard" data-event-id="${event.event_id}" data-api-league="${event.tour?.tour_id || 'pga'}">View Full Leaderboard</button>
                         </div>
                         ${category === 'inplay' ? '<p class="leaderboard-status">Updating...</p>' : ''}
                     ` : `
@@ -270,15 +177,15 @@ export async function formatEventList(events, sportKey, category, isCentralFeed 
             <div class="golf-card expandable-card ${category === 'inplay' ? 'live-event' : ''}">
                 <div class="card-header">
                     <div class="event-info">
-                        <span class="tour-icon">${event.icon}</span>
+                        <span class="tour-icon">${event.tour?.icon || '🏌️'}</span>
                         <span class="event-name">${event.name || 'Tournament Name TBA'}</span>
                         <span class="event-status">(${status})</span>
                         ${liveIndicator}
                     </div>
                     <div class="event-meta">
-                        <span class="datetime"><i class="far fa-calendar-alt"></i> ${event.displayDate}</span>
+                        <span class="datetime"><i class="far fa-calendar-alt"></i> ${new Date(event.date).toLocaleDateString()}</span>
                         <span class="location"><i class="fas fa-map-marker-alt"></i> ${venue}</span>
-                        <span class="tour-name">${event.league}</span>
+                        <span class="tour-name">${event.tour?.name || 'Tour TBA'}</span>
                     </div>
                 </div>
                 <div class="card-content" style="display: none;">
@@ -288,101 +195,91 @@ export async function formatEventList(events, sportKey, category, isCentralFeed 
         `;
     }));
 
-    console.log(`Formatted ${eventItems.length} golf events for ${category}`);
-    return `<div class="golf-feed">${eventItems.join("")}</div>`;
+    return eventItems.join('');
 }
 
-// Add leaderboard sorting and filtering functionality
 export function setupLeaderboardControls() {
-    document.querySelectorAll('.leaderboard-table').forEach(table => {
-        const filterInput = table.closest('.leaderboard-content')?.querySelector('.player-filter-input');
-        const sortSelect = table.closest('.leaderboard-content')?.querySelector('.sort-select');
-        
-        if (filterInput) {
-            filterInput.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                const rows = table.querySelectorAll('tbody tr');
-                rows.forEach(row => {
-                    const playerName = row.getAttribute('data-player');
-                    row.style.display = playerName.includes(searchTerm) ? '' : 'none';
-                });
+    // Add event listeners for filtering and sorting
+    document.querySelectorAll('.player-filter-input').forEach(input => {
+        input.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const table = e.target.closest('.leaderboard-content').querySelector('.leaderboard-table');
+            table.querySelectorAll('tbody tr').forEach(row => {
+                const playerName = row.getAttribute('data-player');
+                row.style.display = playerName.includes(searchTerm) ? '' : 'none';
             });
-        }
+        });
+    });
 
-        if (sortSelect) {
-            sortSelect.addEventListener('change', (e) => {
-                const sortBy = e.target.value;
-                const tbody = table.querySelector('tbody');
-                const rows = Array.from(tbody.querySelectorAll('tr'));
-                
-                rows.sort((a, b) => {
-                    const aValue = a.getAttribute(`data-${sortBy}`);
-                    const bValue = b.getAttribute(`data-${sortBy}`);
-                    
-                    if (sortBy === 'name') {
-                        return aValue.localeCompare(bValue);
-                    }
-                    
-                    const aNum = parseFloat(aValue);
-                    const bNum = parseFloat(bValue);
-                    
-                    if (isNaN(aNum) || isNaN(bNum)) {
-                        return 0;
-                    }
-                    
-                    return aNum - bNum;
-                });
-                
-                tbody.innerHTML = '';
-                rows.forEach(row => tbody.appendChild(row));
+    document.querySelectorAll('.sort-select').forEach(select => {
+        select.addEventListener('change', (e) => {
+            const sortBy = e.target.value;
+            const table = e.target.closest('.leaderboard-content').querySelector('.leaderboard-table');
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+
+            rows.sort((a, b) => {
+                const aValue = a.getAttribute(`data-${sortBy}`);
+                const bValue = b.getAttribute(`data-${sortBy}`);
+                if (sortBy === 'name') {
+                    return aValue.localeCompare(bValue);
+                }
+                return parseFloat(aValue) - parseFloat(bValue);
             });
-        }
+
+            rows.forEach(row => tbody.appendChild(row));
+        });
+    });
+
+    // Handle horizontal scroll indicator
+    document.querySelectorAll('.leaderboard-wrapper').forEach(wrapper => {
+        const checkOverflow = () => {
+            const hasOverflow = wrapper.scrollWidth > wrapper.clientWidth;
+            wrapper.classList.toggle('has-overflow', hasOverflow);
+        };
+
+        // Check on initial load
+        checkOverflow();
+
+        // Check on window resize
+        window.addEventListener('resize', checkOverflow);
+
+        // Check when the table content changes
+        const observer = new MutationObserver(checkOverflow);
+        observer.observe(wrapper, { childList: true, subtree: true });
     });
 }
 
-// In-memory cache for leaderboard data
-const leaderboardCache = new Map();
-
 export async function setupLeaderboardUpdates(retryCount = 0, maxRetries = 5) {
-    console.log('Setting up leaderboard updates');
-    const leaderboardTables = document.querySelectorAll('table.leaderboard-table, div.leaderboard-table');
-    if (leaderboardTables.length === 0) {
+    const updateInterval = 60000; // Update every minute
+    const tables = document.querySelectorAll('.leaderboard-table');
+    
+    if (!tables.length) {
         if (retryCount < maxRetries) {
-            console.log(`No leaderboard tables found, scheduling retry ${retryCount + 1}/${maxRetries}`);
-            setTimeout(() => setupLeaderboardUpdates(retryCount + 1, maxRetries), 5000);
-        } else {
-            console.log('Max retries reached, stopping leaderboard updates');
+            setTimeout(() => setupLeaderboardUpdates(retryCount + 1, maxRetries), 1000);
         }
         return;
     }
 
     const updateLeaderboard = async (table) => {
         const eventId = table.getAttribute('data-event-id');
-        const apiLeague = table.getAttribute('data-api-league') || 'pga';
-        if (!eventId) return;  // Remove isInplay check
-
-        const cacheKey = `${eventId}-${apiLeague}`;
-        let leaderboard;
-
-        if (leaderboardCache.has(cacheKey)) {
-            const cached = leaderboardCache.get(cacheKey);
-            if (Date.now() - cached.timestamp < 30000) {
-                leaderboard = cached.data;
-                console.log(`Cache hit for leaderboard ${eventId}`);
+        const apiLeague = table.getAttribute('data-api-league');
+        
+        try {
+            const leaderboard = await fetchLeaderboard(eventId, 'golf', apiLeague);
+            if (!leaderboard.length) {
+                console.warn(`No leaderboard data for event ${eventId}`);
+                return;
             }
-        }
 
-        if (!leaderboard) {
-            leaderboard = await fetchLeaderboard(eventId, "golf", apiLeague);
-            if (leaderboard.length > 0) {
-                leaderboardCache.set(cacheKey, { data: leaderboard, timestamp: Date.now() });
-            }
-        }
-
-        if (leaderboard.length > 0) {
             const tbody = table.querySelector('tbody');
             tbody.innerHTML = leaderboard.slice(0, 10).map(player => `
-                <tr class="${player.status === 'active' ? 'player-active' : 'player-inactive'}">
+                <tr class="${player.status === 'active' ? 'player-active' : 'player-inactive'}" 
+                    data-player="${player.playerName.toLowerCase()}"
+                    data-position="${player.position}"
+                    data-score="${player.score}"
+                    data-total="${player.strokes}"
+                    data-rank="${player.worldRanking}">
                     <td>${player.position}</td>
                     <td>${player.playerName}</td>
                     <td>${player.score}</td>
@@ -394,99 +291,33 @@ export async function setupLeaderboardUpdates(retryCount = 0, maxRetries = 5) {
                     <td>${player.worldRanking}</td>
                 </tr>
             `).join("");
-            console.log(`Updated leaderboard for event ${eventId}`);
-            const statusEl = table.closest('.leaderboard-content')?.querySelector('.leaderboard-status');
-            if (statusEl) {
-                statusEl.textContent = 'Updated just now';
-                setTimeout(() => {
-                    if (statusEl.textContent === 'Updated just now') {
-                        statusEl.textContent = 'Updating...';
-                    }
-                }, 5000);
+
+            const status = table.closest('.leaderboard-content').querySelector('.leaderboard-status');
+            if (status) {
+                status.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
             }
+        } catch (error) {
+            console.error(`Error updating leaderboard for event ${eventId}:`, error);
         }
     };
 
-    leaderboardTables.forEach(table => {
-        updateLeaderboard(table).catch(error => {
-            console.error(`Error updating leaderboard for table ${table.getAttribute('data-event-id')}:`, error);
-        });
-        const intervalId = setInterval(() => {
-            updateLeaderboard(table).catch(error => {
-                console.error(`Polling error for leaderboard ${table.getAttribute('data-event-id')}:`, error);
-            });
-        }, 3600000); // 1 hour
-        table.dataset.intervalId = intervalId;
-    });
+    // Initial update
+    tables.forEach(table => updateLeaderboard(table));
 
-    document.querySelectorAll('.view-full-leaderboard').forEach(button => {
-        button.addEventListener('click', async () => {
-            const eventId = button.getAttribute('data-event-id');
-            const apiLeague = button.getAttribute('data-api-league') || 'pga';
-            const modalBody = document.getElementById('event-modal-body');
-            const modalTitle = document.getElementById('event-modal-title');
-            modalTitle.textContent = 'Full Leaderboard';
-            modalBody.innerHTML = '<p>Loading...</p>';
-
-            const cacheKey = `${eventId}-${apiLeague}`;
-            let leaderboard = leaderboardCache.get(cacheKey)?.data;
-
-            if (!leaderboard) {
-                leaderboard = await fetchLeaderboard(eventId, "golf", apiLeague);
-                if (leaderboard.length > 0) {
-                    leaderboardCache.set(cacheKey, { data: leaderboard, timestamp: Date.now() });
-                }
-            }
-
-            if (leaderboard.length > 0) {
-                modalBody.innerHTML = `
-                    <div class="leaderboard-content">
-                        <table class="full-leaderboard-table">
-                            <thead>
-                                <tr>
-                                    <th>Pos</th>
-                                    <th>Player</th>
-                                    <th>Score</th>
-                                    <th>R1</th>
-                                    <th>R2</th>
-                                    <th>R3</th>
-                                    <th>R4</th>
-                                    <th>Total</th>
-                                    <th>Rank</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${leaderboard.map(player => `
-                                    <tr class="${player.status === 'active' ? 'player-active' : 'player-inactive'}">
-                                        <td>${player.position}</td>
-                                        <td>${player.playerName}</td>
-                                        <td>${player.score}</td>
-                                        <td>${player.rounds[0] || "N/A"}</td>
-                                        <td>${player.rounds[1] || "N/A"}</td>
-                                        <td>${player.rounds[2] || "N/A"}</td>
-                                        <td>${player.rounds[3] || "N/A"}</td>
-                                        <td>${player.strokes}</td>
-                                        <td>${player.worldRanking}</td>
-                                    </tr>
-                                `).join("")}
-                            </tbody>
-                        </table>
-                    </div>
-                `;
-            } else {
-                modalBody.innerHTML = '<p>No leaderboard data available.</p>';
-            }
-            console.log(`Displayed full leaderboard for event ${eventId}`);
-        });
-    });
+    // Set up periodic updates
+    setInterval(() => {
+        tables.forEach(table => updateLeaderboard(table));
+    }, updateInterval);
 }
 
 export class GolfEventsHandler {
     constructor() {
+        this.setupLeaderboardUpdates = setupLeaderboardUpdates;
+        this.setupLeaderboardControls = setupLeaderboardControls;
         this.config = {
             leagues: [
-                { sport: "golf", league: "pga", icon: "⛳", name: "PGA Tour", priority: 1 },
-                { sport: "golf", league: "lpga", icon: "⛳", name: "LPGA Tour", priority: 2 }
+                { id: 'pga', name: 'PGA Tour', icon: '🏌️‍♂️' },
+                { id: 'lpga', name: 'LPGA Tour', icon: '🏌️‍♀️' }
             ],
             timePeriods: {
                 results: 14, // 14 days for golf results
@@ -496,64 +327,32 @@ export class GolfEventsHandler {
     }
 
     async fetchEvents(category) {
-        try {
-            const response = await fetch(`/api/golf-events/?state=${category}`);
-            if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-            const events = await response.json();
-            return this.mapEvents(events);
-        } catch (error) {
-            console.error(`Error fetching golf events (${category}):`, error);
+        console.log(`Fetching golf events for category: ${category}`);
+        const events = await fetchEvents(category);
+        if (!events || !Array.isArray(events)) {
+            console.warn(`Invalid events data received: ${events}`);
             return [];
         }
+        return events;
     }
 
-    mapEvents(events) {
-        return events
-            .filter(event => {
-                if (!event || !event.event_id || !event.tour) {
-                    console.warn(`Skipping invalid event:`, event);
-                    return false;
-                }
-                return true;
-            })
-            .map(event => ({
-                id: event.event_id,
-                name: event.name,
-                shortName: event.short_name,
-                date: event.date,
-                displayDate: new Date(event.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-                time: new Date(event.date).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "GMT" }),
-                state: event.state,
-                completed: event.completed,
-                venue: event.venue || "Location TBD",
-                city: event.city,
-                stateLocation: event.state_location,
-                tour: event.tour.name,
-                course: {
-                    name: event.course.name,
-                    par: event.course.par,
-                    yardage: event.course.yardage
-                },
-                purse: event.purse,
-                broadcast: event.broadcast,
-                currentRound: event.current_round,
-                totalRounds: event.total_rounds,
-                isPlayoff: event.is_playoff,
-                weather: {
-                    condition: event.weather_condition,
-                    temperature: event.weather_temperature
-                },
-                leaderboard: event.leaderboard || []
-            }));
+    async formatEvents(events, category, isCentralFeed = false) {
+        return formatEventList(events, 'golf', category, isCentralFeed);
     }
 
     filterEvents(events, category) {
+        if (!events || !Array.isArray(events)) {
+            console.error('Invalid events data:', events);
+            return [];
+        }
+
         const currentTime = new Date();
+        const sportPeriod = this.config.timePeriods;
         const resultsDaysAgo = new Date(currentTime);
-        resultsDaysAgo.setDate(currentTime.getDate() - this.config.timePeriods.results);
+        resultsDaysAgo.setDate(currentTime.getDate() - sportPeriod.results);
         
         const fixturesDaysAgo = new Date(currentTime);
-        fixturesDaysAgo.setDate(currentTime.getDate() + this.config.timePeriods.fixtures);
+        fixturesDaysAgo.setDate(currentTime.getDate() + sportPeriod.fixtures);
 
         let filteredEvents = events;
 
@@ -582,89 +381,5 @@ export class GolfEventsHandler {
         }
 
         return filteredEvents;
-    }
-
-    formatEvents(events, category, isCentralFeed = false) {
-        if (!events || events.length === 0) {
-            return `<p>No ${category.replace(/_/g, ' ')} available.</p>`;
-        }
-
-        let html = '<div class="golf-feed">';
-        events.forEach(event => {
-            const venue = event.venue ? `${event.venue}, ${event.city}, ${event.stateLocation}` : "Location TBD";
-            const status = category === 'inplay' ? 'In Progress' : category === 'results' ? 'Completed' : 'Upcoming';
-            const liveIndicator = category === 'inplay' ? '<span class="live-indicator">Live</span>' : '';
-            
-            html += `
-                <div class="golf-card expandable-card ${category === 'inplay' ? 'live-event' : ''}">
-                    <div class="card-header">
-                        <div class="event-info">
-                            <span class="tour-icon">${event.tour.icon || '⛳'}</span>
-                            <span class="event-name">${event.name}</span>
-                            <span class="event-status">(${status})</span>
-                            ${liveIndicator}
-                        </div>
-                        <div class="event-meta">
-                            <span class="datetime"><i class="far fa-calendar-alt"></i> ${event.displayDate}</span>
-                            <span class="location"><i class="fas fa-map-marker-alt"></i> ${venue}</span>
-                            <span class="tour-name">${event.tour.name}</span>
-                        </div>
-                    </div>
-                    <div class="card-content" style="display: none;">
-                        <div class="event-details">
-                            <p><strong>Course:</strong> ${event.course.name}</p>
-                            <p><strong>Par:</strong> ${event.course.par}</p>
-                            <p><strong>Yardage:</strong> ${event.course.yardage}</p>
-                            <p><strong>Purse:</strong> ${event.purse}</p>
-                            <p><strong>Broadcast:</strong> ${event.broadcast}</p>
-                            ${event.state === 'in' ? `
-                                <p><strong>Current Round:</strong> ${event.currentRound}/${event.totalRounds}</p>
-                                <p><strong>Weather:</strong> ${event.weather.condition}, ${event.weather.temperature}</p>
-                            ` : ''}
-                        </div>
-                        ${event.leaderboard && event.leaderboard.length > 0 ? `
-                            <div class="leaderboard-content">
-                                <h4>${category === 'inplay' ? 'Live Leaderboard' : 'Final Leaderboard'}</h4>
-                                <table class="leaderboard-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Pos</th>
-                                            <th>Player</th>
-                                            <th>Score</th>
-                                            <th>R1</th>
-                                            <th>R2</th>
-                                            <th>R3</th>
-                                            <th>R4</th>
-                                            <th>Total</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${event.leaderboard.map(player => `
-                                            <tr class="${player.status === 'active' ? 'player-active' : 'player-inactive'}">
-                                                <td>${player.position}</td>
-                                                <td>${player.playerName}</td>
-                                                <td>${player.score}</td>
-                                                <td>${player.rounds[0] || 'N/A'}</td>
-                                                <td>${player.rounds[1] || 'N/A'}</td>
-                                                <td>${player.rounds[2] || 'N/A'}</td>
-                                                <td>${player.rounds[3] || 'N/A'}</td>
-                                                <td>${player.strokes}</td>
-                                            </tr>
-                                        `).join('')}
-                                    </tbody>
-                                </table>
-                            </div>
-                        ` : ''}
-                    </div>
-                </div>
-            `;
-        });
-        html += '</div>';
-        return html;
-    }
-
-    async setupLeaderboardUpdates() {
-        // Implementation for live leaderboard updates
-        // This can be called from the main page to set up live updates
     }
 }

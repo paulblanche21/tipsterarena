@@ -3,6 +3,7 @@ from .models import GolfTour, GolfCourse, GolfPlayer, GolfEvent, LeaderboardEntr
 from .models import FootballLeague, FootballTeam, TeamStats, KeyEvent, BettingOdds, DetailedStats, FootballEvent
 from .models import TennisLeague, TennisTournament, TennisPlayer, TennisVenue, TennisEvent, TennisBettingOdds
 from .models import HorseRacingMeeting, HorseRacingRace, HorseRacingResult, Horse, Trainer, Jockey
+from .models import HorseRacingCourse, HorseRacingBettingOdds, RaceRunner
 from rest_framework.serializers import ModelSerializer
 
 class GolfTourSerializer(serializers.ModelSerializer):
@@ -179,4 +180,23 @@ class HorseRacingMeetingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = HorseRacingMeeting
-        fields = ['date', 'course', 'races']
+        fields = ['id', 'date', 'course', 'races']
+
+class HorseRacingCourseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HorseRacingCourse
+        fields = ['name', 'location', 'track_type', 'surface']
+
+class HorseRacingBettingOddsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HorseRacingBettingOdds
+        fields = ['runner', 'bookmaker', 'odds', 'created_at', 'updated_at']
+
+class RaceRunnerSerializer(serializers.ModelSerializer):
+    horse = HorseSerializer()
+    trainer = TrainerSerializer()
+    jockey = JockeySerializer()
+
+    class Meta:
+        model = RaceRunner
+        fields = ['horse', 'trainer', 'jockey', 'weight', 'number', 'draw']

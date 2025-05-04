@@ -151,10 +151,27 @@ async function populateModal(sport, category) {
         const modal = document.getElementById('event-modal');
         const modalTitle = document.getElementById('event-modal-title');
         const modalBody = document.getElementById('event-modal-body');
+        const modalClose = document.querySelector('.event-modal-close');
         if (!modal || !modalTitle || !modalBody) {
             console.error('Modal elements not found');
             return;
         }
+
+        // Set up close button handler
+        if (modalClose) {
+            modalClose.onclick = () => {
+                modal.style.display = 'none';
+                modalBody.innerHTML = '<p>Loading events...</p>';
+            };
+        }
+
+        // Close modal when clicking outside
+        window.onclick = (event) => {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+                modalBody.innerHTML = '<p>Loading events...</p>';
+            }
+        };
 
         const sportName = sport === 'horse_racing' ? 'Horse Racing' : sport.charAt(0).toUpperCase() + sport.slice(1);
         const categoryName = sport === 'horse_racing'
@@ -171,7 +188,7 @@ async function populateModal(sport, category) {
         const events = await fetchEventsForSport(sport, category);
         console.log(`Fetched ${events.length} events for ${sport} ${category}`);
         
-        const html = SPORT_HANDLERS[sport].formatEvents(events, category, true);
+        const html = await SPORT_HANDLERS[sport].formatEvents(events, category, true);
         modalBody.innerHTML = html || `<p>No ${categoryName.toLowerCase()} available for ${sportName}.</p>`;
         console.log(`Modal populated for ${sport} ${category}`);
         
@@ -179,6 +196,7 @@ async function populateModal(sport, category) {
         
         if (sport === 'golf' && (category === 'inplay' || category === 'results') && events.length > 0) {
             await SPORT_HANDLERS[sport].setupLeaderboardUpdates();
+            SPORT_HANDLERS[sport].setupLeaderboardControls();
         }
         
         modal.style.display = 'flex';
@@ -202,7 +220,7 @@ export function setupExpandableCards() {
     console.log(`Found ${cards.length} expandable cards`);
     cards.forEach((card, index) => {
         const header = card.querySelector('.card-header');
-        const details = card.querySelector('.match-details');
+        const details = card.querySelector('.match-details, .card-content');
         if (!header || !details) return;
 
         if (header._toggleHandler) {
@@ -224,7 +242,7 @@ export function setupExpandableCards() {
     if (!document._cardCloseListener) {
         const closeHandler = (e) => {
             if (!e.target.closest('.expandable-card')) {
-                document.querySelectorAll('.match-details').forEach(details => {
+                document.querySelectorAll('.match-details, .card-content').forEach(details => {
                     details.style.display = 'none';
                 });
                 document.querySelectorAll('.expandable-card').forEach(card => {

@@ -35,7 +35,15 @@ export class TennisEventsHandler {
 
     mapEvents(events) {
         console.log('Raw events received:', events);
-        return events
+        // Handle both direct arrays and paginated responses
+        const eventsArray = Array.isArray(events) ? events : (events?.results || []);
+        
+        if (!eventsArray || !Array.isArray(eventsArray)) {
+            console.warn('Invalid events data received:', events);
+            return [];
+        }
+
+        return eventsArray
             .filter(event => {
                 if (!event) {
                     console.warn('Event is null or undefined');
@@ -49,16 +57,13 @@ export class TennisEventsHandler {
                     console.warn('Event missing tournament:', event);
                     return false;
                 }
-                if (!event.tournament.id) {
-                    console.warn('Event tournament missing id:', event);
-                    return false;
-                }
+                // Don't filter out events just because tournament.id is missing
                 return true;
             })
             .map(event => ({
                 id: event.event_id,
-                tournamentId: event.tournament.id,
-                tournamentName: event.tournament.name,
+                tournamentId: event.tournament.id || event.tournament.name || 'unknown',  // Use name as fallback
+                tournamentName: event.tournament.name || 'Unknown Tournament',
                 date: event.date,
                 displayDate: new Date(event.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
                 time: new Date(event.date).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "GMT" }),
@@ -87,23 +92,33 @@ export class TennisEventsHandler {
             return [];
         }
 
+        console.log(`Filtering ${events.length} tennis events for category: ${category}`);
         const currentTime = new Date();
         const thirtyDaysAgo = new Date(currentTime);
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
         let filteredEvents = events;
 
-        if (category === 'fixtures') {
-            filteredEvents = events.filter(match => match.state === "pre" && new Date(match.date) > currentTime);
-        } else if (category === 'inplay') {
-            filteredEvents = events.filter(match => match.state === "in");
-        } else if (category === 'results') {
-            filteredEvents = events.filter(match => {
-                const matchDate = new Date(match.date);
-                return match.state === "post" && matchDate >= thirtyDaysAgo;
-            });
+        try {
+            if (category === 'fixtures') {
+                filteredEvents = events.filter(match => {
+                    const matchDate = new Date(match.date);
+                    return match.state === "pre" && matchDate > currentTime;
+                });
+            } else if (category === 'inplay') {
+                filteredEvents = events.filter(match => match.state === "in");
+            } else if (category === 'results') {
+                filteredEvents = events.filter(match => {
+                    const matchDate = new Date(match.date);
+                    return match.state === "post" && matchDate >= thirtyDaysAgo;
+                });
+            }
+        } catch (error) {
+            console.error('Error filtering tennis events:', error);
+            return [];
         }
 
+        console.log(`Filtered to ${filteredEvents.length} events for category ${category}`);
         return filteredEvents;
     }
 
@@ -398,26 +413,35 @@ export async function formatEventTable(matches, sportKey = 'tennis') {
 }
 
 // Add event listener for loading stats on demand
-document.addEventListener('click', async (e) => {
-  if (e.target.classList.contains('load-stats')) {
-    const matchId = e.target.getAttribute('data-match-id');
-    const statsElement = e.target;
-    statsElement.textContent = 'Loading stats...';
-    try {
-      const matchDetails = await fetchMatchDetails(matchId);
-      const stats = matchDetails.stats || {};
-      const statsContent = stats && Object.keys(stats).length
-        ? `
-          <div class="match-stats">
-            <p>Aces: ${stats.aces.team1 || 0} - ${stats.aces.team2 || 0}</p>
-            <p>Double Faults: ${stats.doubleFaults.team1 || 0} - ${stats.doubleFaults.team2 || 0}</p>
-            <p>Service Points Won: ${stats.servicePointsWon.team1 || 0} - ${stats.servicePointsWon.team2 || 0}</p>
-          </div>`
-        : "<p>No stats available</p>";
-      statsElement.outerHTML = statsContent;
-    } catch (error) {
-      console.error('Error loading stats:', error);
-      statsElement.textContent = 'Error loading stats';
-    }
-  }
-});
+function setupStatsEventListener() {
+    document.addEventListener('click', async (e) => {
+        if (e.target.classList.contains('load-stats')) {
+            const matchId = e.target.getAttribute('data-match-id');
+            const statsElement = e.target;
+            statsElement.textContent = 'Loading stats...';
+            try {
+                const matchDetails = await fetchMatchDetails(matchId);
+                const stats = matchDetails.stats || {};
+                const statsContent = stats && Object.keys(stats).length
+                    ? `
+                        <div class="match-stats">
+                            <p>Aces: ${stats.aces.team1 || 0} - ${stats.aces.team2 || 0}</p>
+                            <p>Double Faults: ${stats.doubleFaults.team1 || 0} - ${stats.doubleFaults.team2 || 0}</p>
+                            <p>Service Points Won: ${stats.servicePointsWon.team1 || 0} - ${stats.servicePointsWon.team2 || 0}</p>
+                        </div>`
+                    : "<p>No stats available</p>";
+                statsElement.outerHTML = statsContent;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+                statsElement.textContent = 'Error loading stats';
+            }
+        }
+    });
+}
+
+// Wait for DOM content to be loaded before setting up event listeners
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupStatsEventListener);
+} else {
+    setupStatsEventListener();
+}

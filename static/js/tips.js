@@ -275,6 +275,8 @@ function setupTipInteractions() {
             if (previewDiv) previewDiv.style.display = 'none';
         }
     }
+
+    setupTipOptionsMenu();
 }
 
 function setupReplyModal() {
@@ -716,6 +718,139 @@ function showCustomAlert(message) {
     window.onclick = (event) => {
         if (event.target === alertModal) alertModal.style.display = 'none';
     };
+}
+
+function setupTipOptionsMenu() {
+    document.addEventListener('click', function(e) {
+        // Close any open dropdowns when clicking outside
+        if (!e.target.closest('.tip-options')) {
+            document.querySelectorAll('.tip-options-dropdown').forEach(dropdown => {
+                dropdown.classList.remove('show');
+            });
+        }
+    });
+
+    // Setup option buttons for each tip
+    document.querySelectorAll('.tip-options-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const dropdown = this.nextElementSibling;
+            // Close other dropdowns
+            document.querySelectorAll('.tip-options-dropdown').forEach(d => {
+                if (d !== dropdown) d.classList.remove('show');
+            });
+            dropdown.classList.toggle('show');
+        });
+    });
+
+    // Setup edit and delete handlers
+    document.querySelectorAll('.tip-option-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const tip = this.closest('.tip');
+            const tipId = tip.dataset.tipId;
+            
+            if (this.classList.contains('edit')) {
+                handleTipEdit(tipId, tip);
+            } else if (this.classList.contains('delete')) {
+                handleTipDelete(tipId, tip);
+            }
+            
+            // Close the dropdown
+            this.closest('.tip-options-dropdown').classList.remove('show');
+        });
+    });
+}
+
+function handleTipEdit(tipId, tipElement) {
+    // Get the current tip content
+    const tipText = tipElement.querySelector('.tip-body p').textContent;
+    const tipMeta = tipElement.querySelector('.tip-meta');
+    
+    // Create and show edit modal
+    const editModal = document.createElement('div');
+    editModal.className = 'modal edit-tip-modal';
+    editModal.innerHTML = `
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>Edit Tip</h2>
+            <textarea class="edit-tip-input">${tipText}</textarea>
+            <button class="save-edit-btn">Save Changes</button>
+        </div>
+    `;
+    
+    document.body.appendChild(editModal);
+    editModal.style.display = 'block';
+    
+    // Handle close button
+    const closeBtn = editModal.querySelector('.modal-close');
+    closeBtn.onclick = () => {
+        editModal.remove();
+    };
+    
+    // Handle save button
+    const saveBtn = editModal.querySelector('.save-edit-btn');
+    saveBtn.onclick = () => {
+        const newText = editModal.querySelector('.edit-tip-input').value.trim();
+        if (!newText) {
+            showCustomAlert('Tip text cannot be empty');
+            return;
+        }
+        
+        const formData = new FormData();
+        formData.append('tip_id', tipId);
+        formData.append('text', newText);
+        
+        fetch('/api/edit-tip/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                tipElement.querySelector('.tip-body p').textContent = newText;
+                editModal.remove();
+                showCustomAlert('Tip updated successfully');
+            } else {
+                showCustomAlert('Error updating tip: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error updating tip:', error);
+            showCustomAlert('An error occurred while updating the tip');
+        });
+    };
+}
+
+function handleTipDelete(tipId, tipElement) {
+    if (confirm('Are you sure you want to delete this tip? This action cannot be undone.')) {
+        const formData = new FormData();
+        formData.append('tip_id', tipId);
+        
+        fetch('/api/delete-tip/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                tipElement.remove();
+                showCustomAlert('Tip deleted successfully');
+            } else {
+                showCustomAlert('Error deleting tip: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting tip:', error);
+            showCustomAlert('An error occurred while deleting the tip');
+        });
+    }
 }
 
 export { setupTipInteractions, setupReplyModal };
