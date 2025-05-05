@@ -381,32 +381,101 @@
 
 /* Key events styling */
 .key-events {
-    margin-top: 15px;
+    margin-top: 20px;
+    padding: 15px;
+    background: #333;
+    border-radius: 8px;
 }
 
-.key-events h4 {
+.team-events {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.home-team-events,
+.away-team-events {
+    flex: 1;
+    padding: 10px;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.home-team-events h4,
+.away-team-events h4 {
+    font-size: 1rem;
+    color: #333;
     margin-bottom: 10px;
-    color: #1a1a1a;
+    padding-bottom: 5px;
+    border-bottom: 2px solid #eee;
 }
 
-.key-events ul {
+.goals h5,
+.cards h5 {
+    font-size: 0.9rem;
+    color: #666;
+    margin: 10px 0 5px;
+}
+
+.goals-list,
+.cards-list {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-.key-events li {
-    padding: 8px 0;
-    border-bottom: 1px solid var(--border-color);
-    color: #333;
+.goal-item,
+.yellow-card-item,
+.red-card-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 0;
+    font-size: 0.9rem;
 }
 
-.yellow-card {
-    color: #f1c40f;
+.goal-time,
+.card-time {
+    font-weight: bold;
+    color: #666;
+    min-width: 40px;
 }
 
-.red-card {
-    color: #e74c3c;
+.goal-scorer {
+    color: #28a745;
+    font-weight: 500;
+}
+
+.yellow-card-item .card-player {
+    color: #ffc107;
+}
+
+.red-card-item .card-player {
+    color: #dc3545;
+}
+
+.card-type {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.no-goals,
+.no-cards {
+    color: #999;
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .team-events {
+        flex-direction: column;
+    }
+
+    .home-team-events,
+    .away-team-events {
+        width: 100%;
+    }
 }
 
 /* Live match indicator */

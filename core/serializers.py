@@ -63,7 +63,7 @@ class TeamStatsSerializer(ModelSerializer):
 class KeyEventSerializer(serializers.ModelSerializer):
     class Meta:
         model = KeyEvent
-        fields = ['id', 'time', 'team', 'player', 'assist', 'type', 'description']
+        fields = ['id', 'type', 'time', 'team', 'player', 'assist', 'is_goal', 'is_yellow_card', 'is_red_card', 'is_penalty']
 
 class BettingOddsSerializer(ModelSerializer):
     class Meta:

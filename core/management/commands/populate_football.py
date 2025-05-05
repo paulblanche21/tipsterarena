@@ -24,57 +24,67 @@ class Command(BaseCommand):
     def fetch_match_stats(self, event_id, league_id):
         """Fetch detailed match statistics from ESPN API."""
         try:
-            url = f"https://site.api.espn.com/apis/site/v2/sports/soccer/{league_id}/summary"
-            params = {'event': event_id}
+            # First try the summary endpoint for detailed stats
+            summary_url = f"https://site.api.espn.com/apis/site/v2/sports/soccer/{league_id}/summary"
+            scoreboard_url = f"https://site.api.espn.com/apis/site/v2/sports/soccer/{league_id}/scoreboard"
             
-            response = requests.get(url, params=params)
-            if not response.ok:
-                logger.error(f"Failed to fetch stats for event {event_id}: {response.status_code}")
-                return None, None
-
-            data = response.json()
-            boxscore = data.get('boxscore', {})
-            teams = boxscore.get('teams', [])
+            # Try summary endpoint first
+            response = requests.get(summary_url, params={'event': event_id})
+            if response.ok:
+                data = response.json()
+                boxscore = data.get('boxscore', {})
+                teams = boxscore.get('teams', [])
+            else:
+                # Fallback to scoreboard endpoint
+                response = requests.get(scoreboard_url)
+                if not response.ok:
+                    logger.error(f"Failed to fetch stats for event {event_id}")
+                    return None, None
+                    
+                data = response.json()
+                event = next((e for e in data.get('events', []) if e.get('id') == event_id), None)
+                if not event:
+                    return None, None
+                    
+                competition = event.get('competitions', [{}])[0]
+                teams = competition.get('competitors', [])
             
             if len(teams) != 2:
-                logger.warning(f"Invalid number of teams in boxscore for event {event_id}")
+                logger.warning(f"Invalid number of teams for event {event_id}")
                 return None, None
 
             home_stats = {}
             away_stats = {}
 
-            # Map of ESPN API stat names to our model field names
-            stat_mapping = {
-                'possessionPct': 'possession',
-                'totalShots': 'shots',
-                'shotsOnTarget': 'shots_on_target',
-                'wonCorners': 'corners',
-                'foulsCommitted': 'fouls'
-            }
-
             for team in teams:
-                stats = team.get('statistics', [])
-                team_stats = {
-                    'possession': 'N/A',
-                    'shots': 'N/A',
-                    'shots_on_target': 'N/A',
-                    'corners': 'N/A',
-                    'fouls': 'N/A'
-                }
-                
-                # Process each stat using the mapping
-                for stat in stats:
-                    name = stat.get('name', '')
+                stats_dict = {}
+                for stat in team.get('statistics', []):
+                    name = stat.get('name')
                     value = stat.get('displayValue', 'N/A')
                     
-                    # Map the ESPN stat name to our field name
-                    if name in stat_mapping:
-                        team_stats[stat_mapping[name]] = value
+                    # Map ESPN API stat names to our field names
+                    if name == 'possessionPct':
+                        stats_dict['possession'] = f"{value}%"
+                    elif name == 'totalShots':
+                        stats_dict['shots'] = value
+                    elif name == 'shotsOnTarget':
+                        stats_dict['shots_on_target'] = value
+                    elif name == 'wonCorners':
+                        stats_dict['corners'] = value
+                    elif name == 'foulsCommitted':
+                        stats_dict['fouls'] = value
+
+                # Set default values for any missing stats
+                stats_dict.setdefault('possession', 'N/A')
+                stats_dict.setdefault('shots', 'N/A')
+                stats_dict.setdefault('shots_on_target', 'N/A')
+                stats_dict.setdefault('corners', 'N/A')
+                stats_dict.setdefault('fouls', 'N/A')
 
                 if team.get('homeAway') == 'home':
-                    home_stats = team_stats
+                    home_stats = stats_dict
                 else:
-                    away_stats = team_stats
+                    away_stats = stats_dict
 
             logger.info(f"Fetched stats for event {event_id}: Home - {home_stats}, Away - {away_stats}")
             return home_stats, away_stats
@@ -247,6 +257,62 @@ class Command(BaseCommand):
                 event_id = event.get('id')
                 if not event_id:
                     continue
+
+                # Get match details from scoreboard
+                competition = event.get('competitions', [{}])[0]
+                details = competition.get('details', [])
+
+                # Process match events (goals, cards, etc.)
+                if details:
+                    event_obj = FootballEvent.objects.filter(event_id=event_id).first()
+                    if event_obj:
+                        # Clear existing key events
+                        KeyEvent.objects.filter(event=event_obj).delete()
+                        
+                        for detail in details:
+                            event_type = detail.get('type', {}).get('text')
+                            clock = detail.get('clock', {}).get('displayValue', 'N/A')
+                            team_id = detail.get('team', {}).get('id')
+                            athletes = detail.get('athletesInvolved', [])
+                            
+                            if not athletes:
+                                continue
+                                
+                            player = athletes[0].get('displayName', 'Unknown')
+                            team_name = next(
+                                (t.name for t in [event_obj.home_team, event_obj.away_team] 
+                                 if str(team_id) == str(t.id)), 
+                                'Unknown Team'
+                            )
+
+                            if event_type == 'Goal' or event_type == 'Penalty - Scored':
+                                KeyEvent.objects.create(
+                                    event=event_obj,
+                                    type='Goal',
+                                    time=clock,
+                                    team=team_name,
+                                    player=player,
+                                    is_goal=True,
+                                    is_penalty=event_type == 'Penalty - Scored'
+                                )
+                            elif event_type == 'Yellow Card':
+                                KeyEvent.objects.create(
+                                    event=event_obj,
+                                    type='Yellow Card',
+                                    time=clock,
+                                    team=team_name,
+                                    player=player,
+                                    is_yellow_card=True
+                                )
+                            elif event_type == 'Red Card':
+                                KeyEvent.objects.create(
+                                    event=event_obj,
+                                    type='Red Card',
+                                    time=clock,
+                                    team=team_name,
+                                    player=player,
+                                    is_red_card=True
+                                )
 
                 # Fetch match stats using the league ID
                 if event.get('state', '').lower() in ['in', 'post']:

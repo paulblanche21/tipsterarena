@@ -19,34 +19,25 @@ export class FootballEventsHandler {
 
     async fetchEvents(category) {
         try {
-            let allEvents = [];
-            let nextUrl = `/api/football-events/?category=${category}`;
+            const response = await fetch(`/api/events/football/?category=${category}`, {
+                credentials: 'include'
+            });
             
-            while (nextUrl) {
-                const response = await fetch(nextUrl, {
-                    headers: {
-                        'Authorization': `Token ${localStorage.getItem('authToken') || 'b9e24e9c8e2247396e4062c2cb58dd76972fa790'}`
-                    },
-                    credentials: 'include'
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                console.log('API Response:', data); // Debug log
-                
-                if (!Array.isArray(data)) {
-                    console.error('Expected array of events, got:', typeof data);
-                    return [];
-                }
-                
-                allEvents = allEvents.concat(data);
-                nextUrl = data.next;
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                console.error('API Error:', errorData);
+                throw new Error(`HTTP error: ${response.status}`);
             }
             
-            return this.mapEvents(allEvents);
+            const data = await response.json();
+            console.log('API Response:', data);
+            
+            if (!Array.isArray(data)) {
+                console.error('Expected array of events, got:', typeof data);
+                return [];
+            }
+            
+            return this.mapEvents(data);
         } catch (error) {
             console.error(`Error fetching football events (${category}):`, error);
             return [];
@@ -71,10 +62,6 @@ export class FootballEventsHandler {
 
                     // Log the raw event data for debugging
                     console.log('Processing event:', event);
-
-                    // Process team stats with proper fallbacks
-                    const home_team_stats = event.home_team_stats || {};
-                    const away_team_stats = event.away_team_stats || {};
 
                     return {
                         id: event.id || event.event_id,
@@ -104,19 +91,19 @@ export class FootballEventsHandler {
                         },
                         home_score: event.home_score || '0',
                         away_score: event.away_score || '0',
-                        home_team_stats: {
-                            possession: home_team_stats.possession || 'N/A',
-                            shots: home_team_stats.shots || 'N/A',
-                            shots_on_target: home_team_stats.shots_on_target || 'N/A',
-                            corners: home_team_stats.corners || 'N/A',
-                            fouls: home_team_stats.fouls || 'N/A'
+                        home_team_stats: event.home_team_stats || {
+                            possession: 'N/A',
+                            shots: 'N/A',
+                            shots_on_target: 'N/A',
+                            corners: 'N/A',
+                            fouls: 'N/A'
                         },
-                        away_team_stats: {
-                            possession: away_team_stats.possession || 'N/A',
-                            shots: away_team_stats.shots || 'N/A',
-                            shots_on_target: away_team_stats.shots_on_target || 'N/A',
-                            corners: away_team_stats.corners || 'N/A',
-                            fouls: away_team_stats.fouls || 'N/A'
+                        away_team_stats: event.away_team_stats || {
+                            possession: 'N/A',
+                            shots: 'N/A',
+                            shots_on_target: 'N/A',
+                            corners: 'N/A',
+                            fouls: 'N/A'
                         },
                         clock: event.clock || null,
                         period: event.period || 0,
@@ -209,6 +196,38 @@ export class FootballEventsHandler {
                 const eventClass = this.getEventClass(event);
                 const scoreDisplay = event.state === 'pre' ? 'vs' : `${event.home_score} - ${event.away_score}`;
 
+                // Process key events
+                const goals = event.key_events?.filter(e => e.is_goal) || [];
+                const cards = event.key_events?.filter(e => e.is_yellow_card || e.is_red_card) || [];
+
+                const homeGoals = goals.filter(g => g.team === home_team.name);
+                const awayGoals = goals.filter(g => g.team === away_team.name);
+
+                const homeCards = cards.filter(c => c.team === home_team.name);
+                const awayCards = cards.filter(c => c.team === away_team.name);
+
+                const formatGoals = (goals) => {
+                    if (!goals.length) return '<span class="no-goals">No goals</span>';
+                    return goals.map(g => `
+                        <li class="goal-item">
+                            <span class="goal-time">${g.time}</span>
+                            <span class="goal-scorer">${g.player}</span>
+                            ${g.is_penalty ? ' (Penalty)' : ''}
+                        </li>
+                    `).join('');
+                };
+
+                const formatCards = (cards) => {
+                    if (!cards.length) return '<span class="no-cards">No cards</span>';
+                    return cards.map(c => `
+                        <li class="${c.is_red_card ? 'red-card' : 'yellow-card'}-item">
+                            <span class="card-time">${c.time}</span>
+                            <span class="card-player">${c.player}</span>
+                            <span class="card-type">${c.is_red_card ? 'Red Card' : 'Yellow Card'}</span>
+                        </li>
+                    `).join('');
+                };
+
                 return `
                     <div class="expandable-card ${eventClass}" data-event-id="${event.id}">
                         <div class="card-header">
@@ -260,14 +279,40 @@ export class FootballEventsHandler {
                                     <div class="stat-value">${event.away_team_stats?.fouls || 'N/A'}</div>
                                 </div>
                             </div>
-                            ${event.key_events && event.key_events.length > 0 ? `
-                                <div class="key-events">
-                                    <h4>Key Events</h4>
-                                    <ul>
-                                        ${event.key_events.map(e => `<li>${e.time}' - ${e.description}</li>`).join('')}
-                                    </ul>
+                            <div class="key-events">
+                                <div class="team-events">
+                                    <div class="home-team-events">
+                                        <h4>${home_team.name}</h4>
+                                        <div class="goals">
+                                            <h5>Goals</h5>
+                                            <ul class="goals-list">
+                                                ${formatGoals(homeGoals)}
+                                            </ul>
+                                        </div>
+                                        <div class="cards">
+                                            <h5>Cards</h5>
+                                            <ul class="cards-list">
+                                                ${formatCards(homeCards)}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="away-team-events">
+                                        <h4>${away_team.name}</h4>
+                                        <div class="goals">
+                                            <h5>Goals</h5>
+                                            <ul class="goals-list">
+                                                ${formatGoals(awayGoals)}
+                                            </ul>
+                                        </div>
+                                        <div class="cards">
+                                            <h5>Cards</h5>
+                                            <ul class="cards-list">
+                                                ${formatCards(awayCards)}
+                                            </ul>
+                                        </div>
+                                    </div>
                                 </div>
-                            ` : ''}
+                            </div>
                         </div>
                     </div>
                 `;

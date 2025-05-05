@@ -340,6 +340,7 @@ class KeyEvent(models.Model):
     is_goal = models.BooleanField(default=False)
     is_yellow_card = models.BooleanField(default=False)
     is_red_card = models.BooleanField(default=False)
+    is_penalty = models.BooleanField(default=False)  # New field for penalty goals
 
     def __str__(self):
         return f"{self.type} by {self.player} at {self.time}"
