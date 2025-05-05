@@ -22,76 +22,205 @@ class Command(BaseCommand):
             raise
 
     def fetch_match_stats(self, event_id, league_id):
-        """Fetch detailed match statistics from ESPN API."""
+        """Fetch match statistics from ESPN API"""
         try:
-            # First try the summary endpoint for detailed stats
-            summary_url = f"https://site.api.espn.com/apis/site/v2/sports/soccer/{league_id}/summary"
-            scoreboard_url = f"https://site.api.espn.com/apis/site/v2/sports/soccer/{league_id}/scoreboard"
-            
             # Try summary endpoint first
+            summary_url = f"https://site.api.espn.com/apis/site/v2/sports/soccer/{league_id}/summary"
+            logger.info(f"Fetching stats from summary endpoint for event {event_id}")
             response = requests.get(summary_url, params={'event': event_id})
-            if response.ok:
-                data = response.json()
-                boxscore = data.get('boxscore', {})
-                teams = boxscore.get('teams', [])
-            else:
-                # Fallback to scoreboard endpoint
-                response = requests.get(scoreboard_url)
-                if not response.ok:
-                    logger.error(f"Failed to fetch stats for event {event_id}")
-                    return None, None
-                    
-                data = response.json()
-                event = next((e for e in data.get('events', []) if e.get('id') == event_id), None)
-                if not event:
-                    return None, None
-                    
-                competition = event.get('competitions', [{}])[0]
-                teams = competition.get('competitors', [])
+            response.raise_for_status()
+            data = response.json()
             
-            if len(teams) != 2:
-                logger.warning(f"Invalid number of teams for event {event_id}")
-                return None, None
-
-            home_stats = {}
-            away_stats = {}
-
-            for team in teams:
-                stats_dict = {}
-                for stat in team.get('statistics', []):
-                    name = stat.get('name')
-                    value = stat.get('displayValue', 'N/A')
+            logger.info(f"Successfully fetched summary data for event {event_id}")
+            
+            # Initialize stats with default values
+            stats = {
+                'home_possession': 0,
+                'away_possession': 0,
+                'home_shots': 0,
+                'away_shots': 0,
+                'home_shots_on_target': 0,
+                'away_shots_on_target': 0,
+                'home_corners': 0,
+                'away_corners': 0,
+                'home_fouls': 0,
+                'away_fouls': 0,
+                'home_yellow_cards': 0,
+                'away_yellow_cards': 0,
+                'home_red_cards': 0,
+                'away_red_cards': 0
+            }
+            
+            # Try to get stats from boxscore first
+            if 'boxscore' in data and 'teams' in data['boxscore']:
+                logger.info(f"Found boxscore data for event {event_id}")
+                for team in data['boxscore']['teams']:
+                    is_home = team.get('homeAway') == 'home'
+                    prefix = 'home_' if is_home else 'away_'
+                    team_type = 'Home' if is_home else 'Away'
                     
-                    # Map ESPN API stat names to our field names
-                    if name == 'possessionPct':
-                        stats_dict['possession'] = f"{value}%"
-                    elif name == 'totalShots':
-                        stats_dict['shots'] = value
-                    elif name == 'shotsOnTarget':
-                        stats_dict['shots_on_target'] = value
-                    elif name == 'wonCorners':
-                        stats_dict['corners'] = value
-                    elif name == 'foulsCommitted':
-                        stats_dict['fouls'] = value
-
-                # Set default values for any missing stats
-                stats_dict.setdefault('possession', 'N/A')
-                stats_dict.setdefault('shots', 'N/A')
-                stats_dict.setdefault('shots_on_target', 'N/A')
-                stats_dict.setdefault('corners', 'N/A')
-                stats_dict.setdefault('fouls', 'N/A')
-
-                if team.get('homeAway') == 'home':
-                    home_stats = stats_dict
-                else:
-                    away_stats = stats_dict
-
-            logger.info(f"Fetched stats for event {event_id}: Home - {home_stats}, Away - {away_stats}")
-            return home_stats, away_stats
-
-        except Exception as e:
+                    if 'statistics' in team:
+                        logger.info(f"{team_type} team statistics found: {[stat.get('name') for stat in team['statistics']]}")
+                        for stat in team['statistics']:
+                            name = stat.get('name', '').lower()
+                            value = stat.get('displayValue', '0')
+                            logger.debug(f"{team_type} team stat: {name} = {value}")
+                            
+                            try:
+                                # Map ESPN stat names to our fields
+                                if 'possession' in name:
+                                    # Handle possession percentage with decimals
+                                    possession = float(value.replace('%', ''))
+                                    stats[f'{prefix}possession'] = round(possession)
+                                elif 'shots' in name and 'on target' in name:
+                                    stats[f'{prefix}shots_on_target'] = int(value)
+                                elif 'shots' in name and 'total' in name:
+                                    stats[f'{prefix}shots'] = int(value)
+                                elif 'corners' in name:
+                                    stats[f'{prefix}corners'] = int(value)
+                                elif 'fouls' in name:
+                                    stats[f'{prefix}fouls'] = int(value)
+                                elif 'yellow cards' in name:
+                                    stats[f'{prefix}yellow_cards'] = int(value)
+                                elif 'red cards' in name:
+                                    stats[f'{prefix}red_cards'] = int(value)
+                            except (ValueError, TypeError) as e:
+                                logger.warning(f"Error converting stat value for {name}: {value} - {str(e)}")
+                                continue
+            else:
+                logger.info(f"No boxscore data found for event {event_id}, checking competitions data")
+            
+            # If no boxscore data, try competitions data
+            if all(v == 0 for v in stats.values()) and 'competitions' in data:
+                logger.info(f"Checking competitions data for event {event_id}")
+                for competition in data['competitions']:
+                    if 'competitors' in competition:
+                        for competitor in competition['competitors']:
+                            is_home = competitor.get('homeAway') == 'home'
+                            prefix = 'home_' if is_home else 'away_'
+                            team_type = 'Home' if is_home else 'Away'
+                            
+                            if 'statistics' in competitor:
+                                logger.info(f"{team_type} team statistics found in competitions: {[stat.get('name') for stat in competitor['statistics']]}")
+                                for stat in competitor['statistics']:
+                                    name = stat.get('name', '').lower()
+                                    value = stat.get('displayValue', '0')
+                                    logger.debug(f"{team_type} team stat from competitions: {name} = {value}")
+                                    
+                                    try:
+                                        # Map ESPN stat names to our fields
+                                        if 'possession' in name:
+                                            # Handle possession percentage with decimals
+                                            possession = float(value.replace('%', ''))
+                                            stats[f'{prefix}possession'] = round(possession)
+                                        elif 'shots' in name and 'on target' in name:
+                                            stats[f'{prefix}shots_on_target'] = int(value)
+                                        elif 'shots' in name and 'total' in name:
+                                            stats[f'{prefix}shots'] = int(value)
+                                        elif 'corners' in name:
+                                            stats[f'{prefix}corners'] = int(value)
+                                        elif 'fouls' in name:
+                                            stats[f'{prefix}fouls'] = int(value)
+                                        elif 'yellow cards' in name:
+                                            stats[f'{prefix}yellow_cards'] = int(value)
+                                        elif 'red cards' in name:
+                                            stats[f'{prefix}red_cards'] = int(value)
+                                    except (ValueError, TypeError) as e:
+                                        logger.warning(f"Error converting stat value for {name}: {value} - {str(e)}")
+                                        continue
+            
+            # Log available stats for debugging
+            logger.info(f"Final stats for event {event_id}: {stats}")
+            
+            # Only return stats if we have any non-zero values
+            if any(v != 0 for v in stats.values()):
+                return stats
+            else:
+                logger.warning(f"No stats found for event {event_id}")
+                return None
+            
+        except requests.exceptions.RequestException as e:
             logger.error(f"Error fetching match stats for event {event_id}: {str(e)}")
-            return None, None
+            # Try fallback to scoreboard endpoint
+            try:
+                scoreboard_url = f"https://site.api.espn.com/apis/site/v2/sports/soccer/{league_id}/scoreboard"
+                logger.info(f"Trying fallback scoreboard endpoint for event {event_id}")
+                response = requests.get(scoreboard_url, params={'event': event_id})
+                response.raise_for_status()
+                data = response.json()
+                
+                logger.info(f"Successfully fetched scoreboard data for event {event_id}")
+                
+                # Initialize stats with default values
+                stats = {
+                    'home_possession': 0,
+                    'away_possession': 0,
+                    'home_shots': 0,
+                    'away_shots': 0,
+                    'home_shots_on_target': 0,
+                    'away_shots_on_target': 0,
+                    'home_corners': 0,
+                    'away_corners': 0,
+                    'home_fouls': 0,
+                    'away_fouls': 0,
+                    'home_yellow_cards': 0,
+                    'away_yellow_cards': 0,
+                    'home_red_cards': 0,
+                    'away_red_cards': 0
+                }
+                
+                # Try to get stats from competitions data
+                if 'competitions' in data:
+                    logger.info(f"Found competitions data in scoreboard response for event {event_id}")
+                    for competition in data['competitions']:
+                        if 'competitors' in competition:
+                            for competitor in competition['competitors']:
+                                is_home = competitor.get('homeAway') == 'home'
+                                prefix = 'home_' if is_home else 'away_'
+                                team_type = 'Home' if is_home else 'Away'
+                                
+                                if 'statistics' in competitor:
+                                    logger.info(f"{team_type} team statistics found in scoreboard: {[stat.get('name') for stat in competitor['statistics']]}")
+                                    for stat in competitor['statistics']:
+                                        name = stat.get('name', '').lower()
+                                        value = stat.get('displayValue', '0')
+                                        logger.debug(f"{team_type} team stat from scoreboard: {name} = {value}")
+                                        
+                                        try:
+                                            # Map ESPN stat names to our fields
+                                            if 'possession' in name:
+                                                # Handle possession percentage with decimals
+                                                possession = float(value.replace('%', ''))
+                                                stats[f'{prefix}possession'] = round(possession)
+                                            elif 'shots' in name and 'on target' in name:
+                                                stats[f'{prefix}shots_on_target'] = int(value)
+                                            elif 'shots' in name and 'total' in name:
+                                                stats[f'{prefix}shots'] = int(value)
+                                            elif 'corners' in name:
+                                                stats[f'{prefix}corners'] = int(value)
+                                            elif 'fouls' in name:
+                                                stats[f'{prefix}fouls'] = int(value)
+                                            elif 'yellow cards' in name:
+                                                stats[f'{prefix}yellow_cards'] = int(value)
+                                            elif 'red cards' in name:
+                                                stats[f'{prefix}red_cards'] = int(value)
+                                        except (ValueError, TypeError) as e:
+                                            logger.warning(f"Error converting stat value for {name}: {value} - {str(e)}")
+                                            continue
+                
+                # Log available stats for debugging
+                logger.info(f"Final stats from scoreboard for event {event_id}: {stats}")
+                
+                # Only return stats if we have any non-zero values
+                if any(v != 0 for v in stats.values()):
+                    return stats
+                else:
+                    logger.warning(f"No stats found in scoreboard for event {event_id}")
+                    return None
+                
+            except requests.exceptions.RequestException as e:
+                logger.error(f"Error fetching scoreboard data for event {event_id}: {str(e)}")
+                return None
 
     def fetch_and_store_football_events(self):
         # Define leagues to fetch
@@ -237,8 +366,42 @@ class Command(BaseCommand):
                                     )
 
                         # Process match statistics
-                        if state in ['in', 'post']:
-                            self.process_events([event], league_info['name'], league_info['league_id'])
+                        if competition.get('status', {}).get('type', {}).get('state', '').lower() in ['in', 'post']:
+                            logger.info(f"Fetching match stats for event {event['id']}")
+                            stats = self.fetch_match_stats(event['id'], league_info['league_id'])
+                            if stats:
+                                try:
+                                    # Create team stats objects
+                                    home_stats = TeamStats.objects.create(
+                                        possession=f"{stats['home_possession']}%",
+                                        shots=str(stats['home_shots']),
+                                        shots_on_target=str(stats['home_shots_on_target']),
+                                        corners=str(stats['home_corners']),
+                                        fouls=str(stats['home_fouls'])
+                                    )
+                                    away_stats = TeamStats.objects.create(
+                                        possession=f"{stats['away_possession']}%",
+                                        shots=str(stats['away_shots']),
+                                        shots_on_target=str(stats['away_shots_on_target']),
+                                        corners=str(stats['away_corners']),
+                                        fouls=str(stats['away_fouls'])
+                                    )
+                                    
+                                    # Update the event with the stats objects
+                                    event_obj = FootballEvent.objects.filter(event_id=event['id']).first()
+                                    if event_obj:
+                                        # Delete any existing stats to avoid duplicates
+                                        if event_obj.home_team_stats:
+                                            event_obj.home_team_stats.delete()
+                                        if event_obj.away_team_stats:
+                                            event_obj.away_team_stats.delete()
+                                        
+                                        event_obj.home_team_stats = home_stats
+                                        event_obj.away_team_stats = away_stats
+                                        event_obj.save()
+                                        logger.info(f"Updated stats for event {event['id']}")
+                                except Exception as stats_error:
+                                    logger.error(f"Error creating stats for event {event['id']}: {str(stats_error)}")
 
                     except Exception as e:
                         logger.error(f"Error processing event {event.get('id')}: {str(e)}")
@@ -316,23 +479,23 @@ class Command(BaseCommand):
 
                 # Fetch match stats using the league ID
                 if event.get('state', '').lower() in ['in', 'post']:
-                    home_match_stats, away_match_stats = self.fetch_match_stats(event_id, league_id)
-                    if home_match_stats and away_match_stats:
+                    stats = self.fetch_match_stats(event_id, league_id)
+                    if stats:
                         try:
                             # Create team stats objects
                             home_stats = TeamStats.objects.create(
-                                possession=home_match_stats.get('possession', 'N/A'),
-                                shots=home_match_stats.get('shots', 'N/A'),
-                                shots_on_target=home_match_stats.get('shots_on_target', 'N/A'),
-                                corners=home_match_stats.get('corners', 'N/A'),
-                                fouls=home_match_stats.get('fouls', 'N/A')
+                                possession=stats['home_possession'],
+                                shots=stats['home_shots'],
+                                shots_on_target=stats['home_shots_on_target'],
+                                corners=stats['home_corners'],
+                                fouls=stats['home_fouls']
                             )
                             away_stats = TeamStats.objects.create(
-                                possession=away_match_stats.get('possession', 'N/A'),
-                                shots=away_match_stats.get('shots', 'N/A'),
-                                shots_on_target=away_match_stats.get('shots_on_target', 'N/A'),
-                                corners=away_match_stats.get('corners', 'N/A'),
-                                fouls=away_match_stats.get('fouls', 'N/A')
+                                possession=stats['away_possession'],
+                                shots=stats['away_shots'],
+                                shots_on_target=stats['away_shots_on_target'],
+                                corners=stats['away_corners'],
+                                fouls=stats['away_fouls']
                             )
                             
                             # Update the event with the stats objects

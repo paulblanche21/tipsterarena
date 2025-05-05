@@ -123,6 +123,11 @@ export function setupSearch() {
     console.log('Closest tip action:', tipAction);
     console.log('Closest category button:', categoryButton);
 
+    if (!searchBar) {
+        console.log('Search bar not found, ignoring click handler');
+        return;
+    }
+
     if (searchBar.contains(e.target) || 
         (searchResults && searchResults.contains(e.target)) || 
         card || 

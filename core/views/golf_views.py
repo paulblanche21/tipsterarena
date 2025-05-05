@@ -61,40 +61,71 @@ class GolfEventsList(APIView):
 
     def get(self, request):
         try:
-            # Get category from query parameters
-            category = request.query_params.get('category', 'fixtures')
+            # Get state from query parameters
+            state = request.query_params.get('state', 'pre')
+            tour_id = request.query_params.get('tour_id')
+            
+            logger.info(f"Fetching golf events with state: {state}, tour_id: {tour_id}")
             
             # Base queryset for filtering
             queryset = GolfEvent.objects.all().select_related(
-                'tournament', 'course'
+                'tour', 'course'
             ).prefetch_related(
-                'players', 'rounds', 'scores'
+                'leaderboard',
+                'leaderboard__player'
             )
 
             now = timezone.now()
 
-            # Apply category filter
-            if category == 'fixtures':
-                queryset = queryset.filter(state='pre', start_date__gt=now)
-            elif category == 'inplay':
+            # Apply state filter
+            if state == 'pre':
+                queryset = queryset.filter(state='pre', date__gt=now)
+            elif state == 'in':
                 queryset = queryset.filter(state='in')
-            elif category == 'results':
+            elif state == 'post':
                 queryset = queryset.filter(state='post')
             else:
+                logger.warning(f"Invalid state parameter received: {state}")
                 return Response(
-                    {'error': 'Invalid category. Must be one of: fixtures, inplay, results'},
+                    {'error': 'Invalid state. Must be one of: pre, in, post'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
+            # Apply tour filter if provided
+            if tour_id:
+                queryset = queryset.filter(tour__tour_id=tour_id)
+
             # Order by date
-            queryset = queryset.order_by('start_date')
+            queryset = queryset.order_by('date')
+
+            logger.info(f"Found {queryset.count()} golf events")
+            
+            # Log the first event's data for debugging
+            if queryset.exists():
+                first_event = queryset.first()
+                logger.info("Sample event data:")
+                logger.info(f"Event ID: {first_event.event_id}")
+                logger.info(f"Name: {first_event.name}")
+                logger.info(f"Date: {first_event.date}")
+                logger.info(f"State: {first_event.state}")
+                logger.info(f"Tour: {first_event.tour.name if first_event.tour else 'No tour'}")
+                logger.info(f"Course: {first_event.course.name if first_event.course else 'No course'}")
+                logger.info(f"Leaderboard entries: {first_event.leaderboard.count()}")
 
             # Serialize data
             serializer = GolfEventSerializer(queryset, many=True)
-            return Response(serializer.data)
+            serialized_data = serializer.data
+            logger.info(f"Serialized {len(serialized_data)} events")
+            
+            # Log the first serialized event for debugging
+            if serialized_data:
+                logger.info("First serialized event:")
+                logger.info(serialized_data[0])
+
+            return Response(serialized_data)
 
         except Exception as e:
-            logger.error(f"Error in GolfEventsList view: {str(e)}")
+            logger.error(f"Error in GolfEventsList view: {str(e)}", exc_info=True)
             return Response(
                 {'error': 'Internal server error', 'detail': str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR

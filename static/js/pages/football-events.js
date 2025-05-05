@@ -63,10 +63,17 @@ export class FootballEventsHandler {
                     // Log the raw event data for debugging
                     console.log('Processing event:', event);
 
+                    // Extract team data from the event structure
+                    const homeTeam = event.home_team || {};
+                    const awayTeam = event.away_team || {};
+                    const homeTeamStats = event.home_team_stats || {};
+                    const awayTeamStats = event.away_team_stats || {};
+
                     return {
                         id: event.id || event.event_id,
-                        name: event.name || `${event.home_team?.name || 'Unknown'} vs ${event.away_team?.name || 'Unknown'}`,
+                        name: event.name || `${homeTeam.name || 'Unknown'} vs ${awayTeam.name || 'Unknown'}`,
                         date: event.date,
+                        time: event.time,
                         state: event.state,
                         status_description: event.status_description || 'Unknown',
                         status_detail: event.status_detail || 'N/A',
@@ -77,40 +84,26 @@ export class FootballEventsHandler {
                             priority: event.league?.priority
                         },
                         venue: event.venue || 'Location TBD',
-                        home_team: {
-                            name: event.home_team?.name || 'Unknown Team',
-                            logo: event.home_team?.logo || window.default_avatar_url || '/static/img/default-avatar.png',
-                            form: event.home_team?.form || 'N/A',
-                            record: event.home_team?.record || 'N/A'
+                        homeTeam: {
+                            name: homeTeam.name || 'Unknown Team',
+                            logo: homeTeam.logo || window.default_avatar_url || '/static/img/default-avatar.png',
+                            score: event.home_score || '0',
+                            stats: homeTeamStats,
+                            form: homeTeam.form || 'N/A',
+                            record: homeTeam.record || 'N/A'
                         },
-                        away_team: {
-                            name: event.away_team?.name || 'Unknown Team',
-                            logo: event.away_team?.logo || window.default_avatar_url || '/static/img/default-avatar.png',
-                            form: event.away_team?.form || 'N/A',
-                            record: event.away_team?.record || 'N/A'
+                        awayTeam: {
+                            name: awayTeam.name || 'Unknown Team',
+                            logo: awayTeam.logo || window.default_avatar_url || '/static/img/default-avatar.png',
+                            score: event.away_score || '0',
+                            stats: awayTeamStats,
+                            form: awayTeam.form || 'N/A',
+                            record: awayTeam.record || 'N/A'
                         },
-                        home_score: event.home_score || '0',
-                        away_score: event.away_score || '0',
-                        home_team_stats: event.home_team_stats || {
-                            possession: 'N/A',
-                            shots: 'N/A',
-                            shots_on_target: 'N/A',
-                            corners: 'N/A',
-                            fouls: 'N/A'
-                        },
-                        away_team_stats: event.away_team_stats || {
-                            possession: 'N/A',
-                            shots: 'N/A',
-                            shots_on_target: 'N/A',
-                            corners: 'N/A',
-                            fouls: 'N/A'
-                        },
-                        clock: event.clock || null,
-                        period: event.period || 0,
                         broadcast: event.broadcast || 'N/A',
-                        key_events: event.key_events || [],
                         odds: event.odds || [],
-                        detailed_stats: event.detailed_stats || []
+                        goals: event.key_events?.filter(e => e.type === 'Goal') || [],
+                        cards: event.key_events?.filter(e => e.type === 'Yellow Card' || e.type === 'Red Card') || []
                     };
                 } catch (error) {
                     console.error('Error mapping event:', error, event);
@@ -119,8 +112,8 @@ export class FootballEventsHandler {
             })
             .filter(event => event !== null) // Remove any failed mappings
             .sort((a, b) => {
-                // First sort by date
-                const dateComparison = new Date(a.date) - new Date(b.date);
+                // First sort by date (newest first)
+                const dateComparison = new Date(b.date) - new Date(a.date);
                 if (dateComparison !== 0) return dateComparison;
                 
                 // Then sort by league priority
@@ -189,12 +182,12 @@ export class FootballEventsHandler {
         return sortedDates.map(date => {
             const eventsHtml = eventsByDate[date].map(event => {
                 const defaultAvatar = window.default_avatar_url || '/static/img/default-avatar.png';
-                const home_logo = event.home_team?.logo || defaultAvatar;
-                const away_logo = event.away_team?.logo || defaultAvatar;
-                const home_team = event.home_team || { name: 'Unknown Team' };
-                const away_team = event.away_team || { name: 'Unknown Team' };
+                const home_logo = event.homeTeam?.logo || defaultAvatar;
+                const away_logo = event.awayTeam?.logo || defaultAvatar;
+                const home_team = event.homeTeam || { name: 'Unknown Team' };
+                const away_team = event.awayTeam || { name: 'Unknown Team' };
                 const eventClass = this.getEventClass(event);
-                const scoreDisplay = event.state === 'pre' ? 'vs' : `${event.home_score} - ${event.away_score}`;
+                const scoreDisplay = event.state === 'pre' ? 'vs' : `${event.homeTeam.score || '0'} - ${event.awayTeam.score || '0'}`;
 
                 // Process key events
                 const goals = event.key_events?.filter(e => e.is_goal) || [];
@@ -254,29 +247,29 @@ export class FootballEventsHandler {
                         <div class="card-details" style="display: none;">
                             <div class="match-stats">
                                 <div class="stats-row">
-                                    <div class="stat-value">${event.home_team_stats?.possession || 'N/A'}</div>
+                                    <div class="stat-value">${event.homeTeam.stats?.possession || 'N/A'}</div>
                                     <div class="stat-label">Possession</div>
-                                    <div class="stat-value">${event.away_team_stats?.possession || 'N/A'}</div>
+                                    <div class="stat-value">${event.awayTeam.stats?.possession || 'N/A'}</div>
                                 </div>
                                 <div class="stats-row">
-                                    <div class="stat-value">${event.home_team_stats?.shots || 'N/A'}</div>
+                                    <div class="stat-value">${event.homeTeam.stats?.shots || 'N/A'}</div>
                                     <div class="stat-label">Shots</div>
-                                    <div class="stat-value">${event.away_team_stats?.shots || 'N/A'}</div>
+                                    <div class="stat-value">${event.awayTeam.stats?.shots || 'N/A'}</div>
                                 </div>
                                 <div class="stats-row">
-                                    <div class="stat-value">${event.home_team_stats?.shots_on_target || 'N/A'}</div>
+                                    <div class="stat-value">${event.homeTeam.stats?.shots_on_target || 'N/A'}</div>
                                     <div class="stat-label">Shots on Target</div>
-                                    <div class="stat-value">${event.away_team_stats?.shots_on_target || 'N/A'}</div>
+                                    <div class="stat-value">${event.awayTeam.stats?.shots_on_target || 'N/A'}</div>
                                 </div>
                                 <div class="stats-row">
-                                    <div class="stat-value">${event.home_team_stats?.corners || 'N/A'}</div>
+                                    <div class="stat-value">${event.homeTeam.stats?.corners || 'N/A'}</div>
                                     <div class="stat-label">Corners</div>
-                                    <div class="stat-value">${event.away_team_stats?.corners || 'N/A'}</div>
+                                    <div class="stat-value">${event.awayTeam.stats?.corners || 'N/A'}</div>
                                 </div>
                                 <div class="stats-row">
-                                    <div class="stat-value">${event.home_team_stats?.fouls || 'N/A'}</div>
+                                    <div class="stat-value">${event.homeTeam.stats?.fouls || 'N/A'}</div>
                                     <div class="stat-label">Fouls</div>
-                                    <div class="stat-value">${event.away_team_stats?.fouls || 'N/A'}</div>
+                                    <div class="stat-value">${event.awayTeam.stats?.fouls || 'N/A'}</div>
                                 </div>
                             </div>
                             <div class="key-events">
@@ -331,12 +324,12 @@ export class FootballEventsHandler {
 
     formatMatchDetails(event) {
         const defaultAvatar = window.default_avatar_url || '/static/img/default-avatar.png';
-        const home_logo = event.home_team?.logo || defaultAvatar;
-        const away_logo = event.away_team?.logo || defaultAvatar;
-        const home_team = event.home_team || { name: 'Unknown Team' };
-        const away_team = event.away_team || { name: 'Unknown Team' };
+        const home_logo = event.homeTeam?.logo || defaultAvatar;
+        const away_logo = event.awayTeam?.logo || defaultAvatar;
+        const home_team = event.homeTeam || { name: 'Unknown Team' };
+        const away_team = event.awayTeam || { name: 'Unknown Team' };
         const eventClass = this.getEventClass(event);
-        const scoreDisplay = event.state === 'pre' ? 'vs' : `${event.home_score} - ${event.away_score}`;
+        const scoreDisplay = event.state === 'pre' ? 'vs' : `${event.homeTeam.score || '0'} - ${event.awayTeam.score || '0'}`;
 
         return `
             <div class="match-info">
@@ -429,9 +422,9 @@ export function formatFootballTable(events) {
       const venue = event.venue || "Location TBD"; // venue is a string
       const eventId = event.id || `${league}-${index}`;
       const timeOrScore = event.state === "in" && event.scores ?
-        `<span class="live-score">${event.scores.homeScore} vs ${event.scores.awayScore}</span>` :
+        `<span class="live-score">${event.homeTeam.score || '0'} - ${event.awayTeam.score || '0'}</span>` :
         event.state === "post" ?
-        `<span class="final-score">${event.homeTeam.score} vs ${event.awayTeam.score}</span>` :
+        `<span class="final-score">${event.homeTeam.score || '0'} - ${event.awayTeam.score || '0'}</span>` :
         `${event.displayDate} ${event.time}`;
 
       const oddsContent = event.odds ? `

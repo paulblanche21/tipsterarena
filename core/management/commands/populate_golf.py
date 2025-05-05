@@ -26,13 +26,23 @@ class Command(BaseCommand):
 
         self.stdout.write('Starting golf data population...')
         
+        # Calculate date range for events
+        today = timezone.now().date()
+        start_date = today - timezone.timedelta(days=7)  # Get events from 7 days ago
+        end_date = today + timezone.timedelta(days=30)   # Get events up to 30 days in future
+        date_range = f"{start_date.strftime('%Y%m%d')}-{end_date.strftime('%Y%m%d')}"
+        
         for tour_config in GOLF_TOURS:
             try:
                 # Fetch events for this tour
                 url = f"https://site.api.espn.com/apis/site/v2/sports/golf/{tour_config['tour_id']}/scoreboard"
-                self.stdout.write(f"Fetching events for {tour_config['name']}...")
+                params = {
+                    'dates': date_range,
+                    'limit': 100  # Request more events
+                }
+                self.stdout.write(f"Fetching events for {tour_config['name']} from {start_date} to {end_date}...")
                 
-                response = requests.get(url)
+                response = requests.get(url, params=params)
                 response.raise_for_status()  # Raise exception for bad status codes
                 data = response.json()
 
@@ -52,6 +62,7 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.WARNING(f"No events found for {tour_config['name']}"))
                     continue
 
+                self.stdout.write(f"Found {len(events)} events for {tour_config['name']}")
                 for event in events:
                     try:
                         self.process_event(event, tour)
@@ -76,22 +87,13 @@ class Command(BaseCommand):
         event_id = event_data.get('id')
         name = event_data.get('name', '')
         
-        # Fetch detailed competition data with leaderboard
-        url = f"https://site.api.espn.com/apis/site/v2/sports/golf/{golf_tour.name.split()[0].lower()}/leaderboard/{event_id}"
-        self.stdout.write(f"Fetching detailed data from: {url}")
-        response = requests.get(url)
-        if response.status_code == 200:
-            detailed_data = response.json()
-            competition_data = detailed_data.get('events', [{}])[0]
-            self.stdout.write(f"Got detailed data for event {name}")
-        else:
-            self.stdout.write(self.style.WARNING(f"Failed to fetch detailed data for event {name}"))
-            competition_data = event_data
-
-        # Handle different date formats from ESPN API
-        start_date_str = competition_data.get('startDate')
+        # Get competition data directly from the event data
+        competition_data = event_data
+        
+        # Get start date
+        start_date_str = competition_data.get('date') or competition_data.get('startDate')
         if not start_date_str:
-            logger.warning(f"No startDate found for event {name}, using current time")
+            logger.warning(f"No date found for event {name}, using current time")
             start_date = timezone.now()
         else:
             try:
@@ -101,21 +103,38 @@ class Command(BaseCommand):
                 try:
                     # Try parsing with Z format (e.g., 2024-04-28T14:00:00Z)
                     start_date = datetime.strptime(start_date_str, '%Y-%m-%dT%H:%M:%SZ')
+                    start_date = pytz.UTC.localize(start_date)
                 except ValueError:
                     try:
                         # Try parsing without seconds (e.g., 2024-04-28T14:00)
                         start_date = datetime.strptime(start_date_str, '%Y-%m-%dT%H:%M')
+                        start_date = pytz.UTC.localize(start_date)
                     except ValueError:
                         try:
                             # Try parsing date only (e.g., 2024-04-28)
                             start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+                            # Set time to noon UTC for date-only events
+                            start_date = start_date.replace(hour=12, minute=0)
+                            start_date = pytz.UTC.localize(start_date)
                         except ValueError:
                             logger.error(f"Could not parse date {start_date_str} for event {name}, using current time")
                             start_date = timezone.now()
 
-        # Ensure datetime is timezone-aware
-        if start_date.tzinfo is None:
-            start_date = pytz.UTC.localize(start_date)
+        # Get status information
+        status = competition_data.get('status', {}).get('type', {})
+        state = status.get('state', '').lower()
+        
+        # Determine state based on date and status
+        now = timezone.now()
+        if state == 'pre' and start_date < now:
+            state = 'post'  # Event is in the past
+        elif state == 'post' and start_date > now:
+            state = 'pre'  # Event is in the future
+        elif not state:
+            if start_date > now:
+                state = 'pre'
+            else:
+                state = 'post'
 
         # Get course information
         course_data = competition_data.get('course') or {}
@@ -134,11 +153,6 @@ class Command(BaseCommand):
         city = venue_data.get('address', {}).get('city', 'Unknown')
         state_location = venue_data.get('address', {}).get('state', 'Unknown')
 
-        # Get status information
-        status = competition_data.get('status', {}).get('type', {})
-        completed = status.get('completed', False)
-        state = self.get_event_state(competition_data)
-
         # Create or update event
         event, created = GolfEvent.objects.update_or_create(
             event_id=event_id,
@@ -147,7 +161,7 @@ class Command(BaseCommand):
                 'short_name': competition_data.get('shortName', name),
                 'date': start_date,
                 'state': state,
-                'completed': completed,
+                'completed': status.get('completed', False),
                 'venue': venue_name,
                 'city': city,
                 'state_location': state_location,
@@ -163,11 +177,11 @@ class Command(BaseCommand):
             }
         )
 
-        # Process leaderboard
-        if 'competitions' in competition_data and len(competition_data['competitions']) > 0:
-            self.process_leaderboard(event, competition_data['competitions'][0])
+        # Process competitors
+        if 'competitors' in competition_data:
+            self.process_leaderboard(event, competition_data)
         else:
-            self.stdout.write(self.style.WARNING(f"No competition data found for event {name}"))
+            self.stdout.write(self.style.WARNING(f"No competitors found for event {name}"))
 
     def process_leaderboard(self, event, competition_data):
         try:
@@ -186,60 +200,25 @@ class Command(BaseCommand):
                     if not athlete:
                         continue
 
-                    # Get or create player with unique player_id
-                    player_id = athlete.get('id')
-                    if not player_id:
-                        self.stdout.write(self.style.WARNING(f"No player ID found for athlete in event {event.name}"))
-                        continue
-
+                    # Get or create player
                     player, _ = GolfPlayer.objects.get_or_create(
-                        player_id=player_id,
+                        player_id=athlete.get('id', f"temp_{athlete.get('displayName', 'unknown')}"),
                         defaults={
                             'name': athlete.get('displayName', ''),
                             'country': athlete.get('flag', {}).get('alt', ''),
-                            'world_ranking': None  # ESPN API no longer provides ranking directly
+                            'world_ranking': None
                         }
                     )
-
-                    # Get rounds data from linescores
-                    rounds = []
-                    strokes = 0
-                    linescores = competitor.get('linescores', [])
-                    
-                    for linescore in linescores:
-                        score = linescore.get('value')
-                        if score is not None:
-                            rounds.append(int(score))
-                            strokes += int(score)
-
-                    # Fill remaining rounds with None
-                    while len(rounds) < 4:
-                        rounds.append(None)
-
-                    # Get status
-                    status = 'active'  # Default status
-                    if competitor.get('status', {}).get('type', {}).get('name', '').lower() in ['cut', 'withdrawn', 'disqualified']:
-                        status = 'inactive'
-
-                    # Get score
-                    score = competitor.get('score', 'E')
-                    if score == 'E':
-                        score = '0'
-                    elif not score:
-                        score = 'N/A'
-
-                    # Get position
-                    position = competitor.get('order', 0)  # Use 'order' field for position
 
                     # Create leaderboard entry
                     LeaderboardEntry.objects.create(
                         event=event,
                         player=player,
-                        position=str(position),
-                        score=str(score),
-                        status=status,
-                        rounds=rounds,
-                        strokes=strokes if strokes > 0 else 'N/A'
+                        position=competitor.get('position', {}).get('displayValue', 'N/A'),
+                        score=competitor.get('score', 'N/A'),
+                        rounds=competitor.get('linescores', []),
+                        strokes=competitor.get('strokes', 'N/A'),
+                        status=competitor.get('status', {}).get('type', {}).get('name', 'active')
                     )
 
                 except Exception as e:
@@ -248,13 +227,15 @@ class Command(BaseCommand):
 
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"Error processing leaderboard for event {event.name}: {str(e)}"))
-            logger.exception("Error processing leaderboard")
 
     def get_event_state(self, event_data):
+        """Determine the event state from the data."""
         status = event_data.get('status', {}).get('type', {})
-        if status.get('completed', False):
-            return 'post'
-        elif status.get('state', '') == 'in':
+        state = status.get('state', '').lower()
+        
+        if state in ['pre', 'post']:
+            return state
+        elif state in ['in']:
             return 'in'
         else:
-            return 'pre' 
+            return 'pre'  # Default to pre if unknown 

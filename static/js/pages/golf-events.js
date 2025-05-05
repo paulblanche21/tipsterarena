@@ -17,18 +17,25 @@ export async function fetchEvents(state = 'pre', tourId = null) {
             url.searchParams.append('tour_id', tourId);
         }
 
+        console.log(`Fetching from URL: ${url.toString()}`);
         const response = await fetch(url);
+        
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorData = await response.json().catch(() => ({}));
+            console.error('API Error:', errorData);
+            throw new Error(`HTTP error: ${response.status} - ${errorData.error || response.statusText}`);
         }
+        
         const data = await response.json();
         console.log('Raw API response:', data);
 
         // Handle paginated response
         if (data && typeof data === 'object') {
             if (Array.isArray(data)) {
+                console.log(`Received ${data.length} events`);
                 return data;  // Direct array response
             } else if (data.results && Array.isArray(data.results)) {
+                console.log(`Received ${data.results.length} events (paginated)`);
                 return data.results;  // Paginated response
             } else {
                 console.warn('Unexpected API response format:', data);
@@ -69,6 +76,27 @@ export async function fetchLeaderboard(eventId, sport, apiLeague) {
     }
 }
 
+export function setupExpandableCards() {
+    console.log('Setting up golf expandable cards');
+    const cards = document.querySelectorAll('.golf-card.expandable-card');
+    console.log(`Found ${cards.length} golf expandable cards`);
+
+    cards.forEach(card => {
+        const header = card.querySelector('.card-header');
+        const content = card.querySelector('.card-content');
+        
+        if (header && content) {
+            header.style.cursor = 'pointer';
+            header.addEventListener('click', () => {
+                console.log('Golf card header clicked');
+                const isExpanded = content.style.display === 'block';
+                content.style.display = isExpanded ? 'none' : 'block';
+                card.classList.toggle('expanded', !isExpanded);
+            });
+        }
+    });
+}
+
 export async function formatEventList(events, sportKey, category, isCentralFeed = false) {
     if (!events?.length) {
         console.log(`No ${category} ${sportKey} events to format`);
@@ -76,7 +104,7 @@ export async function formatEventList(events, sportKey, category, isCentralFeed 
     }
     console.log(`Events to render for ${category} (length: ${events.length}):`, events);
     const eventItems = await Promise.all(events.map(async event => {
-        console.log(`Formatting event: ${event.name}, ID: ${event.event_id}, League: ${event.tour.name}`);
+        console.log(`Formatting event: ${event.name || 'Unnamed Event'}, ID: ${event.event_id || event.id}, Tour:`, event.tour);
         const venue = event.venue || 'Venue TBA';
         let contentHtml = '';
         
@@ -102,7 +130,7 @@ export async function formatEventList(events, sportKey, category, isCentralFeed 
                 <div class="leaderboard-content">
                     <div class="tournament-info">
                         <p><strong>Tournament:</strong> ${event.name || 'Tournament Name TBA'}</p>
-                        <p><strong>Round:</strong> ${event.current_round}/${event.total_rounds}</p>
+                        <p><strong>Round:</strong> ${event.current_round || 0}/${event.total_rounds || 4}</p>
                         ${event.weather_condition ? `
                             <p><strong>Weather:</strong> ${event.weather_condition}, ${event.weather_temperature}</p>
                         ` : ''}
@@ -125,7 +153,7 @@ export async function formatEventList(events, sportKey, category, isCentralFeed 
                             </div>
                         </div>
                         <div class="leaderboard-wrapper">
-                            <table class="leaderboard-table" data-event-id="${event.event_id}" data-api-league="${event.tour?.tour_id || 'pga'}">
+                            <table class="leaderboard-table" data-event-id="${event.id || event.event_id}" data-api-league="${event.tour?.tour_id || 'pga'}">
                                 <thead>
                                     <tr>
                                         <th data-sort="position">Pos</th>
@@ -142,25 +170,25 @@ export async function formatEventList(events, sportKey, category, isCentralFeed 
                                 <tbody>
                                     ${leaderboard.slice(0, 10).map(player => `
                                         <tr class="${player.status === 'active' ? 'player-active' : 'player-inactive'}" 
-                                            data-player="${player.player.name.toLowerCase()}"
-                                            data-position="${player.position}"
-                                            data-score="${player.score}"
-                                            data-total="${player.strokes}"
-                                            data-rank="${player.player.world_ranking}">
-                                            <td>${player.position}</td>
-                                            <td>${player.player.name}</td>
-                                            <td>${player.score}</td>
-                                            <td>${player.rounds[0] || "N/A"}</td>
-                                            <td>${player.rounds[1] || "N/A"}</td>
-                                            <td>${player.rounds[2] || "N/A"}</td>
-                                            <td>${player.rounds[3] || "N/A"}</td>
-                                            <td>${player.strokes}</td>
-                                            <td>${player.player.world_ranking}</td>
+                                            data-player="${(player.player?.name || 'Unknown').toLowerCase()}"
+                                            data-position="${player.position || ''}"
+                                            data-score="${player.score || ''}"
+                                            data-total="${player.strokes || ''}"
+                                            data-rank="${player.player?.world_ranking || ''}">
+                                            <td>${player.position || ''}</td>
+                                            <td>${player.player?.name || 'Unknown'}</td>
+                                            <td>${player.score || ''}</td>
+                                            <td>${player.rounds?.[0] || "N/A"}</td>
+                                            <td>${player.rounds?.[1] || "N/A"}</td>
+                                            <td>${player.rounds?.[2] || "N/A"}</td>
+                                            <td>${player.rounds?.[3] || "N/A"}</td>
+                                            <td>${player.strokes || ''}</td>
+                                            <td>${player.player?.world_ranking || ''}</td>
                                         </tr>
                                     `).join("")}
                                 </tbody>
                             </table>
-                            <button class="view-full-leaderboard" data-event-id="${event.event_id}" data-api-league="${event.tour?.tour_id || 'pga'}">View Full Leaderboard</button>
+                            <button class="view-full-leaderboard" data-event-id="${event.id || event.event_id}" data-api-league="${event.tour?.tour_id || 'pga'}">View Full Leaderboard</button>
                         </div>
                         ${category === 'inplay' ? '<p class="leaderboard-status">Updating...</p>' : ''}
                     ` : `
@@ -314,6 +342,7 @@ export class GolfEventsHandler {
     constructor() {
         this.setupLeaderboardUpdates = setupLeaderboardUpdates;
         this.setupLeaderboardControls = setupLeaderboardControls;
+        this.setupExpandableCards = setupExpandableCards;
         this.config = {
             leagues: [
                 { id: 'pga', name: 'PGA Tour', icon: '🏌️‍♂️' },
@@ -337,7 +366,10 @@ export class GolfEventsHandler {
     }
 
     async formatEvents(events, category, isCentralFeed = false) {
-        return formatEventList(events, 'golf', category, isCentralFeed);
+        const html = await formatEventList(events, 'golf', category, isCentralFeed);
+        // Initialize expandable cards after formatting
+        setTimeout(() => this.setupExpandableCards(), 0);
+        return html;
     }
 
     filterEvents(events, category) {
