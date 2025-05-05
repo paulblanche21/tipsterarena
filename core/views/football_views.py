@@ -30,7 +30,7 @@ class FootballEventsList(APIView):
             
             # Base queryset for filtering
             queryset = FootballEvent.objects.all().select_related(
-                'league', 'home_team', 'away_team'
+                'league', 'home_team', 'away_team', 'home_team_stats', 'away_team_stats'
             ).prefetch_related(
                 'key_events', 'detailed_stats'
             )
@@ -55,6 +55,10 @@ class FootballEventsList(APIView):
 
             # Serialize data
             serializer = FootballEventSerializer(queryset, many=True)
+            
+            # Log the response for debugging
+            logger.info(f"Returning {len(serializer.data)} events for category: {category}")
+            
             return Response(serializer.data)
 
         except Exception as e:
@@ -80,13 +84,9 @@ class FootballEventDetail(APIView):
             # Get the event with related data
             event = get_object_or_404(
                 FootballEvent.objects.select_related(
-                    'league', 'home_team', 'away_team', 'venue'
+                    'league', 'home_team', 'away_team', 'home_team_stats', 'away_team_stats'
                 ).prefetch_related(
-                    'lineups',
-                    'lineups__player',
-                    'lineups__team',
-                    'stats',
-                    'stats__team'
+                    'key_events', 'detailed_stats'
                 ),
                 id=event_id
             )

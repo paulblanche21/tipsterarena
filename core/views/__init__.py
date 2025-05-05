@@ -106,7 +106,6 @@ from .football_views import (
 
 from .golf_views import (
     GolfEventsList, GolfEventDetail,
-    golf_player_stats, golf_tournament_history,
     FetchGolfEventsView
 )
 

@@ -287,18 +287,18 @@ class FootballTeam(models.Model):
 
 # Model for team statistics in a match
 class TeamStats(models.Model):
-    possession = models.CharField(max_length=10, default="N/A")  # Possession percentage
-    shots = models.CharField(max_length=10, default="N/A")  # Total shots
-    shots_on_target = models.CharField(max_length=10, default="N/A")  # Shots on target
-    corners = models.CharField(max_length=10, default="N/A")  # Corners won
-    fouls = models.CharField(max_length=10, default="N/A")  # Fouls committed
+    possession = models.CharField(max_length=10, default='N/A')
+    shots = models.CharField(max_length=10, default='N/A')
+    shots_on_target = models.CharField(max_length=10, default='N/A')
+    corners = models.CharField(max_length=10, default='N/A')
+    fouls = models.CharField(max_length=10, default='N/A')
 
     def __str__(self):
         return f"Stats: {self.possession}% possession, {self.shots} shots"
 
 # Model for a football event (match)
 class FootballEvent(models.Model):
-    event_id = models.CharField(max_length=50, unique=True)  # ESPN event ID
+    event_id = models.CharField(max_length=100, unique=True)
     name = models.CharField(max_length=200)  # Match name, e.g., "Man United vs Arsenal"
     date = models.DateTimeField()  # Match date and time
     state = models.CharField(
@@ -313,14 +313,14 @@ class FootballEvent(models.Model):
     )  # Match status
     status_description = models.CharField(max_length=100, default="Unknown")  # e.g., "Scheduled", "In Progress"
     status_detail = models.CharField(max_length=100, default="N/A")  # e.g., "Half Time", "Final"
-    league = models.ForeignKey(FootballLeague, on_delete=models.CASCADE, related_name='events')
+    league = models.ForeignKey(FootballLeague, on_delete=models.CASCADE, related_name='events', null=True)
     venue = models.CharField(max_length=200, default="Location TBD")  # Venue name
-    home_team = models.ForeignKey(FootballTeam, on_delete=models.CASCADE, related_name='home_events')
-    away_team = models.ForeignKey(FootballTeam, on_delete=models.CASCADE, related_name='away_events')
-    home_score = models.CharField(max_length=10, default="0")  # Home team score
-    away_score = models.CharField(max_length=10, default="0")  # Away team score
-    home_stats = models.ForeignKey(TeamStats, on_delete=models.CASCADE, related_name='home_stats', null=True)
-    away_stats = models.ForeignKey(TeamStats, on_delete=models.CASCADE, related_name='away_stats', null=True)
+    home_team = models.ForeignKey(FootballTeam, on_delete=models.CASCADE, related_name='home_events', null=True)
+    away_team = models.ForeignKey(FootballTeam, on_delete=models.CASCADE, related_name='away_events', null=True)
+    home_score = models.IntegerField(default=0)
+    away_score = models.IntegerField(default=0)
+    home_team_stats = models.OneToOneField(TeamStats, on_delete=models.SET_NULL, null=True, related_name='home_team_event')
+    away_team_stats = models.OneToOneField(TeamStats, on_delete=models.SET_NULL, null=True, related_name='away_team_event')
     clock = models.CharField(max_length=10, blank=True, null=True)  # Match clock, e.g., "45:00"
     period = models.PositiveIntegerField(default=0)  # Match period, e.g., 1 for first half
     broadcast = models.CharField(max_length=100, default="N/A")  # Broadcast info
@@ -415,8 +415,8 @@ class GolfEvent(models.Model):
     venue = models.CharField(max_length=200, default="Location TBD")  # Venue name
     city = models.CharField(max_length=100, default="Unknown")  # City
     state_location = models.CharField(max_length=100, default="Unknown")  # State or region
-    tour = models.ForeignKey(GolfTour, on_delete=models.CASCADE, related_name='events')  # Associated tour
-    course = models.ForeignKey(GolfCourse, on_delete=models.CASCADE, related_name='events')  # Associated course
+    tour = models.ForeignKey(GolfTour, on_delete=models.CASCADE, related_name='events', null=True)  # Associated tour
+    course = models.ForeignKey(GolfCourse, on_delete=models.CASCADE, related_name='events', null=True)  # Associated course
     purse = models.CharField(max_length=20, default="N/A")  # Prize purse
     broadcast = models.CharField(max_length=100, default="N/A")  # Broadcast info
     current_round = models.PositiveIntegerField(default=1)  # Current round

@@ -218,42 +218,60 @@ export function setupExpandableCards() {
     console.log('Setting up expandable cards');
     const cards = document.querySelectorAll('.expandable-card');
     console.log(`Found ${cards.length} expandable cards`);
-    cards.forEach((card, index) => {
+
+    // First remove any existing click handlers from all cards
+    cards.forEach(card => {
         const header = card.querySelector('.card-header');
-        const details = card.querySelector('.match-details, .card-content');
-        if (!header || !details) return;
-
-        if (header._toggleHandler) {
-            header.removeEventListener('click', header._toggleHandler, true);
+        if (header) {
+            const clone = header.cloneNode(true);
+            header.parentNode.replaceChild(clone, header);
         }
-
-        const handler = (e) => {
-            e.stopPropagation();
-            const isVisible = details.style.display === 'block';
-            details.style.display = isVisible ? 'none' : 'block';
-            card.classList.toggle('expanded', !isVisible);
-            console.log(`Toggled card ${index}, visible: ${!isVisible}`);
-        };
-
-        header.addEventListener('click', handler, { capture: true });
-        header._toggleHandler = handler;
     });
 
-    if (!document._cardCloseListener) {
-        const closeHandler = (e) => {
-            if (!e.target.closest('.expandable-card')) {
-                document.querySelectorAll('.match-details, .card-content').forEach(details => {
-                    details.style.display = 'none';
-                });
-                document.querySelectorAll('.expandable-card').forEach(card => {
-                    card.classList.remove('expanded');
-                });
-                console.log('Closed all expandable cards');
+    // Then add new click handlers
+    cards.forEach(card => {
+        const header = card.querySelector('.card-header');
+        if (header) {
+            header.addEventListener('click', handleCardClick);
+        }
+    });
+}
+
+function handleCardClick(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const header = e.currentTarget;
+    const card = header.closest('.expandable-card');
+    
+    if (!card) return;
+    
+    const details = card.querySelector('.card-details');
+    if (!details) return;
+    
+    // First collapse all other cards
+    document.querySelectorAll('.expandable-card').forEach(otherCard => {
+        if (otherCard !== card && otherCard.classList.contains('expanded')) {
+            const otherDetails = otherCard.querySelector('.card-details');
+            if (otherDetails) {
+                otherDetails.style.display = 'none';
+                otherCard.classList.remove('expanded');
             }
-        };
-        document.addEventListener('click', closeHandler, { capture: true });
-        document._cardCloseListener = closeHandler;
-    }
+        }
+    });
+    
+    // Then toggle the clicked card with a small delay to ensure smooth transition
+    setTimeout(() => {
+        const isExpanded = card.classList.contains('expanded');
+        if (isExpanded) {
+            details.style.display = 'none';
+            card.classList.remove('expanded');
+        } else {
+            details.style.display = 'block';
+            card.classList.add('expanded');
+        }
+        console.log(`Toggled card ${card.dataset.eventId}, expanded: ${!isExpanded}`);
+    }, 50);
 }
 
 // Initializes button-based event navigation

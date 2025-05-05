@@ -112,36 +112,28 @@ export function setupSearch() {
   });
 
   document.addEventListener('click', (e) => {
-    const eventCard = e.target.closest('.event-card, .tennis-card, .golf-card, .horse-racing-card');
-    const tipAction = e.target.closest('.tip-action');
-    const categoryButton = e.target.closest('.event-btn'); // New check for category buttons
-    
-    console.log('Click event target:', e.target);
-    console.log('Closest card:', eventCard ? eventCard.className : 'None');
-    console.log('Closest tip action:', tipAction ? tipAction.className : 'None');
-    console.log('Closest category button:', categoryButton ? categoryButton.className : 'None');
-    
-    if (!searchBar.contains(e.target) && !searchResults.contains(e.target) && !eventCard && !tipAction && !categoryButton) {
-      console.log('Click outside search bar, results, cards, tip actions, and category buttons, hiding results');
-      searchResults.style.display = 'none';
-    } else {
-      console.log('Click inside search bar, results, card, tip action, or category button, keeping results visible');
-    }
-  });
-
-  document.addEventListener('click', (e) => {
+    const searchBar = document.querySelector('.search-bar');
+    const searchResults = document.querySelector('.search-results');
     const card = e.target.closest('.event-card, .tennis-card, .golf-card, .horse-racing-card');
-    if (card) {
-      console.log('Expandable card clicked:', card.className);
-      const isExpanded = card.classList.contains('expanded');
-      if (isExpanded) {
-        card.classList.remove('expanded');
-        console.log('Card collapsed');
-      } else {
-        card.classList.add('expanded');
-        console.log('Card expanded');
-      }
-      e.stopPropagation();
+    const tipAction = e.target.closest('.tip-action');
+    const categoryButton = e.target.closest('.event-btn');
+
+    console.log('Click event target:', e.target);
+    console.log('Closest card:', card);
+    console.log('Closest tip action:', tipAction);
+    console.log('Closest category button:', categoryButton);
+
+    if (searchBar.contains(e.target) || 
+        (searchResults && searchResults.contains(e.target)) || 
+        card || 
+        tipAction || 
+        categoryButton) {
+        console.log('Click inside search bar, results, card, tip action, or category button, keeping results visible');
+        return;
+    }
+
+    if (searchResults) {
+        searchResults.style.display = 'none';
     }
   });
 

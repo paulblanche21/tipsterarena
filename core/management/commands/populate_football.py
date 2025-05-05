@@ -1,10 +1,11 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from core.models import FootballLeague, FootballTeam, FootballEvent, TeamStats
+from core.models import FootballLeague, FootballTeam, FootballEvent, TeamStats, KeyEvent
 import requests
 import logging
 from datetime import datetime, timedelta
 import pytz
+
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +20,68 @@ class Command(BaseCommand):
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Error populating football data: {str(e)}'))
             raise
+
+    def fetch_match_stats(self, event_id, league_id):
+        """Fetch detailed match statistics from ESPN API."""
+        try:
+            url = f"https://site.api.espn.com/apis/site/v2/sports/soccer/{league_id}/summary"
+            params = {'event': event_id}
+            
+            response = requests.get(url, params=params)
+            if not response.ok:
+                logger.error(f"Failed to fetch stats for event {event_id}: {response.status_code}")
+                return None, None
+
+            data = response.json()
+            boxscore = data.get('boxscore', {})
+            teams = boxscore.get('teams', [])
+            
+            if len(teams) != 2:
+                logger.warning(f"Invalid number of teams in boxscore for event {event_id}")
+                return None, None
+
+            home_stats = {}
+            away_stats = {}
+
+            # Map of ESPN API stat names to our model field names
+            stat_mapping = {
+                'possessionPct': 'possession',
+                'totalShots': 'shots',
+                'shotsOnTarget': 'shots_on_target',
+                'wonCorners': 'corners',
+                'foulsCommitted': 'fouls'
+            }
+
+            for team in teams:
+                stats = team.get('statistics', [])
+                team_stats = {
+                    'possession': 'N/A',
+                    'shots': 'N/A',
+                    'shots_on_target': 'N/A',
+                    'corners': 'N/A',
+                    'fouls': 'N/A'
+                }
+                
+                # Process each stat using the mapping
+                for stat in stats:
+                    name = stat.get('name', '')
+                    value = stat.get('displayValue', 'N/A')
+                    
+                    # Map the ESPN stat name to our field name
+                    if name in stat_mapping:
+                        team_stats[stat_mapping[name]] = value
+
+                if team.get('homeAway') == 'home':
+                    home_stats = team_stats
+                else:
+                    away_stats = team_stats
+
+            logger.info(f"Fetched stats for event {event_id}: Home - {home_stats}, Away - {away_stats}")
+            return home_stats, away_stats
+
+        except Exception as e:
+            logger.error(f"Error fetching match stats for event {event_id}: {str(e)}")
+            return None, None
 
     def fetch_and_store_football_events(self):
         # Define leagues to fetch
@@ -96,23 +159,6 @@ class Command(BaseCommand):
                             }
                         )
 
-                        # Create team stats
-                        home_stats = TeamStats.objects.create(
-                            possession='N/A',
-                            shots='N/A',
-                            shots_on_target='N/A',
-                            corners='N/A',
-                            fouls='N/A'
-                        )
-
-                        away_stats = TeamStats.objects.create(
-                            possession='N/A',
-                            shots='N/A',
-                            shots_on_target='N/A',
-                            corners='N/A',
-                            fouls='N/A'
-                        )
-
                         # Parse event status
                         status = event.get('competitions', [{}])[0].get('status', {}).get('type', {})
                         state = status.get('state', 'unknown').lower()
@@ -134,7 +180,7 @@ class Command(BaseCommand):
                         event_date = pytz.utc.localize(event_date)
 
                         # Create or update event
-                        FootballEvent.objects.update_or_create(
+                        event_obj, created = FootballEvent.objects.update_or_create(
                             event_id=event['id'],
                             defaults={
                                 'name': event.get('name', f"{home_team.name} vs {away_team.name}"),
@@ -148,13 +194,41 @@ class Command(BaseCommand):
                                 'away_team': away_team,
                                 'home_score': home_team_data.get('score', '0'),
                                 'away_score': away_team_data.get('score', '0'),
-                                'home_stats': home_stats,
-                                'away_stats': away_stats,
                                 'clock': competition.get('status', {}).get('displayClock', None),
                                 'period': competition.get('status', {}).get('period', 0),
                                 'broadcast': broadcast
                             }
                         )
+
+                        # Process key events (goals, cards, etc.)
+                        if competition.get('boxscore', {}).get('events'):
+                            for event_data in competition['boxscore']['events']:
+                                if event_data.get('type', {}).get('name') == 'Goal':
+                                    # Create key event for goal
+                                    KeyEvent.objects.create(
+                                        event=event_obj,
+                                        type='Goal',
+                                        time=event_data.get('clock', {}).get('displayValue', 'N/A'),
+                                        team=event_data.get('team', {}).get('name', 'Unknown'),
+                                        player=event_data.get('athlete', {}).get('displayName', 'Unknown'),
+                                        assist=event_data.get('assist', {}).get('displayName', 'Unassisted'),
+                                        is_goal=True
+                                    )
+                                elif event_data.get('type', {}).get('name') in ['Yellow Card', 'Red Card']:
+                                    # Create key event for cards
+                                    KeyEvent.objects.create(
+                                        event=event_obj,
+                                        type=event_data.get('type', {}).get('name'),
+                                        time=event_data.get('clock', {}).get('displayValue', 'N/A'),
+                                        team=event_data.get('team', {}).get('name', 'Unknown'),
+                                        player=event_data.get('athlete', {}).get('displayName', 'Unknown'),
+                                        is_yellow_card=event_data.get('type', {}).get('name') == 'Yellow Card',
+                                        is_red_card=event_data.get('type', {}).get('name') == 'Red Card'
+                                    )
+
+                        # Process match statistics
+                        if state in ['in', 'post']:
+                            self.process_events([event], league_info['name'], league_info['league_id'])
 
                     except Exception as e:
                         logger.error(f"Error processing event {event.get('id')}: {str(e)}")
@@ -162,4 +236,54 @@ class Command(BaseCommand):
 
             except Exception as e:
                 logger.error(f"Error processing league {league_info['name']}: {str(e)}")
+                continue
+
+    def process_events(self, events, league_name, league_id):
+        """Process football events and store them in the database."""
+        logger.info(f"Found {len(events)} events for {league_name}")
+        
+        for event in events:
+            try:
+                event_id = event.get('id')
+                if not event_id:
+                    continue
+
+                # Fetch match stats using the league ID
+                if event.get('state', '').lower() in ['in', 'post']:
+                    home_match_stats, away_match_stats = self.fetch_match_stats(event_id, league_id)
+                    if home_match_stats and away_match_stats:
+                        try:
+                            # Create team stats objects
+                            home_stats = TeamStats.objects.create(
+                                possession=home_match_stats.get('possession', 'N/A'),
+                                shots=home_match_stats.get('shots', 'N/A'),
+                                shots_on_target=home_match_stats.get('shots_on_target', 'N/A'),
+                                corners=home_match_stats.get('corners', 'N/A'),
+                                fouls=home_match_stats.get('fouls', 'N/A')
+                            )
+                            away_stats = TeamStats.objects.create(
+                                possession=away_match_stats.get('possession', 'N/A'),
+                                shots=away_match_stats.get('shots', 'N/A'),
+                                shots_on_target=away_match_stats.get('shots_on_target', 'N/A'),
+                                corners=away_match_stats.get('corners', 'N/A'),
+                                fouls=away_match_stats.get('fouls', 'N/A')
+                            )
+                            
+                            # Update the event with the stats objects
+                            event_obj = FootballEvent.objects.filter(event_id=event_id).first()
+                            if event_obj:
+                                # Delete any existing stats to avoid duplicates
+                                if event_obj.home_team_stats:
+                                    event_obj.home_team_stats.delete()
+                                if event_obj.away_team_stats:
+                                    event_obj.away_team_stats.delete()
+                                    
+                                event_obj.home_team_stats = home_stats
+                                event_obj.away_team_stats = away_stats
+                                event_obj.save()
+                                logger.info(f"Updated stats for event {event_id}")
+                        except Exception as stats_error:
+                            logger.error(f"Error creating stats for event {event_id}: {str(stats_error)}")
+            except Exception as e:
+                logger.error(f"Error processing event: {str(e)}")
                 continue 

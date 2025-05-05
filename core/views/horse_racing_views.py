@@ -12,7 +12,7 @@ from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
-from django.db.models import Prefetch
+
 
 from ..models import (
     HorseRacingMeeting, HorseRacingBettingOdds, HorseRacingRace

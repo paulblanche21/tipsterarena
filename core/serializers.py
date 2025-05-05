@@ -60,36 +60,42 @@ class TeamStatsSerializer(ModelSerializer):
         model = TeamStats
         fields = ['possession', 'shots', 'shots_on_target', 'corners', 'fouls']
 
-class KeyEventSerializer(ModelSerializer):
+class KeyEventSerializer(serializers.ModelSerializer):
     class Meta:
         model = KeyEvent
-        fields = ['type', 'time', 'team', 'player', 'assist', 'is_goal', 'is_yellow_card', 'is_red_card']
+        fields = ['id', 'time', 'team', 'player', 'assist', 'type', 'description']
 
 class BettingOddsSerializer(ModelSerializer):
     class Meta:
         model = BettingOdds
         fields = ['home_odds', 'away_odds', 'draw_odds', 'provider']
 
-class DetailedStatsSerializer(ModelSerializer):
+class DetailedStatsSerializer(serializers.ModelSerializer):
     class Meta:
         model = DetailedStats
         fields = ['possession', 'home_shots', 'away_shots', 'goals']
 
-class FootballEventSerializer(ModelSerializer):
-    league = FootballLeagueSerializer()
-    home_team = FootballTeamSerializer()
-    away_team = FootballTeamSerializer()
-    home_stats = TeamStatsSerializer()
-    away_stats = TeamStatsSerializer()
-    key_events = KeyEventSerializer(many=True)
-    odds = BettingOddsSerializer(many=True)
-    detailed_stats = DetailedStatsSerializer(many=True)
+class DetailedStatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DetailedStats
+        fields = ['id', 'team', 'stat_type', 'value']
 
+class FootballEventSerializer(serializers.ModelSerializer):
+    league = FootballLeagueSerializer(read_only=True)
+    home_team = FootballTeamSerializer(read_only=True)
+    away_team = FootballTeamSerializer(read_only=True)
+    home_team_stats = TeamStatsSerializer(read_only=True)
+    away_team_stats = TeamStatsSerializer(read_only=True)
+    key_events = KeyEventSerializer(many=True, read_only=True)
+    detailed_stats = DetailedStatsSerializer(many=True, read_only=True)
+    odds = BettingOddsSerializer(many=True, read_only=True)
+    
     class Meta:
         model = FootballEvent
         fields = [
-            'event_id', 'name', 'date', 'state', 'status_description', 'status_detail', 'league', 'venue',
-            'home_team', 'away_team', 'home_score', 'away_score', 'home_stats', 'away_stats', 'clock',
+            'id', 'event_id', 'name', 'date', 'state', 'status_description', 
+            'status_detail', 'league', 'venue', 'home_team', 'away_team',
+            'home_score', 'away_score', 'home_team_stats', 'away_team_stats', 'clock',
             'period', 'broadcast', 'key_events', 'odds', 'detailed_stats'
         ]
 

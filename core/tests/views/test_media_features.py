@@ -4,7 +4,6 @@ from django.contrib.auth import get_user_model
 from core.models import Tip, UserProfile
 from rest_framework.authtoken.models import Token
 import json
-
 from django.test.utils import override_settings
 from unittest.mock import patch
 from django.conf import settings

@@ -29,9 +29,20 @@ export class FootballEventsHandler {
                     },
                     credentials: 'include'
                 });
-                if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error: ${response.status}`);
+                }
+                
                 const data = await response.json();
-                allEvents = allEvents.concat(data.results);
+                console.log('API Response:', data); // Debug log
+                
+                if (!Array.isArray(data)) {
+                    console.error('Expected array of events, got:', typeof data);
+                    return [];
+                }
+                
+                allEvents = allEvents.concat(data);
                 nextUrl = data.next;
             }
             
@@ -43,51 +54,94 @@ export class FootballEventsHandler {
     }
 
     mapEvents(events) {
+        if (!Array.isArray(events)) {
+            console.error('mapEvents received non-array:', events);
+            return [];
+        }
+
         return events
-            .map(event => ({
-                id: event.event_id,
-                name: event.name,
-                date: event.date,
-                state: event.state,
-                status_description: event.status_description,
-                status_detail: event.status_detail,
-                league: {
-                    id: event.league.league_id,
-                    name: event.league.name,
-                    icon: event.league.icon,
-                    priority: event.league.priority
-                },
-                venue: event.venue,
-                home_team: {
-                    name: event.home_team.name,
-                    logo: event.home_team.logo || window.default_avatar_url || '/static/img/default-avatar.png'
-                },
-                away_team: {
-                    name: event.away_team.name,
-                    logo: event.away_team.logo || window.default_avatar_url || '/static/img/default-avatar.png'
-                },
-                home_score: event.home_score,
-                away_score: event.away_score,
-                home_stats: event.home_stats,
-                away_stats: event.away_stats,
-                clock: event.clock,
-                period: event.period,
-                broadcast: event.broadcast,
-                key_events: event.key_events,
-                odds: event.odds,
-                detailed_stats: event.detailed_stats
-            }))
+            .filter(event => event && typeof event === 'object') // Filter out null/undefined events
+            .map(event => {
+                try {
+                    // Ensure we have the required fields
+                    if (!event.id && !event.event_id) {
+                        console.error('Event missing ID:', event);
+                        return null;
+                    }
+
+                    // Log the raw event data for debugging
+                    console.log('Processing event:', event);
+
+                    // Process team stats with proper fallbacks
+                    const home_team_stats = event.home_team_stats || {};
+                    const away_team_stats = event.away_team_stats || {};
+
+                    return {
+                        id: event.id || event.event_id,
+                        name: event.name || `${event.home_team?.name || 'Unknown'} vs ${event.away_team?.name || 'Unknown'}`,
+                        date: event.date,
+                        state: event.state,
+                        status_description: event.status_description || 'Unknown',
+                        status_detail: event.status_detail || 'N/A',
+                        league: {
+                            id: event.league?.league_id,
+                            name: event.league?.name,
+                            icon: event.league?.icon,
+                            priority: event.league?.priority
+                        },
+                        venue: event.venue || 'Location TBD',
+                        home_team: {
+                            name: event.home_team?.name || 'Unknown Team',
+                            logo: event.home_team?.logo || window.default_avatar_url || '/static/img/default-avatar.png',
+                            form: event.home_team?.form || 'N/A',
+                            record: event.home_team?.record || 'N/A'
+                        },
+                        away_team: {
+                            name: event.away_team?.name || 'Unknown Team',
+                            logo: event.away_team?.logo || window.default_avatar_url || '/static/img/default-avatar.png',
+                            form: event.away_team?.form || 'N/A',
+                            record: event.away_team?.record || 'N/A'
+                        },
+                        home_score: event.home_score || '0',
+                        away_score: event.away_score || '0',
+                        home_team_stats: {
+                            possession: home_team_stats.possession || 'N/A',
+                            shots: home_team_stats.shots || 'N/A',
+                            shots_on_target: home_team_stats.shots_on_target || 'N/A',
+                            corners: home_team_stats.corners || 'N/A',
+                            fouls: home_team_stats.fouls || 'N/A'
+                        },
+                        away_team_stats: {
+                            possession: away_team_stats.possession || 'N/A',
+                            shots: away_team_stats.shots || 'N/A',
+                            shots_on_target: away_team_stats.shots_on_target || 'N/A',
+                            corners: away_team_stats.corners || 'N/A',
+                            fouls: away_team_stats.fouls || 'N/A'
+                        },
+                        clock: event.clock || null,
+                        period: event.period || 0,
+                        broadcast: event.broadcast || 'N/A',
+                        key_events: event.key_events || [],
+                        odds: event.odds || [],
+                        detailed_stats: event.detailed_stats || []
+                    };
+                } catch (error) {
+                    console.error('Error mapping event:', error, event);
+                    return null;
+                }
+            })
+            .filter(event => event !== null) // Remove any failed mappings
             .sort((a, b) => {
                 // First sort by date
                 const dateComparison = new Date(a.date) - new Date(b.date);
                 if (dateComparison !== 0) return dateComparison;
                 
                 // Then sort by league priority
-                const leaguePriorityComparison = a.league.priority - b.league.priority;
+                const leaguePriorityComparison = (a.league?.priority || 999) - (b.league?.priority || 999);
                 if (leaguePriorityComparison !== 0) return leaguePriorityComparison;
                 
                 // Finally sort by league name
-                return a.league.name.localeCompare(b.league.name);
+                return (a.league?.name || '').localeCompare(b.league?.name || '');
             });
     }
 
@@ -138,49 +192,23 @@ export class FootballEventsHandler {
     }
 
     formatEvents(events, category, isCentralFeed = false) {
-        const defaultAvatar = window.default_avatar_url || '/static/img/default-avatar.png';
-        
-        // Group events by date
-        const eventsByDate = events.reduce((acc, event) => {
-            const date = new Date(event.date).toLocaleDateString('en-GB', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long'
-            });
-            if (!acc[date]) {
-                acc[date] = [];
-            }
-            acc[date].push(event);
-            return acc;
-        }, {});
+        if (!events || events.length === 0) {
+            return '<p>No events found.</p>';
+        }
 
-        // Sort dates
-        const sortedDates = Object.keys(eventsByDate).sort((a, b) => {
-            return new Date(a) - new Date(b);
-        });
+        const eventsByDate = this.groupEventsByDate(events);
+        const sortedDates = Object.keys(eventsByDate).sort((a, b) => new Date(a) - new Date(b));
 
-        // Generate HTML for each date group
         return sortedDates.map(date => {
-            const dateEvents = eventsByDate[date];
-            const eventsHtml = dateEvents.map(event => {
-                const home_team = event.home_team || { name: 'Unknown Team', logo: defaultAvatar };
-                const away_team = event.away_team || { name: 'Unknown Team', logo: defaultAvatar };
-                
-                // Validate logo URLs
-                const home_logo = home_team.logo && home_team.logo.startsWith('http') ? home_team.logo : defaultAvatar;
-                const away_logo = away_team.logo && away_team.logo.startsWith('http') ? away_team.logo : defaultAvatar;
-                
+            const eventsHtml = eventsByDate[date].map(event => {
+                const defaultAvatar = window.default_avatar_url || '/static/img/default-avatar.png';
+                const home_logo = event.home_team?.logo || defaultAvatar;
+                const away_logo = event.away_team?.logo || defaultAvatar;
+                const home_team = event.home_team || { name: 'Unknown Team' };
+                const away_team = event.away_team || { name: 'Unknown Team' };
                 const eventClass = this.getEventClass(event);
-                const matchDetails = this.formatMatchDetails(event);
-                
-                // Determine score display based on event state
-                let scoreDisplay = '';
-                if (event.state === 'in') {
-                    scoreDisplay = `<span class="live-score">${event.home_score} - ${event.away_score}</span>`;
-                } else if (event.state === 'post' || event.completed) {
-                    scoreDisplay = `<span class="final-score">${event.home_score} - ${event.away_score}</span>`;
-                }
-                
+                const scoreDisplay = event.state === 'pre' ? 'vs' : `${event.home_score} - ${event.away_score}`;
+
                 return `
                     <div class="expandable-card ${eventClass}" data-event-id="${event.id}">
                         <div class="card-header">
@@ -198,13 +226,48 @@ export class FootballEventsHandler {
                                         <span class="team-name">${away_team.name}</span>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="match-meta">
-                                <span class="location">${event.venue}</span>
+                                <div class="match-meta">
+                                    <span class="datetime">${new Date(event.date).toLocaleString()}</span>
+                                    ${event.venue ? `<span class="location">${event.venue}</span>` : ''}
+                                </div>
                             </div>
                         </div>
-                        <div class="match-details">
-                            ${matchDetails}
+                        <div class="card-details" style="display: none;">
+                            <div class="match-stats">
+                                <div class="stats-row">
+                                    <div class="stat-value">${event.home_team_stats?.possession || 'N/A'}</div>
+                                    <div class="stat-label">Possession</div>
+                                    <div class="stat-value">${event.away_team_stats?.possession || 'N/A'}</div>
+                                </div>
+                                <div class="stats-row">
+                                    <div class="stat-value">${event.home_team_stats?.shots || 'N/A'}</div>
+                                    <div class="stat-label">Shots</div>
+                                    <div class="stat-value">${event.away_team_stats?.shots || 'N/A'}</div>
+                                </div>
+                                <div class="stats-row">
+                                    <div class="stat-value">${event.home_team_stats?.shots_on_target || 'N/A'}</div>
+                                    <div class="stat-label">Shots on Target</div>
+                                    <div class="stat-value">${event.away_team_stats?.shots_on_target || 'N/A'}</div>
+                                </div>
+                                <div class="stats-row">
+                                    <div class="stat-value">${event.home_team_stats?.corners || 'N/A'}</div>
+                                    <div class="stat-label">Corners</div>
+                                    <div class="stat-value">${event.away_team_stats?.corners || 'N/A'}</div>
+                                </div>
+                                <div class="stats-row">
+                                    <div class="stat-value">${event.home_team_stats?.fouls || 'N/A'}</div>
+                                    <div class="stat-label">Fouls</div>
+                                    <div class="stat-value">${event.away_team_stats?.fouls || 'N/A'}</div>
+                                </div>
+                            </div>
+                            ${event.key_events && event.key_events.length > 0 ? `
+                                <div class="key-events">
+                                    <h4>Key Events</h4>
+                                    <ul>
+                                        ${event.key_events.map(e => `<li>${e.time}' - ${e.description}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            ` : ''}
                         </div>
                     </div>
                 `;
@@ -222,67 +285,35 @@ export class FootballEventsHandler {
     }
 
     formatMatchDetails(event) {
-        console.log('Match Details for event:', event);
-        let html = '<div class="match-stats">';
+        const defaultAvatar = window.default_avatar_url || '/static/img/default-avatar.png';
+        const home_logo = event.home_team?.logo || defaultAvatar;
+        const away_logo = event.away_team?.logo || defaultAvatar;
+        const home_team = event.home_team || { name: 'Unknown Team' };
+        const away_team = event.away_team || { name: 'Unknown Team' };
+        const eventClass = this.getEventClass(event);
+        const scoreDisplay = event.state === 'pre' ? 'vs' : `${event.home_score} - ${event.away_score}`;
 
-        // Goalscorers section for completed matches
-        if ((event.state === 'post' || event.completed) && event.key_events && event.key_events.length) {
-            const goals = event.key_events.filter(ke => ke.is_goal);
-            if (goals.length) {
-                html += `<div class="goals-section">
-                    <h4>Goals</h4>
-                    <ul class="goals-list">
-                        ${goals.map(goal => {
-                            let assist = goal.assist && goal.assist !== 'Unassisted' ? ` (Assist: ${goal.assist})` : '';
-                            return `<li><strong>${goal.time}</strong> – ${goal.player}${assist} <span class="goal-team">[${goal.team}]</span></li>`;
-                        }).join('')}
-                    </ul>
-                </div>`;
-            }
-        }
-
-        // Team Stats
-        if (event.home_stats && event.away_stats) {
-            html += `
-                <div class="team-stats">
-                    <p>Possession: ${event.home_stats.possession} - ${event.away_stats.possession}</p>
-                    <p>Shots: ${event.home_stats.shots} - ${event.away_stats.shots}</p>
-                    <p>Shots on Target: ${event.home_stats.shots_on_target} - ${event.away_stats.shots_on_target}</p>
-                    <p>Corners: ${event.home_stats.corners} - ${event.away_stats.corners}</p>
-                    <p>Fouls: ${event.home_stats.fouls} - ${event.away_stats.fouls}</p>
-                </div>
-            `;
-        }
-
-        // Key Events (other than goals)
-        if (event.key_events && event.key_events.length) {
-            const nonGoalEvents = event.key_events.filter(ke => !ke.is_goal);
-            if (nonGoalEvents.length) {
-                html += `
-                    <div class="key-events">
-                        <h4>Key Events</h4>
-                        <ul>
-                            ${nonGoalEvents.map(ke => `
-                                <li class="${this.getEventClass(ke)}">
-                                    ${ke.time} - ${ke.player} (${ke.team}) - ${ke.type}
-                                </li>
-                            `).join('')}
-                        </ul>
+        return `
+            <div class="match-info">
+                <div class="teams">
+                    <div class="team">
+                        <img src="${home_logo}" alt="${home_team.name}" onerror="this.src='${defaultAvatar}'">
+                        <span class="team-name">${home_team.name}</span>
                     </div>
-                `;
-            }
-        }
-
-        // Match Meta
-        html += `
-            <div class="match-meta">
-                <span class="datetime">${new Date(event.date).toLocaleString()}</span>
-                <span class="location">${event.venue}</span>
+                    <div class="score">
+                        ${scoreDisplay}
+                    </div>
+                    <div class="team">
+                        <img src="${away_logo}" alt="${away_team.name}" onerror="this.src='${defaultAvatar}'">
+                        <span class="team-name">${away_team.name}</span>
+                    </div>
+                </div>
+                <div class="match-meta">
+                    <span class="datetime">${new Date(event.date).toLocaleString()}</span>
+                    ${event.venue ? `<span class="location">${event.venue}</span>` : ''}
+                </div>
             </div>
         `;
-
-        html += '</div>';
-        return html;
     }
 
     getEventClass(event) {
@@ -290,6 +321,21 @@ export class FootballEventsHandler {
         if (event.is_yellow_card) return 'yellow-card';
         if (event.is_red_card) return 'red-card';
         return '';
+    }
+
+    groupEventsByDate(events) {
+        return events.reduce((acc, event) => {
+            const date = new Date(event.date).toLocaleDateString('en-GB', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long'
+            });
+            if (!acc[date]) {
+                acc[date] = [];
+            }
+            acc[date].push(event);
+            return acc;
+        }, {});
     }
 }
 
