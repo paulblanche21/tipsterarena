@@ -7,6 +7,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.http import JsonResponse
 from django.conf import settings
+from django.db import transaction
+from django.contrib.auth.models import Group
 
 from ..forms import CustomUserCreationForm, KYCForm, UserProfileForm
 
@@ -35,9 +37,26 @@ def signup_view(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect('kyc')
+            with transaction.atomic():
+                # Create user
+                user = form.save()
+                
+                # Create user profile with handle
+                handle = form.cleaned_data.get('handle')
+                if not handle.startswith('@'):
+                    handle = f"@{handle}"
+                    
+                profile = user.userprofile
+                profile.handle = handle
+                profile.save()
+                
+                # Add user to basic permissions group
+                basic_group, _ = Group.objects.get_or_create(name='Basic Users')
+                user.groups.add(basic_group)
+                
+                # Log user in
+                login(request, user)
+                return redirect('kyc')
     else:
         form = CustomUserCreationForm()
     return render(request, 'core/signup.html', {'form': form})

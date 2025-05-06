@@ -169,67 +169,92 @@ export class HorseRacingEventsHandler {
     }
 
     formatRaces(races) {
-        if (!races || !Array.isArray(races)) return '';
+        if (!races || !Array.isArray(races)) {
+            console.log('No races data available:', races);
+            return '';
+        }
+        
+        console.log('Formatting races:', races); // Debug log
         
         return races.map(race => {
             console.log('Processing race:', race); // Debug log
             
-            return `
+            // Get the number of runners from the runners field
+            const numRunners = race.runners ? race.runners.split(' ')[0] : 
+                             (race.horses ? race.horses.length : 0);
+            
+            console.log('Number of runners:', numRunners); // Debug log
+            
+            const raceHtml = `
                 <div class="race-item" data-race-id="${race.race_id || ''}">
                     <div class="race-header">
-                        <span class="race-time">${race.race_time || race.off_time || 'TBC'}</span>
+                        <span class="race-time">${race.race_time || 'TBC'}</span>
                         <span class="race-name">${race.name || 'Unnamed Race'}</span>
-                        <span class="race-runners">${race.horses ? race.horses.length : 0} runners</span>
+                        <span class="race-runners">${numRunners} runners</span>
                     </div>
                     <div class="race-details">
                         ${this.formatHorses(race.horses)}
-                        ${race.going_data ? `<p><strong>Going:</strong> ${race.going_data}</p>` : ''}
+                        ${race.going_data && race.going_data !== 'N/A' ? `<p><strong>Going:</strong> ${race.going_data}</p>` : ''}
                         ${race.race_class ? `<p><strong>Class:</strong> ${race.race_class}</p>` : ''}
                         ${race.distance ? `<p><strong>Distance:</strong> ${race.distance}</p>` : ''}
                         ${race.result && race.result.positions ? this.formatRaceResult(race.result.positions) : ''}
                     </div>
                 </div>
             `;
+            
+            console.log('Generated race HTML:', raceHtml); // Debug log
+            return raceHtml;
         }).join('');
     }
 
     formatHorses(horses) {
-        if (!horses || !Array.isArray(horses) || horses.length === 0) return '';
+        if (!horses || !Array.isArray(horses) || horses.length === 0) {
+            console.log('No horses data available:', horses);
+            return '';
+        }
         
-        return `
+        console.log('Formatting horses:', horses); // Debug log
+        
+        const horsesHtml = `
             <div class="race-runners">
                 <h4>Runners</h4>
                 <div class="runners-list">
-                    ${horses.map(horse => `
-                        <div class="runner-item">
-                            <div class="runner-header">
-                                <span class="runner-number">${horse.number || ''}</span>
-                                <span class="runner-name">${horse.name || 'Unknown Horse'}</span>
-                                ${horse.draw ? `<span class="runner-draw">(${horse.draw})</span>` : ''}
-                            </div>
-                            <div class="runner-details">
-                                <p>
-                                    <span class="runner-jockey">Jockey: ${horse.jockey || 'No Jockey'}</span>
-                                    <span class="runner-trainer">Trainer: ${horse.trainer || 'No Trainer'}</span>
-                                </p>
-                                ${horse.owner ? `<p><span class="runner-owner">Owner: ${horse.owner}</span></p>` : ''}
-                                ${horse.form ? `<p class="runner-form">Form: ${horse.form}</p>` : ''}
-                                ${horse.rpr ? `<p class="runner-rating">RPR: ${horse.rpr}</p>` : ''}
-                                ${horse.spotlight ? `<p class="runner-stats">Spotlight: ${horse.spotlight}</p>` : ''}
-                                ${horse.trainer_14_days ? `
-                                    <p class="trainer-stats">
-                                        Trainer Stats (14 days): 
-                                        Runs: ${horse.trainer_14_days.runs || 0}, 
-                                        Wins: ${horse.trainer_14_days.wins || 0}, 
-                                        Win%: ${horse.trainer_14_days.percent || 0}%
+                    ${horses.map(horse => {
+                        console.log('Processing horse:', horse); // Debug log
+                        return `
+                            <div class="runner-item">
+                                <div class="runner-header">
+                                    <span class="runner-number">${horse.number || ''}</span>
+                                    <span class="runner-name">${horse.name || 'Unknown Horse'}</span>
+                                    ${horse.draw ? `<span class="runner-draw">(${horse.draw})</span>` : ''}
+                                </div>
+                                <div class="runner-details">
+                                    <p>
+                                        <span class="runner-jockey">Jockey: ${horse.jockey || 'No Jockey'}</span>
+                                        <span class="runner-trainer">Trainer: ${horse.trainer || 'No Trainer'}</span>
                                     </p>
-                                ` : ''}
+                                    ${horse.owner && horse.owner !== 'Unknown' ? `<p><span class="runner-owner">Owner: ${horse.owner}</span></p>` : ''}
+                                    ${horse.form && horse.form !== 'N/A' ? `<p class="runner-form">Form: ${horse.form}</p>` : ''}
+                                    ${horse.rpr && horse.rpr !== 'N/A' ? `<p class="runner-rating">RPR: ${horse.rpr}</p>` : ''}
+                                    ${horse.spotlight && horse.spotlight !== 'N/A' ? `<p class="runner-stats">Spotlight: ${horse.spotlight}</p>` : ''}
+                                    ${horse.trainer_14_days ? `
+                                        <p class="trainer-stats">
+                                            Trainer Stats (14 days): 
+                                            Runs: ${horse.trainer_14_days.runs || 0}, 
+                                            Wins: ${horse.trainer_14_days.wins || 0}, 
+                                            Win%: ${horse.trainer_14_days.percent || 0}%
+                                        </p>
+                                    ` : ''}
+                                </div>
                             </div>
-                        </div>
-                    `).join('')}
+                        `;
+                    }).join('')}
                 </div>
             </div>
         `;
+        
+        console.log('Generated horses HTML:', horsesHtml); // Debug log
+        return horsesHtml;
     }
 
     formatRaceResult(positions) {

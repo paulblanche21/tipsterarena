@@ -35,9 +35,9 @@
                         {% if other_participant %}
                             <!-- Avatar for thread participant -->
                             {% if other_participant.userprofile.avatar %}
-                                <img src="{{ other_participant.userprofile.avatar.url }}" alt="User Avatar" class="avatar">
+                                <img src="{{ other_participant.userprofile.avatar.url }}" alt="User Avatar" class="avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
                             {% else %}
-                                <img src="{% static 'img/default-avatar.png' %}" alt="Default Avatar" class="avatar" onerror="this.style.display='none'">
+                                <img src="{% static 'img/default-avatar.png' %}" alt="Default Avatar" class="avatar">
                             {% endif %}
                             <div class="card-content">
                                 <div class="card-header">
@@ -109,9 +109,9 @@
                             {% if selected_thread.other_participant %}
                                 <!-- Participant avatar -->
                                 {% if selected_thread.other_participant.userprofile.avatar %}
-                                    <img src="{{ selected_thread.other_participant.userprofile.avatar.url }}" alt="Avatar" class="avatar">
+                                    <img src="{{ selected_thread.other_participant.userprofile.avatar.url }}" alt="Avatar" class="avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
                                 {% else %}
-                                    <img src="{% static 'img/default-avatar.png' %}" alt="Default Avatar" class="avatar" onerror="this.style.display='none'">
+                                    <img src="{% static 'img/default-avatar.png' %}" alt="Default Avatar" class="avatar">
                                 {% endif %}
                                 <div class="user-details">
                                     <h3>{{ selected_thread.other_participant.username }}</h3>

@@ -15,7 +15,7 @@ __all__ = [
     'profile', 'profile_edit_view',
 
     # Sport views
-    'sport_view', 'explore', 'home',
+    'sport_view', 'home',
 
     # Interaction views
     'follow_user', 'messages_view', 'send_message',
@@ -50,7 +50,11 @@ __all__ = [
     # General views
     'landing', 'search', 'csp_report',
     'terms_of_service', 'privacy_policy',
-    'cookie_policy', 'accessibility'
+    'cookie_policy', 'accessibility',
+
+    # Subscription views
+    'become_tipster', 'tipster_dashboard', 'manage_tiers',
+    'subscribe_to_tipster', 'cancel_subscription',
 ]
 
 from .auth_views import (
@@ -70,7 +74,7 @@ from .profile_views import (
 )
 
 from .sport_views import (
-    sport_view, explore, home
+    sport_view, home
 )
 
 from .interaction_views import (
@@ -113,4 +117,9 @@ from .general_views import (
     landing, search, csp_report,
     terms_of_service, privacy_policy,
     cookie_policy, accessibility
+)
+
+from .subscription_views import (
+    become_tipster, tipster_dashboard, manage_tiers,
+    subscribe_to_tipster, cancel_subscription
 ) 

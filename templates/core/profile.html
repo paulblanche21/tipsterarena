@@ -25,7 +25,7 @@
                 <img src="{% static 'img/default-banner.png' %}" alt="Default Banner Image" class="profile-banner">
             {% endif %}
             {% if user_profile.avatar %}
-                <img src="{{ user_profile.avatar.url }}" alt="{{ user.username }} Avatar" class="profile-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
+                <img src="{{ user_profile.avatar.url }}" alt="{{ user.username }} Avatar" class="profile-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
             {% else %}
                 <img src="{% static 'img/default-avatar.png' %}" alt="{{ user.username }} Avatar" class="profile-avatar">
             {% endif %}
@@ -81,7 +81,7 @@
             {% for tip in user_tips %}
                 <div class="tip" data-tip-id="{{ tip.id }}">
                     {% if tip.user.userprofile.avatar %}
-                        <img src="{{ tip.user.userprofile.avatar.url }}" alt="{{ tip.user.username }} Avatar" class="tip-avatar" onerror="this.style.display='none'; this.src=window.default_avatar_url;">
+                        <img src="{{ tip.user.userprofile.avatar.url }}" alt="{{ tip.user.username }} Avatar" class="tip-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
                     {% else %}
                         <img src="{% static 'img/default-avatar.png' %}" alt="{{ tip.user.username }} Avatar" class="tip-avatar">
                     {% endif %}

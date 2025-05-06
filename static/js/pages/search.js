@@ -117,14 +117,21 @@ export function setupSearch() {
     const card = e.target.closest('.event-card, .tennis-card, .golf-card, .horse-racing-card');
     const tipAction = e.target.closest('.tip-action');
     const categoryButton = e.target.closest('.event-btn');
+    const raceHeader = e.target.closest('.race-header');
 
     console.log('Click event target:', e.target);
     console.log('Closest card:', card);
     console.log('Closest tip action:', tipAction);
     console.log('Closest category button:', categoryButton);
+    console.log('Closest race header:', raceHeader);
 
     if (!searchBar) {
         console.log('Search bar not found, ignoring click handler');
+        return;
+    }
+
+    if (raceHeader) {
+        console.log('Click on race header, letting expandable card handler process it');
         return;
     }
 

@@ -7,6 +7,9 @@ Contains database models for user profiles, tips, and sports events.
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import Q
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.utils import timezone
 
 # Model representing a user's tip
 class Tip(models.Model):
@@ -116,9 +119,90 @@ class Tip(models.Model):
     resolution_note = models.TextField(blank=True, null=True)  # Optional note explaining the verification result
     verified_at = models.DateTimeField(blank=True, null=True)  # Timestamp of verification
 
+    visibility = models.CharField(
+        max_length=20,
+        choices=[
+            ('public', 'Public'),
+            ('followers', 'Followers Only'),
+            ('subscribers', 'All Subscribers'),
+            ('tier', 'Specific Tier')
+        ],
+        default='public'
+    )
+    required_tier = models.ForeignKey(
+        'TipsterTier',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='exclusive_tips'
+    )
+
+    def is_visible_to(self, user):
+        """Check if tip is visible to a specific user."""
+        # Public tips are visible to everyone
+        if self.visibility == 'public':
+            return True
+            
+        # Must be authenticated to see non-public tips
+        if not user.is_authenticated:
+            return False
+            
+        # Tip owner can always see their tips
+        if user == self.user:
+            return True
+            
+        # Check followers-only tips
+        if self.visibility == 'followers':
+            return self.user.followers.filter(follower=user).exists()
+            
+        # Check subscribers-only tips
+        if self.visibility == 'subscribers':
+            return TipsterSubscription.objects.filter(
+                subscriber=user,
+                tier__tipster=self.user,
+                status='active',
+                end_date__gt=timezone.now()
+            ).exists()
+            
+        # Check tier-specific tips
+        if self.visibility == 'tier' and self.required_tier:
+            return TipsterSubscription.objects.filter(
+                subscriber=user,
+                tier=self.required_tier,
+                status='active',
+                end_date__gt=timezone.now()
+            ).exists()
+            
+        return False
+
     def __str__(self):
         return f"{self.user.username} - {self.sport}: {self.text[:20]}"  # String representation for admin/debugging
 
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    """Create a UserProfile with a handle when a new User is created."""
+    if created:
+        # Generate a unique handle based on username
+        base_handle = f"@{instance.username}"
+        handle = base_handle
+        counter = 1
+        
+        # Ensure handle uniqueness
+        while UserProfile.objects.filter(handle=handle).exists():
+            handle = f"{base_handle}{counter}"
+            counter += 1
+            
+        UserProfile.objects.create(
+            user=instance,
+            handle=handle,
+            full_name=instance.username
+        )
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    """Ensure UserProfile is saved when User is saved."""
+    if hasattr(instance, 'userprofile'):
+        instance.userprofile.save()
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -127,7 +211,7 @@ class UserProfile(models.Model):
     description = models.TextField(blank=True)
     location = models.CharField(max_length=255, blank=True)
     date_of_birth = models.DateField(blank=True, null=True)
-    handle = models.CharField(max_length=15, unique=True, blank=True)
+    handle = models.CharField(max_length=15, unique=True, help_text="Your unique handle starting with @ (e.g., @username)")
     allow_messages = models.CharField(max_length=20, choices=[
         ('no_one', 'No one'),
         ('followers', 'Followers'),
@@ -140,7 +224,34 @@ class UserProfile(models.Model):
     payment_completed = models.BooleanField(default=False)
     profile_completed = models.BooleanField(default=False)
     full_name = models.CharField(max_length=100, blank=True)
-    stripe_customer_id = models.CharField(max_length=255, blank=True)  # New field
+    stripe_customer_id = models.CharField(max_length=255, blank=True)
+    is_tipster = models.BooleanField(default=False)
+    tipster_description = models.TextField(blank=True)
+    tipster_rules = models.TextField(blank=True)
+    minimum_tier_price = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
+    maximum_tier_price = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
+    total_subscribers = models.PositiveIntegerField(default=0)
+    subscription_revenue = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0
+    )
+
+    def save(self, *args, **kwargs):
+        # Ensure handle starts with @
+        if self.handle and not self.handle.startswith('@'):
+            self.handle = f"@{self.handle}"
+        super().save(*args, **kwargs)
 
     @property
     def followers_count(self):
@@ -855,3 +966,46 @@ class HorseRacingBettingOdds(models.Model):
     class Meta:
         unique_together = ('runner', 'bookmaker')
         ordering = ['bookmaker', '-updated_at']
+
+class TipsterTier(models.Model):
+    """Model for tipster subscription tiers."""
+    tipster = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscription_tiers')
+    name = models.CharField(max_length=50)  # e.g., "Bronze", "Silver", "Gold"
+    price = models.DecimalField(max_digits=6, decimal_places=2)  # Monthly subscription price
+    description = models.TextField()
+    features = models.JSONField(default=list)  # List of features included
+    max_subscribers = models.IntegerField(null=True, blank=True)  # Optional limit on subscribers
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('tipster', 'name')
+
+    def __str__(self):
+        return f"{self.tipster.username} - {self.name} Tier"
+
+class TipsterSubscription(models.Model):
+    """Model for user subscriptions to tipsters."""
+    subscriber = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tipster_subscriptions')
+    tier = models.ForeignKey(TipsterTier, on_delete=models.CASCADE, related_name='subscriptions')
+    status = models.CharField(max_length=20, choices=[
+        ('active', 'Active'),
+        ('cancelled', 'Cancelled'),
+        ('expired', 'Expired')
+    ], default='active')
+    start_date = models.DateTimeField(auto_now_add=True)
+    end_date = models.DateTimeField()
+    auto_renew = models.BooleanField(default=True)
+    stripe_subscription_id = models.CharField(max_length=100, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('subscriber', 'tier')
+
+    def __str__(self):
+        return f"{self.subscriber.username} -> {self.tier.tipster.username} ({self.tier.name})"
+
+    def is_active(self):
+        return self.status == 'active' and self.end_date > timezone.now()

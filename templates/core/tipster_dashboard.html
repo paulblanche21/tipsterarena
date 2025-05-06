@@ -1,0 +1,489 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Tipster Dashboard - Tipster Arena{% endblock %}
+
+{% block content %}
+<div class="tipster-dashboard">
+    <!-- Stats Overview -->
+    <div class="dashboard-stats">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Total Subscribers</h3>
+                <p class="stat-value">{{ total_subscribers }}</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-euro-sign"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Monthly Revenue</h3>
+                <p class="stat-value">€{{ total_revenue|floatformat:2 }}</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-layer-group"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Active Tiers</h3>
+                <p class="stat-value">{{ tiers.count }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subscription Tiers Management -->
+    <div class="dashboard-section">
+        <div class="section-header">
+            <h2>Subscription Tiers</h2>
+            <button class="btn btn-primary" id="addTierBtn">
+                <i class="fas fa-plus"></i> Add New Tier
+            </button>
+        </div>
+
+        <div class="tiers-grid">
+            {% for tier in tiers %}
+            <div class="tier-card" data-tier-id="{{ tier.id }}">
+                <div class="tier-header">
+                    <h3>{{ tier.name }}</h3>
+                    <div class="tier-actions">
+                        <button class="btn-icon edit-tier" title="Edit Tier">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon delete-tier" title="Delete Tier">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="tier-price">€{{ tier.price }}/month</div>
+                <div class="tier-description">{{ tier.description }}</div>
+                <div class="tier-features">
+                    <h4>Features:</h4>
+                    <ul>
+                        {% for feature in tier.features %}
+                        <li>{{ feature }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="tier-stats">
+                    <div class="tier-stat">
+                        <span class="stat-label">Subscribers:</span>
+                        <span class="stat-value">{{ tier.subscriptions.count }}</span>
+                    </div>
+                    {% if tier.max_subscribers %}
+                    <div class="tier-stat">
+                        <span class="stat-label">Limit:</span>
+                        <span class="stat-value">{{ tier.max_subscribers }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <i class="fas fa-layer-group"></i>
+                <p>No subscription tiers yet. Create your first tier to start accepting subscribers!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Active Subscribers -->
+    <div class="dashboard-section">
+        <div class="section-header">
+            <h2>Active Subscribers</h2>
+            <div class="section-actions">
+                <input type="text" id="subscriberSearch" placeholder="Search subscribers..." class="search-input">
+            </div>
+        </div>
+
+        <div class="subscribers-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Subscriber</th>
+                        <th>Tier</th>
+                        <th>Subscribed Since</th>
+                        <th>Next Payment</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sub in subscriptions %}
+                    <tr>
+                        <td class="subscriber-info">
+                            {% if sub.subscriber.userprofile.avatar %}
+                                <img src="{{ sub.subscriber.userprofile.avatar.url }}" alt="Avatar" class="subscriber-avatar">
+                            {% else %}
+                                <img src="{% static 'img/default-avatar.png' %}" alt="Avatar" class="subscriber-avatar">
+                            {% endif %}
+                            <span>{{ sub.subscriber.username }}</span>
+                        </td>
+                        <td>{{ sub.tier.name }}</td>
+                        <td>{{ sub.start_date|date:"M d, Y" }}</td>
+                        <td>{{ sub.end_date|date:"M d, Y" }}</td>
+                        <td><span class="status-badge status-{{ sub.status }}">{{ sub.status|title }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="empty-state">
+                            <p>No active subscribers yet. Share your profile to attract subscribers!</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Tier Modal -->
+<div class="modal" id="tierModal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2 id="modalTitle">Add New Tier</h2>
+        <form id="tierForm">
+            {% csrf_token %}
+            <input type="hidden" name="tier_id" id="tierId">
+            <div class="form-group">
+                <label for="tierName">Tier Name</label>
+                <input type="text" id="tierName" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="tierPrice">Monthly Price (€)</label>
+                <input type="number" id="tierPrice" name="price" min="5" max="100" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label for="tierDescription">Description</label>
+                <textarea id="tierDescription" name="description" rows="3" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="tierFeatures">Features (one per line)</label>
+                <textarea id="tierFeatures" name="features" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="maxSubscribers">Maximum Subscribers (optional)</label>
+                <input type="number" id="maxSubscribers" name="max_subscribers" min="1">
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Save Tier</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.tipster-dashboard {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+}
+
+.stat-icon {
+    font-size: 2rem;
+    color: var(--primary-color);
+    margin-right: 1rem;
+}
+
+.stat-content h3 {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--gray-600);
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin: 0;
+}
+
+.dashboard-section {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.tiers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.tier-card {
+    background: var(--light-bg);
+    border-radius: 8px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+}
+
+.tier-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.tier-price {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: var(--success-color);
+    margin-bottom: 1rem;
+}
+
+.tier-features ul {
+    list-style-type: none;
+    padding-left: 1.5rem;
+}
+
+.tier-features li {
+    margin-bottom: 0.5rem;
+    position: relative;
+}
+
+.tier-features li:before {
+    content: "✓";
+    position: absolute;
+    left: -1.5rem;
+    color: var(--success-color);
+}
+
+.subscribers-table {
+    overflow-x: auto;
+}
+
+.subscribers-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.subscribers-table th,
+.subscribers-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.subscriber-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.subscriber-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+.status-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+}
+
+.status-active {
+    background: var(--success-bg);
+    color: var(--success-color);
+}
+
+.status-cancelled {
+    background: var(--danger-bg);
+    color: var(--danger-color);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: var(--gray-600);
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--gray-400);
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 2rem;
+    border-radius: 8px;
+    position: relative;
+}
+
+.close {
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('tierModal');
+    const addTierBtn = document.getElementById('addTierBtn');
+    const closeBtn = modal.querySelector('.close');
+    const form = document.getElementById('tierForm');
+    
+    // Show modal
+    addTierBtn.onclick = function() {
+        modal.style.display = 'block';
+        form.reset();
+        document.getElementById('modalTitle').textContent = 'Add New Tier';
+        document.getElementById('tierId').value = '';
+    }
+    
+    // Close modal
+    closeBtn.onclick = function() {
+        modal.style.display = 'none';
+    }
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    }
+    
+    // Handle form submission
+    form.onsubmit = async function(e) {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const tierId = document.getElementById('tierId').value;
+        
+        formData.append('action', tierId ? 'update' : 'create');
+        if (tierId) formData.append('tier_id', tierId);
+        
+        try {
+            const response = await fetch("{% url 'manage_tiers' %}", {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        } catch (error) {
+            alert('Error saving tier');
+        }
+    }
+    
+    // Edit tier
+    document.querySelectorAll('.edit-tier').forEach(btn => {
+        btn.onclick = function() {
+            const card = this.closest('.tier-card');
+            const tierId = card.dataset.tierId;
+            const name = card.querySelector('h3').textContent;
+            const price = card.querySelector('.tier-price').textContent.replace('€', '').replace('/month', '');
+            const description = card.querySelector('.tier-description').textContent;
+            const features = Array.from(card.querySelectorAll('.tier-features li')).map(li => li.textContent).join('\n');
+            const maxSubscribers = card.querySelector('.tier-stat .stat-value').textContent;
+            
+            document.getElementById('tierId').value = tierId;
+            document.getElementById('tierName').value = name;
+            document.getElementById('tierPrice').value = price;
+            document.getElementById('tierDescription').value = description;
+            document.getElementById('tierFeatures').value = features;
+            document.getElementById('maxSubscribers').value = maxSubscribers;
+            
+            document.getElementById('modalTitle').textContent = 'Edit Tier';
+            modal.style.display = 'block';
+        }
+    });
+    
+    // Delete tier
+    document.querySelectorAll('.delete-tier').forEach(btn => {
+        btn.onclick = async function() {
+            if (!confirm('Are you sure you want to delete this tier?')) return;
+            
+            const card = this.closest('.tier-card');
+            const tierId = card.dataset.tierId;
+            
+            try {
+                const response = await fetch("{% url 'manage_tiers' %}", {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'delete',
+                        tier_id: tierId
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    card.remove();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error deleting tier');
+            }
+        }
+    });
+    
+    // Search subscribers
+    const searchInput = document.getElementById('subscriberSearch');
+    searchInput.oninput = function() {
+        const searchTerm = this.value.toLowerCase();
+        document.querySelectorAll('.subscribers-table tbody tr').forEach(row => {
+            const username = row.querySelector('.subscriber-info span').textContent.toLowerCase();
+            row.style.display = username.includes(searchTerm) ? '' : 'none';
+        });
+    }
+});
+</script>
+{% endblock %} 

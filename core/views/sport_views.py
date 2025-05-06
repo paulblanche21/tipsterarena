@@ -19,18 +19,6 @@ def sport_view(request, sport):
         'sport': sport,
     })
 
-def explore(request):
-    """Render explore page with latest tips from all sports."""
-    tips = Tip.objects.all().order_by('-created_at')[:20]
-    for tip in tips:
-        if not hasattr(tip.user, 'userprofile'):
-            UserProfile.objects.get_or_create(user=tip.user)
-
-    context = {
-        'tips': tips,
-    }
-    return render(request, 'core/explore.html', context)
-
 @login_required
 def home(request):
     """Render the home page with tips, trending content, and user suggestions."""

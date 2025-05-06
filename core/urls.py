@@ -13,7 +13,6 @@ urlpatterns = [
     path('', views.landing, name='landing'),
     path('home/', views.home, name='home'),
     path('sport/<str:sport>/', views.sport_view, name='sport'),
-    path('explore/', views.explore, name='explore'),
     path('search/', views.search, name='search'),
 
     # Profile routes
@@ -115,19 +114,28 @@ urlpatterns = [
     path('api/events/horse-racing/<str:meeting_id>/', views.HorseRacingMeetingDetail.as_view(), name='horse_racing_meeting_detail'),
     path('api/events/horse-racing/<str:meeting_id>/races/', views.HorseRacingRacesList.as_view(), name='horse_racing_races'),
     path('api/events/horse-racing/<str:meeting_id>/races/<str:race_id>/', views.HorseRacingRaceDetail.as_view(), name='horse_racing_race_detail'),
-
-    # Tips endpoints
+    
+     # Tips endpoints
     path('api/tips/', views.tip_list, name='tip_list'),
     path('api/tips/<int:tip_id>/', views.tip_detail, name='tip_detail'),
     path('api/tips/<int:tip_id>/like/', views.like_tip, name='like_tip'),
-
-
-    # Horse Racing endpoints
+    
+     # Horse Racing endpoints
     path('api/horse-racing/betting-odds/bulk-upsert/',
          views.HorseRacingBettingOddsBulkUpsert.as_view(),
          name='horse_racing_betting_odds_bulk_upsert'),
+
+
+   
+
+    path('tipster/', include([
+    path('become/', views.become_tipster, name='become_tipster'),
+    path('dashboard/', views.tipster_dashboard, name='tipster_dashboard'),
+    path('tiers/', views.manage_tiers, name='manage_tiers'),
+    path('subscribe/<str:username>/<int:tier_id>/', views.subscribe_to_tipster, name='subscribe_to_tipster'),
+    path('cancel/<int:subscription_id>/', views.cancel_subscription, name='cancel_subscription'),
+]))
+
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

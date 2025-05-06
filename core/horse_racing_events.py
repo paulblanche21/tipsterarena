@@ -40,8 +40,14 @@ def get_racecards_json():
                 results = race.results.all()
                 runners = race.runners.all()
                 winner = next((result.horse.name for result in results if result.position == '1'), None)
-                horses = [
-                    {
+                
+                logger.debug("Processing race: %s at %s", race.name, race.off_time)
+                logger.debug("Number of runners: %d", runners.count())
+                logger.debug("Number of results: %d", results.count())
+                
+                horses = []
+                for runner in runners:
+                    horse_data = {
                         'number': runner.number,
                         'name': runner.horse.name,
                         'jockey': runner.jockey.name if runner.jockey else 'Unknown',
@@ -58,9 +64,10 @@ def get_racecards_json():
                         },
                         'finish_status': str(results.filter(horse=runner.horse).first().position) if results.filter(horse=runner.horse).exists() else 'Unknown'
                     }
-                    for runner in runners
-                ]
-                races.append({
+                    logger.debug("Horse data: %s", horse_data)
+                    horses.append(horse_data)
+                
+                race_data = {
                     'race_time': race.off_time,
                     'name': race.name or 'Unnamed Race',
                     'horses': horses,
@@ -74,14 +81,19 @@ def get_racecards_json():
                     'going_data': race.going or 'N/A',
                     'runners': f"{race.field_size or len(horses)} runners",
                     'tv': 'N/A'
-                })
-            data.append({
+                }
+                logger.debug("Race data: %s", race_data)
+                races.append(race_data)
+            
+            meeting_data = {
                 'date': meeting.date.isoformat(),
                 'displayDate': meeting.date.strftime('%b %d, %Y'),
                 'venue': meeting.course.name,
                 'url': meeting.url or '#',
                 'races': races
-            })
+            }
+            logger.debug("Meeting data: %s", meeting_data)
+            data.append(meeting_data)
         
         logger.info("Fetched %d meetings from database", len(data))
         logger.debug("Sample meeting: %s", data[0] if data else 'None')
