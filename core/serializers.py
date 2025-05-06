@@ -169,8 +169,25 @@ class HorseRacingResultSerializer(serializers.ModelSerializer):
             'official_rating', 'rpr', 'comment'
         ]
 
+class RaceRunnerSerializer(serializers.ModelSerializer):
+    horse = HorseSerializer()
+    trainer = TrainerSerializer()
+    jockey = JockeySerializer()
+
+    class Meta:
+        model = RaceRunner
+        fields = [
+            'horse', 'trainer', 'jockey', 'weight', 'number', 'draw',
+            'headgear', 'headgear_first', 'lbs', 'official_rating',
+            'rpr', 'topspeed', 'form', 'last_run', 'trainer_rtf',
+            'trainer_14_days_runs', 'trainer_14_days_wins',
+            'trainer_14_days_percent', 'owner', 'comment', 'spotlight',
+            'stats'
+        ]
+
 class HorseRacingRaceSerializer(serializers.ModelSerializer):
     results = HorseRacingResultSerializer(many=True, read_only=True)
+    runners = RaceRunnerSerializer(many=True, read_only=True)
 
     class Meta:
         model = HorseRacingRace
@@ -178,7 +195,7 @@ class HorseRacingRaceSerializer(serializers.ModelSerializer):
             'race_id', 'off_time', 'name', 'distance_round', 'distance',
             'pattern', 'race_class', 'type', 'age_band', 'rating_band',
             'prize', 'field_size', 'going', 'rail_movements', 'stalls',
-            'weather', 'surface', 'results'
+            'weather', 'surface', 'results', 'runners'
         ]
 
 class HorseRacingMeetingSerializer(serializers.ModelSerializer):
@@ -197,12 +214,3 @@ class HorseRacingBettingOddsSerializer(serializers.ModelSerializer):
     class Meta:
         model = HorseRacingBettingOdds
         fields = ['runner', 'bookmaker', 'odds', 'created_at', 'updated_at']
-
-class RaceRunnerSerializer(serializers.ModelSerializer):
-    horse = HorseSerializer()
-    trainer = TrainerSerializer()
-    jockey = JockeySerializer()
-
-    class Meta:
-        model = RaceRunner
-        fields = ['horse', 'trainer', 'jockey', 'weight', 'number', 'draw']

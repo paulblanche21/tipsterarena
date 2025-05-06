@@ -45,7 +45,7 @@
 .meeting-card .meeting-info .meeting-name {
   font-size: 1.2em;
   font-weight: bold;
-  color: #333;
+  color: #001f3f;
 }
 
 .meeting-card .card-content {
@@ -64,90 +64,162 @@
 }
 
 .race-header {
-  margin-bottom: 10px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: background-color 0.2s ease;
 }
 
-.race-title {
-  margin: 0;
-  font-size: 1.1em;
+.race-header:hover {
+  background-color: #e9ecef;
+}
+
+.race-header.expanded {
+  background-color: #e9ecef;
+  border-bottom: 2px solid #001f3f;
+}
+
+.race-time {
+  font-weight: 600;
   color: #001f3f;
+  min-width: 60px;
+  font-size: 1.1em;
 }
 
-.race-meta {
-  margin: 5px 0;
+.race-name {
+  flex-grow: 1;
+  color: #001f3f;
+  font-weight: 500;
+  font-size: 1.1em;
+}
+
+.race-runners {
+  color: #001f3f;
   font-size: 0.9em;
-  color: #555;
+  font-weight: 500;
 }
 
 .race-details {
-  margin-bottom: 20px;
+  padding: 20px;
+  background-color: #fff;
+  border-top: 1px solid #dee2e6;
+  display: none;
+}
+
+.race-details.expanded {
+  display: block;
 }
 
 .race-details p {
-  margin: 5px 0;
-  font-size: 0.9em;
-  color: #555;
+  margin: 12px 0;
+  padding: 8px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
 }
 
-.race-details p strong {
-  color: #333;
+.race-details strong {
+  color: #001f3f;
+  font-weight: 600;
+  margin-right: 8px;
 }
 
-.horses-list ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.runners-list {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
 }
 
-.horses-list li {
-  font-size: 0.9em;
-  color: #555;
-  margin: 5px 0;
-  line-height: 1.5;
-  padding: 5px 0;
-  border-bottom: 1px dotted #ddd;
+.runner-item {
+  margin-bottom: 20px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.horses-list li:last-child {
-  border-bottom: none;
+.runner-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
 }
 
-.horses-list li strong {
-  color: #333;
-}
-
-.horses-list li span {
-  display: block;
-  margin-left: 15px;
-}
-
-.horses-list li span.jockey,
-.horses-list li span.trainer,
-.horses-list li span.owner {
-  font-style: italic;
-  color: #777;
-}
-
-.horses-list li span.odds {
+.runner-number {
   font-weight: bold;
-  color: #2e7d32;
+  color: #001f3f;
+  min-width: 25px;
+}
+
+.runner-name {
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #001f3f;
+  margin: 0 10px;
+}
+
+.runner-draw {
+  color: #001f3f;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+.runner-details {
+  padding: 15px;
+  background-color: #fff;
+}
+
+.runner-details p {
+  margin: 8px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.runner-jockey,
+.runner-trainer,
+.runner-owner {
+  color: #001f3f;
+  font-weight: 500;
+  padding: 4px 8px;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  margin-right: 12px;
+}
+
+.runner-form,
+.runner-rating,
+.runner-stats,
+.trainer-stats {
+  color: #001f3f;
+  font-weight: 500;
+  padding: 4px 8px;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  margin-top: 8px;
+  width: 100%;
 }
 
 .race-result {
-  margin-top: 10px;
-  padding: 10px;
-  background-color: #f0f8ff;
-  border-radius: 5px;
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
 }
 
-.race-result p {
-  margin: 5px 0;
-  font-size: 0.9em;
-  color: #555;
-}
-
-.race-result p strong {
-  color: #333;
+.race-result h4 {
+  margin: 0 0 10px 0;
+  color: #001f3f;
+  font-weight: 600;
+  font-size: 1.1em;
 }
 
 .race-result ul {
@@ -157,47 +229,103 @@
 }
 
 .race-result li {
+  padding: 8px 12px;
+  color: #001f3f;
+  border-bottom: 1px solid #e9ecef;
+  font-weight: 500;
+}
+
+.race-result li:last-child {
+  border-bottom: none;
+}
+
+.race-result li:first-child {
+  background-color: #e9ecef;
+  border-radius: 4px 4px 0 0;
+}
+
+.event-card {
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.event-header {
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.event-header h3 {
+  color: #001f3f;
+  font-weight: 600;
+  margin: 0;
+  font-size: 1.3em;
+}
+
+.event-date {
+  color: #001f3f;
+  font-weight: 500;
   font-size: 0.9em;
-  color: #555;
-  margin: 2px 0;
+  margin-top: 5px;
+  display: block;
+}
+
+.event-status {
+  color: #001f3f;
+  font-weight: 500;
+  padding: 10px 15px;
+  display: block;
+  border-top: 1px solid #dee2e6;
+  background-color: #f8f9fa;
+}
+
+.race-item {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  margin: 15px;
+  overflow: hidden;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .racecard-feed {
-      padding: 10px;
+  .race-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
   }
 
-  .meeting-card {
-      margin: 5px 0;
+  .race-name {
+    margin: 5px 0;
   }
 
-  .meeting-card .card-header {
-      padding: 8px;
+  .runner-details p {
+    flex-direction: column;
+    gap: 5px;
   }
 
-  .meeting-card .card-content {
-      padding: 8px;
+  .runner-jockey,
+  .runner-trainer,
+  .runner-owner {
+    margin-right: 0;
   }
+}
 
-  .meeting-card .meeting-info .meeting-name {
-      font-size: 1em;
-  }
+/* Add animation for expanding/collapsing */
+.race-details {
+  transition: all 0.3s ease;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+}
 
-  .race-card {
-      padding: 10px;
-  }
-
-  .race-title {
-      font-size: 1em;
-  }
-
-  .race-meta {
-      font-size: 0.85em;
-  }
-
-  .horses-list li {
-      font-size: 0.85em;
-      line-height: 1.4;
-  }
+.race-details.expanded {
+  max-height: 2000px; /* Adjust based on your content */
+  opacity: 1;
+  padding: 20px;
 }

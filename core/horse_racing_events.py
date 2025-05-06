@@ -22,7 +22,13 @@ def get_racecards_json():
         logger.debug("Querying meetings from %s to %s", start_date, end_date)
         meetings: models.QuerySet[HorseRacingMeeting] = HorseRacingMeeting.objects.filter(  # type: ignore[attr-defined]
             date__range=[start_date, end_date]
-        ).select_related('course').prefetch_related('races__results').order_by('date', 'course__name')
+        ).select_related('course').prefetch_related(
+            'races__results',
+            'races__runners',
+            'races__runners__horse',
+            'races__runners__jockey',
+            'races__runners__trainer'
+        ).order_by('date', 'course__name')
         
         logger.debug("Found %d meetings", len(meetings))
         
@@ -32,26 +38,27 @@ def get_racecards_json():
             logger.debug("Processing meeting: %s on %s, Races: %d", meeting.course.name, meeting.date, meeting.races.count())
             for race in meeting.races.all():
                 results = race.results.all()
+                runners = race.runners.all()
                 winner = next((result.horse.name for result in results if result.position == '1'), None)
                 horses = [
                     {
-                        'number': idx + 1,  # Fallback number
-                        'name': result.horse.name,
-                        'jockey': result.jockey.name if result.jockey else 'Unknown',
-                        'trainer': result.trainer.name if result.trainer else 'Unknown',
-                        'owner': 'Unknown',
+                        'number': runner.number,
+                        'name': runner.horse.name,
+                        'jockey': runner.jockey.name if runner.jockey else 'Unknown',
+                        'trainer': runner.trainer.name if runner.trainer else 'Unknown',
+                        'owner': runner.owner or 'Unknown',
                         'odds': 'N/A',
-                        'form': 'N/A',
-                        'rpr': result.rpr or 'N/A',
-                        'spotlight': 'N/A',
+                        'form': runner.form or 'N/A',
+                        'rpr': runner.rpr or 'N/A',
+                        'spotlight': runner.spotlight or 'N/A',
                         'trainer_14_days': {
-                            'runs': 0,
-                            'wins': 0,
-                            'percent': 0
+                            'runs': runner.trainer_14_days_runs or 0,
+                            'wins': runner.trainer_14_days_wins or 0,
+                            'percent': runner.trainer_14_days_percent or 0
                         },
-                        'finish_status': str(result.position) if result.position else 'Unknown'
+                        'finish_status': str(results.filter(horse=runner.horse).first().position) if results.filter(horse=runner.horse).exists() else 'Unknown'
                     }
-                    for idx, result in enumerate(results)
+                    for runner in runners
                 ]
                 races.append({
                     'race_time': race.off_time,

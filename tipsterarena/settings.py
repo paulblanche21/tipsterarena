@@ -28,7 +28,7 @@ SECRET_KEY = "django-insecure-or8ih)*8^-c_@9h4r&sojeg#*5841-k%f9s+$tj##9n=&thm)4
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True  # Set to False in production for security
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']  # Add production hosts here
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']  # Add production hosts here
 
 # Application definition
 INSTALLED_APPS = [
@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'corsheaders',                    # CORS headers for cross-origin requests
     'rest_framework',                 # Django REST framework for API support
     'rest_framework.authtoken',       # Token authentication for REST framework
-    "csp",                            # Content Security Policy enforcement
+    'csp',                            # Content Security Policy enforcement
     "django_vite",                    # Integration with Vite for frontend assets
     'django_crontab',                 # Cron job management  
     'social_django'                   # Social authentication support                     
@@ -50,6 +50,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",         # Security enhancements
+    "whitenoise.middleware.WhiteNoiseMiddleware",                 # Add this line
     "django.contrib.sessions.middleware.SessionMiddleware",   # Session support
     'corsheaders.middleware.CorsMiddleware',                 # CORS middleware for handling cross-origin requests
     "django.middleware.common.CommonMiddleware",             # Common utilities
@@ -116,6 +117,9 @@ STATIC_URL = '/static/'              # URL prefix for static files
 STATICFILES_DIRS = [BASE_DIR / 'static']  # Directory for static files during development
 STATIC_ROOT = BASE_DIR / 'staticfiles'    # Directory for collected static files in production
 
+# Add whitenoise for static file serving
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 # Media files configuration (user-uploaded content)
 MEDIA_URL = '/media/'         # URL prefix for media files
 MEDIA_ROOT = BASE_DIR / 'media'  # Directory for storing media files
@@ -144,7 +148,15 @@ CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "https://*.twimg.com", "https://js
 CSP_SCRIPT_SRC = ("'self'", "https://*.twimg.com", "https://js.intercomcdn.com")
 CSP_FONT_SRC = ("'self'", "https://*.twimg.com", "https://js.intercomcdn.com", "https://fonts.intercomcdn.com", "'data:'")  # Added 'data:'
 CSP_IMG_SRC = ("'self'", "data:", "https://*.twimg.com")
-CSP_CONNECT_SRC = ("'self'", "https://*.twimg.com", "https://api.x.com")
+CSP_CONNECT_SRC = (
+    "'self'",
+    "ws://localhost:8000",
+    "ws://127.0.0.1:8000",
+    "wss://localhost:8000",
+    "wss://127.0.0.1:8000",
+    "https://*.twimg.com",
+    "https://api.x.com"
+)
 CSP_STYLE_SRC = (
     "'self'",                  # Allow styles from same origin
     "https://cdnjs.cloudflare.com",  # Font Awesome

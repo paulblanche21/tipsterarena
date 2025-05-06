@@ -6,6 +6,7 @@ Contains database models for user profiles, tips, and sports events.
 # models.py
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models import Q
 
 # Model representing a user's tip
 class Tip(models.Model):
@@ -447,7 +448,6 @@ class LeaderboardEntry(models.Model):
         unique_together = ('event', 'player')
         
 # Tennis models
-# Tennis models
 class TennisLeague(models.Model):
     league_id = models.CharField(max_length=50, unique=True)
     name = models.CharField(max_length=100)
@@ -463,9 +463,48 @@ class TennisTournament(models.Model):
     league = models.ForeignKey(TennisLeague, on_delete=models.CASCADE, related_name='tournaments')
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ('upcoming', 'Upcoming'),
+            ('active', 'Active'),
+            ('completed', 'Completed')
+        ],
+        default='upcoming'
+    )
+    tournament_type = models.CharField(
+        max_length=50,
+        choices=[
+            ('grand_slam', 'Grand Slam'),
+            ('masters', 'Masters 1000'),
+            ('atp_500', 'ATP 500'),
+            ('atp_250', 'ATP 250'),
+            ('wta_1000', 'WTA 1000'),
+            ('wta_500', 'WTA 500'),
+            ('wta_250', 'WTA 250')
+        ],
+        default='atp_250'
+    )
+    surface = models.CharField(
+        max_length=20,
+        choices=[
+            ('hard', 'Hard'),
+            ('clay', 'Clay'),
+            ('grass', 'Grass'),
+            ('carpet', 'Carpet')
+        ],
+        default='hard'
+    )
+    prize_money = models.CharField(max_length=100, blank=True, null=True)
+    draw_size = models.PositiveIntegerField(null=True, blank=True)
+    location = models.CharField(max_length=200, blank=True, null=True)
+    website = models.URLField(blank=True, null=True)
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.get_tournament_type_display()})"
+
+    class Meta:
+        ordering = ['-start_date', 'name']
 
 class TennisPlayer(models.Model):
     name = models.CharField(max_length=100)
@@ -474,6 +513,52 @@ class TennisPlayer(models.Model):
 
     def __str__(self):
         return self.name
+
+class TennisPlayerStats(models.Model):
+    player = models.OneToOneField(TennisPlayer, on_delete=models.CASCADE, related_name='stats')
+    matches_played = models.PositiveIntegerField(default=0)
+    matches_won = models.PositiveIntegerField(default=0)
+    surface_stats = models.JSONField(default=dict)  # Stats by surface
+    tournament_stats = models.JSONField(default=dict)  # Stats by tournament
+    head_to_head = models.JSONField(default=dict)  # H2H records
+    current_streak = models.IntegerField(default=0)
+    best_ranking = models.PositiveIntegerField(null=True, blank=True)
+    last_updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Stats for {self.player.name}"
+
+    def update_stats(self):
+        """Update player statistics based on their matches"""
+        matches = TennisEvent.objects.filter(
+            Q(player1=self.player) | Q(player2=self.player),
+            state='post'
+        )
+        
+        self.matches_played = matches.count()
+        self.matches_won = matches.filter(winner=self.player).count()
+        
+        # Update surface stats
+        surface_stats = {}
+        for surface in ['hard', 'clay', 'grass', 'carpet']:
+            surface_matches = matches.filter(tournament__surface=surface)
+            surface_stats[surface] = {
+                'played': surface_matches.count(),
+                'won': surface_matches.filter(winner=self.player).count()
+            }
+        self.surface_stats = surface_stats
+        
+        # Update tournament stats
+        tournament_stats = {}
+        for tournament in TennisTournament.objects.all():
+            tournament_matches = matches.filter(tournament=tournament)
+            tournament_stats[tournament.tournament_id] = {
+                'played': tournament_matches.count(),
+                'won': tournament_matches.filter(winner=self.player).count()
+            }
+        self.tournament_stats = tournament_stats
+        
+        self.save()
 
 class TennisVenue(models.Model):
     name = models.CharField(max_length=200)
@@ -510,14 +595,60 @@ class TennisEvent(models.Model):
     player1_rank = models.CharField(max_length=10, default="N/A")
     player2_rank = models.CharField(max_length=10, default="N/A")
     last_updated = models.DateTimeField(auto_now=True)
+    
+    # New fields
+    duration = models.DurationField(null=True, blank=True)
+    tiebreak_sets = models.JSONField(default=list)  # Store tiebreak scores
+    service_stats = models.JSONField(default=dict)  # Store service statistics
+    point_by_point = models.JSONField(default=list)  # Store point-by-point data
+    weather = models.JSONField(default=dict)  # Store weather conditions
+    court_conditions = models.CharField(max_length=100, default="Normal")
+    winner = models.ForeignKey(
+        TennisPlayer,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='won_matches'
+    )
 
     def __str__(self):
         return f"{self.player1.name} vs {self.player2.name} - {self.tournament.name} ({self.date})"
+
+    def save(self, *args, **kwargs):
+        # Update winner if match is completed
+        if self.state == 'post' and self.completed and not self.winner:
+            self.update_winner()
+        
+        # Update player stats if match is completed
+        if self.state == 'post' and self.completed:
+            self.update_player_stats()
+        
+        super().save(*args, **kwargs)
+
+    def update_winner(self):
+        """Determine and set the winner of the match"""
+        if not self.sets:
+            return
+        
+        player1_sets = sum(1 for set_data in self.sets if int(set_data['team1Score']) > int(set_data['team2Score']))
+        player2_sets = sum(1 for set_data in self.sets if int(set_data['team2Score']) > int(set_data['team1Score']))
+        
+        if player1_sets > player2_sets:
+            self.winner = self.player1
+        elif player2_sets > player1_sets:
+            self.winner = self.player2
+
+    def update_player_stats(self):
+        """Update statistics for both players"""
+        for player in [self.player1, self.player2]:
+            stats, _ = TennisPlayerStats.objects.get_or_create(player=player)
+            stats.update_stats()
 
     class Meta:
         indexes = [
             models.Index(fields=['date', 'state']),
             models.Index(fields=['tournament']),
+            models.Index(fields=['winner']),
         ]
 
 class TennisBettingOdds(models.Model):
@@ -528,8 +659,6 @@ class TennisBettingOdds(models.Model):
 
     def __str__(self):
         return f"Odds for {self.event.player1.name} vs {self.event.player2.name}"
-    
-
 
 # Model for a horse racing course
 class HorseRacingCourse(models.Model):

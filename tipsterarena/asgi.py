@@ -10,11 +10,10 @@ https://docs.djangoproject.com/en/5.1/howto/deployment/asgi/
 """
 
 import os
-
 from django.core.asgi import get_asgi_application
 
 # Set the default Django settings module for the application
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tipsterarena.settings")
 
-# Define the ASGI application callable
+# Initialize Django ASGI application early to ensure the app is loaded
 application = get_asgi_application()

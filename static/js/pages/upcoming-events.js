@@ -152,6 +152,7 @@ async function populateModal(sport, category) {
         const modalTitle = document.getElementById('event-modal-title');
         const modalBody = document.getElementById('event-modal-body');
         const modalClose = document.querySelector('.event-modal-close');
+        
         if (!modal || !modalTitle || !modalBody) {
             console.error('Modal elements not found');
             return;
@@ -181,32 +182,73 @@ async function populateModal(sport, category) {
             : category.charAt(0).toUpperCase() + category.slice(1);
         modalTitle.textContent = `${sportName} ${categoryName}`;
 
-        modalBody.innerHTML = ''; // Clear previous content
+        // Show modal immediately with loading state
+        modal.style.display = 'block';
         modalBody.innerHTML = '<p>Loading events...</p>';
 
-        // Always fetch fresh events for the requested category
+        // Fetch events
         const events = await fetchEventsForSport(sport, category);
         console.log(`Fetched ${events.length} events for ${sport} ${category}`);
         
+        if (!events || events.length === 0) {
+            modalBody.innerHTML = `<p>No ${categoryName.toLowerCase()} available for ${sportName}.</p>`;
+            return;
+        }
+
+        // Format and display events
         const html = await SPORT_HANDLERS[sport].formatEvents(events, category, true);
-        modalBody.innerHTML = html || `<p>No ${categoryName.toLowerCase()} available for ${sportName}.</p>`;
+        modalBody.innerHTML = html;
         console.log(`Modal populated for ${sport} ${category}`);
         
-        setupExpandableCards();
+        // Set up expandable cards after content is loaded
+        const cards = modalBody.querySelectorAll('.event-card');
+        console.log(`Found ${cards.length} event cards`);
+        
+        cards.forEach(card => {
+            const races = card.querySelectorAll('.race-item');
+            console.log(`Found ${races.length} races in card`);
+            
+            races.forEach(race => {
+                const header = race.querySelector('.race-header');
+                const details = race.querySelector('.race-details');
+                
+                if (header && details) {
+                    // Initially hide details
+                    details.style.display = 'none';
+                    
+                    // Add click handler
+                    header.addEventListener('click', () => {
+                        const isExpanded = header.classList.contains('expanded');
+                        
+                        // Close all other races in this card
+                        races.forEach(otherRace => {
+                            if (otherRace !== race) {
+                                const otherHeader = otherRace.querySelector('.race-header');
+                                const otherDetails = otherRace.querySelector('.race-details');
+                                if (otherHeader && otherDetails) {
+                                    otherDetails.style.display = 'none';
+                                    otherHeader.classList.remove('expanded');
+                                }
+                            }
+                        });
+                        
+                        // Toggle current race
+                        details.style.display = isExpanded ? 'none' : 'block';
+                        header.classList.toggle('expanded');
+                    });
+                }
+            });
+        });
         
         if (sport === 'golf' && (category === 'inplay' || category === 'results') && events.length > 0) {
             await SPORT_HANDLERS[sport].setupLeaderboardUpdates();
             SPORT_HANDLERS[sport].setupLeaderboardControls();
         }
-        
-        modal.style.display = 'flex';
     } catch (error) {
-        console.error(`Error populating modal for ${sport} ${category}:`, error);
+        console.error('Error populating modal:', error);
         const modalBody = document.getElementById('event-modal-body');
         if (modalBody) {
-            modalBody.innerHTML = '<p>Error loading events. Please try again later.</p>';
-        } else {
-            console.error('Cannot display error message: modalBody element not found');
+            modalBody.innerHTML = '<p>Error loading events. Please try again.</p>';
         }
     } finally {
         isRenderingModal = false;
@@ -215,63 +257,44 @@ async function populateModal(sport, category) {
 
 // Adds toggle functionality for expandable cards
 export function setupExpandableCards() {
-    console.log('Setting up expandable cards');
-    const cards = document.querySelectorAll('.expandable-card');
-    console.log(`Found ${cards.length} expandable cards`);
-
-    // First remove any existing click handlers from all cards
+    const cards = document.querySelectorAll('.event-card');
+    console.log('Found event cards:', cards.length);
+    
     cards.forEach(card => {
-        const header = card.querySelector('.card-header');
-        if (header) {
-            const clone = header.cloneNode(true);
-            header.parentNode.replaceChild(clone, header);
-        }
-    });
-
-    // Then add new click handlers
-    cards.forEach(card => {
-        const header = card.querySelector('.card-header');
-        if (header) {
-            header.addEventListener('click', handleCardClick);
-        }
-    });
-}
-
-function handleCardClick(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const header = e.currentTarget;
-    const card = header.closest('.expandable-card');
-    
-    if (!card) return;
-    
-    const details = card.querySelector('.card-details');
-    if (!details) return;
-    
-    // First collapse all other cards
-    document.querySelectorAll('.expandable-card').forEach(otherCard => {
-        if (otherCard !== card && otherCard.classList.contains('expanded')) {
-            const otherDetails = otherCard.querySelector('.card-details');
-            if (otherDetails) {
-                otherDetails.style.display = 'none';
-                otherCard.classList.remove('expanded');
+        const races = card.querySelectorAll('.race-item');
+        console.log(`Found ${races.length} races in card`);
+        
+        races.forEach(race => {
+            const header = race.querySelector('.race-header');
+            const details = race.querySelector('.race-details');
+            
+            if (header && details) {
+                // Initially hide details
+                details.style.display = 'none';
+                
+                // Add click handler
+                header.addEventListener('click', () => {
+                    const isExpanded = header.classList.contains('expanded');
+                    
+                    // Close all other races in this card
+                    races.forEach(otherRace => {
+                        if (otherRace !== race) {
+                            const otherHeader = otherRace.querySelector('.race-header');
+                            const otherDetails = otherRace.querySelector('.race-details');
+                            if (otherHeader && otherDetails) {
+                                otherDetails.style.display = 'none';
+                                otherHeader.classList.remove('expanded');
+                            }
+                        }
+                    });
+                    
+                    // Toggle current race
+                    details.style.display = isExpanded ? 'none' : 'block';
+                    header.classList.toggle('expanded');
+                });
             }
-        }
+        });
     });
-    
-    // Then toggle the clicked card with a small delay to ensure smooth transition
-    setTimeout(() => {
-        const isExpanded = card.classList.contains('expanded');
-        if (isExpanded) {
-            details.style.display = 'none';
-            card.classList.remove('expanded');
-        } else {
-            details.style.display = 'block';
-            card.classList.add('expanded');
-        }
-        console.log(`Toggled card ${card.dataset.eventId}, expanded: ${!isExpanded}`);
-    }, 50);
 }
 
 // Initializes button-based event navigation
