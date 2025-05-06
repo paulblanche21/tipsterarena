@@ -3,9 +3,8 @@
 # core/urls.py
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
-from django.conf import settings
-from django.conf.urls.static import static
 from . import views
+from .views import subscription_views
 
 # URL patterns for the Tipster Arena core app
 urlpatterns = [
@@ -66,7 +65,7 @@ urlpatterns = [
     path('api/like-comment/', views.like_comment, name='like_comment'),
     path('api/share-comment/', views.share_comment, name='share_comment'),
     path('api/tip/<int:tip_id>/', views.tip_detail, name='tip-detail'),
-    path('toggle-bookmark/', views.toggle_bookmark, name='toggle_bookmark'),
+    path('api/toggle-bookmark/', views.toggle_bookmark, name='toggle_bookmark'),
     path('send-message/', views.send_message, name='send_message'),
     path('api/verify-tip/', views.VerifyTipView.as_view(), name='verify_tip'),
 
@@ -125,17 +124,15 @@ urlpatterns = [
          views.HorseRacingBettingOddsBulkUpsert.as_view(),
          name='horse_racing_betting_odds_bulk_upsert'),
 
-
-   
-
     path('tipster/', include([
-    path('become/', views.become_tipster, name='become_tipster'),
-    path('dashboard/', views.tipster_dashboard, name='tipster_dashboard'),
-    path('tiers/', views.manage_tiers, name='manage_tiers'),
-    path('subscribe/<str:username>/<int:tier_id>/', views.subscribe_to_tipster, name='subscribe_to_tipster'),
-    path('cancel/<int:subscription_id>/', views.cancel_subscription, name='cancel_subscription'),
-]))
-
+        path('become/', subscription_views.become_tipster, name='become_tipster'),
+        path('setup-tiers/', subscription_views.setup_tiers, name='setup_tiers'),
+        path('dashboard/', subscription_views.tipster_dashboard, name='tipster_dashboard'),
+        path('tiers/', subscription_views.manage_tiers, name='manage_tiers'),
+        path('subscribe/<str:username>/<int:tier_id>/', subscription_views.subscribe_to_tipster, name='subscribe_to_tipster'),
+        path('cancel/<int:subscription_id>/', subscription_views.cancel_subscription, name='cancel_subscription'),
+        path('webhook/', subscription_views.stripe_webhook, name='stripe_webhook'),
+    ])),
 ]
 
 

@@ -345,6 +345,9 @@
     border-radius: 10px;
     padding: 15px;
     margin-bottom: 15px;
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Trending Tips List */
@@ -360,9 +363,94 @@
 .trending-tip {
     display: flex;
     align-items: flex-start;
-    gap: 10px;
-    width: 100%;
+    padding: 10px;
+    border-bottom: 1px solid #e1e8ed;
+    position: relative;
+}
+
+.trending-tip:last-child {
+    border-bottom: none;
+}
+
+/* Trending Tip Content */
+.trending-tip-content {
+    flex: 1;
+    min-width: 0; /* Prevents content from overflowing */
+    padding-right: 40px; /* Space for the heart icon */
+}
+
+/* Trending Tip Text */
+.trending-tip-text {
+    font-size: 14px;
+    color: #14171a;
+    margin: 0;
+    white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Trending Tip User */
+.trending-tip-user {
+    font-size: 13px;
+    color: #657786;
+    margin-top: 4px;
+}
+
+.trending-tip-user .user-link {
+    color: #657786;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.trending-tip-user .user-link:hover {
+    color: #001f3f;
+    text-decoration: underline;
+}
+
+/* Heart Icon Container */
+.trending-tip-heart {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #657786; /* Default gray color */
+}
+
+.trending-tip-heart.liked {
+    color: #e0245e; /* Red color for liked tips */
+}
+
+.trending-tip-heart i {
+    margin-right: 4px;
+    transition: color 0.2s ease;
+}
+
+.trending-tip-heart:hover {
+    color: #e0245e; /* Red on hover */
+    cursor: pointer;
+}
+
+.trending-tip-heart-count {
+    font-size: 13px;
+    color: #657786;
+}
+
+/* Show More Link */
+.show-more {
+    color: #1da1f2;
+    text-decoration: none;
+    font-size: 14px;
+    margin-top: auto;
+    padding-top: 15px;
+    border-top: 1px solid #e1e8ed;
+}
+
+.show-more:hover {
+    text-decoration: underline;
 }
 
 /* Who to Follow Header */

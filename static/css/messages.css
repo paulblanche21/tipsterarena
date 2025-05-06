@@ -949,3 +949,8 @@
     font-size: 18px;
   }
 }
+
+/* Hide floating message button on messages page */
+.messages-page .messages-card {
+    display: none !important;
+}

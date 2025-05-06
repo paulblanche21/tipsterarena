@@ -83,9 +83,9 @@
             <li><a href="{% url 'messages' %}"><i class="fas fa-envelope nav-icon"></i><span>Messages</span></a></li>
             <li><a href="{% url 'bookmarks' %}"><i class="fas fa-bookmark nav-icon"></i><span>Bookmarks</span></a></li>
             {% if request.user.userprofile.is_tipster %}
-                <li><a href="{% url 'tipster_dashboard' %}"><i class="fas fa-chart-line nav-icon"></i><span>Tipster Dashboard</span></a></li>
+                <li><a href="{% url 'tipster_dashboard' %}"><i class="fas fa-chart-line nav-icon"></i><span>Pro Dashboard</span></a></li>
             {% else %}
-                <li><a href="{% url 'become_tipster' %}"><i class="fas fa-star nav-icon"></i><span>Become a Tipster</span></a></li>
+                <li><a href="{% url 'become_tipster' %}"><i class="fas fa-star nav-icon"></i><span>Go Pro</span></a></li>
             {% endif %}
         </ul>
         <div class="nav-post">

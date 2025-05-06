@@ -3,6 +3,9 @@ function getCurrentPage() {
   return window.location.pathname;
 }
 
+// Import trending tips
+import trendingTips from './pages/trending-tips.js';
+
 document.addEventListener('DOMContentLoaded', async () => {
   console.log('DOM loaded, page:', getCurrentPage());
   const page = getCurrentPage();
@@ -53,7 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           module.setupCentralFeedPost();
           module.setupPostModal();
         }),
-        import('./pages/trending-tips.js').then(module => module.init()),
+        import('./pages/trending-tips.js').then(module => module.default.init()),
         import('./tips.js').then(module => {
           module.setupTipInteractions();
           module.setupReplyModal();
@@ -71,7 +74,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           module.setupCentralFeedPost();
           module.setupPostModal();
         }),
-        import('./pages/trending-tips.js').then(module => module.init()),
+        import('./pages/trending-tips.js').then(module => module.default.init()),
         import('./tips.js').then(module => {
           module.setupTipInteractions();
           module.setupReplyModal();
@@ -131,61 +134,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       await import('./pages/messages.js').then(module => module.init());
     }
 
-    // Trending Tips (unchanged)
+    // Initialize trending tips if the element exists
     const trendingTipsList = document.querySelector('.trending-tips-list');
     if (trendingTipsList) {
-      try {
-        const response = await fetch('/api/trending-tips/', {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-        });
-        if (!response.ok) {
-          console.warn(`Failed to fetch trending tips: ${response.status}`);
-          if (response.status === 401) {
-            trendingTipsList.innerHTML = '<p><a href="/login/">Please log in</a> to view trending tips.</p>';
-          } else {
-            trendingTipsList.innerHTML = '<p>Unable to load trending tips.</p>';
-          }
-        } else {
-          const contentType = response.headers.get('content-type');
-          if (!contentType || !contentType.includes('application/json')) {
-            console.warn('Received non-JSON response from /api/trending-tips/');
-            trendingTipsList.innerHTML = '<p>Unable to load trending tips.</p>';
-          } else {
-            const data = await response.json();
-            if (!data.success) {
-              const errorMessage = data.error || 'An unexpected error occurred';
-              console.warn(`Trending tips error: ${errorMessage}`);
-              trendingTipsList.innerHTML = `<p>${errorMessage === 'User not authenticated' ? '<a href="/login/">Please log in</a> to view trending tips.' : 'Unable to load trending tips: ' + errorMessage}</p>`;
-            } else {
-              trendingTipsList.innerHTML = '';
-              if (data.trending_tips && data.trending_tips.length > 0) {
-                data.trending_tips.forEach(tip => {
-                  trendingTipsList.innerHTML += `
-                    <div class="trending-tip">
-                      <img src="${tip.avatar_url}" alt="${tip.username} Avatar" class="tip-avatar">
-                      <div class="tip-details">
-                        <a href="${tip.profile_url}" class="tip-username"><strong>@${tip.handle}</strong></a>
-                        <p class="tip-text">${tip.text}</p>
-                      </div>
-                      <span class="tip-likes"><i class="fas fa-heart"></i> ${tip.likes}</span>
-                    </div>
-                  `;
-                });
-              } else {
-                trendingTipsList.innerHTML = '<p>No trending tips available.</p>';
-              }
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching trending tips:', error);
-        trendingTipsList.innerHTML = '<p>Unable to load trending tips.</p>';
-      }
+        console.log('Initializing trending tips...');
+        trendingTips.init();
     }
 
-    // Who to Follow (unchanged)
+    // Who to Follow
     const followList = document.querySelector('.follow-list');
     if (followList) {
       try {

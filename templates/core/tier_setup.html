@@ -1,0 +1,592 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Go Pro - Step 2 - Tipster Arena{% endblock %}
+
+{% block content %}
+<div class="tipster-onboarding">
+    <div class="tipster-onboarding-header">
+        <h1>Set Up Your Tiers</h1>
+        <p class="subtitle">Create subscription tiers to monetize your tips</p>
+        <div class="progress-steps">
+            <div class="step completed">
+                <div class="step-number"><i class="fas fa-check"></i></div>
+                <div class="step-label">Profile Setup</div>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step active">
+                <div class="step-number">2</div>
+                <div class="step-label">Tier Setup</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tipster-onboarding-content">
+        <div class="tier-templates">
+            <h3>Choose Your Tier Structure</h3>
+            <p class="template-intro">Select a template below as your starting point. You can customize all details afterward.</p>
+            
+            <div class="template-grid">
+                <div class="template-card" data-template="single">
+                    <div class="template-icon">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <div class="template-header">
+                        <h4>Single Tier</h4>
+                        <p>Perfect for focused, premium content</p>
+                    </div>
+                    <div class="template-preview">
+                        <div class="tier-preview">
+                            <div class="tier-name">Premium Tips</div>
+                            <div class="tier-price">€12.99<span class="period">/month</span></div>
+                            <ul class="tier-features">
+                                <li><i class="fas fa-check"></i> All premium tips</li>
+                                <li><i class="fas fa-check"></i> Direct messaging</li>
+                                <li><i class="fas fa-check"></i> Priority support</li>
+                            </ul>
+                            <button class="preview-btn">Select Template</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="template-card" data-template="classic">
+                    <div class="template-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="template-header">
+                        <h4>Classic Three-Tier</h4>
+                        <p>Traditional good-better-best pricing</p>
+                    </div>
+                    <div class="template-preview">
+                        <div class="tier-preview bronze">
+                            <div class="tier-name">Bronze</div>
+                            <div class="tier-price">€9.99<span class="period">/month</span></div>
+                            <button class="preview-btn">Select Template</button>
+                        </div>
+                        <div class="tier-preview silver">
+                            <div class="tier-name">Silver</div>
+                            <div class="tier-price">€19.99<span class="period">/month</span></div>
+                            <button class="preview-btn">Select Template</button>
+                        </div>
+                        <div class="tier-preview gold">
+                            <div class="tier-name">Gold</div>
+                            <div class="tier-price">€29.99<span class="period">/month</span></div>
+                            <button class="preview-btn">Select Template</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="template-card" data-template="custom">
+                    <div class="template-icon">
+                        <i class="fas fa-sliders-h"></i>
+                    </div>
+                    <div class="template-header">
+                        <h4>Custom Setup</h4>
+                        <p>Build your own tier structure</p>
+                    </div>
+                    <div class="template-preview">
+                        <div class="tier-preview custom">
+                            <i class="fas fa-plus-circle"></i>
+                            <div class="custom-text">Start from scratch</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form method="POST" class="tier-form" id="tierForm" style="display: none;">
+            {% csrf_token %}
+            <input type="hidden" name="template_type" id="templateType">
+            
+            <div id="tiersContainer">
+                <!-- Tier forms will be dynamically inserted here -->
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Complete Setup <i class="fas fa-check"></i></button>
+                <button type="button" class="btn-secondary" id="backToTemplates">Back to Templates</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.tipster-onboarding {
+    max-width: var(--content-width);
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: var(--secondary-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-light);
+}
+
+.tipster-onboarding-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.tipster-onboarding-header h1 {
+    font-size: 2.5rem;
+    color: var(--primary-bg);
+    margin-bottom: 1rem;
+}
+
+.template-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.template-card {
+    background: white;
+    border: 2px solid var(--border-color);
+    border-radius: 16px;
+    padding: 2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.template-card:hover {
+    border-color: var(--red-accent);
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.template-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--primary-bg);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.template-icon i {
+    font-size: 24px;
+    color: white;
+}
+
+.template-header {
+    margin-bottom: 1.5rem;
+}
+
+.template-header h4 {
+    color: var(--primary-bg);
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.template-header p {
+    color: var(--gray-light);
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.template-preview {
+    border-top: 1px solid var(--border-color);
+    padding-top: 1.5rem;
+}
+
+.tier-preview {
+    background: rgba(0, 31, 63, 0.02);
+    border: 1px solid rgba(0, 31, 63, 0.1);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.tier-preview:hover {
+    background: rgba(0, 31, 63, 0.05);
+}
+
+.tier-name {
+    font-weight: 600;
+    color: var(--primary-bg);
+    margin-bottom: 0.5rem;
+}
+
+.tier-price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--red-accent);
+    margin-bottom: 1rem;
+}
+
+.period {
+    font-size: 1rem;
+    color: var(--gray-light);
+    font-weight: normal;
+}
+
+.tier-features {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.tier-features li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--primary-bg);
+}
+
+.tier-features i {
+    color: var(--red-accent);
+    font-size: 0.875rem;
+}
+
+.bronze { border-left: 4px solid #CD7F32; }
+.silver { border-left: 4px solid #C0C0C0; }
+.gold { border-left: 4px solid #FFD700; }
+
+.custom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+}
+
+.custom i {
+    font-size: 2rem;
+    color: var(--red-accent);
+    margin-bottom: 1rem;
+}
+
+.custom-text {
+    color: var(--primary-bg);
+    font-weight: 500;
+}
+
+/* Tier Form Styles */
+.tier-section {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.tier-section h4 {
+    color: var(--primary-bg);
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    color: var(--primary-bg);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus {
+    border-color: var(--red-accent);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 65, 54, 0.1);
+}
+
+.price-input-wrapper {
+    position: relative;
+    max-width: 200px;
+}
+
+.currency-symbol {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray-light);
+}
+
+.price-input-wrapper input {
+    padding-left: 2rem;
+}
+
+.features-list {
+    margin-top: 1rem;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.remove-feature {
+    color: var(--red-accent);
+    cursor: pointer;
+    font-size: 1.25rem;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.remove-feature:hover {
+    opacity: 1;
+}
+
+.add-feature {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--primary-bg);
+    background: none;
+    border: none;
+    padding: 0.5rem 0;
+    cursor: pointer;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+}
+
+.add-feature i {
+    color: var(--red-accent);
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.btn-primary, .btn-secondary {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background: var(--red-accent);
+    color: white;
+    border: none;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 65, 54, 0.2);
+}
+
+.btn-secondary {
+    background: none;
+    border: 2px solid var(--primary-bg);
+    color: var(--primary-bg);
+}
+
+.btn-secondary:hover {
+    background: var(--primary-bg);
+    color: white;
+}
+
+.preview-btn {
+    margin-top: auto;
+    background-color: var(--red-accent);
+    color: white;
+    border: none;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 1rem;
+    width: 100%;
+    text-align: center;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.preview-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 65, 54, 0.2);
+}
+
+.bronze .preview-btn { background-color: #CD7F32; }
+.silver .preview-btn { background-color: #C0C0C0; }
+.gold .preview-btn { background-color: #FFD700; color: var(--primary-bg); }
+
+.bronze .preview-btn:hover { box-shadow: 0 4px 12px rgba(205, 127, 50, 0.3); }
+.silver .preview-btn:hover { box-shadow: 0 4px 12px rgba(192, 192, 192, 0.3); }
+.gold .preview-btn:hover { box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3); }
+
+@media (max-width: 768px) {
+    .tipster-onboarding {
+        padding: 1rem;
+        margin: 1rem;
+    }
+
+    .template-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .btn-primary, .btn-secondary {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const templateCards = document.querySelectorAll('.template-card');
+    const tierForm = document.getElementById('tierForm');
+    const tiersContainer = document.getElementById('tiersContainer');
+    const templateType = document.getElementById('templateType');
+    const backToTemplates = document.getElementById('backToTemplates');
+    const templatesSection = document.querySelector('.tier-templates');
+    const previewBtns = document.querySelectorAll('.preview-btn');
+
+    templateCards.forEach(card => {
+        card.addEventListener('click', () => {
+            const template = card.dataset.template;
+            templateType.value = template;
+            
+            // Hide templates, show form
+            templatesSection.style.display = 'none';
+            tierForm.style.display = 'block';
+            
+            // Generate appropriate form based on template
+            generateTierForms(template);
+        });
+    });
+
+    backToTemplates.addEventListener('click', () => {
+        templatesSection.style.display = 'block';
+        tierForm.style.display = 'none';
+    });
+
+    // Add click handler for preview buttons
+    previewBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Find the parent template card and trigger its click
+            const card = btn.closest('.template-card');
+            if (card) {
+                card.click();
+            }
+        });
+    });
+
+    function generateTierForms(template) {
+        tiersContainer.innerHTML = '';
+        
+        switch(template) {
+            case 'single':
+                addTierForm('Premium', 12.99);
+                break;
+            case 'classic':
+                addTierForm('Bronze', 9.99);
+                addTierForm('Silver', 19.99);
+                addTierForm('Gold', 29.99);
+                break;
+            case 'custom':
+                addTierForm('New Tier', '');
+                break;
+        }
+    }
+
+    function addTierForm(name, price) {
+        const tierSection = document.createElement('div');
+        tierSection.className = 'tier-section';
+        tierSection.innerHTML = `
+            <h4>
+                ${name} Tier
+                <span class="remove-tier">&times;</span>
+            </h4>
+            <div class="form-group">
+                <label>Tier Name</label>
+                <input type="text" class="form-control" name="tier_name[]" value="${name}" required>
+            </div>
+            <div class="form-group">
+                <label>Monthly Price (€)</label>
+                <div class="price-input-wrapper">
+                    <span class="currency-symbol">€</span>
+                    <input type="number" class="form-control" name="tier_price[]" value="${price}" min="5" max="100" step="0.01" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea class="form-control" name="tier_description[]" rows="3" required></textarea>
+            </div>
+            <div class="form-group">
+                <label>Features</label>
+                <div class="features-list">
+                    <div class="feature-item">
+                        <input type="text" class="form-control" name="tier_features[]" placeholder="Add a feature">
+                    </div>
+                </div>
+                <button type="button" class="add-feature">
+                    <i class="fas fa-plus"></i> Add Feature
+                </button>
+            </div>
+            <div class="form-group">
+                <label>Maximum Subscribers (Optional)</label>
+                <input type="number" class="form-control" name="tier_max_subscribers[]" min="1">
+            </div>
+        `;
+
+        tiersContainer.appendChild(tierSection);
+
+        // Add event listeners for remove tier and add feature buttons
+        tierSection.querySelector('.remove-tier').addEventListener('click', () => {
+            if (tiersContainer.children.length > 1) {
+                tierSection.remove();
+            }
+        });
+
+        tierSection.querySelector('.add-feature').addEventListener('click', () => {
+            const featuresList = tierSection.querySelector('.features-list');
+            const newFeature = document.createElement('div');
+            newFeature.className = 'feature-item';
+            newFeature.innerHTML = `
+                <input type="text" class="form-control" name="tier_features[]" placeholder="Add a feature">
+                <span class="remove-feature">&times;</span>
+            `;
+            featuresList.appendChild(newFeature);
+
+            newFeature.querySelector('.remove-feature').addEventListener('click', () => {
+                newFeature.remove();
+            });
+        });
+    }
+});
+</script>
+{% endblock %} 

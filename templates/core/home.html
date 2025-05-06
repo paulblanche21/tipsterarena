@@ -343,10 +343,23 @@
 
 {% block trending_tips %}
     <!-- Sidebar widget for trending tips -->
-    <div class="sidebar-card trending-tips-card" data-card="trending-tips" style="background-color: white;">
+    <div class="sidebar-card trending-tips-card" data-card="trending-tips">
         <h3>Trending Tips</h3>
         <div class="trending-tips-list">
-            <p>Loading trending tips...</p>
+            {% for tip in trending_tips %}
+                <div class="trending-tip">
+                    <div class="trending-tip-content">
+                        <p class="trending-tip-text">{{ tip.text }}</p>
+                        <p class="trending-tip-user">@{{ tip.user.username }}</p>
+                    </div>
+                    <div class="trending-tip-heart">
+                        <i class="fas fa-heart"></i>
+                        <span class="trending-tip-heart-count">{{ tip.likes.count }}</span>
+                    </div>
+                </div>
+            {% empty %}
+                <p>No trending tips available</p>
+            {% endfor %}
         </div>
         <a href="#" class="show-more" data-target="trending-tips">Show more</a>
     </div>

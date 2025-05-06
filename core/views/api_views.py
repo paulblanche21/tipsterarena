@@ -102,12 +102,15 @@ def trending_tips_api(request):
             profile = getattr(tip.user, 'userprofile', None)
             avatar_url = profile.avatar.url if profile and profile.avatar else settings.STATIC_URL + 'img/default-avatar.png'
             handle = profile.handle.lstrip('@') if profile and profile.handle else tip.user.username
+            is_liked = tip.likes.filter(id=request.user.id).exists()
             tips_data.append({
+                'id': tip.id,
                 'username': tip.user.username,
                 'handle': handle,
                 'avatar_url': avatar_url,
                 'text': tip.text[:50],
-                'likes': tip.total_likes,
+                'likes_count': tip.total_likes,
+                'is_liked': is_liked,
                 'profile_url': f"/profile/{tip.user.username}/",
             })
 

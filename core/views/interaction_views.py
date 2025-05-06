@@ -19,17 +19,64 @@ logger = logging.getLogger(__name__)
 @require_POST
 def follow_user(request):
     """Handle following/unfollowing a user."""
-    username = request.POST.get('username')
-    user_to_follow = get_object_or_404(User, username=username)
-    profile = user_to_follow.profile
-    if request.user == user_to_follow:
-        return JsonResponse({'success': False, 'message': 'Cannot follow yourself'})
-    if profile.followers.filter(id=request.user.id).exists():
-        profile.followers.remove(request.user)
-        return JsonResponse({'success': True, 'message': 'Unfollowed', 'is_following': False})
-    else:
-        profile.followers.add(request.user)
-        return JsonResponse({'success': True, 'message': 'Followed', 'is_following': True})
+    try:
+        username = request.POST.get('username')
+        if not username:
+            return JsonResponse({
+                'success': False,
+                'error': 'Username is required'
+            }, status=400)
+
+        # Get user to follow
+        user_to_follow = get_object_or_404(User, username=username)
+
+        # Can't follow yourself
+        if request.user == user_to_follow:
+            return JsonResponse({
+                'success': False,
+                'error': 'Cannot follow yourself'
+            }, status=400)
+
+        # Check if already following
+        follow_exists = Follow.objects.filter(
+            follower=request.user,
+            followed=user_to_follow
+        ).exists()
+
+        if follow_exists:
+            # Unfollow
+            Follow.objects.filter(
+                follower=request.user,
+                followed=user_to_follow
+            ).delete()
+            is_following = False
+            message = 'Successfully unfollowed user'
+        else:
+            # Follow
+            Follow.objects.create(
+                follower=request.user,
+                followed=user_to_follow
+            )
+            is_following = True
+            message = 'Successfully followed user'
+
+        return JsonResponse({
+            'success': True,
+            'message': message,
+            'is_following': is_following
+        })
+
+    except User.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'User not found'
+        }, status=404)
+    except Exception as e:
+        logger.error(f"Error in follow_user view: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'error': 'An error occurred while processing your request'
+        }, status=500)
 
 @login_required
 def messages_view(request, thread_id=None):

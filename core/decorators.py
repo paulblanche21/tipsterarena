@@ -3,9 +3,7 @@
 from functools import wraps
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
-from django.db.models import Count
-from datetime import timedelta
-from django.contrib.auth.decorators import login_required
+
 
 def check_daily_tip_limit(view_func):
     """Decorator to enforce daily tip limit for basic users."""

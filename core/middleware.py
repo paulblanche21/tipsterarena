@@ -1,6 +1,6 @@
 # middleware.py
 from django.shortcuts import redirect
-from django.urls import resolve
+
 
 class PaywallMiddleware:
     """Middleware to control access to features based on user profile completion."""

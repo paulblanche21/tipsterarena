@@ -1,13 +1,24 @@
 {% extends 'core/base.html' %}
 {% load static %}
 
-{% block title %}Become a Tipster - Tipster Arena{% endblock %}
+{% block title %}Go Pro - Step 1 - Tipster Arena{% endblock %}
 
 {% block content %}
 <div class="tipster-onboarding">
     <div class="tipster-onboarding-header">
-        <h1>Become a Tipster</h1>
+        <h1>Go Pro</h1>
         <p class="subtitle">Start earning by sharing your premium tips with subscribers</p>
+        <div class="progress-steps">
+            <div class="step active">
+                <div class="step-number">1</div>
+                <div class="step-label">Profile Setup</div>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-label">Tier Setup</div>
+            </div>
+        </div>
     </div>
 
     <div class="tipster-onboarding-content">
@@ -15,15 +26,15 @@
             {% csrf_token %}
             
             <div class="form-group">
-                <label for="description">Tipster Description</label>
+                <label for="description">Pro Description</label>
                 <textarea 
                     name="description" 
                     id="description" 
                     class="form-control" 
                     rows="4" 
-                    placeholder="Tell potential subscribers about your expertise and track record..."
+                    placeholder="Tell potential subscribers about your expertise, experience, and what makes your tips valuable..."
                     required>{{ profile.tipster_description }}</textarea>
-                <small class="form-text text-muted">This will be displayed on your profile to potential subscribers.</small>
+                <small class="form-text">This will be displayed on your profile to potential subscribers.</small>
             </div>
 
             <div class="form-group">
@@ -33,58 +44,26 @@
                     id="rules" 
                     class="form-control" 
                     rows="4" 
-                    placeholder="Describe your subscription rules, posting schedule, and what subscribers can expect..."
+                    placeholder="Describe your general approach: posting frequency, tip format, communication style with subscribers..."
                     required>{{ profile.tipster_rules }}</textarea>
-                <small class="form-text text-muted">Set clear expectations for your subscribers.</small>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group col-md-6">
-                    <label for="min_price">Minimum Tier Price (€)</label>
-                    <input 
-                        type="number" 
-                        name="min_price" 
-                        id="min_price" 
-                        class="form-control" 
-                        min="5" 
-                        max="100" 
-                        step="0.01" 
-                        value="{{ profile.minimum_tier_price|default:'5.00' }}"
-                        required>
-                    <small class="form-text text-muted">Minimum €5.00</small>
-                </div>
-
-                <div class="form-group col-md-6">
-                    <label for="max_price">Maximum Tier Price (€)</label>
-                    <input 
-                        type="number" 
-                        name="max_price" 
-                        id="max_price" 
-                        class="form-control" 
-                        min="5" 
-                        max="100" 
-                        step="0.01" 
-                        value="{{ profile.maximum_tier_price|default:'100.00' }}"
-                        required>
-                    <small class="form-text text-muted">Maximum €100.00</small>
-                </div>
+                <small class="form-text">Set clear expectations for your subscribers.</small>
             </div>
 
             <div class="tipster-guidelines">
-                <h3>Tipster Guidelines</h3>
+                <h3>Pro Guidelines</h3>
                 <ul>
-                    <li>Maintain a professional and ethical approach</li>
-                    <li>Post tips regularly and consistently</li>
-                    <li>Provide clear reasoning for your tips</li>
-                    <li>Be transparent about your track record</li>
-                    <li>Respond to subscriber questions promptly</li>
-                    <li>Never guarantee wins or promote irresponsible betting</li>
+                    <li><i class="fas fa-check"></i> Maintain a professional and ethical approach</li>
+                    <li><i class="fas fa-check"></i> Post tips regularly and consistently</li>
+                    <li><i class="fas fa-check"></i> Provide clear reasoning for your tips</li>
+                    <li><i class="fas fa-check"></i> Be transparent about your track record</li>
+                    <li><i class="fas fa-check"></i> Respond to subscriber questions promptly</li>
+                    <li><i class="fas fa-check"></i> Never guarantee wins or promote irresponsible betting</li>
                 </ul>
             </div>
 
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary btn-lg">Become a Tipster</button>
-                <a href="{% url 'home' %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn-primary">Continue to Tier Setup <i class="fas fa-arrow-right"></i></button>
+                <a href="{% url 'home' %}" class="btn-secondary">Cancel</a>
             </div>
         </form>
     </div>
@@ -92,43 +71,104 @@
 
 <style>
 .tipster-onboarding {
-    max-width: 800px;
-    margin: 0 auto;
+    max-width: var(--content-width);
+    margin: 2rem auto;
     padding: 2rem;
+    background-color: var(--secondary-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-light);
+    color: var(--primary-bg);
 }
 
 .tipster-onboarding-header {
     text-align: center;
     margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border-color);
 }
 
 .tipster-onboarding-header h1 {
-    color: var(--primary-color);
+    color: var(--primary-bg);
+    font-size: 2rem;
     margin-bottom: 0.5rem;
 }
 
-.tipster-onboarding-header .subtitle {
-    color: var(--gray-600);
+.subtitle {
+    color: var(--gray-light);
     font-size: 1.1rem;
 }
 
 .tipster-form {
     background: white;
     padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: var(--border-radius);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--primary-bg);
+    font-weight: bold;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.form-control:focus {
+    border-color: var(--red-accent);
+    outline: none;
+}
+
+.form-text {
+    display: block;
+    margin-top: 0.5rem;
+    color: var(--gray-light);
+    font-size: 0.875rem;
+}
+
+.form-row {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.price-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.currency-symbol {
+    position: absolute;
+    left: 0.75rem;
+    color: var(--gray-light);
+}
+
+.price-input-wrapper input {
+    padding-left: 2rem;
 }
 
 .tipster-guidelines {
     margin: 2rem 0;
     padding: 1.5rem;
-    background: var(--light-bg);
-    border-radius: 8px;
+    background: rgba(0, 31, 63, 0.05);
+    border-radius: var(--border-radius);
 }
 
 .tipster-guidelines h3 {
-    color: var(--primary-color);
+    color: var(--primary-bg);
     margin-bottom: 1rem;
+    font-size: 1.25rem;
 }
 
 .tipster-guidelines ul {
@@ -137,22 +177,138 @@
 }
 
 .tipster-guidelines li {
-    margin-bottom: 0.5rem;
-    padding-left: 1.5rem;
-    position: relative;
+    margin-bottom: 0.75rem;
+    color: var(--primary-bg);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
 }
 
-.tipster-guidelines li:before {
-    content: "✓";
-    position: absolute;
-    left: 0;
-    color: var(--success-color);
+.tipster-guidelines li i {
+    color: var(--red-accent);
+    font-size: 1rem;
 }
 
 .form-actions {
     display: flex;
     gap: 1rem;
     margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid var(--border-color);
+}
+
+.btn-primary {
+    background-color: var(--red-accent);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: var(--primary-bg);
+    border: 2px solid var(--primary-bg);
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.btn-secondary:hover {
+    background-color: var(--primary-bg);
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .tipster-onboarding {
+        padding: 1rem;
+        margin: 1rem;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .btn-primary, .btn-secondary {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+.progress-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 2rem 0;
+    padding: 0 2rem;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.step-number {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background-color: var(--primary-bg);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    border: 2px solid var(--primary-bg);
+}
+
+.step.active .step-number {
+    background-color: var(--red-accent);
+    border-color: var(--red-accent);
+}
+
+.step-label {
+    font-size: 0.875rem;
+    color: var(--primary-bg);
+    font-weight: 500;
+}
+
+.step-connector {
+    height: 2px;
+    background-color: var(--border-color);
+    flex-grow: 1;
+    margin: 0 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.btn-primary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary i {
+    font-size: 0.875rem;
 }
 </style>
 {% endblock %} 

@@ -4,6 +4,10 @@
 
 {% block title %}{{ user.username }} - Tipster Arena{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+{% endblock %}
+
 {% block content %}
     <!-- Main container for profile content -->
     <div class="profile-content">
@@ -32,15 +36,24 @@
         </div>
 
                 <!-- User info and action buttons -->
-        <!-- User info and action buttons -->
         <div class="profile-user-info">
             <div class="profile-actions">
                 {% if is_owner %}
                     <!-- Edit button for profile owner -->
                     <button class="profile-edit-btn" id="editProfileBtn">Edit Profile</button>
                 {% else %}
+                    <!-- Subscribe button for pro tipsters -->
+                    {% if user_profile.is_tipster %}
+                        <button class="subscribe-btn" data-username="{{ user.username }}" id="subscribeBtn">
+                            {% if has_active_subscription %}
+                                Subscribed
+                            {% else %}
+                                Subscribe
+                            {% endif %}
+                        </button>
+                    {% endif %}
                     <!-- Follow/unfollow button for visitors -->
-                    <button class="follow-btn" data-username="{{ user.username }}">
+                    <button class="follow-btn {% if is_following %}followed{% endif %}" data-username="{{ user.username }}">
                         {% if is_following %}Following{% else %}Follow{% endif %}
                     </button>
                 {% endif %}
@@ -56,7 +69,9 @@
                     <span class="profile-total-bets"><i class="fas fa-list-ol"></i> Total Bets: {{ total_tips }}</span>
                     <span class="profile-average-odds"><i class="fas fa-calculator"></i> Avg Odds: {{ average_odds|floatformat:2 }}</span>
                     <span class="profile-win-rate"><i class="fas fa-trophy"></i> Win Rate: {{ win_rate|floatformat:1 }}%</span>
-                    
+                    {% if user_profile.is_tipster %}
+                        <span class="profile-subscribers"><i class="fas fa-users"></i> Subscribers: {{ user_profile.total_subscribers }}</span>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -285,6 +300,11 @@
             </div>
         </div>
     </div>
+
+    <!-- Include subscription modal -->
+    {% if user_profile.is_tipster %}
+        {% include 'core/subscribe_modal.html' with tipster=user tiers=subscription_tiers %}
+    {% endif %}
 {% endblock %}
 
 {% block upcoming_events %}
@@ -315,4 +335,14 @@
     </div>
     <a href="#" class="show-more" data-target="trending-tips">Show more</a>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    window.isAuthenticated = {{ request.user.is_authenticated|lower }};
+    window.isKycCompleted = {{ request.user.userprofile.kyc_completed|lower }};
+    window.stripePublishableKey = '{{ stripe_publishable_key }}';
+</script>
+<script src="https://js.stripe.com/v3/"></script>
+<script src="{% static 'js/subscription.js' %}"></script>
 {% endblock %}

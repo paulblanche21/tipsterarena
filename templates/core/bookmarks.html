@@ -1,100 +1,106 @@
 {% extends 'core/base.html' %}
+{% load static %}
 
 {% block title %}Bookmarks - Tipster Arena{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/bookmarks.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-8">Your Bookmarks</h1>
-    
+<div class="bookmarks-header-top">
+    <h1>Bookmarks</h1>
+</div>
+
+<div class="bookmarks-feed-wrapper">
     {% if bookmarked_tips %}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="tip-feed">
             {% for tip in bookmarked_tips %}
-                <div class="bg-white rounded-lg shadow-md p-6">
-                    <div class="flex items-center mb-4">
-                        <img src="{{ tip.user.profile.avatar.url }}" alt="{{ tip.user.username }}" class="w-10 h-10 rounded-full mr-3">
-                        <div>
-                            <h3 class="font-semibold">{{ tip.user.username }}</h3>
-                            <p class="text-sm text-gray-500">{{ tip.created_at|date:"F j, Y" }}</p>
-                        </div>
-                    </div>
-                    
-                    <p class="text-gray-700 mb-4">{{ tip.text }}</p>
-                    
-                    {% if tip.sport %}
-                        <span class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2">
-                            {{ tip.sport }}
-                        </span>
+                <div class="tip" data-tip-id="{{ tip.id }}">
+                    {% if tip.user.userprofile.avatar %}
+                        <img src="{{ tip.user.userprofile.avatar.url }}" alt="{{ tip.user.username }} Avatar" class="tip-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
+                    {% else %}
+                        <img src="{% static 'img/default-avatar.png' %}" alt="{{ tip.user.username }} Avatar" class="tip-avatar">
                     {% endif %}
-                    
-                    {% if tip.odds %}
-                        <span class="inline-block bg-blue-200 rounded-full px-3 py-1 text-sm font-semibold text-blue-700">
-                            {{ tip.odds }}
-                        </span>
-                    {% endif %}
-                    
-                    <div class="mt-4 flex justify-between items-center">
-                        <div class="flex space-x-4">
-                            <button class="text-gray-500 hover:text-red-500" onclick="toggleBookmark({{ tip.id }})">
-                                <i class="fas fa-bookmark"></i>
-                            </button>
-                            <button class="text-gray-500 hover:text-blue-500" onclick="shareTip({{ tip.id }})">
-                                <i class="fas fa-share"></i>
-                            </button>
+                    <div class="tip-content">
+                        <div class="tip-header">
+                            <div class="tip-header-left">
+                                <a href="{% url 'profile' tip.user.username %}" class="tip-username">
+                                    <strong>{{ tip.user.username }}</strong>
+                                    <span class="user-handle-tip">{{ tip.user.userprofile.handle }}</span>
+                                </a>
+                                {% if tip.sport == 'football' %}⚽{% endif %}
+                                {% if tip.sport == 'golf' %}⛳{% endif %}
+                                {% if tip.sport == 'tennis' %}🎾{% endif %}
+                                {% if tip.sport == 'horse_racing' %}🏇{% endif %}
+                            </div>
                         </div>
-                        <a href="{% url 'tip-detail' tip.id %}" class="text-blue-500 hover:text-blue-700">
-                            View Details
-                        </a>
+                        <div class="tip-body">
+                            <p>{{ tip.text|safe }}</p>
+                            <div class="tip-meta">
+                                <span>Odds: {{ tip.odds }} ({{ tip.odds_format }})</span>
+                                <span>Bet Type: {{ tip.bet_type }}</span>
+                                {% if tip.each_way == 'yes' %}
+                                    <span>Each Way: Yes</span>
+                                {% endif %}
+                                {% if tip.confidence %}
+                                    <span>Confidence: {{ tip.confidence }} Stars</span>
+                                {% endif %}
+                                <span>Status: <span class="tip-status {{ tip.status }}">{{ tip.get_status_display|default:tip.status|title }}</span></span>
+                            </div>
+                            {% if tip.image %}
+                                <img src="{{ tip.image.url }}" alt="Tip Image" class="tip-image">
+                            {% endif %}
+                            {% if tip.gif_url %}
+                                <img src="{{ tip.gif_url }}" alt="Tip GIF" class="tip-image">
+                            {% endif %}
+                        </div>
+                        <small class="tip-timestamp">{{ tip.created_at|date:"F j, Y, g:i a" }}</small>
+                        <div class="tip-actions">
+                            <div class="tip-action-group">
+                                <a href="#" class="tip-action tip-action-like" data-action="like">
+                                    <i class="fas fa-heart"></i>
+                                </a>
+                                <span class="tip-action-count like-count">{{ tip.likes.count }}</span>
+                            </div>
+                            <div class="tip-action-group">
+                                <a href="#" class="tip-action tip-action-share" data-action="share">
+                                    <i class="fas fa-retweet"></i>
+                                </a>
+                                <span class="tip-action-count share-count">{{ tip.shares.count }}</span>
+                            </div>
+                            <div class="tip-action-group">
+                                <a href="#" class="tip-action tip-action-comment" data-action="comment">
+                                    <i class="fas fa-comment-dots"></i>
+                                </a>
+                                <span class="tip-action-count comment-count">{{ tip.comments.count }}</span>
+                            </div>
+                            <div class="tip-action-spacer"></div>
+                            <div class="tip-action-group">
+                                <button class="tip-action tip-action-bookmark bookmarked" data-tip-id="{{ tip.id }}">
+                                    <i class="fas fa-bookmark"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             {% endfor %}
         </div>
     {% else %}
-        <div class="text-center py-12">
-            <i class="fas fa-bookmark text-4xl text-gray-400 mb-4"></i>
-            <h2 class="text-xl font-semibold text-gray-600">No bookmarks yet</h2>
-            <p class="text-gray-500 mt-2">Tips you bookmark will appear here</p>
+        <div class="empty-bookmarks">
+            <i class="fas fa-bookmark fa-3x"></i>
+            <h2>No bookmarked tips yet</h2>
+            <p>Save tips for later by clicking the bookmark icon</p>
         </div>
     {% endif %}
 </div>
+{% endblock %}
 
 {% block extra_js %}
-<script>
-function toggleBookmark(tipId) {
-    fetch('/toggle-bookmark/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken')
-        },
-        body: JSON.stringify({ tip_id: tipId })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        }
+<script type="module">
+    import { setupBookmarkInteractions } from '{% static "js/pages/bookmarks.js" %}';
+    document.addEventListener('DOMContentLoaded', () => {
+        setupBookmarkInteractions();
     });
-}
-
-function shareTip(tipId) {
-    // Implement share functionality
-    console.log('Sharing tip:', tipId);
-}
-
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
 </script>
 {% endblock %}
-{% endblock %} 

@@ -35,7 +35,7 @@
   
   /* Close button within custom alert */
   .custom-alert-close {
-    background: var(--twitter-blue);
+    background: var(--primary-bg);
     color: var(--secondary-bg);
     border: none;
     padding: clamp(6px, 1vw, 8px) clamp(10px, 2vw, 16px);
@@ -46,7 +46,7 @@
   
   /* Hover state for custom alert close button */
   .custom-alert-close:hover {
-    background: #0d8ddb;
+    background: var(--red-accent);
   }
   
   /* Base styles for individual tip cards */
@@ -158,9 +158,10 @@
   /* Paragraph within tip body */
   .tip-body p {
     margin: 0;
-    font-size: var(--font-size-base);
+    font-size: clamp(16px, 3vw, 18px);
     color: var(--primary-bg);
-    line-height: 1.4;
+    line-height: 1.5;
+    font-weight: 400;
   }
   
   /* Styles for the tip timestamp */
@@ -214,33 +215,33 @@
   
   /* Specific hover states for tip actions */
   .tip-action-like:hover {
-    color: #f91880 !important;
-    background-color: rgba(249, 24, 128, 0.1);
+    color: var(--red-accent) !important;
+    background-color: rgba(255, 65, 54, 0.1);
   }
   
   .tip-action-retweet:hover {
-    color: #00ba7c !important;
-    background-color: rgba(0, 186, 124, 0.1);
+    color: var(--primary-bg) !important;
+    background-color: rgba(0, 31, 63, 0.1);
   }
   
   .tip-action-comment:hover {
-    color: var(--twitter-blue) !important;
-    background-color: rgba(29, 161, 242, 0.1);
+    color: var(--primary-bg) !important;
+    background-color: rgba(0, 31, 63, 0.1);
   }
   
   .tip-action-engagement:hover {
-    color: #ffad1f !important;
-    background-color: rgba(255, 173, 31, 0.1);
+    color: var(--red-accent) !important;
+    background-color: rgba(255, 65, 54, 0.1);
   }
   
   .tip-action-bookmark:hover {
-    color: #1d9bf0 !important;
-    background-color: rgba(29, 155, 240, 0.1);
+    color: var(--primary-bg) !important;
+    background-color: rgba(0, 31, 63, 0.1);
   }
   
   .tip-action-share:hover {
-    color: #17bf63 !important;
-    background-color: rgba(23, 191, 99, 0.1);
+    color: var(--primary-bg) !important;
+    background-color: rgba(0, 31, 63, 0.1);
   }
   
   /* Icon within tip actions */
@@ -255,7 +256,7 @@
   
   /* Shared state for share action */
   .tip-action-share.shared i {
-    color: #1da1f2 !important;
+    color: var(--primary-bg) !important;
   }
   
   /* Styles for tip action counts */
@@ -382,20 +383,20 @@
   
   /* Updated styles for tip metadata */
   .tip-meta {
-    margin-top: var(--margin-small);
     display: flex;
     flex-wrap: wrap;
-    gap: clamp(6px, 1vw, 8px);
-    font-size: clamp(12px, 3vw, 14px);
-    color: var(--black);
-    width: 100%;
+    gap: 8px;
+    margin-top: 8px;
+    font-size: clamp(12px, 2vw, 13px);
+    color: #657786;  /* Twitter's darker gray for better readability */
   }
   
   .tip-meta span {
-    background: #f5f8fa;
-    padding: clamp(2px, 1vw, 4px) clamp(6px, 1vw, 8px);
-    border-radius: 4px;
-    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #657786;  /* Matching parent color */
+    font-size: inherit;
   }
   
   /* Tip status styles */
@@ -541,7 +542,7 @@
   }
   
   .edit-tip-modal .save-edit-btn {
-    background-color: var(--twitter-blue);
+    background-color: var(--primary-bg);
     color: white;
     border: none;
     padding: 8px 16px;
@@ -551,10 +552,25 @@
   }
   
   .edit-tip-modal .save-edit-btn:hover {
-    background-color: #0d8ddb;
+    background-color: var(--red-accent);
   }
   
   /* Show the modal when active */
   .edit-tip-modal.show {
     display: block;
+  }
+
+  /* Show More Link */
+  .show-more {
+    color: var(--primary-bg);
+    text-decoration: none;
+    font-size: 14px;
+    margin-top: auto;
+    padding-top: 15px;
+    border-top: 1px solid #e1e8ed;
+  }
+
+  .show-more:hover {
+    color: var(--red-accent);
+    text-decoration: underline;
   }

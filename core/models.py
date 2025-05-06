@@ -6,10 +6,12 @@ Contains database models for user profiles, tips, and sports events.
 # models.py
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models import Q
+from django.db.models import Q, F
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
+from django.conf import settings
+import stripe
 
 # Model representing a user's tip
 class Tip(models.Model):
@@ -976,14 +978,52 @@ class TipsterTier(models.Model):
     features = models.JSONField(default=list)  # List of features included
     max_subscribers = models.IntegerField(null=True, blank=True)  # Optional limit on subscribers
     is_active = models.BooleanField(default=True)
+    is_popular = models.BooleanField(default=False)  # Whether this is the "most popular" tier
+    stripe_price_id = models.CharField(max_length=100, blank=True, null=True)  # Stripe Price ID
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = ('tipster', 'name')
+        ordering = ['price']  # Order by price ascending
 
     def __str__(self):
         return f"{self.tipster.username} - {self.name} Tier"
+
+    def save(self, *args, **kwargs):
+        # Create or update Stripe price if not exists
+        if not self.stripe_price_id and settings.STRIPE_SECRET_KEY:
+            try:
+                price = stripe.Price.create(
+                    unit_amount=int(self.price * 100),  # Convert to cents
+                    currency='eur',  # Using EUR as default
+                    recurring={'interval': 'month'},
+                    product_data={
+                        'name': f"{self.tipster.username} - {self.name} Tier",
+                        'description': self.description
+                    }
+                )
+                self.stripe_price_id = price.id
+            except Exception as e:
+                # Log the error but don't prevent saving
+                print(f"Error creating Stripe price: {e}")
+        
+        super().save(*args, **kwargs)
+
+    def get_subscriber_count(self):
+        """Get the number of active subscribers for this tier."""
+        return self.subscriptions.filter(status='active').count()
+
+    def is_full(self):
+        """Check if tier has reached its subscriber limit."""
+        if self.max_subscribers is None:
+            return False
+        return self.get_subscriber_count() >= self.max_subscribers
+
+    def get_monthly_revenue(self):
+        """Calculate monthly revenue from this tier."""
+        active_subs = self.get_subscriber_count()
+        return self.price * active_subs
 
 class TipsterSubscription(models.Model):
     """Model for user subscriptions to tipsters."""
@@ -992,20 +1032,69 @@ class TipsterSubscription(models.Model):
     status = models.CharField(max_length=20, choices=[
         ('active', 'Active'),
         ('cancelled', 'Cancelled'),
-        ('expired', 'Expired')
-    ], default='active')
+        ('expired', 'Expired'),
+        ('past_due', 'Past Due'),
+        ('incomplete', 'Incomplete'),
+        ('incomplete_expired', 'Incomplete Expired')
+    ], default='incomplete')
     start_date = models.DateTimeField(auto_now_add=True)
     end_date = models.DateTimeField()
     auto_renew = models.BooleanField(default=True)
     stripe_subscription_id = models.CharField(max_length=100, blank=True, null=True)
+    stripe_customer_id = models.CharField(max_length=100, blank=True, null=True)
+    last_payment_date = models.DateTimeField(null=True, blank=True)
+    next_payment_date = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = ('subscriber', 'tier')
+        ordering = ['-created_at']
 
     def __str__(self):
         return f"{self.subscriber.username} -> {self.tier.tipster.username} ({self.tier.name})"
 
     def is_active(self):
-        return self.status == 'active' and self.end_date > timezone.now()
+        """Check if subscription is currently active."""
+        return (
+            self.status == 'active' and 
+            self.end_date > timezone.now() and
+            not self.tier.is_full()
+        )
+
+    def days_remaining(self):
+        """Get number of days remaining in current billing period."""
+        if not self.is_active():
+            return 0
+        delta = self.end_date - timezone.now()
+        return max(0, delta.days)
+
+    def cancel(self):
+        """Cancel the subscription."""
+        if self.stripe_subscription_id:
+            try:
+                stripe.Subscription.delete(self.stripe_subscription_id)
+            except Exception as e:
+                # Log the error but continue with local cancellation
+                print(f"Error cancelling Stripe subscription: {e}")
+        
+        self.status = 'cancelled'
+        self.auto_renew = False
+        self.save()
+
+        # Update tipster stats
+        profile = self.tier.tipster.userprofile
+        profile.total_subscribers = F('total_subscribers') - 1
+        profile.subscription_revenue = F('subscription_revenue') - self.tier.price
+        profile.save()
+
+    def renew(self):
+        """Renew the subscription for another period."""
+        if not self.auto_renew or not self.is_active():
+            return False
+            
+        self.end_date = self.end_date + timezone.timedelta(days=30)
+        self.last_payment_date = timezone.now()
+        self.next_payment_date = self.end_date
+        self.save()
+        return True

@@ -54,7 +54,7 @@ __all__ = [
 
     # Subscription views
     'become_tipster', 'tipster_dashboard', 'manage_tiers',
-    'subscribe_to_tipster', 'cancel_subscription',
+    'subscribe_to_tipster', 'cancel_subscription', 'setup_tiers',
 ]
 
 from .auth_views import (
@@ -121,5 +121,5 @@ from .general_views import (
 
 from .subscription_views import (
     become_tipster, tipster_dashboard, manage_tiers,
-    subscribe_to_tipster, cancel_subscription
+    subscribe_to_tipster, cancel_subscription, setup_tiers
 ) 

@@ -162,16 +162,37 @@ def delete_tip(request):
 @require_POST
 def like_tip(request):
     """Handle liking and unliking tips."""
-    tip_id = request.POST.get('tip_id')
-    tip = get_object_or_404(Tip, id=tip_id)
-    user = request.user
+    try:
+        tip_id = request.POST.get('tip_id')
+        if not tip_id:
+            return JsonResponse({'success': False, 'error': 'Missing tip_id'}, status=400)
 
-    like, created = Like.objects.get_or_create(user=user, tip=tip)
-    if created:
-        return JsonResponse({'success': True, 'message': 'Tip liked', 'like_count': tip.likes.count()})
-    else:
-        like.delete()
-        return JsonResponse({'success': True, 'message': 'Like removed', 'like_count': tip.likes.count()})
+        tip = get_object_or_404(Tip, id=tip_id)
+        user = request.user
+
+        # Check if like already exists
+        existing_like = Like.objects.filter(user=user, tip=tip).first()
+        if existing_like:
+            existing_like.delete()
+            return JsonResponse({
+                'success': True,
+                'message': 'Like removed',
+                'like_count': tip.likes.count()
+            })
+        else:
+            # Create new like
+            Like.objects.create(user=user, tip=tip)
+            return JsonResponse({
+                'success': True,
+                'message': 'Tip liked',
+                'like_count': tip.likes.count()
+            })
+    except Exception as e:
+        logger.error("Error in like_tip view: %s", str(e))
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
 
 @login_required
 @require_POST

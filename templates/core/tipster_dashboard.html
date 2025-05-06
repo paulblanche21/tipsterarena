@@ -84,8 +84,25 @@
             </div>
             {% empty %}
             <div class="empty-state">
-                <i class="fas fa-layer-group"></i>
-                <p>No subscription tiers yet. Create your first tier to start accepting subscribers!</p>
+                <div class="empty-state-icon">
+                    <i class="fas fa-layer-group"></i>
+                    <div class="empty-state-badge">
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                <h3 class="empty-title">Welcome to Your Pro Dashboard!</h3>
+                <p class="empty-description">Start your journey as a pro tipster by creating your first subscription tier. Choose from our pre-made templates or create your own custom tier.</p>
+                <div class="empty-state-tips">
+                    <h4>Quick Tips:</h4>
+                    <ul>
+                        <li><i class="fas fa-check-circle"></i> Start with a single tier to test the waters</li>
+                        <li><i class="fas fa-check-circle"></i> Price your tiers competitively (€9.99 - €29.99)</li>
+                        <li><i class="fas fa-check-circle"></i> Clearly describe what subscribers will get</li>
+                    </ul>
+                </div>
+                <button class="btn btn-primary empty-action" id="emptyStateAddTier">
+                    <i class="fas fa-plus"></i> Create Your First Tier
+                </button>
             </div>
             {% endfor %}
         </div>
@@ -129,8 +146,34 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" class="empty-state">
-                            <p>No active subscribers yet. Share your profile to attract subscribers!</p>
+                        <td colspan="5">
+                            <div class="empty-state subscribers-empty">
+                                <div class="empty-state-icon">
+                                    <i class="fas fa-users"></i>
+                                    <div class="empty-state-badge">
+                                        <i class="fas fa-heart"></i>
+                                    </div>
+                                </div>
+                                <h3 class="empty-title">Ready to Build Your Community</h3>
+                                <p class="empty-description">Share your expertise and start growing your subscriber base. Here's how to get started:</p>
+                                <div class="empty-state-tips">
+                                    <div class="tip-card">
+                                        <i class="fas fa-share-alt"></i>
+                                        <h4>Share Your Profile</h4>
+                                        <p>Share your profile link on social media to attract subscribers</p>
+                                    </div>
+                                    <div class="tip-card">
+                                        <i class="fas fa-chart-line"></i>
+                                        <h4>Post Quality Tips</h4>
+                                        <p>Regular, high-quality tips will help retain subscribers</p>
+                                    </div>
+                                    <div class="tip-card">
+                                        <i class="fas fa-comments"></i>
+                                        <h4>Engage with Followers</h4>
+                                        <p>Respond to comments and build relationships</p>
+                                    </div>
+                                </div>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -240,10 +283,17 @@
 }
 
 .tier-card {
-    background: var(--light-bg);
+    background: white;
     border-radius: 8px;
     padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     border: 1px solid var(--border-color);
+    transition: transform 0.2s ease;
+}
+
+.tier-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 .tier-header {
@@ -253,28 +303,96 @@
     margin-bottom: 1rem;
 }
 
-.tier-price {
+.tier-header h3 {
+    margin: 0;
     font-size: 1.25rem;
+    color: var(--primary-color);
+}
+
+.tier-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    color: var(--gray-600);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+    background: var(--light-bg);
+    color: var(--primary-color);
+}
+
+.tier-price {
+    font-size: 1.5rem;
     font-weight: bold;
     color: var(--success-color);
     margin-bottom: 1rem;
 }
 
+.tier-description {
+    color: var(--gray-600);
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+.tier-features {
+    margin-bottom: 1.5rem;
+}
+
+.tier-features h4 {
+    color: var(--primary-color);
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+}
+
 .tier-features ul {
-    list-style-type: none;
-    padding-left: 1.5rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .tier-features li {
+    color: var(--gray-600);
     margin-bottom: 0.5rem;
+    padding-left: 1.5rem;
     position: relative;
 }
 
 .tier-features li:before {
     content: "✓";
     position: absolute;
-    left: -1.5rem;
+    left: 0;
     color: var(--success-color);
+}
+
+.tier-stats {
+    display: flex;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.tier-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: var(--gray-600);
+}
+
+.stat-value {
+    font-weight: 600;
+    color: var(--primary-color);
 }
 
 .subscribers-table {
@@ -323,14 +441,136 @@
 
 .empty-state {
     text-align: center;
-    padding: 2rem;
-    color: var(--gray-600);
+    padding: 3rem 2rem;
+    background: rgba(0, 31, 63, 0.02);
+    border: 2px dashed var(--border-color);
+    border-radius: 12px;
+    margin: 1rem 0;
 }
 
-.empty-state i {
-    font-size: 3rem;
+.empty-state-icon {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 1.5rem;
+}
+
+.empty-state-icon i {
+    font-size: 3.5rem;
+    color: var(--red-accent);
+    opacity: 0.8;
+}
+
+.empty-state-badge {
+    position: absolute;
+    bottom: -5px;
+    right: -10px;
+    background: var(--success-color);
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    border: 2px solid white;
+}
+
+.empty-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--primary-bg);
+    margin-bottom: 0.75rem;
+}
+
+.empty-description {
+    color: var(--gray-600);
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.empty-state-tips {
+    margin-bottom: 2rem;
+}
+
+.empty-state-tips h4 {
+    color: var(--gray-600);
     margin-bottom: 1rem;
-    color: var(--gray-400);
+}
+
+.empty-state-tips ul {
+    list-style: none;
+    padding: 0;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.empty-state-tips ul li {
+    margin-bottom: 0.75rem;
+    color: var(--gray-600);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.empty-state-tips ul li i {
+    color: var(--success-color);
+}
+
+.empty-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--red-accent);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1.1rem;
+}
+
+.empty-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 65, 54, 0.2);
+}
+
+.subscribers-empty .empty-state-tips {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.tip-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    text-align: center;
+}
+
+.tip-card i {
+    font-size: 2rem;
+    color: var(--red-accent);
+    margin-bottom: 1rem;
+}
+
+.tip-card h4 {
+    color: var(--primary-bg);
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.tip-card p {
+    color: var(--gray-600);
+    font-size: 0.9rem;
+    margin: 0;
 }
 
 /* Modal Styles */
@@ -483,6 +723,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const username = row.querySelector('.subscriber-info span').textContent.toLowerCase();
             row.style.display = username.includes(searchTerm) ? '' : 'none';
         });
+    }
+    
+    // Add handler for empty state button
+    const emptyStateAddTier = document.getElementById('emptyStateAddTier');
+    if (emptyStateAddTier) {
+        emptyStateAddTier.onclick = function() {
+            document.getElementById('addTierBtn').click();
+        };
     }
 });
 </script>
