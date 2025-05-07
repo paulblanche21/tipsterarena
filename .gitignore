@@ -31,3 +31,4 @@ football_api_response.json
 response.json
 *.session.sql
 dump.rdb
+scraper.log
