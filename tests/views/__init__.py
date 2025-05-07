@@ -1,1 +1,3 @@
-"""View tests for Tipster Arena.""" 
+"""
+Views test package.
+""" 

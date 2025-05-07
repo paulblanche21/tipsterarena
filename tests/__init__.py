@@ -1,1 +1,3 @@
-"""Test package for Tipster Arena.""" 
+"""
+Test package for core app.
+""" 
