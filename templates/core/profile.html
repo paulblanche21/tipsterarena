@@ -6,6 +6,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/premium.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -23,55 +24,224 @@
 
         <!-- Banner and avatar section -->
         <div class="profile-header">
-            {% if user_profile.banner %}
-                <img src="{{ user_profile.banner.url }}" alt="Banner Image" class="profile-banner" onerror="this.style.display='none'; this.src=window.default_banner_url;">
-            {% else %}
-                <img src="{% static 'img/default-banner.png' %}" alt="Default Banner Image" class="profile-banner">
-            {% endif %}
-            {% if user_profile.avatar %}
-                <img src="{{ user_profile.avatar.url }}" alt="{{ user.username }} Avatar" class="profile-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
-            {% else %}
-                <img src="{% static 'img/default-avatar.png' %}" alt="{{ user.username }} Avatar" class="profile-avatar">
-            {% endif %}
-        </div>
-
-                <!-- User info and action buttons -->
-        <div class="profile-user-info">
-            <div class="profile-actions">
-                {% if is_owner %}
-                    <!-- Edit button for profile owner -->
-                    <button class="profile-edit-btn" id="editProfileBtn">Edit Profile</button>
+            <div class="profile-cover">
+                {% if user_profile.banner %}
+                    <img src="{{ user_profile.banner.url }}" alt="Profile Banner">
                 {% else %}
-                    <!-- Subscribe button for pro tipsters -->
-                    {% if user_profile.is_tipster %}
-                        <button class="subscribe-btn" data-username="{{ user.username }}" id="subscribeBtn">
-                            {% if has_active_subscription %}
-                                Subscribed
-                            {% else %}
-                                Subscribe
-                            {% endif %}
-                        </button>
-                    {% endif %}
-                    <!-- Follow/unfollow button for visitors -->
-                    <button class="follow-btn {% if is_following %}followed{% endif %}" data-username="{{ user.username }}">
-                        {% if is_following %}Following{% else %}Follow{% endif %}
-                    </button>
+                    <img src="{% static 'img/default-banner.png' %}" alt="Default Profile Banner">
                 {% endif %}
             </div>
-            <div class="profile-user-details">
-                <h2 class="profile-username">{{ user.username }}</h2>
-                <span class="user-handle-tip">{{ user_profile.handle }}</span>
-                <p class="profile-description">{{ user_profile.description|default:"No description provided." }}</p>
-                {% if user_profile.location %}
-                    <p class="profile-location"><i class="fas fa-map-marker-alt"></i> {{ user_profile.location }}</p>
-                {% endif %}
-                <div class="profile-stats">
-                    <span class="profile-total-bets"><i class="fas fa-list-ol"></i> Total Bets: {{ total_tips }}</span>
-                    <span class="profile-average-odds"><i class="fas fa-calculator"></i> Avg Odds: {{ average_odds|floatformat:2 }}</span>
-                    <span class="profile-win-rate"><i class="fas fa-trophy"></i> Win Rate: {{ win_rate|floatformat:1 }}%</span>
-                    {% if user_profile.is_tipster %}
-                        <span class="profile-subscribers"><i class="fas fa-users"></i> Subscribers: {{ user_profile.total_subscribers }}</span>
+            
+            <div class="profile-info">
+                <div class="profile-avatar">
+                    {% if user_profile.avatar %}
+                        <img src="{{ user_profile.avatar.url }}" alt="{{ user.username }} Avatar">
+                    {% else %}
+                        <img src="{% static 'img/default-avatar.png' %}" alt="Default Avatar">
                     {% endif %}
+                </div>
+                
+                <div class="profile-details">
+                    <div class="profile-name">
+                        <h1 class="{% if user_profile.is_premium %}premium-user{% endif %}">
+                            {{ user.username }}
+                            {% if user_profile.is_premium %}
+                                <span class="premium-badge">
+                                    <i class="fas fa-crown"></i> Premium
+                                </span>
+                            {% endif %}
+                        </h1>
+                        <span class="profile-handle">{{ user_profile.handle }}</span>
+                    </div>
+
+                    {% if user_profile.is_premium %}
+                    <div class="premium-status">
+                        <i class="fas fa-crown premium-status-icon"></i>
+                        <div class="premium-status-info">
+                            <div class="premium-status-title">Premium Member</div>
+                            {% if user_profile.premium_until %}
+                                <div class="premium-status-expiry">Valid until {{ user_profile.premium_until|date:"F j, Y" }}</div>
+                            {% else %}
+                                <div class="premium-status-expiry">Lifetime Member</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="premium-features">
+                        <div class="premium-feature-item">
+                            <i class="fas fa-check-circle premium-feature-icon"></i>
+                            Access to Pro Tipster subscriptions
+                        </div>
+                        <div class="premium-feature-item">
+                            <i class="fas fa-check-circle premium-feature-icon"></i>
+                            Advanced statistics
+                        </div>
+                        <div class="premium-feature-item">
+                            <i class="fas fa-check-circle premium-feature-icon"></i>
+                            Priority support
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- User info and action buttons -->
+                    <div class="profile-actions">
+                        {% if is_owner %}
+                            <!-- Edit button for profile owner -->
+                            <button class="profile-edit-btn" id="editProfileBtn">Edit Profile</button>
+                        {% else %}
+                            <!-- Subscribe button for pro tipsters -->
+                            {% if user_profile.is_tipster %}
+                                <button class="subscribe-btn" data-username="{{ user.username }}" id="subscribeBtn">
+                                    {% if has_active_subscription %}
+                                        Subscribed
+                                    {% else %}
+                                        Subscribe
+                                    {% endif %}
+                                </button>
+                            {% endif %}
+                            <!-- Follow/unfollow button for visitors -->
+                            <button class="follow-btn {% if is_following %}followed{% endif %}" data-username="{{ user.username }}">
+                                {% if is_following %}Following{% else %}Follow{% endif %}
+                            </button>
+                        {% endif %}
+                    </div>
+                    <div class="profile-user-details">
+                        <p class="profile-description">{{ user_profile.description|default:"No description provided." }}</p>
+                        {% if user_profile.location %}
+                            <p class="profile-location"><i class="fas fa-map-marker-alt"></i> {{ user_profile.location }}</p>
+                        {% endif %}
+                        <div class="profile-stats">
+                            <span class="profile-total-bets"><i class="fas fa-list-ol"></i> Total Bets: {{ total_tips }}</span>
+                            <span class="profile-average-odds"><i class="fas fa-calculator"></i> Avg Odds: {{ average_odds|floatformat:2 }}</span>
+                            <span class="profile-win-rate"><i class="fas fa-trophy"></i> Win Rate: {{ win_rate|floatformat:1 }}%</span>
+                            {% if user_profile.is_tipster %}
+                                <span class="profile-subscribers"><i class="fas fa-users"></i> Subscribers: {{ user_profile.total_subscribers }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Achievement Badges Section -->
+                        <div class="profile-badges">
+                            <h3 class="badges-title">Achievement Badges</h3>
+                            
+                            <!-- General Performance Badges -->
+                            <div class="badge-category">
+                                <h4 class="category-title">Performance</h4>
+                                <div class="badges-grid">
+                                    {% if user_profile.has_badge_hot_streak %}
+                                    <div class="badge-item" title="Hot Streak: You're on fire! Three wins in a row? Keep the streak alive!">
+                                        <i class="fas fa-fire"></i>
+                                        <span class="badge-name">Hot Streak</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if user_profile.has_badge_blazing_inferno %}
+                                    <div class="badge-item" title="Blazing Inferno: Unstoppable! Five consecutive wins have scorched the competition.">
+                                        <i class="fas fa-fire-alt"></i>
+                                        <span class="badge-name">Blazing Inferno</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if user_profile.has_badge_tipster_titan %}
+                                    <div class="badge-item" title="Tipster Titan: A giant among tipsters! Your predictions are legendary.">
+                                        <i class="fas fa-crown"></i>
+                                        <span class="badge-name">Tipster Titan</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if user_profile.has_badge_rookie_rocket %}
+                                    <div class="badge-item" title="Rookie Rocket: Off to a flying start! Your first tip was a winner!">
+                                        <i class="fas fa-rocket"></i>
+                                        <span class="badge-name">Rookie Rocket</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Sport Specific Badges -->
+                            <div class="badge-category">
+                                <h4 class="category-title">Sports Expertise</h4>
+                                <div class="badges-grid">
+                                    {% if user_profile.has_badge_soccer_sniper %}
+                                    <div class="badge-item" title="Soccer Sniper: Pinpoint accuracy! You're scoring big with soccer tips.">
+                                        <i class="fas fa-futbol"></i>
+                                        <span class="badge-name">Soccer Sniper</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if user_profile.has_badge_hoop_hero %}
+                                    <div class="badge-item" title="Hoop Hero: Swish! You're dunking those basketball predictions.">
+                                        <i class="fas fa-basketball-ball"></i>
+                                        <span class="badge-name">Hoop Hero</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if user_profile.has_badge_hole_in_one %}
+                                    <div class="badge-item" title="Hole-in-One Hustler: A rare feat! You nailed that golf prediction.">
+                                        <i class="fas fa-golf-ball"></i>
+                                        <span class="badge-name">Hole-in-One</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Fun Badges -->
+                            <div class="badge-category">
+                                <h4 class="category-title">Special Achievements</h4>
+                                <div class="badges-grid">
+                                    {% if user_profile.has_badge_upset_oracle %}
+                                    <div class="badge-item" title="Upset Oracle: You saw the impossible coming! A true upset master.">
+                                        <i class="fas fa-dice"></i>
+                                        <span class="badge-name">Upset Oracle</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if user_profile.has_badge_late_night %}
+                                    <div class="badge-item" title="Late Night Gambler: Burning the midnight oil to drop those tips? Respect!">
+                                        <i class="fas fa-moon"></i>
+                                        <span class="badge-name">Night Owl</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if user_profile.has_badge_hail_mary %}
+                                    <div class="badge-item" title="Hail Mary Hero: You threw a wild one and it landed! Miracle worker.">
+                                        <i class="fas fa-bolt"></i>
+                                        <span class="badge-name">Hail Mary</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if user_profile.has_badge_crystal_ball %}
+                                    <div class="badge-item fun" title="Crystal Ball Cracked: Your crystal ball needs a polish, but we believe in your comeback!">
+                                        <i class="fas fa-globe"></i>
+                                        <span class="badge-name">Crystal Ball</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Community Badges -->
+                            <div class="badge-category">
+                                <h4 class="category-title">Community</h4>
+                                <div class="badges-grid">
+                                    {% if user_profile.has_badge_crowd_favorite %}
+                                    <div class="badge-item" title="Crowd Favorite: The crowd loves you! Your tip is a fan favorite.">
+                                        <i class="fas fa-users"></i>
+                                        <span class="badge-name">Crowd Favorite</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if user_profile.has_badge_tipster_mentor %}
+                                    <div class="badge-item" title="Tipster Mentor: Sharing wisdom and lifting others up? You're a true mentor.">
+                                        <i class="fas fa-graduation-cap"></i>
+                                        <span class="badge-name">Mentor</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if user_profile.has_badge_anniversary %}
+                                    <div class="badge-item" title="Anniversary Ace: A year of tipping greatness! Here's to many more.">
+                                        <i class="fas fa-calendar-star"></i>
+                                        <span class="badge-name">Anniversary Ace</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if user_profile.has_badge_viral %}
+                                    <div class="badge-item" title="Viral Visionary: Your tip went viral! The world's watching your picks.">
+                                        <i class="fas fa-chart-line"></i>
+                                        <span class="badge-name">Viral Visionary</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -87,7 +257,6 @@
             <a href="#" class="profile-nav-item active">Posts</a>
             <a href="#" class="profile-nav-item">Replies</a>
             <a href="#" class="profile-nav-item">Media</a>
-            <a href="#" class="profile-nav-item">Articles</a>
             <a href="#" class="profile-nav-item">Likes</a>
         </div>
 

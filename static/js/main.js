@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       import('./follow.js').then(module => {
         console.log('Loaded follow.js');
         module.attachFollowButtonListeners();
+        module.initShowMore();
         return module;
       }).catch(error => {
         console.error('Failed to load follow.js:', error);

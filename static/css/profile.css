@@ -72,15 +72,39 @@
 
 /* Styles for the profile avatar */
 .profile-avatar {
+    position: relative;        /* Container positioning */
+    width: 120px;             /* Fixed width */
+    height: 120px;            /* Fixed height */
+    margin-left: 20px;        /* Offset from left */
+    margin-top: -60px;        /* Pull up to overlap banner by half height */
+    z-index: 3;               /* Above banner and profile info */
+}
+
+.profile-avatar img {
+    width: 100%;              /* Fill container */
+    height: 100%;             /* Fill container */
+    border-radius: 50%;       /* Circular shape */
     border: 4px solid #ffffff; /* White border */
-    border-radius: 50%;        /* Circular shape */
-    bottom: -60px;             /* Offset below banner */
-    height: 120px;             /* Fixed height */
-    left: 20px;                /* Offset from left */
-    object-fit: cover;         /* Crop to fit */
-    position: absolute;        /* Positioned over content */
-    width: 120px;              /* Fixed width */
-    z-index: 1;                /* Above banner */
+    object-fit: cover;        /* Crop to fit */
+    background-color: #f0f0f0; /* Light background for empty state */
+}
+
+/* Styles for the profile banner/cover */
+.profile-cover {
+    width: 100%;              /* Full width */
+    height: 300px;            /* Increased height for better visual impact */
+    position: relative;       /* For positioning children */
+    background-color: #f0f0f0; /* Light background for empty state */
+    border-top-left-radius: 12px;  /* Rounded corners */
+    border-top-right-radius: 12px;
+    overflow: hidden;         /* Contain children */
+}
+
+.profile-cover img {
+    width: 100%;             /* Full width */
+    height: 100%;            /* Full height */
+    object-fit: cover;       /* Crop to fit */
+    display: block;          /* Remove inline spacing */
 }
 
 /* Styles for the back arrow link */
@@ -126,35 +150,33 @@
     align-items: center;       /* Center vertically */
 }
 
-/* Styles for the profile banner image */
-.profile-banner {
-    border-top-left-radius: 12px;  /* Rounded top-left */
-    border-top-right-radius: 12px;  /* Rounded top-right */
-    height: 200px;             /* Fixed height */
-    left: 0;                   /* Full width from left */
-    object-fit: cover;         /* Crop to fit */
-    position: absolute;        /* Positioned within header */
-    top: 0;                    /* Align to top */
-    width: 100%;               /* Full width */
-    z-index: 0;                /* Below avatar */
-}
-
-
 /* Styles for the profile description (bio) */
 .profile-description {
-    color: #001f3f;            /* Dark blue text */
-    font-size: 16px;           /* Slightly larger font */
-    margin: 5px 0 20px 0;      /* Vertical spacing */
+    color: #14171a;
+    font-size: 15px;
+    line-height: 1.5;
+    margin: 15px 0;
+    padding: 0;
+    max-width: 600px;
+    white-space: pre-line;  /* Preserve line breaks */
 }
 
 /* Styles for profile details (e.g., location, join date) */
 .profile-details {
-    color: #666666;            /* Gray text */
-    display: flex;             /* Flex layout */
-    font-size: 14px;           /* Base font size */
-    gap: 15px;                 /* Space between items */
-    margin: 0 20px 20px 20px;  /* Consistent margins */
-    flex-wrap: wrap;           /* Allow wrapping */
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+    padding: 0 20px;
+    position: relative;
+    z-index: 2;
+}
+
+/* Profile user details */
+.profile-user-details {
+    display: flex;
+    flex-direction: column;
+    
 }
 
 /* Individual detail item within profile details */
@@ -187,10 +209,10 @@
 
 /* Styles for the profile header container */
 .profile-header {
-    height: 200px;             /* Fixed height */
-    overflow: visible;         /* Allow avatar overflow */
-    position: relative;        /* Relative positioning */
-    width: 100%;               /* Full width */
+    position: relative;
+    width: 100%;
+    min-height: 300px; /* Increased height to accommodate content */
+    margin-bottom: 20px;
 }
 
 /* Styles for the fixed top section of the profile header */
@@ -212,28 +234,40 @@
 
 /* Styles for the profile navigation tabs */
 .profile-nav {
-    border-bottom: 1px solid #e1e8ed;  /* Light gray border */
-    display: flex;             /* Flex layout */
-    gap: 20px;                 /* Space between tabs */
-    margin: 0 10px 10px 10px;  /* Reduced margins */
-    padding-bottom: 10px;      /* Space below */
+    padding: 15px 20px;
+    margin: 0;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    gap: 30px;
 }
 
 /* Styles for individual nav items (tabs) */
 .profile-nav-item {
     border-radius: 4px;        /* Slightly rounded corners */
     color: #666666;            /* Gray text */
-    font-size: 16px;           /* Slightly larger font */
-    padding: 5px 10px;         /* Internal padding */
+    font-size: 16px;           /* Base font size */
+    padding: 10px 0;           /* Vertical padding only */
     text-decoration: none;     /* No underline */
     transition: color 0.2s;    /* Smooth color transition */
+    position: relative;        /* For active indicator positioning */
 }
 
 /* Active state for nav items */
 .profile-nav-item.active {
-    border-bottom: 2px solid #ff4136;  /* Red underline */
     color: #000000;            /* Black text */
     font-weight: bold;         /* Bold text */
+}
+
+/* Active indicator line */
+.profile-nav-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background-color: var(--red-accent);
+    border-radius: 2px 2px 0 0;
 }
 
 /* Hover state for nav items */
@@ -268,66 +302,68 @@
     flex-grow: 1;              /* Take available space */
 }
 
-/* Container for user details below avatar */
-
-.profile-user-details {
-    align-items: flex-start;
-    display: flex;
-    flex-direction: column;
-    margin: 0;
-    padding: 0;
-}
-
-/* Styles for user info section */
-.profile-user-info {
-    background-color: #f5f8fa;
-    border-bottom-left-radius: 12px;
-    border-bottom-right-radius: 12px;
-    margin: 80px 10px 10px 10px;
-    padding: 15px;
-    position: relative;
-}
-
 /* Styles for location */
 .profile-location {
-    color: #666666;
+    color: #657786;
     font-size: 14px;
-    margin: 5px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+.profile-location i {
+    color: #657786;
+    font-size: 16px;
 }
 
 /* Container for stats (Win Rate, Total Bets, Average Odds) */
 .profile-stats {
     display: flex;
-    flex-wrap: wrap;           /* Allow wrapping on small screens */
-    gap: 15px;                 /* Space between stats */
-    margin: 5px 0;             /* Vertical spacing */
+    flex-wrap: wrap;
+    gap: 15px;
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e1e8ed;
 }
 
-/* Styles for win rate */
+.profile-stats span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #657786;
+    padding: 8px 12px;
+    background-color: white;
+    border-radius: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.profile-stats i {
+    color: #1DA1F2;
+}
+
+.profile-total-bets,
+.profile-average-odds,
+.profile-win-rate,
+.profile-subscribers {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background-color: white;
+    border-radius: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
 .profile-win-rate {
-    color: #28a745; /* Green to match Win status */
-    font-size: 14px;
-    font-weight: bold;
+    color: #28a745;
 }
 
-.profile-total-bets {
-    color: #666666;
-    font-size: 14px;
-    font-weight: bold; /* Make bold */
-}
-
-.profile-average-odds {
-    color: #666666;
-    font-size: 14px;
-    font-weight: bold; /* Make bold */
-}
-
-/* Icon spacing within location and win rate */
-.profile-location i,
-.profile-win-rate i,
-.profile-total-bets i,
-.profile-average-odds i{
-    margin-right: 5px; /* Space between icon and text */
+.profile-win-rate i {
+    color: #28a745;
 }
 
 /* Subscribe Modal Styles */
@@ -594,6 +630,201 @@
     .tier-card {
         margin-bottom: 1rem;
     }
+}
+
+/* Main profile content container */
+.profile-content {
+    max-width: 900px;
+    margin: 0 auto;
+    background-color: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-light);
+    color: var(--primary-bg);
+    overflow: hidden;
+    position: relative;
+}
+
+/* Profile info section */
+.profile-info {
+    position: relative;
+    padding: 0 20px;
+    margin-top: 0;           /* Reset margin since avatar handles its own positioning */
+    z-index: 2;              /* Above banner but below avatar */
+}
+
+/* Profile name section - remove duplicate username/handle */
+.profile-name {
+    margin-bottom: 15px;
+}
+
+.profile-name h1 {
+    font-size: 24px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.profile-handle {
+    color: #657786;
+    font-size: 14px;
+    display: block;
+    margin-top: 4px;
+}
+
+/* Profile stats section */
+.profile-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin: 15px 0;
+}
+
+/* Follow stats section */
+.profile-follow {
+    padding: 15px 20px;
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    margin: 0;
+}
+
+/* Achievement Badges Section */
+.profile-badges {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    border: 1px solid #e1e8ed;
+}
+
+.badges-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #14171a;
+    margin-bottom: 20px;
+}
+
+.badge-category {
+    margin-bottom: 25px;
+}
+
+.category-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: #657786;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e1e8ed;
+}
+
+.badges-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 15px;
+}
+
+.badge-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: help;
+}
+
+.badge-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.badge-item i {
+    font-size: 24px;
+    margin-bottom: 8px;
+    background: linear-gradient(45deg, var(--red-accent), #ff6b6b);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.badge-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #14171a;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+/* Category-specific badge colors */
+.badge-category:nth-child(1) .badge-item i {
+    background: linear-gradient(45deg, #ff6b6b, #ff8787);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.badge-category:nth-child(2) .badge-item i {
+    background: linear-gradient(45deg, #4dabf7, #339af0);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.badge-category:nth-child(3) .badge-item i {
+    background: linear-gradient(45deg, #ffd43b, #fab005);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.badge-category:nth-child(4) .badge-item i {
+    background: linear-gradient(45deg, #51cf66, #40c057);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Fun badge style */
+.badge-item.fun i {
+    background: linear-gradient(45deg, #e64980, #be4bdb);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Sport-specific badge colors */
+.badge-item[title*="Football"] i {
+    background: linear-gradient(45deg, #2ecc71, #27ae60);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.badge-item[title*="Horse Racing"] i {
+    background: linear-gradient(45deg, #9b59b6, #8e44ad);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.badge-item[title*="Expert Analyst"] i {
+    background: linear-gradient(45deg, #f1c40f, #f39c12);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.badge-item[title*="Long Shot"] i {
+    background: linear-gradient(45deg, #e74c3c, #c0392b);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 

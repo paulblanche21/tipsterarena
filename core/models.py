@@ -125,56 +125,62 @@ class Tip(models.Model):
         max_length=20,
         choices=[
             ('public', 'Public'),
-            ('followers', 'Followers Only'),
+            ('premium', 'Premium Users Only'),
             ('subscribers', 'All Subscribers'),
-            ('tier', 'Specific Tier')
+            ('tier_specific', 'Specific Tiers')
         ],
         default='public'
     )
-    required_tier = models.ForeignKey(
-        'TipsterTier',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='exclusive_tips'
+    allowed_tiers = models.ManyToManyField('TipsterTier', blank=True, related_name='exclusive_tips')
+    release_schedule = models.JSONField(
+        default=dict,
+        help_text='JSON mapping tier IDs to release times'
     )
+    is_released = models.BooleanField(default=True)
+    scheduled_release = models.DateTimeField(null=True, blank=True)
 
     def is_visible_to(self, user):
         """Check if tip is visible to a specific user."""
         # Public tips are visible to everyone
         if self.visibility == 'public':
             return True
-            
-        # Must be authenticated to see non-public tips
+
+        # Must be authenticated
         if not user.is_authenticated:
             return False
-            
+
         # Tip owner can always see their tips
         if user == self.user:
             return True
-            
-        # Check followers-only tips
-        if self.visibility == 'followers':
-            return self.user.followers.filter(follower=user).exists()
-            
-        # Check subscribers-only tips
+
+        # Check premium access
+        if self.visibility == 'premium' and not user.userprofile.is_premium:
+            return False
+
+        # Check subscriber access
         if self.visibility == 'subscribers':
             return TipsterSubscription.objects.filter(
                 subscriber=user,
                 tier__tipster=self.user,
-                status='active',
-                end_date__gt=timezone.now()
+                status='active'
             ).exists()
-            
-        # Check tier-specific tips
-        if self.visibility == 'tier' and self.required_tier:
-            return TipsterSubscription.objects.filter(
+
+        # Check tier-specific access
+        if self.visibility == 'tier_specific':
+            current_time = timezone.now()
+            user_subs = TipsterSubscription.objects.filter(
                 subscriber=user,
-                tier=self.required_tier,
-                status='active',
-                end_date__gt=timezone.now()
-            ).exists()
+                tier__in=self.allowed_tiers.all(),
+                status='active'
+            )
             
+            for sub in user_subs:
+                release_time = self.release_schedule.get(str(sub.tier.id))
+                if release_time and timezone.datetime.fromisoformat(release_time) <= current_time:
+                    return True
+            
+            return False
+
         return False
 
     def __str__(self):
@@ -208,12 +214,12 @@ def save_user_profile(sender, instance, **kwargs):
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
-    banner = models.ImageField(upload_to='banners/', blank=True, null=True)
-    description = models.TextField(blank=True)
-    location = models.CharField(max_length=255, blank=True)
-    date_of_birth = models.DateField(blank=True, null=True)
-    handle = models.CharField(max_length=15, unique=True, help_text="Your unique handle starting with @ (e.g., @username)")
+    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
+    banner = models.ImageField(upload_to='banners/', null=True, blank=True)
+    description = models.TextField(max_length=160, blank=True)
+    location = models.CharField(max_length=30, blank=True)
+    handle = models.CharField(max_length=15, unique=True)
+    date_of_birth = models.DateField(null=True, blank=True)
     allow_messages = models.CharField(max_length=20, choices=[
         ('no_one', 'No one'),
         ('followers', 'Followers'),
@@ -226,8 +232,21 @@ class UserProfile(models.Model):
     payment_completed = models.BooleanField(default=False)
     profile_completed = models.BooleanField(default=False)
     full_name = models.CharField(max_length=100, blank=True)
-    stripe_customer_id = models.CharField(max_length=255, blank=True)
+    stripe_customer_id = models.CharField(max_length=50, blank=True, null=True)
+    is_premium = models.BooleanField(default=False)
+    premium_until = models.DateTimeField(null=True, blank=True)
+    premium_features = models.JSONField(
+        default=dict,
+        help_text='Features enabled for this user'
+    )
     is_tipster = models.BooleanField(default=False)
+    tipster_verified = models.BooleanField(default=False)
+    total_subscribers = models.IntegerField(default=0)
+    subscription_revenue = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0
+    )
     tipster_description = models.TextField(blank=True)
     tipster_rules = models.TextField(blank=True)
     minimum_tier_price = models.DecimalField(
@@ -242,12 +261,46 @@ class UserProfile(models.Model):
         null=True,
         blank=True
     )
-    total_subscribers = models.PositiveIntegerField(default=0)
-    subscription_revenue = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=0
-    )
+    
+    # Existing Badge fields
+    has_badge_winning_streak_3 = models.BooleanField(default=False)
+    has_badge_winning_streak_5 = models.BooleanField(default=False)
+    has_badge_high_odds_win = models.BooleanField(default=False)
+    has_badge_tips_10 = models.BooleanField(default=False)
+    has_badge_tips_50 = models.BooleanField(default=False)
+    has_badge_tips_100 = models.BooleanField(default=False)
+    has_badge_win_rate_60 = models.BooleanField(default=False)
+    has_badge_win_rate_75 = models.BooleanField(default=False)
+    has_badge_football_expert = models.BooleanField(default=False)
+    has_badge_horse_expert = models.BooleanField(default=False)
+
+    # New Badge fields - General Performance
+    has_badge_hot_streak = models.BooleanField(default=False)
+    has_badge_blazing_inferno = models.BooleanField(default=False)
+    has_badge_ice_cold = models.BooleanField(default=False)
+    has_badge_tipster_titan = models.BooleanField(default=False)
+    has_badge_rookie_rocket = models.BooleanField(default=False)
+
+    # New Badge fields - Sport Specific
+    has_badge_soccer_sniper = models.BooleanField(default=False)
+    has_badge_hoop_hero = models.BooleanField(default=False)
+    has_badge_touchdown_tycoon = models.BooleanField(default=False)
+    has_badge_wicket_wizard = models.BooleanField(default=False)
+    has_badge_hole_in_one = models.BooleanField(default=False)
+
+    # New Badge fields - Humorous
+    has_badge_crystal_ball = models.BooleanField(default=False)
+    has_badge_upset_oracle = models.BooleanField(default=False)
+    has_badge_late_night = models.BooleanField(default=False)
+    has_badge_meme_lord = models.BooleanField(default=False)
+    has_badge_hail_mary = models.BooleanField(default=False)
+
+    # New Badge fields - Community
+    has_badge_crowd_favorite = models.BooleanField(default=False)
+    has_badge_tipster_mentor = models.BooleanField(default=False)
+    has_badge_streak_starter = models.BooleanField(default=False)
+    has_badge_anniversary = models.BooleanField(default=False)
+    has_badge_viral = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         # Ensure handle starts with @
@@ -261,6 +314,20 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.username}'s profile"
+
+    def can_subscribe_to_tipsters(self):
+        """Check if user can subscribe to pro tipsters."""
+        return self.is_premium and (
+            self.premium_until is None or 
+            self.premium_until > timezone.now()
+        )
+
+    def can_become_tipster(self):
+        """Check if user can become a pro tipster."""
+        return self.is_premium and (
+            self.premium_until is None or 
+            self.premium_until > timezone.now()
+        )
 
 class Like(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='likes')
@@ -972,23 +1039,43 @@ class HorseRacingBettingOdds(models.Model):
 class TipsterTier(models.Model):
     """Model for tipster subscription tiers."""
     tipster = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscription_tiers')
-    name = models.CharField(max_length=50)  # e.g., "Bronze", "Silver", "Gold"
-    price = models.DecimalField(max_digits=6, decimal_places=2)  # Monthly subscription price
+    name = models.CharField(max_length=50)
+    price = models.DecimalField(max_digits=6, decimal_places=2)
     description = models.TextField()
-    features = models.JSONField(default=list)  # List of features included
-    max_subscribers = models.IntegerField(null=True, blank=True)  # Optional limit on subscribers
+    features = models.JSONField(default=list)
+    max_subscribers = models.IntegerField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
-    is_popular = models.BooleanField(default=False)  # Whether this is the "most popular" tier
-    stripe_price_id = models.CharField(max_length=100, blank=True, null=True)  # Stripe Price ID
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    is_popular = models.BooleanField(default=False)
+    tip_release_delay = models.IntegerField(
+        default=0,
+        help_text='Minutes to delay tip release for this tier'
+    )
+    priority_access = models.BooleanField(
+        default=False,
+        help_text='Whether this tier gets immediate access to tips'
+    )
+    can_view_analysis = models.BooleanField(default=True)
+    can_view_history = models.BooleanField(default=True)
+    stripe_price_id = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
         unique_together = ('tipster', 'name')
-        ordering = ['price']  # Order by price ascending
+        ordering = ['price']
 
-    def __str__(self):
-        return f"{self.tipster.username} - {self.name} Tier"
+    def calculate_release_time(self, base_time):
+        """Calculate when a tip should be released for this tier."""
+        if self.priority_access:
+            return base_time
+        return base_time + timezone.timedelta(minutes=self.tip_release_delay)
+
+    def get_tier_features(self):
+        """Get list of tier features including timing."""
+        base_features = self.features or []
+        timing_feature = (
+            "Instant access to tips" if self.priority_access
+            else f"Tips released after {self.tip_release_delay} minutes"
+        )
+        return [timing_feature] + base_features
 
     def save(self, *args, **kwargs):
         # Create or update Stripe price if not exists

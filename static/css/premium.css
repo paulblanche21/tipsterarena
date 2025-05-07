@@ -1,0 +1,115 @@
+/* Premium membership styling */
+
+/* Premium badge */
+.premium-badge {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(45deg, #FFD700, #FFA500);
+    color: #000;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.premium-badge i {
+    margin-right: 4px;
+    color: #000;
+}
+
+/* Premium user indicators */
+.premium-user {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.premium-user::after {
+    content: "★";
+    color: #FFD700;
+    margin-left: 4px;
+    font-size: 14px;
+}
+
+/* Premium status section */
+.premium-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 10px 0;
+    padding: 12px;
+    background: rgba(255, 215, 0, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+.premium-status-icon {
+    font-size: 20px;
+    color: #FFD700;
+}
+
+.premium-status-info {
+    flex: 1;
+}
+
+.premium-status-title {
+    font-weight: 600;
+    color: #001f3f;
+    margin-bottom: 2px;
+}
+
+.premium-status-expiry {
+    font-size: 12px;
+    color: #666;
+}
+
+/* Premium features list */
+.premium-features {
+    margin-top: 10px;
+    padding: 10px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.premium-feature-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.premium-feature-item:last-child {
+    border-bottom: none;
+}
+
+.premium-feature-icon {
+    color: #FFD700;
+    font-size: 16px;
+}
+
+/* Premium comment indicator */
+.comment-premium {
+    border-left: 3px solid #FFD700;
+}
+
+/* Premium tip indicator */
+.tip-premium {
+    position: relative;
+}
+
+.tip-premium::before {
+    content: "PREMIUM";
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: linear-gradient(45deg, #FFD700, #FFA500);
+    color: #000;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 600;
+} 

@@ -325,19 +325,46 @@ def subscribe_to_tipster(request, username, tier_id):
             
             # Create subscription record
             with transaction.atomic():
-                TipsterSubscription.objects.create(
+                # Check again within transaction to prevent race conditions
+                if TipsterSubscription.objects.filter(
                     subscriber=request.user,
-                    tier=tier,
-                    status='incomplete',
-                    end_date=timezone.now() + timezone.timedelta(days=30),
-                    stripe_subscription_id=stripe_subscription.id,
-                    stripe_customer_id=customer.id
-                )
-                
-            return JsonResponse({
-                'success': True,
-                'client_secret': stripe_subscription.latest_invoice.payment_intent.client_secret
-            })
+                    tier__tipster=tipster,
+                    status='active'
+                ).exists():
+                    return JsonResponse({
+                        'success': False,
+                        'error': "You already have an active subscription to this tipster"
+                    })
+
+                # Verify tier is still available
+                if TipsterTier.objects.filter(
+                    id=tier.id,
+                    is_active=True
+                ).exclude(
+                    max_subscribers__isnull=False,
+                    subscriptions__status='active',
+                    subscriptions__count__gte=F('max_subscribers')
+                ).exists():
+                    subscription = TipsterSubscription.objects.create(
+                        subscriber=request.user,
+                        tier=tier,
+                        status='incomplete',
+                        end_date=timezone.now() + timezone.timedelta(days=30),
+                        stripe_subscription_id=stripe_subscription.id,
+                        stripe_customer_id=customer.id
+                    )
+                    return JsonResponse({
+                        'success': True,
+                        'subscription_id': subscription.id,
+                        'client_secret': stripe_subscription.latest_invoice.payment_intent.client_secret
+                    })
+                else:
+                    # Cancel the Stripe subscription since we couldn't create the local subscription
+                    stripe.Subscription.delete(stripe_subscription.id)
+                    return JsonResponse({
+                        'success': False,
+                        'error': "This tier is no longer available"
+                    })
             
         except stripe.error.StripeError as e:
             logger.error(f"Stripe error in subscribe_to_tipster: {str(e)}")
@@ -381,38 +408,41 @@ def cancel_subscription(request, subscription_id):
 @require_POST
 def stripe_webhook(request):
     """Handle Stripe webhook events for subscription lifecycle."""
-    payload = request.body
-    sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+    if 'HTTP_STRIPE_SIGNATURE' not in request.META:
+        logger.error("No Stripe signature found")
+        return HttpResponse(status=400)
 
     try:
         event = stripe.Webhook.construct_event(
-            payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
+            request.body,
+            request.META['HTTP_STRIPE_SIGNATURE'],
+            settings.STRIPE_WEBHOOK_SECRET
         )
-    except ValueError as e:
-        logger.error(f"Invalid payload in stripe_webhook: {str(e)}")
-        return HttpResponse(status=400)
-    except stripe.error.SignatureVerificationError as e:
-        logger.error(f"Invalid signature in stripe_webhook: {str(e)}")
+    except (ValueError, stripe.error.SignatureVerificationError) as e:
+        logger.error(f"Invalid webhook payload or signature: {str(e)}")
         return HttpResponse(status=400)
 
     try:
-        # Handle the event
-        if event.type == 'customer.subscription.created':
-            handle_subscription_created(event.data.object)
-        elif event.type == 'customer.subscription.updated':
-            handle_subscription_updated(event.data.object)
-        elif event.type == 'customer.subscription.deleted':
-            handle_subscription_deleted(event.data.object)
-        elif event.type == 'invoice.payment_succeeded':
-            handle_payment_succeeded(event.data.object)
-        elif event.type == 'invoice.payment_failed':
-            handle_payment_failed(event.data.object)
-        
+        with transaction.atomic():
+            if event.type == 'customer.subscription.created':
+                handle_subscription_created(event.data.object)
+            elif event.type == 'customer.subscription.updated':
+                handle_subscription_updated(event.data.object)
+            elif event.type == 'customer.subscription.deleted':
+                handle_subscription_deleted(event.data.object)
+            elif event.type == 'invoice.payment_succeeded':
+                handle_payment_succeeded(event.data.object)
+            elif event.type == 'invoice.payment_failed':
+                handle_payment_failed(event.data.object)
+            else:
+                logger.info(f"Unhandled event type: {event.type}")
         return HttpResponse(status=200)
-        
+    except TipsterSubscription.DoesNotExist:
+        logger.error(f"Subscription not found for event {event.type}")
+        return HttpResponse(status=200)  # Don't retry missing subscriptions
     except Exception as e:
-        logger.error(f"Error processing webhook {event.type}: {str(e)}")
-        return HttpResponse(status=500)
+        logger.error(f"Error processing {event.type}: {str(e)}", exc_info=True)
+        return HttpResponse(status=500)  # Retry on unexpected errors
 
 def handle_subscription_created(subscription):
     """Handle new subscription creation."""

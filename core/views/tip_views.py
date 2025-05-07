@@ -11,6 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Count, Q
 
 from ..models import Tip, Like, Share, Comment, UserProfile
+from ..badges import award_badges
 
 logger = logging.getLogger(__name__)
 
@@ -374,4 +375,29 @@ def tip_list(request):
         return JsonResponse(
             {'error': 'Internal server error', 'detail': str(e)},
             status=500
-        ) 
+        )
+
+@login_required
+def verify_tip(request, tip_id):
+    """Verify a tip's outcome and award badges if applicable."""
+    if not request.user.is_staff:
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+
+    tip = get_object_or_404(Tip, id=tip_id)
+    status = request.POST.get('status')
+    
+    if status not in ['won', 'lost', 'void']:
+        return JsonResponse({'error': 'Invalid status'}, status=400)
+
+    tip.status = status
+    tip.save()
+
+    # Check and award badges
+    award_badges(tip.user.userprofile)
+
+    return JsonResponse({
+        'success': True,
+        'message': f'Tip marked as {status}',
+        'tip_id': tip.id,
+        'status': status
+    }) 
