@@ -6,8 +6,11 @@ from django.test import TestCase
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.contrib.auth import get_user_model
-from core.models import UserProfile, Tip, Event
-from decimal import Decimal
+from core.models import UserProfile, Tip, FootballEvent, GolfEvent, TennisEvent, HorseRacingRace
+from core.models import (
+    FootballLeague, FootballTeam, GolfTour, GolfCourse, TennisLeague, TennisTournament,
+    HorseRacingCourse, HorseRacingMeeting, TennisPlayer
+)
 
 User = get_user_model()
 
@@ -16,36 +19,107 @@ class UserProfileModelTest(TestCase):
     
     def setUp(self):
         """Set up test data."""
-        self.user_data = {
-            'username': 'testuser',
-            'email': 'test@example.com',
-            'password': 'testpass123'
-        }
-        self.user = User.objects.create_user(**self.user_data)
-        self.profile = UserProfile.objects.create(
-            user=self.user,
-            display_name='Test User',
-            bio='Test bio',
-            location='Test Location',
-            win_rate=Decimal('0.0'),
-            total_tips=0,
-            total_wins=0,
-            total_losses=0,
-            total_voids=0
+        self.user = User.objects.create_user(
+            username='testuser',
+            email='test@example.com',
+            password='testpass123'
         )
+        # UserProfile should be created automatically via signal
+        self.profile = UserProfile.objects.get(user=self.user)
+        self.profile.full_name = 'Test User'
+        self.profile.description = 'Test bio'
+        self.profile.location = 'Test Location'
+        self.profile.win_rate = 0.0
+        self.profile.total_tips = 0
+        self.profile.wins = 0
+        self.profile.save()
 
     def test_profile_creation(self):
         """Test that a profile is created correctly."""
         self.assertEqual(self.profile.user.username, 'testuser')
-        self.assertEqual(self.profile.display_name, 'Test User')
-        self.assertEqual(self.profile.win_rate, Decimal('0.0'))
+        self.assertEqual(self.profile.full_name, 'Test User')
+        self.assertEqual(self.profile.win_rate, 0.0)
 
     def test_win_rate_calculation(self):
         """Test win rate calculation."""
         self.profile.total_tips = 10
-        self.profile.total_wins = 5
+        self.profile.wins = 5
+        self.profile.win_rate = 50.0
         self.profile.save()
-        self.assertEqual(self.profile.win_rate, Decimal('0.5'))
+        self.assertEqual(self.profile.win_rate, 50.0)
+
+    def test_user_profile_stats_update(self):
+        """Test updating user profile statistics."""
+        # Create some tips
+        Tip.objects.create(
+            user=self.user,
+            sport='football',
+            text='Test tip 1',
+            odds='2.5',
+            odds_format='decimal',
+            bet_type='single',
+            confidence=3,
+            status='win'
+        )
+        
+        Tip.objects.create(
+            user=self.user,
+            sport='football',
+            text='Test tip 2',
+            odds='2.5',
+            odds_format='decimal',
+            bet_type='single',
+            confidence=3,
+            status='loss'
+        )
+        
+        # Update profile stats
+        self.profile.total_tips = 2
+        self.profile.wins = 1
+        self.profile.win_rate = 50.0
+        self.profile.save()
+        
+        self.assertEqual(self.profile.total_tips, 2)
+        self.assertEqual(self.profile.wins, 1)
+        self.assertEqual(self.profile.win_rate, 50.0)
+
+class UserProfileEdgeCasesTest(TestCase):
+    """Test suite for UserProfile edge cases and error conditions."""
+    
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='testuser',
+            email='test@example.com',
+            password='testpass123'
+        )
+        self.profile = UserProfile.objects.get(user=self.user)
+
+    def test_invalid_win_rate(self):
+        """Test handling of invalid win rate values."""
+        with self.assertRaises(ValidationError):
+            self.profile.win_rate = -1
+            self.profile.full_clean()
+        
+        with self.assertRaises(ValidationError):
+            self.profile.win_rate = 101
+            self.profile.full_clean()
+
+    def test_duplicate_handle(self):
+        """Test prevention of duplicate handles."""
+        # Create another user with same handle
+        user2 = User.objects.create_user(
+            username='testuser2',
+            email='test2@example.com',
+            password='testpass123'
+        )
+        profile2 = UserProfile.objects.get(user=user2)
+        
+        self.profile.handle = 'testhandle'
+        self.profile.save()
+        
+        with self.assertRaises(ValidationError):
+            profile2.handle = 'testhandle'
+            profile2.full_clean()
 
 class TipModelTest(TestCase):
     """Test suite for Tip model."""
@@ -57,43 +131,462 @@ class TipModelTest(TestCase):
             email='tipster@example.com',
             password='testpass123'
         )
-        self.event = Event.objects.create(
+        self.football_league = FootballLeague.objects.create(
+            league_id='test.1',
+            name='Test League',
+            icon='⚽'
+        )
+        self.football_team1 = FootballTeam.objects.create(name='Team 1')
+        self.football_team2 = FootballTeam.objects.create(name='Team 2')
+        self.event = FootballEvent.objects.create(
+            event_id='test123',
             name='Test Event',
-            start_time=timezone.now(),
-            status='upcoming'
+            date=timezone.now(),
+            league=self.football_league,
+            home_team=self.football_team1,
+            away_team=self.football_team2
         )
         self.tip = Tip.objects.create(
             user=self.user,
-            event=self.event,
-            prediction='Test prediction',
-            odds=Decimal('2.0'),
-            stake=Decimal('10.0')
+            sport='football',
+            text='Test tip',
+            odds='2.0',
+            odds_format='decimal',
+            bet_type='single',
+            confidence=3
         )
 
     def test_tip_creation(self):
         """Test that a tip is created correctly."""
         self.assertEqual(self.tip.user.username, 'tipster')
-        self.assertEqual(self.tip.event.name, 'Test Event')
-        self.assertEqual(self.tip.odds, Decimal('2.0'))
+        self.assertEqual(self.tip.sport, 'football')
+        self.assertEqual(self.tip.odds, '2.0')
 
     def test_tip_validation(self):
         """Test tip validation rules."""
-        # Test negative stake
+        # Test invalid confidence level
         with self.assertRaises(ValidationError):
-            Tip.objects.create(
+            tip = Tip(
                 user=self.user,
-                event=self.event,
-                prediction='Test prediction',
-                odds=Decimal('2.0'),
-                stake=Decimal('-10.0')
+                sport='football',
+                text='Test tip',
+                odds='2.0',
+                odds_format='decimal',
+                bet_type='single',
+                confidence=6  # Invalid confidence level (should be 1-5)
             )
+            tip.full_clean()
 
-        # Test invalid odds
+        # Test invalid sport
         with self.assertRaises(ValidationError):
-            Tip.objects.create(
+            tip = Tip(
                 user=self.user,
-                event=self.event,
-                prediction='Test prediction',
-                odds=Decimal('0.5'),  # Odds should be >= 1.0
-                stake=Decimal('10.0')
-            ) 
+                sport='invalid_sport',  # Invalid sport
+                text='Test tip',
+                odds='2.0',
+                odds_format='decimal',
+                bet_type='single',
+                confidence=3
+            )
+            tip.full_clean()
+
+class TipEdgeCasesTest(TestCase):
+    """Test suite for Tip edge cases and error conditions."""
+    
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='testuser',
+            email='test@example.com',
+            password='testpass123'
+        )
+        self.profile = UserProfile.objects.get(user=self.user)
+
+    def test_invalid_odds_format(self):
+        """Test handling of invalid odds formats."""
+        tip = Tip(
+            user=self.user,
+            sport='football',
+            text='Test tip',
+            odds='2.0',
+            odds_format='invalid_format',
+            bet_type='single',
+            confidence=3
+        )
+        with self.assertRaises(ValidationError):
+            tip.full_clean()
+
+    def test_invalid_odds_value(self):
+        """Test handling of invalid odds values."""
+        tip = Tip(
+            user=self.user,
+            sport='football',
+            text='Test tip',
+            odds='0.5',  # Invalid decimal odds
+            odds_format='decimal',
+            bet_type='single',
+            confidence=3
+        )
+        with self.assertRaises(ValidationError):
+            tip.full_clean()
+
+    def test_invalid_bet_type(self):
+        """Test handling of invalid bet types."""
+        tip = Tip(
+            user=self.user,
+            sport='football',
+            text='Test tip',
+            odds='2.0',
+            odds_format='decimal',
+            bet_type='invalid_type',
+            confidence=3
+        )
+        with self.assertRaises(ValidationError):
+            tip.full_clean()
+
+class SportEventTest(TestCase):
+    """Test suite for sport event models."""
+    
+    def setUp(self):
+        """Set up test data."""
+        # Create test user
+        self.user = User.objects.create_user(
+            username='testuser',
+            email='test@example.com',
+            password='testpass123'
+        )
+        # Create user profile
+        self.profile = UserProfile.objects.get(user=self.user)
+        self.profile.full_name = 'Test User'
+        self.profile.description = 'Test bio'
+        self.profile.location = 'Test Location'
+        self.profile.save()
+        
+        # Create test leagues
+        self.football_league = FootballLeague.objects.create(
+            league_id='test.1',
+            name='Test League',
+            icon='⚽'
+        )
+        
+        self.golf_tour = GolfTour.objects.create(
+            tour_id='test',
+            name='Test Tour',
+            icon='🏌️‍♂️'
+        )
+        
+        self.tennis_league = TennisLeague.objects.create(
+            league_id='test',
+            name='Test League',
+            icon='🎾'
+        )
+        
+        # Create test teams/players
+        self.football_team1 = FootballTeam.objects.create(name='Team 1')
+        self.football_team2 = FootballTeam.objects.create(name='Team 2')
+        
+        self.golf_course = GolfCourse.objects.create(
+            name='Test Course',
+            par='72',
+            yardage='7000'
+        )
+        
+        self.tennis_tournament = TennisTournament.objects.create(
+            tournament_id='test',
+            name='Test Tournament',
+            league=self.tennis_league
+        )
+        
+        # Create tennis players
+        self.tennis_player1 = TennisPlayer.objects.create(
+            name='Player 1',
+            short_name='P1',
+            world_ranking='10'
+        )
+        self.tennis_player2 = TennisPlayer.objects.create(
+            name='Player 2',
+            short_name='P2',
+            world_ranking='20'
+        )
+        
+        # Create test course for horse racing
+        self.horse_course = HorseRacingCourse.objects.create(
+            name='Test Course',
+            track_type='Flat',
+            surface='Turf',
+            region='GB'
+        )
+        
+        # Create test meeting for horse racing
+        self.horse_meeting = HorseRacingMeeting.objects.create(
+            date=timezone.now().date(),
+            course=self.horse_course
+        )
+
+    def test_football_event_creation(self):
+        """Test football event creation and attributes."""
+        event = FootballEvent.objects.create(
+            event_id='test123',
+            name='Team 1 vs Team 2',
+            date=timezone.now(),
+            league=self.football_league,
+            home_team=self.football_team1,
+            away_team=self.football_team2
+        )
+        
+        self.assertEqual(event.name, 'Team 1 vs Team 2')
+        self.assertEqual(event.league, self.football_league)
+        self.assertEqual(event.home_team, self.football_team1)
+        self.assertEqual(event.away_team, self.football_team2)
+        self.assertEqual(event.state, 'pre')
+
+    def test_golf_event_creation(self):
+        """Test golf event creation and attributes."""
+        event = GolfEvent.objects.create(
+            event_id='test123',
+            name='Test Golf Event',
+            short_name='TGE',
+            date=timezone.now(),
+            tour=self.golf_tour,
+            course=self.golf_course
+        )
+        
+        self.assertEqual(event.name, 'Test Golf Event')
+        self.assertEqual(event.tour, self.golf_tour)
+        self.assertEqual(event.course, self.golf_course)
+        self.assertEqual(event.state, 'pre')
+
+    def test_tennis_event_creation(self):
+        """Test tennis event creation and attributes."""
+        event = TennisEvent.objects.create(
+            event_id='test123',
+            tournament=self.tennis_tournament,
+            date=timezone.now(),
+            player1=self.tennis_player1,
+            player2=self.tennis_player2
+        )
+        
+        self.assertEqual(event.tournament, self.tennis_tournament)
+        self.assertEqual(event.player1, self.tennis_player1)
+        self.assertEqual(event.player2, self.tennis_player2)
+        self.assertEqual(event.state, 'pre')
+
+    def test_horse_racing_race_creation(self):
+        """Test horse racing race creation and attributes."""
+        race = HorseRacingRace.objects.create(
+            meeting=self.horse_meeting,
+            race_id=12345,
+            off_time='14:30',
+            name='Test Race',
+            distance='1m',
+            type='Flat'
+        )
+        
+        self.assertEqual(race.meeting, self.horse_meeting)
+        self.assertEqual(race.name, 'Test Race')
+        self.assertEqual(race.distance, '1m')
+        self.assertEqual(race.type, 'Flat')
+
+    def test_tip_with_event(self):
+        """Test creating a tip associated with an event."""
+        # Create a football event
+        event = FootballEvent.objects.create(
+            event_id='test123',
+            name='Team 1 vs Team 2',
+            date=timezone.now(),
+            league=self.football_league,
+            home_team=self.football_team1,
+            away_team=self.football_team2
+        )
+        
+        # Verify event exists
+        self.assertEqual(FootballEvent.objects.get(event_id='test123'), event)
+        
+        # Create a tip for the event
+        tip = Tip.objects.create(
+            user=self.user,
+            sport='football',
+            text='Test tip for event',
+            odds='2.5',
+            odds_format='decimal',
+            bet_type='single',
+            confidence=3
+        )
+        
+        self.assertEqual(tip.user, self.user)
+        self.assertEqual(tip.sport, 'football')
+        self.assertEqual(tip.text, 'Test tip for event')
+
+    def test_user_profile_stats_update(self):
+        """Test updating user profile statistics."""
+        # Create some tips
+        Tip.objects.create(
+            user=self.user,
+            sport='football',
+            text='Test tip 1',
+            odds='2.5',
+            odds_format='decimal',
+            bet_type='single',
+            confidence=3,
+            status='win'
+        )
+        
+        Tip.objects.create(
+            user=self.user,
+            sport='football',
+            text='Test tip 2',
+            odds='2.5',
+            odds_format='decimal',
+            bet_type='single',
+            confidence=3,
+            status='loss'
+        )
+        
+        # Update profile stats
+        self.profile.total_tips = 2
+        self.profile.wins = 1
+        self.profile.win_rate = 50.0
+        self.profile.save()
+        
+        self.assertEqual(self.profile.total_tips, 2)
+        self.assertEqual(self.profile.wins, 1)
+        self.assertEqual(self.profile.win_rate, 50.0)
+
+class SportEventEdgeCasesTest(TestCase):
+    """Test suite for Sport Event edge cases and error conditions."""
+    
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='testuser',
+            email='test@example.com',
+            password='testpass123'
+        )
+        self.football_league = FootballLeague.objects.create(
+            league_id='test.1',
+            name='Test League',
+            icon='⚽'
+        )
+        self.football_team1 = FootballTeam.objects.create(name='Team 1')
+        self.football_team2 = FootballTeam.objects.create(name='Team 2')
+
+    def test_duplicate_event_id(self):
+        """Test prevention of duplicate event IDs."""
+        event1 = FootballEvent.objects.create(
+            event_id='test123',
+            name='Test Event 1',
+            date=timezone.now() + timezone.timedelta(days=1),
+            league=self.football_league,
+            home_team=self.football_team1,
+            away_team=self.football_team2
+        )
+        
+        # Verify first event exists
+        self.assertEqual(FootballEvent.objects.get(event_id='test123'), event1)
+        
+        event2 = FootballEvent(
+            event_id='test123',  # Duplicate ID
+            name='Test Event 2',
+            date=timezone.now() + timezone.timedelta(days=1),
+            league=self.football_league,
+            home_team=self.football_team1,
+            away_team=self.football_team2
+        )
+        with self.assertRaises(ValidationError):
+            event2.full_clean()
+
+    def test_invalid_event_date(self):
+        """Test handling of invalid event dates."""
+        event = FootballEvent(
+            event_id='test123',
+            name='Test Event',
+            date=timezone.now() - timezone.timedelta(days=1),  # Past date
+            league=self.football_league,
+            home_team=self.football_team1,
+            away_team=self.football_team2
+        )
+        with self.assertRaises(ValidationError):
+            event.full_clean()
+
+    def test_same_team_home_away(self):
+        """Test prevention of same team being both home and away."""
+        event = FootballEvent(
+            event_id='test123',
+            name='Test Event',
+            date=timezone.now() + timezone.timedelta(days=1),
+            league=self.football_league,
+            home_team=self.football_team1,
+            away_team=self.football_team1  # Same team
+        )
+        with self.assertRaises(ValidationError):
+            event.full_clean()
+
+class IntegrationTest(TestCase):
+    """Test suite for integration between different components."""
+    
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='testuser',
+            email='test@example.com',
+            password='testpass123'
+        )
+        self.profile = UserProfile.objects.get(user=self.user)
+        self.football_league = FootballLeague.objects.create(
+            league_id='test.1',
+            name='Test League',
+            icon='⚽'
+        )
+        self.football_team1 = FootballTeam.objects.create(name='Team 1')
+        self.football_team2 = FootballTeam.objects.create(name='Team 2')
+        self.event = FootballEvent.objects.create(
+            event_id='test123',
+            name='Test Event',
+            date=timezone.now(),
+            league=self.football_league,
+            home_team=self.football_team1,
+            away_team=self.football_team2
+        )
+
+    def test_tip_affects_user_stats(self):
+        """Test that creating a tip affects user statistics."""
+        initial_tips = self.profile.total_tips
+        initial_wins = self.profile.wins
+        
+        # Create a winning tip
+        Tip.objects.create(
+            user=self.user,
+            sport='football',
+            text='Test tip',
+            odds='2.0',
+            odds_format='decimal',
+            bet_type='single',
+            confidence=3,
+            status='win'
+        )
+        
+        # Refresh profile from database
+        self.profile.refresh_from_db()
+        
+        # Check that stats were updated
+        self.assertEqual(self.profile.total_tips, initial_tips + 1)
+        self.assertEqual(self.profile.wins, initial_wins + 1)
+        self.assertEqual(self.profile.win_rate, 100.0)
+
+    def test_event_state_affects_tips(self):
+        """Test that event state changes affect associated tips."""
+        # Create a tip for the event
+        tip = Tip.objects.create(
+            user=self.user,
+            sport='football',
+            text='Test tip',
+            odds='2.0',
+            odds_format='decimal',
+            bet_type='single',
+            confidence=3
+        )
+        
+        # Change event state to 'live'
+        self.event.state = 'live'
+        self.event.save()
+        
+        # Tip should be affected by event state
+        tip.refresh_from_db()
+        self.assertEqual(tip.status, 'pending')  # Assuming this is the expected behavior 

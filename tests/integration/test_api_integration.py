@@ -9,12 +9,12 @@ from rest_framework import status
 import time
 from concurrent.futures import ThreadPoolExecutor
 from django.contrib.auth import get_user_model
-from core.models import UserProfile, Tip, Event
+from core.models import UserProfile, Tip
 from unittest.mock import patch
-import json
+
 
 from core.factories import (
-    UserFactory, GolfEventFactory, FootballEventFactory,
+    GolfEventFactory, FootballEventFactory,
     TennisEventFactory, TipFactory
 )
 

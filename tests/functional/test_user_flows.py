@@ -6,7 +6,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from core.models import UserProfile, Tip, Event
-from decimal import Decimal
+
 
 User = get_user_model()
 

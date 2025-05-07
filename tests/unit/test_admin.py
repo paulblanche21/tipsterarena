@@ -2,7 +2,7 @@
 Unit tests for Tipster Arena admin interface.
 Tests admin model registrations and custom admin actions.
 """
-from django.test import TestCase, Client
+from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.contrib.admin.sites import AdminSite
 from core.admin import (

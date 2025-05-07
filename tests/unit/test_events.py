@@ -5,7 +5,7 @@ Tests event creation, validation, and status updates.
 from django.test import TestCase
 from django.utils import timezone
 from django.contrib.auth import get_user_model
-from core.models import Event, Tip
+from core.models import  Tip
 from core.horse_racing_events import (
     HorseRacingEvent,
     EventValidator,

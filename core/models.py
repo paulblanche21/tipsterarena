@@ -12,6 +12,7 @@ from django.dispatch import receiver
 from django.utils import timezone
 from django.conf import settings
 import stripe
+from django.core.exceptions import ValidationError
 
 # Model representing a user's tip
 class Tip(models.Model):
@@ -186,6 +187,32 @@ class Tip(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.sport}: {self.text[:20]}"  # String representation for admin/debugging
 
+    def clean(self):
+        super().clean()
+        # Validate odds format
+        if self.odds_format not in ['decimal', 'fractional']:
+            raise ValidationError({'odds_format': 'Invalid odds format'})
+        
+        # Validate odds value
+        if self.odds_format == 'decimal':
+            try:
+                odds = float(self.odds)
+                if odds < 1.0:
+                    raise ValidationError({'odds': 'Decimal odds must be greater than or equal to 1.0'})
+            except ValueError:
+                raise ValidationError({'odds': 'Invalid decimal odds format'})
+        elif self.odds_format == 'fractional':
+            try:
+                num, denom = map(int, self.odds.split('/'))
+                if denom == 0:
+                    raise ValidationError({'odds': 'Denominator cannot be zero'})
+            except (ValueError, AttributeError):
+                raise ValidationError({'odds': 'Invalid fractional odds format'})
+        
+        # Validate bet type
+        if self.bet_type not in ['single', 'double', 'treble', 'accumulator']:
+            raise ValidationError({'bet_type': 'Invalid bet type'})
+
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     """Create a UserProfile with a handle when a new User is created."""
@@ -211,6 +238,19 @@ def save_user_profile(sender, instance, **kwargs):
     """Ensure UserProfile is saved when User is saved."""
     if hasattr(instance, 'userprofile'):
         instance.userprofile.save()
+
+@receiver(post_save, sender=Tip)
+def update_user_stats(sender, instance, created, **kwargs):
+    """Update user statistics when a tip is created or updated."""
+    if created or instance.status in ['win', 'loss']:
+        profile = instance.user.userprofile
+        profile.total_tips = Tip.objects.filter(user=instance.user).count()
+        profile.wins = Tip.objects.filter(user=instance.user, status='win').count()
+        if profile.total_tips > 0:
+            profile.win_rate = (profile.wins / profile.total_tips) * 100
+        else:
+            profile.win_rate = 0
+        profile.save()
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -509,6 +549,16 @@ class FootballEvent(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.date})"
+
+    def clean(self):
+        super().clean()
+        # Validate event date
+        if self.date < timezone.now():
+            raise ValidationError({'date': 'Event date cannot be in the past'})
+        
+        # Validate home and away teams
+        if self.home_team == self.away_team:
+            raise ValidationError('Home and away teams cannot be the same')
 
 # Model for key events (e.g., goals, cards)
 class KeyEvent(models.Model):

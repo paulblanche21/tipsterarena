@@ -4,13 +4,10 @@ Tests badge award logic and conditions.
 """
 from django.test import TestCase
 from django.contrib.auth import get_user_model
-from core.models import UserProfile, Tip, Event
-from core.badges import (
-    BadgeAwarder,
-    WinStreakBadge,
-    TipCountBadge,
-    AccuracyBadge
-)
+from django.utils import timezone
+from datetime import timedelta
+from core.models import UserProfile, Tip
+from core.badges import BadgeAwarder
 
 User = get_user_model()
 
@@ -24,105 +21,91 @@ class BadgeSystemTest(TestCase):
             email='test@example.com',
             password='testpass123'
         )
-        self.profile = UserProfile.objects.create(
-            user=self.user,
-            display_name='Test User'
-        )
-        self.event = Event.objects.create(
-            name='Test Event',
-            start_time='2024-01-01 12:00:00',
-            status='upcoming'
-        )
-        self.badge_awarder = BadgeAwarder()
+        self.profile = UserProfile.objects.get(user=self.user)
+        self.badge_awarder = BadgeAwarder(self.profile)
 
-    def test_win_streak_badge(self):
-        """Test win streak badge award."""
-        # Create 5 winning tips in a row
-        for i in range(5):
+    def test_hot_streak_badge(self):
+        """Test hot streak badge award."""
+        # Create 3 winning tips in a row
+        for i in range(3):
             Tip.objects.create(
                 user=self.user,
-                event=self.event,
-                prediction=f'Test prediction {i}',
+                sport='football',
+                text=f'Test tip {i}',
                 odds='2.0',
-                stake='10.0',
-                status='win'
+                odds_format='decimal',
+                bet_type='single',
+                status='won'
             )
         
-        self.badge_awarder.check_win_streak(self.profile)
+        self.badge_awarder.check_performance_badges()
         self.profile.refresh_from_db()
         
-        self.assertIn('win_streak_5', self.profile.badges)
+        self.assertTrue(self.profile.has_badge_hot_streak)
 
-    def test_tip_count_badge(self):
-        """Test tip count badge award."""
-        # Create 50 tips
-        for i in range(50):
-            Tip.objects.create(
-                user=self.user,
-                event=self.event,
-                prediction=f'Test prediction {i}',
-                odds='2.0',
-                stake='10.0'
-            )
-        
-        self.badge_awarder.check_tip_count(self.profile)
-        self.profile.refresh_from_db()
-        
-        self.assertIn('tip_count_50', self.profile.badges)
-
-    def test_accuracy_badge(self):
-        """Test accuracy badge award."""
-        # Create 20 tips with 15 wins (75% accuracy)
+    def test_tipster_titan_badge(self):
+        """Test tipster titan badge award."""
+        # Create 20 tips with 15 wins (75% win rate)
         for i in range(20):
             Tip.objects.create(
                 user=self.user,
-                event=self.event,
-                prediction=f'Test prediction {i}',
+                sport='football',
+                text=f'Test tip {i}',
                 odds='2.0',
-                stake='10.0',
-                status='win' if i < 15 else 'loss'
+                odds_format='decimal',
+                bet_type='single',
+                status='won' if i < 15 else 'lost'
             )
         
-        self.badge_awarder.check_accuracy(self.profile)
+        self.badge_awarder.check_performance_badges()
         self.profile.refresh_from_db()
         
-        self.assertIn('accuracy_75', self.profile.badges)
+        self.assertTrue(self.profile.has_badge_tipster_titan)
 
-    def test_multiple_badges(self):
-        """Test multiple badge awards."""
-        # Create tips that should trigger multiple badges
-        for i in range(50):
+    def test_soccer_sniper_badge(self):
+        """Test soccer sniper badge award."""
+        # Create 5 winning football tips
+        for i in range(5):
             Tip.objects.create(
                 user=self.user,
-                event=self.event,
-                prediction=f'Test prediction {i}',
+                sport='football',
+                text=f'Test tip {i}',
                 odds='2.0',
-                stake='10.0',
-                status='win' if i < 40 else 'loss'  # 80% accuracy
+                odds_format='decimal',
+                bet_type='single',
+                status='won'
             )
         
-        self.badge_awarder.check_all_badges(self.profile)
+        self.badge_awarder.check_sport_specific_badges()
         self.profile.refresh_from_db()
         
-        self.assertIn('tip_count_50', self.profile.badges)
-        self.assertIn('accuracy_80', self.profile.badges)
+        self.assertTrue(self.profile.has_badge_soccer_sniper)
 
-    def test_badge_progression(self):
-        """Test badge progression."""
-        # Test progression from bronze to silver to gold
-        for i in range(100):
-            Tip.objects.create(
-                user=self.user,
-                event=self.event,
-                prediction=f'Test prediction {i}',
-                odds='2.0',
-                stake='10.0',
-                status='win' if i < 80 else 'loss'  # 80% accuracy
-            )
+    def test_upset_oracle_badge(self):
+        """Test upset oracle badge award."""
+        # Create a winning tip with high odds
+        Tip.objects.create(
+            user=self.user,
+            sport='football',
+            text='High odds tip',
+            odds='6.0',
+            odds_format='decimal',
+            bet_type='single',
+            status='won'
+        )
         
-        self.badge_awarder.check_all_badges(self.profile)
+        self.badge_awarder.check_humorous_badges()
         self.profile.refresh_from_db()
         
-        self.assertIn('tip_count_bronze', self.profile.badges)
-        self.assertIn('tip_count_silver', self.profile.badges)
-        self.assertIn('tip_count_gold', self.profile.badges) 
+        self.assertTrue(self.profile.has_badge_upset_oracle)
+
+    def test_anniversary_badge(self):
+        """Test anniversary badge award."""
+        # Set user join date to over a year ago
+        self.user.date_joined = timezone.now() - timedelta(days=366)
+        self.user.save()
+        
+        self.badge_awarder.check_community_badges()
+        self.profile.refresh_from_db()
+        
+        self.assertTrue(self.profile.has_badge_anniversary) 

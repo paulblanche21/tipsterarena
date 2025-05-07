@@ -6,7 +6,7 @@ from django.test import TestCase
 from django.template import Template, Context
 from django.contrib.auth import get_user_model
 from core.models import UserProfile, Tip
-from core.templatetags import tipster_tags
+
 
 User = get_user_model()
 
