@@ -1,21 +1,39 @@
+"""
+Integration tests for Tipster Arena API endpoints and external services.
+Tests API integration with external services and complex workflows.
+"""
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 import time
 from concurrent.futures import ThreadPoolExecutor
+from django.contrib.auth import get_user_model
+from core.models import UserProfile, Tip, Event
+from unittest.mock import patch
+import json
 
 from core.factories import (
     UserFactory, GolfEventFactory, FootballEventFactory,
     TennisEventFactory, TipFactory
 )
 
+User = get_user_model()
+
 class APIIntegrationTest(TestCase):
     """Test suite for API integration scenarios."""
     
     def setUp(self):
         self.client = APIClient()
-        self.user = UserFactory()
+        self.user = User.objects.create_user(
+            username='testuser',
+            email='test@example.com',
+            password='testpass123'
+        )
+        self.profile = UserProfile.objects.create(
+            user=self.user,
+            display_name='Test User'
+        )
         self.client.force_authenticate(user=self.user)
         
         # Create test data
@@ -142,4 +160,97 @@ class APIIntegrationTest(TestCase):
         
         for url in protected_urls:
             response = unauthenticated_client.get(url)
-            self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED) 
+            self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    @patch('core.services.payment_gateway.process_payment')
+    def test_payment_integration(self, mock_payment):
+        """Test payment gateway integration."""
+        mock_payment.return_value = {'status': 'success', 'transaction_id': '123'}
+        
+        response = self.client.post(
+            reverse('api:process_payment'),
+            {
+                'amount': '10.00',
+                'currency': 'USD',
+                'payment_method': 'card'
+            }
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['status'], 'success')
+        mock_payment.assert_called_once()
+
+    @patch('core.services.email_service.send_email')
+    def test_email_integration(self, mock_email):
+        """Test email service integration."""
+        mock_email.return_value = True
+        
+        response = self.client.post(
+            reverse('api:send_notification'),
+            {
+                'recipient': 'test@example.com',
+                'subject': 'Test Subject',
+                'message': 'Test Message'
+            }
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        mock_email.assert_called_once()
+
+    @patch('core.services.search_service.index_document')
+    def test_search_integration(self, mock_search):
+        """Test search service integration."""
+        mock_search.return_value = {'status': 'success'}
+        
+        # Create a tip to be indexed
+        tip = Tip.objects.create(
+            user=self.user,
+            prediction='Test prediction',
+            odds='2.0',
+            stake='10.0'
+        )
+        
+        response = self.client.post(
+            reverse('api:index_tip'),
+            {'tip_id': tip.id}
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        mock_search.assert_called_once()
+
+    def test_complex_query_integration(self):
+        """Test complex database query integration."""
+        # Create multiple tips with different statuses
+        for i in range(10):
+            Tip.objects.create(
+                user=self.user,
+                prediction=f'Test prediction {i}',
+                odds='2.0',
+                stake='10.0',
+                status='win' if i < 5 else 'loss'
+            )
+        
+        # Test complex aggregation query
+        response = self.client.get(
+            reverse('api:user_stats'),
+            {'user_id': self.user.id}
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['total_tips'], 10)
+        self.assertEqual(data['win_rate'], 50.0)
+
+    @patch('core.services.cache_service.get_cached_data')
+    def test_cache_integration(self, mock_cache):
+        """Test cache service integration."""
+        mock_cache.return_value = {'cached_data': 'test'}
+        
+        response = self.client.get(
+            reverse('api:cached_data'),
+            {'key': 'test_key'}
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['cached_data'], 'test')
+        mock_cache.assert_called_once_with('test_key') 
