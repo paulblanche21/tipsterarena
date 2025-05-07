@@ -1,25 +1,33 @@
 #!/bin/bash
 
-# Set database configuration
-export DB_USER=paul
-export DB_PASSWORD=Frankfurt5!
-export DB_HOST=localhost
-export DB_PORT=5432
+# Exit on error
+set -e
 
-# Generate a unique test database name
-TEST_DB_NAME=$(python -c "import os; print(f'test_tipsterarena_{os.urandom(8).hex()}')")
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
 
-# Terminate any existing connections to the test database
-PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -h "$DB_HOST" -p "$DB_PORT" -d postgres -c "SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE pg_stat_activity.datname = '$TEST_DB_NAME' AND pid <> pg_backend_pid();"
+echo "Running tests for Tipster Arena..."
 
-# Drop the test database if it exists
-PGPASSWORD="$DB_PASSWORD" dropdb -U "$DB_USER" -h "$DB_HOST" -p "$DB_PORT" "$TEST_DB_NAME" || true
+# Check if virtual environment exists
+if [ ! -d "venv" ]; then
+    echo -e "${RED}Virtual environment not found. Creating one...${NC}"
+    python3 -m venv venv
+fi
 
-# Create a fresh test database
-PGPASSWORD="$DB_PASSWORD" createdb -U "$DB_USER" -h "$DB_HOST" -p "$DB_PORT" "$TEST_DB_NAME"
+# Activate virtual environment
+source venv/bin/activate
 
-# Run the tests with the test settings
-DJANGO_SETTINGS_MODULE=core.test_settings python manage.py test "$@"
+# Install requirements if needed
+if [ ! -f "installed_packages.txt" ]; then
+    echo -e "${RED}Installing requirements...${NC}"
+    pip install -r requirements.txt
+    pip freeze > installed_packages.txt
+fi
 
-# Clean up the test database
-PGPASSWORD="$DB_PASSWORD" dropdb -U "$DB_USER" -h "$DB_HOST" -p "$DB_PORT" "$TEST_DB_NAME" 
+# Run tests with the new settings module
+echo -e "${GREEN}Running tests...${NC}"
+DJANGO_SETTINGS_MODULE=tests.config.settings python manage.py test "$@"
+
+echo -e "${GREEN}Tests completed!${NC}" 

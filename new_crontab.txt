@@ -1,9 +1,0 @@
-SHELL=/bin/bash
-PATH=/Users/paulblanche/Desktop/Tipster\ Arena/venv/bin:/usr/local/bin:/usr/bin:/bin
-0 0 * * * /Users/paulblanche/Desktop/Tipster\ Arena/venv/bin/python /Users/paulblanche/Desktop/Tipster\ Arena/manage.py crontab run 4b287ac970d51c57c29bd605d7abbf78 >> /var/log/tipsterarena_cron.log 2>&1 # django-cronjobs for tipsterarena
-*/10 * * * * /Users/paulblanche/Desktop/Tipster\ Arena/venv/bin/python /Users/paulblanche/Desktop/Tipster\ Arena/manage.py crontab run 180a21dedd209c109fcebdd9c60bc4b0 >> /var/log/tipsterarena_cron.log 2>&1 # django-cronjobs for tipsterarena
-0 * * * * /Users/paulblanche/Desktop/Tipster\ Arena/venv/bin/python /Users/paulblanche/Desktop/Tipster\ Arena/manage.py crontab run f614df6724a3b4a5d81fde4ee8d5a7ec >> /Users/paulblanche/Desktop/Tipster\ Arena/logs/cron.log 2>&1 # django-cronjobs for tipsterarena
-0 0 * * * /Users/paulblanche/Desktop/Tipster\ Arena/venv/bin/python /Users/paulblanche/Desktop/Tipster\ Arena/manage.py crontab run 6b8050eb4d313f145f011568fa2f3fa4 >> /Users/paulblanche/Desktop/Tipster\ Arena/logs/tennis_populate.log 2>&1 # django-cronjobs for tipsterarena
-0 6 * * * /Users/paulblanche/Desktop/Tipster\ Arena/venv/bin/python /Users/paulblanche/Desktop/Tipster\ Arena/manage.py crontab run 9d1ba1a72f1c3489741a55dcdbcb962e >> /var/log/tipsterarena_cron.log 2>&1 # django-cronjobs for tipsterarena
-0 7 * * * /Users/paulblanche/Desktop/Tipster\ Arena/venv/bin/python /Users/paulblanche/Desktop/Tipster\ Arena/manage.py crontab run 7d3f30df45d13aefcc5f5e9987389a62 >> /var/log/tipsterarena_cron.log 2>&1 # django-cronjobs for tipsterarena
-0 7 * * * /Users/paulblanche/Desktop/Tipster\ Arena/venv/bin/python /Users/paulblanche/Desktop/Tipster\ Arena/manage.py crontab run cf6c492fbfe097a2cd8cc5c386ea2897 >> /var/log/tipsterarena_cron.log 2>&1 # django-cronjobs for tipsterarena
