@@ -1,3 +1,48 @@
+"""
+Test Data Factories for Tipster Arena.
+
+This module provides factory classes for generating test data using the factory_boy library.
+These factories are used primarily for testing and development purposes to create realistic
+test data for all models in the application.
+
+The factories support:
+1. User and Profile Management
+   - UserFactory: Creates test users with unique usernames and emails
+   - UserProfileFactory: Creates associated user profiles with realistic data
+
+2. Sports Events and Data
+   - Football: Teams, Leagues, Events, and Team Stats
+   - Tennis: Players, Tournaments, Leagues, Venues, and Events
+   - Golf: Tours, Courses, and Events
+   - Horse Racing: Courses, Meetings, Races, Horses, Jockeys, and Trainers
+
+3. Core Features
+   - TipFactory: Creates betting tips with realistic odds and confidence levels
+   - NotificationFactory: Generates various types of user notifications
+
+Each factory provides sensible defaults and uses Faker to generate realistic test data
+where appropriate. The factories can be customized during instantiation to create
+specific test scenarios.
+
+Example usage:
+    # Create a user with a profile
+    user = UserFactory()
+    profile = UserProfileFactory(user=user)
+
+    # Create a football match with teams
+    match = FootballEventFactory(
+        home_team=FootballTeamFactory(name="Home FC"),
+        away_team=FootballTeamFactory(name="Away FC")
+    )
+
+    # Create a tip for the match
+    tip = TipFactory(
+        user=user,
+        sport='football',
+        text="Home team to win"
+    )
+"""
+
 import factory
 from django.contrib.auth.models import User
 from core.models import (

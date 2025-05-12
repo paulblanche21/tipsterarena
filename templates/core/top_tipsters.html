@@ -1,0 +1,64 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Top Tipsters Leaderboard - Tipster Arena{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/premium.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="main-feed-container">
+    <div class="feed-card">
+        <div class="leaderboard-header">
+            <h1>Top Tipsters Leaderboard</h1>
+            <div class="leaderboard-premium-note" style="background:#ffeceb; color:var(--primary-bg); border-radius:8px; padding:0.75rem 1.25rem; margin-bottom:1rem; font-weight:500;">
+                <i class="fas fa-crown" style="color:var(--red-accent);"></i>
+                <span>Only <strong>Premium members</strong> are eligible to compete for Top Tipster status and share in the monthly prize pool. <a href="{% url 'setup_tiers' %}" style="color:var(--red-accent); font-weight:600;">Upgrade to Premium</a> to compete for a spot and earn rewards!</span>
+            </div>
+            <p class="leaderboard-description">
+                The Top Tipsters are the best performers on Tipster Arena, recognized for their skill, consistency, and community impact.<br>
+                <strong>Each month, 20% of all Premium subscription revenue is shared among the Top Tipsters (up to €500/month per tipster).</strong><br>
+                <br>
+                <b>How are points tallied?</b> Points are based on a mix of win rate, total tips, engagement, and community reputation. Consistency and quality matter most!
+            </p>
+        </div>
+        <div class="leaderboard-table-wrapper">
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Tipster</th>
+                        <th>Win Rate</th>
+                        <th>Total Tips</th>
+                        <th>Followers</th>
+                        <th>Premium Tips</th>
+                        <th>Points</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tipster in top_tipsters %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            <img src="{{ tipster.avatar_url }}" alt="{{ tipster.username }} Avatar" class="leaderboard-avatar">
+                            <a href="{% url 'profile' tipster.username %}"><strong>{{ tipster.username }}</strong></a>
+                        </td>
+                        <td>{{ tipster.win_rate|floatformat:1 }}%</td>
+                        <td>{{ tipster.total_tips }}</td>
+                        <td>{{ tipster.followers_count }}</td>
+                        <td>{{ tipster.premium_tips }}</td>
+                        <td>{{ tipster.points|default:'—' }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7">No Top Tipsters yet. Start tipping to climb the leaderboard!</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if user.is_authenticated and not user.userprofile.is_top_tipster %}
+        <!-- Removed application section: No application needed for Top Tipster -->
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

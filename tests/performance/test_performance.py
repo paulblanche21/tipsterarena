@@ -4,31 +4,23 @@ Tests load, stress, and performance characteristics.
 """
 from django.test import TestCase, Client
 from django.urls import reverse
-from django.contrib.auth import get_user_model, login
-from core.models import UserProfile, Tip, Like, Share, Comment
+from django.contrib.auth import get_user_model
+from core.models import UserProfile, Tip
 from django.db import connection, reset_queries
 from django.test.utils import override_settings
-from django.contrib.auth.models import AnonymousUser
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.test.client import RequestFactory
 from django.contrib.auth.signals import user_logged_in
-from django.contrib.auth import SESSION_KEY, BACKEND_SESSION_KEY, HASH_SESSION_KEY
+from django.contrib.auth import SESSION_KEY, BACKEND_SESSION_KEY
 from django.contrib.auth.models import update_last_login
-from django.middleware.csrf import get_token
 from datetime import date
 import time
-import json
 from django.db import close_old_connections
-from django.contrib.auth.models import User as DjangoUser
-from django.contrib.auth.hashers import make_password
 from django.test import modify_settings
-from django.contrib.sessions.backends.db import SessionStore
-from django.test import override_settings
 from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.auth.middleware import AuthenticationMiddleware
-
 from concurrent.futures import ThreadPoolExecutor
-import random
+
 
 User = get_user_model()
 

@@ -133,6 +133,7 @@ urlpatterns = [
         path('cancel/<int:subscription_id>/', subscription_views.cancel_subscription, name='cancel_subscription'),
         path('webhook/', subscription_views.stripe_webhook, name='stripe_webhook'),
     ])),
+    path('top-tipsters/', subscription_views.top_tipsters_leaderboard, name='top_tipsters_leaderboard'),
 ]
 
 

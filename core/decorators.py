@@ -1,4 +1,49 @@
-"""Custom decorators for permission and rate limiting."""
+"""
+Custom Decorators for Tipster Arena.
+
+This module provides a collection of decorators that handle various aspects of
+permission control, rate limiting, and access restrictions in the Tipster Arena
+application. These decorators are used to enforce business rules and maintain
+the integrity of the platform's features.
+
+Available Decorators:
+1. check_daily_tip_limit
+   - Enforces a daily limit of 5 tips for free users
+   - Premium users are exempt from this limit
+   - Raises PermissionDenied if limit is exceeded
+
+2. check_follow_limit
+   - Restricts free users to following a maximum of 100 users
+   - Premium users can follow unlimited users
+   - Raises PermissionDenied if limit is exceeded
+
+3. premium_required
+   - Restricts access to premium-only features
+   - Verifies user membership in 'Premium Users' group
+   - Raises PermissionDenied for non-premium users
+
+4. check_ownership
+   - Factory decorator that verifies object ownership
+   - Ensures users can only modify their own content
+   - Supports both direct object access and POST requests
+   - Premium users may have additional permissions
+
+Usage Examples:
+    @check_daily_tip_limit
+    def create_tip(request):
+        # Only executed if user hasn't exceeded daily tip limit
+        pass
+
+    @premium_required
+    def premium_feature(request):
+        # Only accessible to premium users
+        pass
+
+    @check_ownership(Tip)
+    def edit_tip(request):
+        # Only executed if user owns the tip
+        pass
+"""
 
 from functools import wraps
 from django.core.exceptions import PermissionDenied

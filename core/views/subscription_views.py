@@ -13,6 +13,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.db.models import F
+from django.contrib.auth import get_user_model
 
 from ..models import TipsterTier, TipsterSubscription,  User
 
@@ -61,60 +62,40 @@ def become_tipster(request):
 
 @login_required
 def setup_tiers(request):
-    """Handle step 2 of becoming a pro tipster (tier setup)."""
-    # Ensure step 1 is complete
-    if not request.session.get('pro_setup_step1_complete'):
-        messages.error(request, "Please complete your tipster profile first.")
-        return redirect('become_tipster')
-        
+    """Onboarding: Handle tier selection (Free, Basic, Premium) and trial activation."""
+    user_profile = request.user.userprofile
     if request.method == 'POST':
-        try:
-            tier_names = request.POST.getlist('tier_name[]')
-            tier_prices = request.POST.getlist('tier_price[]')
-            tier_descriptions = request.POST.getlist('tier_description[]')
-            tier_features = request.POST.getlist('tier_features[]')
-            tier_max_subscribers = request.POST.getlist('tier_max_subscribers[]')
-            
-            # Validate inputs
-            if not tier_names or not tier_prices:
-                messages.error(request, "Please provide at least one tier with name and price.")
+        selected_tier = request.POST.get('tier')
+        if selected_tier not in ['free', 'basic', 'premium']:
+            messages.error(request, "Invalid tier selection.")
+            return render(request, 'core/tier_setup.html')
+
+        # Handle Basic trial
+        if selected_tier == 'basic':
+            if user_profile.trial_used:
+                messages.error(request, "You have already used your Basic trial.")
                 return render(request, 'core/tier_setup.html')
-            
-            with transaction.atomic():
-                # Create tiers
-                for i in range(len(tier_names)):
-                    # Validate price
-                    try:
-                        price = float(tier_prices[i])
-                        if price <= 0:
-                            raise ValueError("Price must be positive")
-                    except ValueError:
-                        messages.error(request, f"Invalid price for tier {tier_names[i]}")
-                        return render(request, 'core/tier_setup.html')
-                    
-                    # Parse features
-                    features = [f.strip() for f in tier_features[i].split('\n') if f.strip()]
-                    
-                    # Create tier
-                    TipsterTier.objects.create(
-                        tipster=request.user,
-                        name=tier_names[i],
-                        price=price,
-                        description=tier_descriptions[i],
-                        features=features,
-                        max_subscribers=tier_max_subscribers[i] if tier_max_subscribers[i] else None,
-                        is_popular=(i == 1)  # Make second tier (if exists) the popular one
-                    )
-                
-                # Clear setup completion from session
-                del request.session['pro_setup_step1_complete']
-                messages.success(request, "Subscription tiers created successfully!")
-                return redirect('tipster_dashboard')
-                
-        except Exception as e:
-            logger.error(f"Error in setup_tiers: {str(e)}")
-            messages.error(request, "An error occurred while setting up tiers. Please try again.")
-        
+            user_profile.tier = 'basic'
+            user_profile.tier_expiry = timezone.now() + timezone.timedelta(days=30)
+            user_profile.trial_used = True
+            user_profile.save()
+            messages.success(request, "Your 1-month Basic trial is now active!")
+            return redirect('home')
+        elif selected_tier == 'premium':
+            # In a real app, redirect to payment/upgrade flow
+            user_profile.tier = 'premium'
+            user_profile.tier_expiry = None  # Set by payment logic
+            user_profile.save()
+            messages.success(request, "You are now a Premium member!")
+            return redirect('home')
+        else:
+            # Free tier
+            user_profile.tier = 'free'
+            user_profile.tier_expiry = None
+            user_profile.save()
+            messages.success(request, "You are now on the Free plan.")
+            return redirect('home')
+
     return render(request, 'core/tier_setup.html')
 
 @login_required
@@ -558,4 +539,25 @@ def handle_payment_failed(invoice):
             # TODO: Send notification to user about failed payment
             
         except TipsterSubscription.DoesNotExist:
-            logger.error(f"Subscription not found for invoice: {invoice.id}") 
+            logger.error(f"Subscription not found for invoice: {invoice.id}")
+
+def top_tipsters_leaderboard(request):
+    """Public leaderboard of Top Tipsters."""
+    User = get_user_model()
+    top_tipsters_qs = User.objects.filter(userprofile__is_top_tipster=True)
+    # Example: sort by points (replace with real logic)
+    top_tipsters = []
+    for user in top_tipsters_qs:
+        profile = user.userprofile
+        top_tipsters.append({
+            'username': user.username,
+            'avatar_url': profile.avatar.url if profile.avatar else '/static/img/default-avatar.png',
+            'win_rate': profile.win_rate,
+            'total_tips': profile.total_tips,
+            'followers_count': user.followers.count(),
+            'premium_tips': user.tip_set.filter(is_premium_tip=True).count(),
+            'points': profile.win_rate + profile.total_tips + user.followers.count() + user.tip_set.filter(is_premium_tip=True).count(),  # Replace with real formula
+        })
+    # Sort by points descending
+    top_tipsters = sorted(top_tipsters, key=lambda t: t['points'], reverse=True)
+    return render(request, 'core/top_tipsters.html', {'top_tipsters': top_tipsters}) 

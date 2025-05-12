@@ -139,6 +139,9 @@ class Tip(models.Model):
     )
     is_released = models.BooleanField(default=True)
     scheduled_release = models.DateTimeField(null=True, blank=True)
+    is_premium_tip = models.BooleanField(default=False, help_text='Is this a Premium Tip (only for Premium users)?')
+    premium_tip_posted_at = models.DateTimeField(null=True, blank=True, help_text='When this Premium Tip was posted.')
+    premium_tip_views = models.IntegerField(default=0, help_text='Number of times this Premium Tip was viewed.')
 
     def is_visible_to(self, user):
         """Check if tip is visible to a specific user."""
@@ -342,6 +345,17 @@ class UserProfile(models.Model):
     has_badge_anniversary = models.BooleanField(default=False)
     has_badge_viral = models.BooleanField(default=False)
 
+    tier = models.CharField(
+        max_length=10,
+        choices=[('free', 'Free'), ('basic', 'Basic'), ('premium', 'Premium')],
+        default='free',
+        help_text='Current subscription tier for the user.'
+    )
+    tier_expiry = models.DateTimeField(null=True, blank=True, help_text='When the current paid tier expires.')
+    trial_used = models.BooleanField(default=False, help_text='Has the user used their free trial?')
+    is_top_tipster = models.BooleanField(default=False, help_text='Is this user a Top Tipster?')
+    top_tipster_since = models.DateTimeField(null=True, blank=True, help_text='When the user became a Top Tipster.')
+
     def save(self, *args, **kwargs):
         # Ensure handle starts with @
         if self.handle and not self.handle.startswith('@'):
@@ -368,6 +382,56 @@ class UserProfile(models.Model):
             self.premium_until is None or 
             self.premium_until > timezone.now()
         )
+
+    def can_post_tip(self):
+        """Return (True, reason) if user can post a tip right now."""
+        from django.utils import timezone
+        now = timezone.now()
+        today = now.date()
+        tips_today = self.user.tip_set.filter(created_at__date=today).count()
+        tips_this_month = self.user.tip_set.filter(created_at__year=now.year, created_at__month=now.month).count()
+        if self.tier == 'free':
+            if tips_today >= 2:
+                return False, 'Free tier: Max 2 tips per day.'
+            if tips_this_month >= 60:
+                return False, 'Free tier: Max 60 tips per month.'
+        elif self.tier == 'basic':
+            if tips_this_month >= 100:
+                return False, 'Basic tier: Max 100 tips per month.'
+        # Premium: no enforced limit (could add a cap if desired)
+        return True, ''
+
+    def can_follow_more(self):
+        """Return (True, reason) if user can follow another tipster."""
+        if self.tier == 'free':
+            following_count = self.user.following.count()
+            if following_count >= 10:
+                return False, 'Free tier: Max 10 follows.'
+        return True, ''
+
+    def can_comment(self):
+        """Return True if user can comment on tips."""
+        return self.tier in ['basic', 'premium']
+
+    def can_view_premium_tip(self):
+        """Return True if user can view Premium Tips."""
+        return self.tier == 'premium'
+
+    def can_post_premium_tip(self):
+        """Return (True, reason) if user can post a Premium Tip (Top Tipsters only, 1/week)."""
+        from django.utils import timezone
+        if not self.is_top_tipster:
+            return False, 'Only Top Tipsters can post Premium Tips.'
+        now = timezone.now()
+        week_ago = now - timezone.timedelta(days=7)
+        tips_this_week = self.user.tip_set.filter(is_premium_tip=True, premium_tip_posted_at__gte=week_ago).count()
+        if tips_this_week >= 1:
+            return False, 'Top Tipsters: Only 1 Premium Tip per week.'
+        return True, ''
+
+    def is_ad_free(self):
+        """Return True if user should not see ads (Premium only)."""
+        return self.tier == 'premium'
 
 class Like(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='likes')
@@ -1086,8 +1150,9 @@ class HorseRacingBettingOdds(models.Model):
         unique_together = ('runner', 'bookmaker')
         ordering = ['bookmaker', '-updated_at']
 
+# DEPRECATED: Old tier/subscription models (to be removed in future)
 class TipsterTier(models.Model):
-    """Model for tipster subscription tiers."""
+    """DEPRECATED: Model for tipster subscription tiers. No longer used in new monetization model."""
     tipster = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscription_tiers')
     name = models.CharField(max_length=50)
     price = models.DecimalField(max_digits=6, decimal_places=2)
@@ -1163,7 +1228,7 @@ class TipsterTier(models.Model):
         return self.price * active_subs
 
 class TipsterSubscription(models.Model):
-    """Model for user subscriptions to tipsters."""
+    """DEPRECATED: Model for user subscriptions to tipsters. No longer used in new monetization model."""
     subscriber = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tipster_subscriptions')
     tier = models.ForeignKey(TipsterTier, on_delete=models.CASCADE, related_name='subscriptions')
     status = models.CharField(max_length=20, choices=[

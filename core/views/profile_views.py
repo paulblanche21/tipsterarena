@@ -4,7 +4,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import JsonResponse
-from django.db.models import Q
+from django.db.models import Q, Sum
 
 from ..models import UserProfile, Tip, Follow
 from ..forms import UserProfileForm
@@ -59,6 +59,12 @@ def profile(request, username):
         if valid_tips > 0:
             average_odds = total_odds / valid_tips
 
+    # Calculate premium tip stats
+    premium_tips_count = user.tip_set.filter(is_premium_tip=True).count()
+    premium_tips_views = user.tip_set.filter(is_premium_tip=True).aggregate(
+        total_views=Sum('premium_tip_views')
+    )['total_views'] or 0
+
     return render(request, 'core/profile.html', {
         'user': user,
         'user_profile': user_profile,
@@ -72,6 +78,8 @@ def profile(request, username):
         'total_tips': total_tips,
         'wins': wins,
         'average_odds': average_odds,
+        'premium_tips_count': premium_tips_count,
+        'premium_tips_views': premium_tips_views,
     })
 
 @login_required

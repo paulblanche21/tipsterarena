@@ -1,3 +1,54 @@
+"""
+Middleware Components for Tipster Arena.
+
+This module contains custom middleware classes that handle various aspects of request
+processing and access control in the Tipster Arena application. The middleware
+components are responsible for enforcing business rules and managing user access
+to different features of the platform.
+
+Available Middleware:
+1. PaywallMiddleware
+   - Controls access to features based on user profile completion status
+   - Enforces three levels of access control:
+     * KYC (Know Your Customer) verification
+     * Profile completion
+     * Payment completion
+   - Maintains a list of excluded paths that are always accessible
+   - Redirects users to appropriate setup pages when required
+
+Access Control Rules:
+   - KYC Required For:
+     * Posting tips
+     * Following users
+     * Liking content
+     * Commenting
+   - Profile Completion Required For:
+     * Messaging
+     * Following users
+   - Payment Required For:
+     * Premium features
+     * Analytics access
+
+Excluded Paths (Always Accessible):
+   - Authentication: /signup/, /logout/
+   - Setup: /kyc/, /profile-setup/, /payment/
+   - Static: /static/, /media/
+   - API: /api/current-user/
+   - Core Features: /search/, /home/, /sport/, /profile/
+
+Usage:
+    Add the middleware to MIDDLEWARE setting in settings.py:
+    
+    MIDDLEWARE = [
+        'core.middleware.PaywallMiddleware',
+        # ... other middleware classes
+    ]
+
+Note:
+    The middleware only applies to authenticated users. Unauthenticated users
+    are not affected by these access controls.
+"""
+
 # middleware.py
 from django.shortcuts import redirect
 

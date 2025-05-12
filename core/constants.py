@@ -1,7 +1,54 @@
-"""Constants for the Tipster Arena application.
+"""
+Constants for the Tipster Arena Application.
 
-This module contains all the constants used throughout the application,
-including sports league configurations and other static data.
+This module defines all the constant values used throughout the Tipster Arena application.
+These constants are primarily used for sports league configurations and other static data
+that needs to be consistent across the application.
+
+Available Constants:
+1. FOOTBALL_LEAGUES
+   - Configuration for major football leagues
+   - Each league entry contains:
+     * league_id: Unique identifier (e.g., 'eng.1' for Premier League)
+     * name: Display name of the league
+     * icon: Flag emoji representing the league's country
+     * priority: Display order (1 being highest priority)
+   - Currently includes: Premier League, La Liga, Serie A, Bundesliga, Ligue 1
+
+2. GOLF_TOURS
+   - Configuration for professional golf tours
+   - Each tour entry contains:
+     * tour_id: Unique identifier (e.g., 'pga' for PGA Tour)
+     * name: Display name of the tour
+     * icon: Emoji representing the sport
+     * priority: Display order
+   - Currently includes: PGA Tour, LPGA Tour, European Tour
+
+3. TENNIS_LEAGUES
+   - Configuration for professional tennis tours
+   - Each league entry contains:
+     * league_id: Unique identifier (e.g., 'atp' for ATP Tour)
+     * name: Display name of the league
+     * icon: Emoji representing the sport
+     * priority: Display order
+   - Currently includes: ATP Tour, WTA Tour
+
+Usage:
+    These constants are used throughout the application for:
+    - League/tour selection in forms and filters
+    - Display of league/tour information in templates
+    - API integrations with sports data providers
+    - Sorting and organizing sports events
+
+Example:
+    from core.constants import FOOTBALL_LEAGUES
+
+    # Get Premier League configuration
+    premier_league = next(
+        league for league in FOOTBALL_LEAGUES 
+        if league['league_id'] == 'eng.1'
+    )
+    print(f"{premier_league['icon']} {premier_league['name']}")
 """
 
 FOOTBALL_LEAGUES = [

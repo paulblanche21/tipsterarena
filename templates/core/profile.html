@@ -43,43 +43,37 @@
                 
                 <div class="profile-details">
                     <div class="profile-name">
-                        <h1 class="{% if user_profile.is_premium %}premium-user{% endif %}">
+                        <h1>
                             {{ user.username }}
-                            {% if user_profile.is_premium %}
-                                <span class="premium-badge">
-                                    <i class="fas fa-crown"></i> Premium
-                                </span>
+                            {% if user_profile.is_top_tipster %}
+                                <span class="top-tipster-badge" title="Top Tipster"><i class="fas fa-star"></i> Top Tipster</span>
                             {% endif %}
                         </h1>
                         <span class="profile-handle">{{ user_profile.handle }}</span>
                     </div>
-
-                    {% if user_profile.is_premium %}
-                    <div class="premium-status">
-                        <i class="fas fa-crown premium-status-icon"></i>
-                        <div class="premium-status-info">
-                            <div class="premium-status-title">Premium Member</div>
-                            {% if user_profile.premium_until %}
-                                <div class="premium-status-expiry">Valid until {{ user_profile.premium_until|date:"F j, Y" }}</div>
-                            {% else %}
-                                <div class="premium-status-expiry">Lifetime Member</div>
-                            {% endif %}
-                        </div>
+                    <div class="profile-tier-status">
+                        <span class="tier-badge tier-{{ user_profile.tier }}" style="margin-right: 0.5rem;">
+                            {% if user_profile.tier == 'free' %}<span class="tier-badge-outline">Free</span>{% endif %}
+                            {% if user_profile.tier == 'basic' %}Basic{% endif %}
+                            {% if user_profile.tier == 'premium' %}Premium{% endif %}
+                        </span>
+                        {% if is_owner and user_profile.tier != 'premium' %}
+                            <a href="{% url 'setup_tiers' %}" class="upgrade-btn btn-outline">Upgrade</a>
+                        {% endif %}
+                        {% if user_profile.tier == 'basic' and user_profile.tier_expiry %}
+                            <span class="tier-expiry">Trial ends: {{ user_profile.tier_expiry|date:"F j, Y" }}</span>
+                        {% elif user_profile.tier == 'premium' and user_profile.tier_expiry %}
+                            <span class="tier-expiry">Valid until: {{ user_profile.tier_expiry|date:"F j, Y" }}</span>
+                        {% endif %}
                     </div>
-
-                    <div class="premium-features">
-                        <div class="premium-feature-item">
-                            <i class="fas fa-check-circle premium-feature-icon"></i>
-                            Access to Pro Tipster subscriptions
-                        </div>
-                        <div class="premium-feature-item">
-                            <i class="fas fa-check-circle premium-feature-icon"></i>
-                            Advanced statistics
-                        </div>
-                        <div class="premium-feature-item">
-                            <i class="fas fa-check-circle premium-feature-icon"></i>
-                            Priority support
-                        </div>
+                    {% if user_profile.is_top_tipster %}
+                    <div class="top-tipster-stats">
+                        <strong>Top Tipster Stats:</strong>
+                        <ul>
+                            <li>Premium Tips posted: {{ premium_tips_count }}</li>
+                            <li>Premium Tip views: {{ premium_tips_views }}</li>
+                            <li>Revenue share: Up to €500/month (see <a href="{% url 'top_tipsters_leaderboard' %}">leaderboard</a>)</li>
+                        </ul>
                     </div>
                     {% endif %}
 
@@ -89,16 +83,6 @@
                             <!-- Edit button for profile owner -->
                             <button class="profile-edit-btn" id="editProfileBtn">Edit Profile</button>
                         {% else %}
-                            <!-- Subscribe button for pro tipsters -->
-                            {% if user_profile.is_tipster %}
-                                <button class="subscribe-btn" data-username="{{ user.username }}" id="subscribeBtn">
-                                    {% if has_active_subscription %}
-                                        Subscribed
-                                    {% else %}
-                                        Subscribe
-                                    {% endif %}
-                                </button>
-                            {% endif %}
                             <!-- Follow/unfollow button for visitors -->
                             <button class="follow-btn {% if is_following %}followed{% endif %}" data-username="{{ user.username }}">
                                 {% if is_following %}Following{% else %}Follow{% endif %}
@@ -114,9 +98,7 @@
                             <span class="profile-total-bets"><i class="fas fa-list-ol"></i> Total Bets: {{ total_tips }}</span>
                             <span class="profile-average-odds"><i class="fas fa-calculator"></i> Avg Odds: {{ average_odds|floatformat:2 }}</span>
                             <span class="profile-win-rate"><i class="fas fa-trophy"></i> Win Rate: {{ win_rate|floatformat:1 }}%</span>
-                            {% if user_profile.is_tipster %}
-                                <span class="profile-subscribers"><i class="fas fa-users"></i> Subscribers: {{ user_profile.total_subscribers }}</span>
-                            {% endif %}
+                            <span class="profile-followers"><i class="fas fa-users"></i> Followers: {{ followers_count }}</span>
                         </div>
                         
                         <!-- Achievement Badges Section -->
@@ -469,11 +451,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Include subscription modal -->
-    {% if user_profile.is_tipster %}
-        {% include 'core/subscribe_modal.html' with tipster=user tiers=subscription_tiers %}
-    {% endif %}
 {% endblock %}
 
 {% block upcoming_events %}
@@ -504,14 +481,4 @@
     </div>
     <a href="#" class="show-more" data-target="trending-tips">Show more</a>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    window.isAuthenticated = {{ request.user.is_authenticated|lower }};
-    window.isKycCompleted = {{ request.user.userprofile.kyc_completed|lower }};
-    window.stripePublishableKey = '{{ stripe_publishable_key }}';
-</script>
-<script src="https://js.stripe.com/v3/"></script>
-<script src="{% static 'js/subscription.js' %}"></script>
 {% endblock %}
