@@ -263,6 +263,9 @@ function setupTipInteractions() {
     window.addEventListener('click', windowClickHandler);
 
     function windowClickHandler(event) {
+        const commentModal = document.getElementById('comment-modal');
+        if (!commentModal) return;
+
         if (event.target === commentModal) {
             commentModal.classList.add('hidden');
             commentModal.classList.remove('active');
@@ -339,7 +342,10 @@ function setupReplyModal() {
 
     emojiBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        import('./pages/post.js').then(module => module.showEmojiPicker(replyInput, emojiBtn));
+        import('./pages/post.js').then(module => {
+            const commentModal = document.getElementById('comment-modal');
+            module.showEmojiPicker(replyInput, emojiBtn, commentModal);
+        });
     });
 
     const removePreviewBtn = previewDiv.querySelector('.remove-preview');
@@ -471,6 +477,11 @@ function openCommentModal(tip, tipId, parentId = null) {
         console.error('Comment modal element not found');
         return;
     }
+
+    // Remove hidden class and add active class
+    commentModal.classList.remove('hidden');
+    commentModal.classList.add('active');
+
     const modalTip = commentModal.querySelector('.modal-tip');
     const modalTipAvatar = modalTip.querySelector('.modal-tip-avatar');
     const modalTipContent = modalTip.querySelector('.modal-tip-content');
@@ -492,21 +503,25 @@ function openCommentModal(tip, tipId, parentId = null) {
     const commentCount = tipContent.querySelector('.comment-count').textContent;
     const engagementCount = tipContent.querySelector('.tip-action-engagement + .tip-action-count')?.textContent || '0';
     const currentStatus = tip.querySelector('.tip-meta .status')?.textContent?.split(': ')[1] || 'Unknown';
+    const tipBody = tipContent.querySelector('.tip-body');
+
+    // Instead of just tipBody, clone the entire tip-content
+    const tipContentClone = tipContent.cloneNode(true);
+    tipContentClone.classList.add('modal-tip-content-clone');
 
     const updateTipStatus = () => {
-        modalTipContent.innerHTML = `
-            <a href="#" class="tip-username">
-                <strong class="modal-tip-username">${usernameElement ? usernameElement.textContent : 'Unknown'}</strong>
-                <span class="user-handle modal-tip-handle">${handleElement ? handleElement.textContent : ''}</span>
-            </a>
-            <span class="modal-tip-sport">${sportEmoji}</span>
-            <p class="modal-tip-text">${text}</p>
-            <div class="tip-meta">
-                <span>Status: ${currentStatus}</span>
-            </div>
-            <small class="modal-tip-timestamp">${timestamp}</small>
-        `;
-        modalTipAvatar.src = avatarUrl;
+        // Clear modalTipContent and insert full tip-content
+        modalTipContent.innerHTML = '';
+        // Username, handle, and sport emoji (optional, since already in tipContentClone)
+        // Insert the full tip-content clone
+        modalTipContent.appendChild(tipContentClone);
+        // Timestamp (if not already present in the clone)
+        if (!tipContentClone.querySelector('.modal-tip-timestamp')) {
+            const small = document.createElement('small');
+            small.className = 'modal-tip-timestamp';
+            small.textContent = timestamp;
+            modalTipContent.appendChild(small);
+        }
 
         fetch(`/api/tip/${tipId}/`, {
             method: 'GET',

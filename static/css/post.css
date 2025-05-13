@@ -24,10 +24,22 @@ b {
     border-radius: var(--border-radius);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     padding: var(--padding-small);
-    width: clamp(250px, 80vw, 320px); /* Flexible width */
+    width: clamp(250px, 80vw, 320px);
     max-height: clamp(300px, 80vh, 400px);
     overflow: hidden;
     font-family: "Noto Color Emoji", var(--font-default);
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    transform: translateY(0);
+    will-change: transform, opacity;
+  }
+  
+  .emoji-picker.hidden {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    pointer-events: none;
   }
   
   /* Content container within emoji picker */
@@ -36,6 +48,7 @@ b {
     display: flex;
     flex-direction: column;
     height: 100%;
+    background: var(--secondary-bg);
   }
   
   /* Close button within emoji picker */

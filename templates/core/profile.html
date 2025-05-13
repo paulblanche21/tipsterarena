@@ -257,10 +257,15 @@
                                 <strong>{{ tip.user.username }}</strong>
                                 <span class="user-handle-tip">{{ tip.user.userprofile.handle }}</span>
                             </a>
-                            {% if tip.sport == 'football' %}⚽{% endif %}
-                            {% if tip.sport == 'golf' %}⛳{% endif %}
-                            {% if tip.sport == 'tennis' %}🎾{% endif %}
-                            {% if tip.sport == 'horse_racing' %}🏇{% endif %}
+                            {% if tip.sport == 'football' %}
+                                <span class="sport-label sport-football">Football</span>
+                            {% elif tip.sport == 'golf' %}
+                                <span class="sport-label sport-golf">Golf</span>
+                            {% elif tip.sport == 'tennis' %}
+                                <span class="sport-label sport-tennis">Tennis</span>
+                            {% elif tip.sport == 'horse_racing' %}
+                                <span class="sport-label sport-horse-racing">Horse Racing</span>
+                            {% endif %}
                         </div>
                         <div class="tip-body">
                             <p>{{ tip.text|safe }}</p>

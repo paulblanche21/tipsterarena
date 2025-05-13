@@ -133,33 +133,37 @@ function showGifModal(textarea, previewDiv) {
 }
 
 // Function to fetch and show the emoji picker with all emojis, X-style
-export async function showEmojiPicker(textarea, triggerButton) {
-    let emojiPicker = document.getElementById('emoji-picker');
-    if (!emojiPicker) {
-        emojiPicker = document.createElement('div');
-        emojiPicker.id = 'emoji-picker';
-        emojiPicker.className = 'emoji-picker';
-        emojiPicker.innerHTML = `
-            <div class="emoji-picker-content">
-                <span class="emoji-picker-close">×</span>
-                <input type="text" class="emoji-search" placeholder="Search emojis...">
-                <div class="emoji-tabs">
-                    <button class="emoji-tab active" data-category="recent" title="Recent">🕒</button>
-                    <button class="emoji-tab" data-category="Smileys & Emotion" title="Smileys & People">😊</button>
-                    <button class="emoji-tab" data-category="Animals & Nature" title="Animals & Nature">🐾</button>
-                    <button class="emoji-tab" data-category="Food & Drink" title="Food & Drink">🍔</button>
-                    <button class="emoji-tab" data-category="Activities" title="Activities">⚽</button>
-                    <button class="emoji-tab" data-category="Travel & Places" title="Travel & Places">✈️</button>
-                    <button class="emoji-tab" data-category="Objects" title="Objects">💡</button>
-                    <button class="emoji-tab" data-category="Symbols" title="Symbols">❤️</button>
-                    <button class="emoji-tab" data-category="Flags" title="Flags">🏳️</button>
-                </div>
-                <div class="emoji-category-title"></div>
-                <div class="emoji-grid"></div>
+export async function showEmojiPicker(textarea, triggerButton, container = document.body) {
+    // Remove any existing emoji picker in the container
+    const existing = container.querySelector('#emoji-picker');
+    if (existing) existing.remove();
+
+    let emojiPicker = document.createElement('div');
+    emojiPicker.id = 'emoji-picker';
+    emojiPicker.className = 'emoji-picker';
+    emojiPicker.innerHTML = `
+        <div class="emoji-picker-content">
+            <span class="emoji-picker-close">×</span>
+            <input type="text" class="emoji-search" placeholder="Search emojis...">
+            <div class="emoji-tabs">
+                <button class="emoji-tab active" data-category="recent" title="Recent">🕒</button>
+                <button class="emoji-tab" data-category="Smileys & Emotion" title="Smileys & People">😊</button>
+                <button class="emoji-tab" data-category="Animals & Nature" title="Animals & Nature">🐾</button>
+                <button class="emoji-tab" data-category="Food & Drink" title="Food & Drink">🍔</button>
+                <button class="emoji-tab" data-category="Activities" title="Activities">⚽</button>
+                <button class="emoji-tab" data-category="Travel & Places" title="Travel & Places">✈️</button>
+                <button class="emoji-tab" data-category="Objects" title="Objects">💡</button>
+                <button class="emoji-tab" data-category="Symbols" title="Symbols">❤️</button>
+                <button class="emoji-tab" data-category="Flags" title="Flags">🏳️</button>
             </div>
-        `;
-        document.body.appendChild(emojiPicker);
-    }
+            <div class="emoji-category-title"></div>
+            <div class="emoji-grid"></div>
+        </div>
+    `;
+    container.appendChild(emojiPicker);
+
+    // Remove hidden class if it exists
+    emojiPicker.classList.remove('hidden');
 
     const emojiGrid = emojiPicker.querySelector('.emoji-grid');
     const categoryTitle = emojiPicker.querySelector('.emoji-category-title');
@@ -173,12 +177,8 @@ export async function showEmojiPicker(textarea, triggerButton) {
         try {
             const response = await fetch('https://unpkg.com/emoji.json@14.0.0/emoji.json');
             const emojiData = await response.json();
-            console.log(`Loaded ${emojiData.length} emojis`);
-            const uniqueCategories = [...new Set(emojiData.map(emoji => emoji.category))];
-            console.log('Unique categories in emoji.json:', uniqueCategories);
             return emojiData;
         } catch (error) {
-            console.error('Error fetching emoji data:', error);
             return [
                 { char: '😀', category: 'Smileys & Emotion', name: 'grinning face' },
                 { char: '😂', category: 'Smileys & Emotion', name: 'face with tears of joy' },
@@ -217,33 +217,40 @@ export async function showEmojiPicker(textarea, triggerButton) {
     allEmojis = await loadEmojis();
 
     function renderEmojis(emojis) {
+        // Always get the latest emojiGrid reference
+        let emojiGrid = emojiPicker.querySelector('.emoji-grid');
         emojiGrid.innerHTML = '';
         if (emojis.length === 0) {
             emojiGrid.innerHTML = '<p>No emojis found.</p>';
-            return;
+        } else {
+            emojis.forEach(emoji => {
+                const span = document.createElement('span');
+                span.textContent = emoji.char;
+                span.className = 'emoji-item';
+                span.title = emoji.name;
+                emojiGrid.appendChild(span);
+            });
         }
-        emojis.forEach(emoji => {
-            const span = document.createElement('span');
-            span.textContent = emoji.char;
-            span.className = 'emoji-item';
-            span.title = emoji.name; // Add tooltip with emoji name
-            span.addEventListener('click', () => {
+        // Remove any previous click handler by cloning the node
+        const newEmojiGrid = emojiGrid.cloneNode(true);
+        emojiGrid.parentNode.replaceChild(newEmojiGrid, emojiGrid);
+        // Attach event delegation for emoji insertion
+        newEmojiGrid.addEventListener('click', function(e) {
+            const emojiItem = e.target.closest('.emoji-item');
+            if (emojiItem) {
                 const cursorPos = textarea.selectionStart;
                 const textBefore = textarea.value.substring(0, cursorPos);
                 const textAfter = textarea.value.substring(cursorPos);
-                textarea.value = textBefore + emoji.char + textAfter;
+                textarea.value = textBefore + emojiItem.textContent + textAfter;
                 textarea.focus();
-                textarea.selectionStart = textarea.selectionEnd = cursorPos + emoji.char.length;
-
+                textarea.selectionStart = textarea.selectionEnd = cursorPos + emojiItem.textContent.length;
                 // Add to recent emojis
-                recentEmojis = recentEmojis.filter(e => e !== emoji.char);
-                recentEmojis.unshift(emoji.char);
+                recentEmojis = recentEmojis.filter(e => e !== emojiItem.textContent);
+                recentEmojis.unshift(emojiItem.textContent);
                 if (recentEmojis.length > 20) recentEmojis.pop();
                 localStorage.setItem('recentEmojis', JSON.stringify(recentEmojis));
-
-                emojiPicker.style.display = 'none';
-            });
-            emojiGrid.appendChild(span);
+                emojiPicker.classList.add('hidden');
+            }
         });
     }
 
@@ -334,17 +341,26 @@ export async function showEmojiPicker(textarea, triggerButton) {
         renderEmojis(emojisToSearch);
     }, 300));
 
-    emojiPicker.style.display = 'block';
-    const rect = triggerButton.getBoundingClientRect();
+    // Position the emoji picker
+    const triggerRect = triggerButton.getBoundingClientRect();
+    let containerRect = { left: 0, top: 0 };
+    if (container !== document.body) {
+        containerRect = container.getBoundingClientRect();
+    }
     emojiPicker.style.position = 'absolute';
-    emojiPicker.style.top = `${rect.bottom + window.scrollY}px`;
-    emojiPicker.style.left = `${rect.left + window.scrollX}px`;
+    emojiPicker.style.top = `${triggerRect.bottom - containerRect.top}px`;
+    emojiPicker.style.left = `${triggerRect.left - containerRect.left}px`;
 
+    // Make sure the close button is visible
     const closeBtn = emojiPicker.querySelector('.emoji-picker-close');
-    closeBtn.onclick = () => emojiPicker.style.display = 'none';
-    window.onclick = (event) => {
-        if (event.target === emojiPicker) emojiPicker.style.display = 'none';
-    };
+    closeBtn.style.display = 'block';
+    closeBtn.onclick = () => emojiPicker.classList.add('hidden');
+    window.addEventListener('keydown', function escHandler(e) {
+        if (e.key === 'Escape') {
+            emojiPicker.classList.add('hidden');
+            window.removeEventListener('keydown', escHandler);
+        }
+    });
 }
 
 function setupCentralFeedPost() {
@@ -616,7 +632,7 @@ function setupCentralFeedPost() {
                                 <strong>${data.tip.username}</strong>
                                 <span class="user-handle">${data.tip.handle}</span>
                             </a>
-                            ${data.tip.sport === 'football' ? '⚽' : data.tip.sport === 'golf' ? '⛳' : data.tip.sport === 'tennis' ? '🎾' : data.tip.sport === 'horse_racing' ? '🏇' : ''}
+                            ${data.tip.sport === 'football' ? '<span class="sport-label sport-football">Football</span>' : data.tip.sport === 'golf' ? '<span class="sport-label sport-golf">Golf</span>' : data.tip.sport === 'tennis' ? '<span class="sport-label sport-tennis">Tennis</span>' : data.tip.sport === 'horse_racing' ? '<span class="sport-label sport-horse-racing">Horse Racing</span>' : ''}
                         </div>
                         <div class="tip-body">
                             <p>${data.tip.text}</p>

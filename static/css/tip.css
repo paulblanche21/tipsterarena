@@ -574,3 +574,33 @@
     color: var(--red-accent);
     text-decoration: underline;
   }
+
+  .comment-modal .tip-body,
+  .comment-modal .modal-tip-content,
+  .comment-modal .modal-tip-content-clone {
+    color: var(--primary-bg) !important;
+    background: var(--secondary-bg) !important;
+  }
+
+  .sport-label {
+    font-weight: bold;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.95em;
+    margin-left: 8px;
+    color: #fff;
+    display: inline-block;
+  }
+  .sport-football {
+    background: #0074D9; /* blue */
+  }
+  .sport-golf {
+    background: #2ECC40; /* green */
+  }
+  .sport-tennis {
+    background: #FFDC00; /* yellow */
+    color: #222;
+  }
+  .sport-horse-racing {
+    background: #FF4136; /* light red */
+  }
