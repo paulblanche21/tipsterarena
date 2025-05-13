@@ -10,6 +10,9 @@
 {% endblock %}
 
 {% block content %}
+    <script>
+      window.profileUsername = "{{ user_profile.user.username|escapejs }}";
+    </script>
     <!-- Main container for profile content -->
     <div class="profile-content">
         <!-- Header with back arrow, username, and post count -->

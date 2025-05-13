@@ -41,12 +41,11 @@ def signup_view(request):
                 # Create user
                 user = form.save()
                 
-                # Create user profile with handle
+                # Update user profile handle (profile should be created by signal)
                 handle = form.cleaned_data.get('handle')
                 if not handle.startswith('@'):
                     handle = f"@{handle}"
-                    
-                profile = user.userprofile
+                profile = user.userprofile  # Should exist due to signal
                 profile.handle = handle
                 profile.save()
                 

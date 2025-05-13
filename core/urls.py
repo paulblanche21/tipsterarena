@@ -5,6 +5,7 @@ from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from . import views
 from .views import subscription_views
+from .views.interaction_views import mark_notification_read
 
 # URL patterns for the Tipster Arena core app
 urlpatterns = [
@@ -134,6 +135,7 @@ urlpatterns = [
         path('webhook/', subscription_views.stripe_webhook, name='stripe_webhook'),
     ])),
     path('top-tipsters/', subscription_views.top_tipsters_leaderboard, name='top_tipsters_leaderboard'),
+    path('api/mark-notification-read/', mark_notification_read, name='mark_notification_read'),
 ]
 
 

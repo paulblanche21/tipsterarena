@@ -8,7 +8,7 @@
 
   "main": "index.js",
 
-  "devDependencies": {
+  "dependencies": {
 
     "@vitejs/plugin-legacy": "^5.4.3",
 
@@ -26,7 +26,11 @@
 
     "build": "vite build && mv static/dist/.vite/manifest.json static/dist/manifest.json",
 
-    "preview": "vite preview"
+    "preview": "vite preview",
+
+    "start": "vite",
+
+    "postinstall": "vite"
 
   },
 

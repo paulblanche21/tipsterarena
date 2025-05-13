@@ -28,7 +28,6 @@ class CustomUserCreationForm(UserCreationForm):
         user.email = self.cleaned_data['email']
         if commit:
             user.save()
-            UserProfile.objects.create(user=user, handle=self.cleaned_data['handle'])
         return user
 
 class KYCForm(forms.Form):

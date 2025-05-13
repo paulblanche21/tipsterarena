@@ -1,0 +1,48 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: tipsterarena
+      POSTGRES_USER: paul
+      POSTGRES_PASSWORD: Frankfurt5!
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
+  redis:
+    image: redis:7
+    restart: always
+
+  web:
+    build: .
+    command: daphne -b 0.0.0.0 -p 8000 tipsterarena.asgi:application
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    environment:
+      DATABASE_URL: postgres://paul:yourpassword@db:5432/tipsterarena
+      REDIS_URL: redis://redis:6379/0
+      DJANGO_SETTINGS_MODULE: tipsterarena.settings
+      # Add other env vars as needed
+
+  npm:
+    image: node:20
+    working_dir: /app
+    command: sh -c "npm install && npm run dev"
+    volumes:
+      - .:/app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - web
+    environment:
+      NODE_ENV: development
+
+volumes:
+  postgres_data: 

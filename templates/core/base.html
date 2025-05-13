@@ -9,6 +9,13 @@
     <title>{% block title %}Tipster Arena{% endblock %}</title>
     <link rel="icon" type="image/x-icon" href="{% static 'img/favicon.ico' %}">
 
+    <!-- Set currentUsername for JS globally if authenticated -->
+    {% if user.is_authenticated %}
+    <script>
+      window.currentUsername = "{{ user.username|escapejs }}";
+    </script>
+    {% endif %}
+
     <!-- Core stylesheets for layout and components -->
     <link rel="stylesheet" href="http://localhost:3000/static/css/base.css">
     <link rel="stylesheet" href="http://localhost:3000/static/css/navbar.css">

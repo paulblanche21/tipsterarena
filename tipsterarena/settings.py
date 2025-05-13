@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'csp',                            # Content Security Policy enforcement
     "django_vite",                    # Integration with Vite for frontend assets
     'django_crontab',                 # Cron job management  
-    'social_django'                   # Social authentication support                     
+    'social_django',                   # Social authentication support                     
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -90,7 +91,7 @@ DATABASES = {
         'NAME': 'tipsterarena',
         'USER': 'paul',
         'PASSWORD': config('DATABASE_PASSWORD'),
-        'HOST': 'localhost',
+        'HOST': 'db',
         'PORT': '5432',
     },
     'test': {
@@ -288,3 +289,11 @@ STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
 
 # ESPN API Configuration
 ESPN_API_BASE_URL = 'https://site.api.espn.com/apis/site/v2/sports'
+
+ASGI_APPLICATION = 'tipsterarena.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}

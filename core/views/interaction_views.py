@@ -10,10 +10,24 @@ import json
 
 from ..models import (
     Follow, MessageThread, Message, Like, Share,
-    UserProfile, Tip, Comment
+    UserProfile, Tip, Comment, Notification
 )
 
 logger = logging.getLogger(__name__)
+
+__all__ = [
+    'follow_user',
+    'messages_view',
+    'send_message',
+    'get_thread_messages',
+    'notifications',
+    'message_settings_view',
+    'bookmarks',
+    'toggle_bookmark',
+    'like_comment',
+    'share_comment',
+    'mark_notification_read',
+]
 
 @login_required
 @require_POST
@@ -277,4 +291,23 @@ def share_comment(request):
         comment=comment
     )
     
-    return JsonResponse({'success': True, 'message': 'Comment shared'}) 
+    return JsonResponse({'success': True, 'message': 'Comment shared'})
+
+@login_required
+@require_POST
+def mark_notification_read(request):
+    """Mark a notification as read for the current user."""
+    try:
+        data = json.loads(request.body)
+        notification_id = data.get('notification_id')
+        # type = data.get('type')  # Not used, but could be for future
+        if not notification_id:
+            return JsonResponse({'success': False, 'error': 'Missing notification_id'}, status=400)
+        notification = Notification.objects.filter(id=notification_id, user=request.user).first()
+        if not notification:
+            return JsonResponse({'success': False, 'error': 'Notification not found'}, status=404)
+        notification.read = True
+        notification.save()
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500) 

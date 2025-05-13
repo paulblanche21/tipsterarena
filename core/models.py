@@ -260,7 +260,7 @@ class UserProfile(models.Model):
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
     banner = models.ImageField(upload_to='banners/', null=True, blank=True)
     description = models.TextField(max_length=160, blank=True)
-    location = models.CharField(max_length=30, blank=True)
+    location = models.CharField(max_length=100, blank=True)
     handle = models.CharField(max_length=15, unique=True)
     date_of_birth = models.DateField(null=True, blank=True)
     allow_messages = models.CharField(max_length=20, choices=[

@@ -41,7 +41,7 @@ export function setupProfileEditing() {
             submitBtn.disabled = true;
             submitBtn.textContent = 'Saving...';
             const formData = new FormData(editProfileForm);
-            fetch('/profile/' + encodeURIComponent("{{ user.username }}") + '/edit/', {
+            fetch('/profile/' + encodeURIComponent(window.profileUsername) + '/edit/', {
                 method: 'POST',
                 body: formData,
                 headers: {

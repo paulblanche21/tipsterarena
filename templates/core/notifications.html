@@ -7,12 +7,22 @@
 {% block content %}
     <!-- Feed container for notifications -->
     <div class="tip-feed">
-        <!-- Page header -->
-        <h2>Notifications</h2>
+        <!-- Page header with notification count -->
+        <div class="notifications-header">
+            <h2>Notifications</h2>
+            <span class="notification-count" id="notification-count">
+                {% if like_notifications or follow_notifications or share_notifications %}
+                    {{ like_notifications|length|add:follow_notifications|length|add:share_notifications|length }}
+                {% else %}
+                    0
+                {% endif %}
+            </span>
+        </div>
+
         {% if like_notifications or follow_notifications or share_notifications %}
             <!-- Section for like notifications -->
             {% for like in like_notifications %}
-                <div class="notification">
+                <div class="notification {% if not like.is_read %}unread{% endif %}" data-notification-id="{{ like.id }}" data-type="like">
                     <!-- User avatar for the liker -->
                     {% if like.user.userprofile.avatar %}
                         <img src="{{ like.user.userprofile.avatar.url }}" alt="User Avatar" class="tip-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
@@ -22,12 +32,15 @@
                     <div class="tip-content">
                         <!-- Notification text with username and tip preview -->
                         <p><strong>{{ like.user.username|default:"Unknown User" }}</strong> liked your tip: "{{ like.tip.text|truncatechars:20|default:"No tip text" }}"</p>
-                        <small>{{ like.created_at|date:"F j, Y, g:i a"|default:"No date" }}</small>
+                        <small class="notification-time" data-timestamp="{{ like.created_at|date:'c' }}">{{ like.created_at|date:"F j, Y, g:i a"|default:"No date" }}</small>
                     </div>
+                    <button class="mark-read-btn" title="Mark as read">
+                        <i class="fas fa-check"></i>
+                    </button>
                 </div>
             {% empty %}
                 <!-- Placeholder for no likes -->
-                <div class="notification">
+                <div class="notification empty">
                     <div class="tip-content">
                         <p>No likes yet. Engage with tips to get updates!</p>
                     </div>
@@ -36,7 +49,7 @@
 
             <!-- Section for follow notifications -->
             {% for follow in follow_notifications %}
-                <div class="notification">
+                <div class="notification {% if not follow.is_read %}unread{% endif %}" data-notification-id="{{ follow.id }}" data-type="follow">
                     <!-- Follower avatar -->
                     {% if follow.follower.userprofile.avatar %}
                         <img src="{{ follow.follower.userprofile.avatar.url }}" alt="User Avatar" class="tip-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
@@ -46,12 +59,15 @@
                     <div class="tip-content">
                         <!-- Notification text for new follower -->
                         <p><strong>{{ follow.follower.username|default:"Unknown User" }}</strong> followed you</p>
-                        <small>{{ follow.created_at|date:"F j, Y, g:i a"|default:"No date" }}</small>
+                        <small class="notification-time" data-timestamp="{{ follow.created_at|date:'c' }}">{{ follow.created_at|date:"F j, Y, g:i a"|default:"No date" }}</small>
                     </div>
+                    <button class="mark-read-btn" title="Mark as read">
+                        <i class="fas fa-check"></i>
+                    </button>
                 </div>
             {% empty %}
                 <!-- Placeholder for no follows -->
-                <div class="notification">
+                <div class="notification empty">
                     <div class="tip-content">
                         <p>No follows yet. Engage with tips to get updates!</p>
                     </div>
@@ -60,7 +76,7 @@
 
             <!-- Section for share notifications -->
             {% for share in share_notifications %}
-                <div class="notification">
+                <div class="notification {% if not share.is_read %}unread{% endif %}" data-notification-id="{{ share.id }}" data-type="share">
                     <!-- User avatar for the sharer -->
                     {% if share.user.userprofile.avatar %}
                         <img src="{{ share.user.userprofile.avatar.url }}" alt="User Avatar" class="tip-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
@@ -70,12 +86,15 @@
                     <div class="tip-content">
                         <!-- Notification text with username and tip preview -->
                         <p><strong>{{ share.user.username|default:"Unknown User" }}</strong> shared your tip: "{{ share.tip.text|truncatechars:20|default:"No tip text" }}"</p>
-                        <small>{{ share.created_at|date:"F j, Y, g:i a"|default:"No date" }}</small>
+                        <small class="notification-time" data-timestamp="{{ share.created_at|date:'c' }}">{{ share.created_at|date:"F j, Y, g:i a"|default:"No date" }}</small>
                     </div>
+                    <button class="mark-read-btn" title="Mark as read">
+                        <i class="fas fa-check"></i>
+                    </button>
                 </div>
             {% empty %}
                 <!-- Placeholder for no shares -->
-                <div class="notification">
+                <div class="notification empty">
                     <div class="tip-content">
                         <p>No shares yet. Engage with tips to get updates!</p>
                     </div>
@@ -83,11 +102,138 @@
             {% endfor %}
         {% else %}
             <!-- General placeholder for no notifications -->
-            <div class="notification">
+            <div class="notification empty">
                 <div class="tip-content">
                     <p>No notifications yet. Engage with tips to get updates!</p>
                 </div>
             </div>
         {% endif %}
     </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Update relative timestamps
+    function updateTimestamps() {
+        document.querySelectorAll('.notification-time').forEach(timeElement => {
+            const timestamp = new Date(timeElement.dataset.timestamp);
+            const now = new Date();
+            const diff = now - timestamp;
+            
+            let relativeTime;
+            if (diff < 60000) { // Less than 1 minute
+                relativeTime = 'just now';
+            } else if (diff < 3600000) { // Less than 1 hour
+                const minutes = Math.floor(diff / 60000);
+                relativeTime = `${minutes}m ago`;
+            } else if (diff < 86400000) { // Less than 1 day
+                const hours = Math.floor(diff / 3600000);
+                relativeTime = `${hours}h ago`;
+            } else if (diff < 604800000) { // Less than 1 week
+                const days = Math.floor(diff / 86400000);
+                relativeTime = `${days}d ago`;
+            } else {
+                relativeTime = timestamp.toLocaleDateString();
+            }
+            
+            timeElement.textContent = relativeTime;
+        });
+    }
+
+    // Mark notification as read
+    function markAsRead(notificationId, type) {
+        fetch('/api/mark-notification-read/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                notification_id: notificationId,
+                type: type
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const notification = document.querySelector(`[data-notification-id="${notificationId}"]`);
+                if (notification) {
+                    notification.classList.remove('unread');
+                    updateNotificationCount();
+                }
+            }
+        })
+        .catch(error => console.error('Error marking notification as read:', error));
+    }
+
+    // Update notification count
+    function updateNotificationCount() {
+        const unreadCount = document.querySelectorAll('.notification.unread').length;
+        const countElement = document.getElementById('notification-count');
+        if (countElement) {
+            countElement.textContent = unreadCount;
+        }
+    }
+
+    // Set up event listeners
+    document.querySelectorAll('.mark-read-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const notification = this.closest('.notification');
+            const notificationId = notification.dataset.notificationId;
+            const type = notification.dataset.type;
+            markAsRead(notificationId, type);
+        });
+    });
+
+    // Initial timestamp update and periodic updates
+    updateTimestamps();
+    setInterval(updateTimestamps, 60000); // Update every minute
+
+    // Set up WebSocket for real-time notifications
+    const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
+    const ws_path = `${ws_scheme}://${window.location.host}/ws/notifications/`;
+    const ws = new WebSocket(ws_path);
+
+    ws.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        if (data.type === 'notification') {
+            // Add new notification to the top of the list
+            const notificationsContainer = document.querySelector('.tip-feed');
+            const newNotification = createNotificationElement(data.notification);
+            notificationsContainer.insertBefore(newNotification, notificationsContainer.firstChild);
+            updateNotificationCount();
+        }
+    };
+
+    function createNotificationElement(notification) {
+        const div = document.createElement('div');
+        div.className = `notification unread`;
+        div.dataset.notificationId = notification.id;
+        div.dataset.type = notification.type;
+        
+        // Create notification HTML based on type
+        div.innerHTML = `
+            <img src="${notification.avatar_url || '{% static 'img/default-avatar.png' %}'}" 
+                 alt="User Avatar" 
+                 class="tip-avatar" 
+                 onerror="this.src='{% static 'img/default-avatar.png' %}'">
+            <div class="tip-content">
+                <p><strong>${notification.username}</strong> ${notification.message}</p>
+                <small class="notification-time" data-timestamp="${notification.created_at}">just now</small>
+            </div>
+            <button class="mark-read-btn" title="Mark as read">
+                <i class="fas fa-check"></i>
+            </button>
+        `;
+        
+        // Add event listener to the new notification
+        div.querySelector('.mark-read-btn').addEventListener('click', function() {
+            markAsRead(notification.id, notification.type);
+        });
+        
+        return div;
+    }
+});
+</script>
 {% endblock %}
