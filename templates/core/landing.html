@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Join Tipster Arena: Share sports tips, connect with pros, and take on the bookies in a thriving betting community. €5/month after your first month free.">
+    <meta name="description" content="Join Tipster Arena: Share sports tips, connect with pros, and take on the bookies in a thriving betting community. Free tier available, Basic €7/month, Premium €12/month.">
     <meta name="keywords" content="sports tips, betting community, tipsters, football, golf, tennis, horse racing, win ratios, anti-bookie">
     <title>Welcome to Tipster Arena</title>
     {% load static %}
@@ -28,12 +28,12 @@
             <!-- Section 1: Your Central Hub for Sports Tips -->
             <div class="landing-section left">
                 <div class="landing-image">
-                    <img src="{% static 'img/sports1.jpg' %}" alt="Sports Action" class="landing-section-image">
+                    <img src="{% static 'img/sports1.png' %}" alt="Sports Action" class="landing-section-image">
                 </div>
                 <div class="landing-text">
                     <h2 class="landing-section-title">Your Central Hub for Sports Tips</h2>
                     <p class="landing-section-description">
-                        Sick of scouring sketchy sites for tips? Tipster Arena is your no-BS betting community—€5/month gets you in, but the first month’s free. Scroll tips for football, golf, tennis, or horse racing, filter what you want, and ditch the rest. No politics, no fluff—just pure betting gold. Try it free, then pay less than a pint to stay.
+                        Sick of scouring sketchy sites for tips? Tipster Arena is your no-BS betting community. Start free, upgrade to Basic (€7/month) or Premium (€12/month) for more features. Scroll tips for football, golf, tennis, or horse racing, filter what you want, and ditch the rest. No politics, no fluff—just pure betting gold.
                     </p>
                     <a href="{% url 'signup' %}" class="landing-button landing-button--secondary">Start Free Now</a>
                 </div>
@@ -44,7 +44,7 @@
                 <div class="landing-text">
                     <h2 class="landing-section-title">Pro Tipsters, Your Stage Awaits</h2>
                     <p class="landing-section-description">
-                        Pros, this is your turf. Build a following with your €5/month subscription—first month free for all. Soon, you’ll drop exclusive tips and cash in with subscriber cuts. Prove your worth, keep the wannabes out, and own the game.
+                        Pros, this is your turf. Start free, then upgrade to Premium (€12/month) to unlock exclusive features. Build your following, post premium tips, and compete for Top Tipster status to earn a share of the monthly prize pool. Prove your worth and own the game.
                     </p>
                     <a href="{% url 'signup' %}" class="landing-button landing-button--secondary">Build Your Empire</a>
                 </div>
@@ -53,26 +53,26 @@
                 </div>
             </div>
 
-            <!-- Section 3: Face Off & Prove Who’s Best -->
+            <!-- Section 3: Face Off & Prove Who's Best -->
             <div class="landing-section left">
                 <div class="landing-image">
-                    <img src="{% static 'img/sports3.jpg' %}" alt="Tipster Face-Off" class="landing-section-image">
+                    <img src="{% static 'img/head-to-head.jpg' %}" alt="Tipster Face-Off" class="landing-section-image">
                 </div>
                 <div class="landing-text">
-                    <h2 class="landing-section-title">Face Off & Prove Who’s Best</h2>
+                    <h2 class="landing-section-title">Face Off & Prove Who's Best</h2>
                     <p class="landing-section-description">
-                        Tired of loudmouths with no stats to back it? For €5/month (first month free), Tipster Arena ranks every tipster with win ratios and leveraged odds. Pros or pub punters, step up—only the best survive here.
+                        Tired of loudmouths with no stats to back it? Tipster Arena ranks every tipster with win ratios and leveraged odds. Start free, upgrade to Basic (€7/month) or Premium (€12/month) for advanced features. Pros or pub punters, step up—only the best survive here.
                     </p>
-                    <a href="{% url 'signup' %}" class="landing-button landing-button--secondary">Prove You’re the Best</a>
+                    <a href="{% url 'signup' %}" class="landing-button landing-button--secondary">Prove You're the Best</a>
                 </div>
             </div>
 
             <!-- Section 4: We Love Gambling -->
             <div class="landing-section right">
                 <div class="landing-text">
-                    <h2 class="landing-section-title">We Love Gambling—And We’re Not Sorry</h2>
+                    <h2 class="landing-section-title">We Love Gambling—And We're Not Sorry</h2>
                     <p class="landing-section-description">
-                        We’re done with the guilt trips. Gambling gets a bad rap, but no one cares when the wife blows €300 on retail therapy—yet a bet raises eyebrows? Not here. We embrace the thrill, no apologies. Gamble big, gamble reckless for all we care—life’s short, and you could be gone by morning.
+                        We're done with the guilt trips. Gambling gets a bad rap, but no one cares when the wife blows €300 on retail therapy—yet a bet raises eyebrows? Not here. We embrace the thrill, no apologies. Start free, upgrade when you're ready. Gamble big, gamble reckless for all we care—life's short, and you could be gone by morning.
                     </p>
                     <a href="{% url 'signup' %}" class="landing-button landing-button--secondary">Join the Fun</a>
                 </div>
@@ -89,7 +89,7 @@
                 <div class="landing-text">
                     <h2 class="landing-section-title">The Anti-Bookie Revolution</h2>
                     <p class="landing-section-description">
-                        Bookies hate us, and we love it. For €5/month—first month free—you’re in the fight. Our community sniffs out value the bookies can’t hide. That small fee keeps the bots and freeloaders out, so we keep winning.
+                        Bookies hate us, and we love it. Start free, then choose Basic (€7/month) or Premium (€12/month) to join the fight. Our community sniffs out value the bookies can't hide. That small fee keeps the bots and freeloaders out, so we keep winning.
                     </p>
                     <a href="{% url 'signup' %}" class="landing-button landing-button--secondary">Fight Back</a>
                 </div>
@@ -98,8 +98,8 @@
             <!-- Mid-Page CTA: Take Back the Edge -->
             <div class="landing-mid-cta">
                 <h2 class="landing-cta-title">Take Back the Edge</h2>
-                <p class="landing-cta-description">€5/month after a free first month—join the crew beating the bookies senseless.</p>
-                <a href="{% url 'signup' %}" class="landing-button landing-button--primary">Claim Your Edge Free</a>
+                <p class="landing-cta-description">Start free, upgrade to Basic (€7/month) or Premium (€12/month)—join the crew beating the bookies senseless.</p>
+                <a href="{% url 'signup' %}" class="landing-button landing-button--primary">Start Free Now</a>
             </div>
 
             <!-- Section 6: Simple Pricing, Big Value -->
@@ -107,30 +107,30 @@
                 <h2 class="landing-section-title center">Simple Pricing, Big Value</h2>
                 <div class="pricing-grid">
                     <div class="pricing-item">
-                        <h3>First Month Free</h3>
-                        <p>Dive in, test the tips, no risk—see why we’re worth it.</p>
+                        <h3>Free</h3>
+                        <p>Post up to 2 tips/day, follow 10 tipsters, view public tips & leaderboards.</p>
                     </div>
                     <div class="pricing-item">
-                        <h3>€5/Month</h3>
-                        <p>Less than a pint to unlock a community that owns the odds.</p>
+                        <h3>Basic (€7/month)</h3>
+                        <p>Ad-free experience, post up to 100 tips/month, unlimited follows, comment on tips.</p>
                     </div>
                     <div class="pricing-item">
-                        <h3>€40/Year</h3>
-                        <p>Save big, lock in, and dominate the betting game all year.</p>
+                        <h3>Premium (€12/month)</h3>
+                        <p>All Basic features, access Premium Tips, compete for Top Tipster status, earn revenue share.</p>
                     </div>
                 </div>
                 <a href="{% url 'signup' %}" class="landing-button landing-button--secondary">Start Free Today</a>
             </div>
 
-            <!-- Section 7: What You Get for €5/Month -->
+            <!-- Section 7: What You Get -->
             <div class="landing-section left">
                 <div class="landing-image">
                     <img src="{% static 'img/sports6.jpg' %}" alt="Community Tips" class="landing-section-image">
                 </div>
                 <div class="landing-text">
-                    <h2 class="landing-section-title">What You Get for €5/Month</h2>
+                    <h2 class="landing-section-title">What You Get</h2>
                     <p class="landing-section-description">
-                        Your €5/month—free for the first month—unlocks the real deal. No overhyped “master overlord” tips here; the best picks come from the trenches. Scroll a social feed of fresh tips, follow users with proven win rates, and cash in on quality. We know some of you would kill your own granny for a decent tip, so €5 is a small ask to give you the platform that delivers. The cream rises to the top—stay in for less than a pint.
+                        Start free and upgrade when you're ready. Basic (€7/month) gives you more freedom, while Premium (€12/month) unlocks exclusive features and Top Tipster opportunities. No overhyped "master overlord" tips here; the best picks come from the trenches. Scroll a social feed of fresh tips, follow users with proven win rates, and cash in on quality. The cream rises to the top—stay in for less than a pint.
                     </p>
                     <a href="{% url 'signup' %}" class="landing-button landing-button--secondary">Unlock the Good Stuff</a>
                 </div>
@@ -139,14 +139,14 @@
             <!-- Standalone CTA: Smash the Odds -->
             <div class="landing-mid-cta smash-odds">
                 <h2 class="landing-cta-title">Smash the Odds</h2>
-                <p class="landing-cta-description">First month free, then €5/month—no bookies, just winners.</p>
+                <p class="landing-cta-description">Start free, upgrade to Basic (€7/month) or Premium (€12/month)—no bookies, just winners.</p>
                 <a href="{% url 'signup' %}" class="landing-button landing-button--primary">Get In Free</a>
             </div>
 
             <!-- Final Call to Action -->
             <div class="landing-cta">
                 <h2 class="landing-cta-title">Bet Smarter. Join Today.</h2>
-                <p class="landing-cta-description">€5/month after your first month free—or €40/year to save. From casual punters to pro tipsters, Tipster Arena is where the action lives. Sign up now and stick it to the bookies.</p>
+                <p class="landing-cta-description">Start free, upgrade to Basic (€7/month) or Premium (€12/month). From casual punters to pro tipsters, Tipster Arena is where the action lives. Sign up now and stick it to the bookies.</p>
                 <div class="landing-buttons">
                     <a href="{% url 'login' %}" class="landing-button landing-button--primary">Login to Win</a>
                     <a href="{% url 'signup' %}" class="landing-button landing-button--primary">Signup Free</a>

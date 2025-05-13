@@ -12,7 +12,7 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.contrib import messages
-from django.db.models import F
+from django.db.models import F, Q, Count, Sum
 from django.contrib.auth import get_user_model
 
 from ..models import TipsterTier, TipsterSubscription,  User
@@ -542,22 +542,91 @@ def handle_payment_failed(invoice):
             logger.error(f"Subscription not found for invoice: {invoice.id}")
 
 def top_tipsters_leaderboard(request):
-    """Public leaderboard of Top Tipsters."""
+    """Public leaderboard of Top Tipsters using composite score algorithm."""
     User = get_user_model()
-    top_tipsters_qs = User.objects.filter(userprofile__is_top_tipster=True)
-    # Example: sort by points (replace with real logic)
-    top_tipsters = []
-    for user in top_tipsters_qs:
+    # Only premium users are eligible
+    tipsters_qs = User.objects.filter(userprofile__tier='premium')
+    leaderboard = []
+    # Precompute max values for normalization
+    max_owr = 0
+    max_win_rate = 0
+    max_consistency = 0
+    max_engagement = 0
+    tipster_metrics = []
+    for user in tipsters_qs:
         profile = user.userprofile
-        top_tipsters.append({
-            'username': user.username,
-            'avatar_url': profile.avatar.url if profile.avatar else '/static/img/default-avatar.png',
+        tips = user.tip_set.filter(status__in=['win', 'loss'])
+        total_tips = tips.count()
+        if total_tips == 0:
+            continue
+        # Odds-Weighted Success Rate
+        ows_sum = 0
+        for tip in tips:
+            if tip.status == 'win':
+                try:
+                    if tip.odds is None or tip.odds_format is None:
+                        continue
+                    if tip.odds_format.lower() == 'decimal':
+                        odds = float(tip.odds)
+                    elif tip.odds_format.lower() == 'fractional':
+                        num, denom = map(float, tip.odds.split('/'))
+                        odds = (num / denom) + 1
+                    else:
+                        continue
+                    ows_sum += (odds - 1) / odds
+                except Exception:
+                    continue
+        odds_weighted_success = ows_sum / total_tips if total_tips else 0
+        # Raw Win Rate
+        wins = tips.filter(status='win').count()
+        raw_win_rate = wins / total_tips if total_tips else 0
+        # Consistency
+        avg_outcome = raw_win_rate
+        variance = sum([(1 if tip.status == 'win' else 0) - avg_outcome for tip in tips])
+        variance = sum([(1 if tip.status == 'win' else 0 - avg_outcome) ** 2 for tip in tips]) / total_tips if total_tips else 0
+        consistency = 1 / (1 + variance)
+        # Engagement
+        followers = user.followers.count()
+        likes = tips.aggregate(total_likes=Sum('likes__id'))['total_likes'] or 0
+        comments = tips.aggregate(total_comments=Sum('comments__id'))['total_comments'] or 0
+        engagement = followers + likes + comments
+        # Track max for normalization
+        max_owr = max(max_owr, odds_weighted_success)
+        max_win_rate = max(max_win_rate, raw_win_rate)
+        max_consistency = max(max_consistency, consistency)
+        max_engagement = max(max_engagement, engagement)
+        tipster_metrics.append({
+            'user': user,
+            'profile': profile,
+            'odds_weighted_success': odds_weighted_success,
+            'raw_win_rate': raw_win_rate,
+            'consistency': consistency,
+            'engagement': engagement,
+            'total_tips': total_tips,
             'win_rate': profile.win_rate,
-            'total_tips': profile.total_tips,
-            'followers_count': user.followers.count(),
+            'followers_count': followers,
             'premium_tips': user.tip_set.filter(is_premium_tip=True).count(),
-            'points': profile.win_rate + profile.total_tips + user.followers.count() + user.tip_set.filter(is_premium_tip=True).count(),  # Replace with real formula
         })
-    # Sort by points descending
-    top_tipsters = sorted(top_tipsters, key=lambda t: t['points'], reverse=True)
-    return render(request, 'core/top_tipsters.html', {'top_tipsters': top_tipsters}) 
+    # Normalize and calculate composite score
+    for m in tipster_metrics:
+        norm_owr = (m['odds_weighted_success'] / max_owr * 100) if max_owr else 0
+        norm_win_rate = (m['raw_win_rate'] / max_win_rate * 100) if max_win_rate else 0
+        norm_consistency = (m['consistency'] / max_consistency * 100) if max_consistency else 0
+        norm_engagement = (m['engagement'] / max_engagement * 100) if max_engagement else 0
+        composite = (
+            0.6 * norm_owr +
+            0.15 * norm_win_rate +
+            0.15 * norm_consistency +
+            0.10 * norm_engagement
+        )
+        leaderboard.append({
+            'username': m['user'].username,
+            'avatar_url': m['profile'].avatar.url if m['profile'].avatar else '/static/img/default-avatar.png',
+            'win_rate': m['win_rate'],
+            'total_tips': m['total_tips'],
+            'followers_count': m['followers_count'],
+            'premium_tips': m['premium_tips'],
+            'points': round(composite, 2),
+        })
+    leaderboard = sorted(leaderboard, key=lambda t: t['points'], reverse=True)
+    return render(request, 'core/top_tipsters.html', {'top_tipsters': leaderboard}) 

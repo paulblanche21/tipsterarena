@@ -86,28 +86,45 @@ body {
     margin: 0 auto;
 }
 
-/* Base styles for landing page sections */
+/* Zigzag card backgrounds: alternate navy-to-white and white-to-navy, always use navy text */
 .landing-section {
     display: flex;
     align-items: center;
     gap: 40px;
-    padding: var(--padding-small);
+    padding: 48px 0;
+    position: relative;
+    z-index: 1;
+    background: #fff !important;
+    transition: background 0.3s;
+}
+
+.landing-section .landing-text,
+.landing-section .landing-section-title,
+.landing-section .landing-section-description {
+    color: #001f3f !important;
+}
+.landing-section .landing-section-title {
+    color: var(--red-accent) !important;
 }
 
 /* Left-aligned section layout */
 .landing-section.left {
     flex-direction: row;
+    background: linear-gradient(90deg, #fff7f6 0 60%, #001f3f 100%);
 }
 
 /* Right-aligned section layout */
 .landing-section.right {
     flex-direction: row-reverse;
+    background: linear-gradient(270deg, #fff7f6 0 60%, #001f3f 100%);
 }
 
 /* Text content within sections */
 .landing-text {
     flex: 1;
     text-align: left;
+    z-index: 2;
+    padding: 0 24px;
 }
 
 /* Image container within sections */
@@ -115,20 +132,27 @@ body {
     flex: 1;
     display: flex;
     justify-content: center;
+    align-items: center;
+    position: relative;
 }
 
 /* Image within landing sections */
 .landing-section-image {
-    max-width: 400px;
-    height: auto;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-hover);
-    transition: transform 0.3s ease;
+    max-width: 420px;
+    width: 100%;
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(255,65,54,0.10), 0 2px 8px rgba(0,0,0,0.08);
+    position: relative;
+    z-index: 1;
+    transition: box-shadow 0.3s, transform 0.3s;
+    margin-top: -24px;
+    margin-bottom: -24px;
 }
 
 /* Hover state for section images */
 .landing-section-image:hover {
-    transform: scale(1.05);
+    box-shadow: 0 12px 48px rgba(255,65,54,0.18), 0 4px 16px rgba(0,0,0,0.12);
+    transform: scale(1.04) rotate(-1deg);
 }
 
 /* Section title styles */
@@ -694,4 +718,229 @@ body {
     outline: none;
     border-color: var(--red-accent);
     box-shadow: 0 0 5px rgba(255, 65, 54, 0.3);
+}
+
+/* Enhanced Zigzag Section Styles */
+.landing-section {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    padding: 48px 0;
+    position: relative;
+    z-index: 1;
+    background: #001f3f;
+    transition: background 0.3s;
+}
+
+.landing-section.left {
+    flex-direction: row;
+    background: linear-gradient(90deg, #fff7f6 0 60%, #001f3f 100%);
+}
+
+.landing-section.right {
+    flex-direction: row-reverse;
+    background: linear-gradient(270deg, #fff7f6 0 60%, #001f3f 100%);
+}
+
+.landing-section .landing-image {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.landing-section.left .landing-image::before,
+.landing-section.right .landing-image::before {
+    content: "";
+    position: absolute;
+    top: 10%;
+    bottom: 10%;
+    left: -24px;
+    width: 8px;
+    border-radius: 8px;
+    background: var(--red-accent);
+    z-index: 0;
+    opacity: 0.15;
+}
+.landing-section.right .landing-image::before {
+    left: auto;
+    right: -24px;
+}
+
+.landing-section-image {
+    max-width: 420px;
+    width: 100%;
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(255,65,54,0.10), 0 2px 8px rgba(0,0,0,0.08);
+    position: relative;
+    z-index: 1;
+    transition: box-shadow 0.3s, transform 0.3s;
+    margin-top: -24px;
+    margin-bottom: -24px;
+}
+
+.landing-section-image:hover {
+    box-shadow: 0 12px 48px rgba(255,65,54,0.18), 0 4px 16px rgba(0,0,0,0.12);
+    transform: scale(1.04) rotate(-1deg);
+}
+
+.landing-section .landing-text {
+    flex: 1;
+    text-align: left;
+    z-index: 2;
+    padding: 0 24px;
+}
+
+.landing-section.left .landing-text {
+    padding-left: 40px;
+}
+.landing-section.right .landing-text {
+    padding-right: 40px;
+}
+
+@media (max-width: 900px) {
+    .landing-section {
+        flex-direction: column !important;
+        background: #fff !important;
+        gap: 24px;
+        padding: 32px 0;
+    }
+    .landing-section .landing-image::before {
+        display: none;
+    }
+    .landing-section .landing-text,
+    .landing-section .landing-section-title,
+    .landing-section .landing-section-description {
+        color: #001f3f !important;
+    }
+    .landing-section .landing-section-title {
+        color: var(--red-accent) !important;
+    }
+    .landing-section-image {
+        margin: 0;
+        max-width: 90vw;
+    }
+}
+
+/* Optional: vertical timeline for desktop */
+@media (min-width: 901px) {
+    .landing-zigzag {
+        position: relative;
+    }
+    .landing-zigzag::before {
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(to bottom, var(--red-accent) 0%, #fff7f6 100%);
+        opacity: 0.08;
+        z-index: 0;
+        transform: translateX(-50%);
+    }
+}
+
+/* For left-aligned (image left, text right): text is dark */
+.landing-section.left .landing-text,
+.landing-section.left .landing-section-title,
+.landing-section.left .landing-section-description {
+    color: #001f3f;
+}
+
+/* For right-aligned (image right, text left): text is white */
+.landing-section.right .landing-text,
+.landing-section.right .landing-section-title,
+.landing-section.right .landing-section-description {
+    color: #fff;
+}
+
+/* Section title on right-aligned: use brand accent */
+.landing-section.right .landing-section-title {
+    color: var(--red-accent);
+}
+
+@media (max-width: 900px) {
+    .landing-section .landing-text,
+    .landing-section .landing-section-title,
+    .landing-section .landing-section-description {
+        color: #001f3f !important;
+    }
+    .landing-section .landing-section-title {
+        color: var(--red-accent) !important;
+    }
+}
+
+/* Make the first five landing-section cards white with navy text */
+.landing-section {
+    background: #fff !important;
+}
+.landing-section .landing-text,
+.landing-section .landing-section-title,
+.landing-section .landing-section-description {
+    color: #001f3f !important;
+}
+.landing-section .landing-section-title {
+    color: var(--red-accent) !important;
+}
+
+/* Restore original pricing plan styling */
+.landing-section.pricing {
+    background: none !important;
+}
+.landing-section.pricing .landing-text,
+.landing-section.pricing .landing-section-title,
+.landing-section.pricing .landing-section-description {
+    color: inherit !important;
+}
+.landing-section.pricing .landing-section-title {
+    color: var(--red-accent) !important;
+}
+
+@media (max-width: 900px) {
+    .landing-section {
+        background: #fff !important;
+    }
+    .landing-section .landing-text,
+    .landing-section .landing-section-title,
+    .landing-section .landing-section-description {
+        color: #001f3f !important;
+    }
+    .landing-section .landing-section-title {
+        color: var(--red-accent) !important;
+    }
+    /* Restore pricing plan styling on mobile */
+    .landing-section.pricing {
+        background: none !important;
+    }
+    .landing-section.pricing .landing-text,
+    .landing-section.pricing .landing-section-title,
+    .landing-section.pricing .landing-section-description {
+        color: inherit !important;
+    }
+    .landing-section.pricing .landing-section-title {
+        color: var(--red-accent) !important;
+    }
+}
+
+/* Improve secondary button visibility on white cards */
+.landing-section .landing-button--secondary {
+    background: #f7f8fa;
+    color: #001f3f;
+    border: 1.5px solid #001f3f;
+    box-shadow: 0 1.5px 4px rgba(0,0,0,0.04);
+    transition: background 0.2s, color 0.2s, border 0.2s;
+}
+
+.landing-section .landing-button--secondary:hover {
+    background: #e6eaf0;
+    color: var(--red-accent);
+    border-color: var(--red-accent);
+}
+
+/* Make primary button pop more on white cards */
+.landing-section .landing-button--primary {
+    box-shadow: 0 2px 8px rgba(255,65,54,0.10);
+    border: none;
 }
