@@ -57,4 +57,25 @@ export function setupNavigation() {
             });
         });
     }
+
+    // More Sports popup logic
+    const moreSportsBtn = document.getElementById('more-sports-btn');
+    const moreSportsPopup = document.getElementById('more-sports-popup');
+    const moreSportsClose = document.getElementById('more-sports-close');
+
+    if (moreSportsBtn && moreSportsPopup && moreSportsClose) {
+        moreSportsBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            moreSportsPopup.style.display = 'flex';
+        });
+        moreSportsClose.addEventListener('click', function() {
+            moreSportsPopup.style.display = 'none';
+        });
+        // Optional: close popup when clicking outside the content
+        moreSportsPopup.addEventListener('click', function(e) {
+            if (e.target === moreSportsPopup) {
+                moreSportsPopup.style.display = 'none';
+            }
+        });
+    }
 }

@@ -30,6 +30,19 @@
                         <option value="golf">Golf</option>
                         <option value="tennis">Tennis</option>
                         <option value="horse_racing">Horse Racing</option>
+                        <option value="american_football">American Football</option>
+                        <option value="baseball">Baseball</option>
+                        <option value="basketball">Basketball</option>
+                        <option value="boxing">Boxing</option>
+                        <option value="cricket">Cricket</option>
+                        <option value="cycling">Cycling</option>
+                        <option value="darts">Darts</option>
+                        <option value="gaelic_games">Gaelic Games</option>
+                        <option value="greyhound_racing">Greyhound Racing</option>
+                        <option value="motor_sport">Motor Sport</option>
+                        <option value="rugby_union">Rugby Union</option>
+                        <option value="snooker">Snooker</option>
+                        <option value="volleyball">Volleyball</option>
                     </select>
                 </div>
             </div>
@@ -143,6 +156,32 @@
                                 <span class="sport-label sport-tennis">Tennis</span>
                             {% elif tip.sport == 'horse_racing' %}
                                 <span class="sport-label sport-horse-racing">Horse Racing</span>
+                            {% elif tip.sport == 'american_football' %}
+                                <span class="sport-label sport-american-football">American Football</span>
+                            {% elif tip.sport == 'baseball' %}
+                                <span class="sport-label sport-baseball">Baseball</span>
+                            {% elif tip.sport == 'basketball' %}
+                                <span class="sport-label sport-basketball">Basketball</span>
+                            {% elif tip.sport == 'boxing' %}
+                                <span class="sport-label sport-boxing">Boxing</span>
+                            {% elif tip.sport == 'cricket' %}
+                                <span class="sport-label sport-cricket">Cricket</span>
+                            {% elif tip.sport == 'cycling' %}
+                                <span class="sport-label sport-cycling">Cycling</span>
+                            {% elif tip.sport == 'darts' %}
+                                <span class="sport-label sport-darts">Darts</span>
+                            {% elif tip.sport == 'gaelic_games' %}
+                                <span class="sport-label sport-gaelic-games">Gaelic Games</span>
+                            {% elif tip.sport == 'greyhound_racing' %}
+                                <span class="sport-label sport-greyhound-racing">Greyhound Racing</span>
+                            {% elif tip.sport == 'motor_sport' %}
+                                <span class="sport-label sport-motor-sport">Motor Sport</span>
+                            {% elif tip.sport == 'rugby_union' %}
+                                <span class="sport-label sport-rugby-union">Rugby Union</span>
+                            {% elif tip.sport == 'snooker' %}
+                                <span class="sport-label sport-snooker">Snooker</span>
+                            {% elif tip.sport == 'volleyball' %}
+                                <span class="sport-label sport-volleyball">Volleyball</span>
                             {% endif %}
                         </div>
                         {% if request.user == tip.user %}

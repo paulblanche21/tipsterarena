@@ -85,9 +85,9 @@
     display: flex;
     align-items: center;
     width: 100%;
-    padding: var(--padding-small);
     cursor: pointer;
     border-radius: var(--border-radius);
+    overflow: hidden;
   }
   
   .nav-user-content:hover {
@@ -103,16 +103,20 @@
   
   .user-info {
     flex-grow: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
   }
   
-  .user-display-name{
-    display: block;
+  .user-display-name {
     color: #ffffff;
     font-size: clamp(12px, 2vw, 14px);
+    margin-bottom: 0px;
   }
   
   .user-handle-nav {
     color: var(--secondary-bg);
+    margin-top: 0px;
   }
   
   .nav-menu-icon {
@@ -220,3 +224,66 @@
     background-color: rgba(74, 144, 226, 0.2);
     color: var(--twitter-blue);
   }
+
+.more-sports-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.3);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.more-sports-popup-content {
+  background: var(--secondary-bg);
+  color: var(--primary-bg);
+  width: 320px;
+  max-width: 90vw;
+  height: 100vh;
+  box-shadow: var(--shadow-hover);
+  padding: 32px 24px 24px 24px;
+  position: relative;
+  overflow-y: auto;
+  border-radius: 0 16px 16px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.more-sports-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: var(--primary-bg);
+  cursor: pointer;
+}
+
+.more-sports-list {
+  list-style: none;
+  padding: 0;
+  margin: 24px 0 0 0;
+}
+
+.more-sports-list li {
+  margin-bottom: 18px;
+}
+
+.more-sports-list a {
+  color: var(--primary-bg);
+  text-decoration: none;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: color 0.2s;
+}
+
+.more-sports-list a:hover {
+  color: var(--red-accent);
+}

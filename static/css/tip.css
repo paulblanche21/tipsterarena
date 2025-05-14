@@ -604,3 +604,27 @@
   .sport-horse-racing {
     background: #FF4136; /* light red */
   }
+  .sport-boxing {
+    background: #8e44ad; /* purple */
+  }
+  .sport-cycling {
+    background: #27ae60; /* green */
+  }
+  .sport-greyhound-racing {
+    background: #b9770e; /* brown/orange */
+  }
+  .sport-gaelic-games {
+    background: #16a085; /* teal */
+  }
+  .sport-motor-sport {
+    background: #34495e; /* dark blue/grey */
+  }
+  .sport-rugby-union {
+    background: #e67e22; /* orange */
+  }
+  .sport-snooker {
+    background: #2ecc71; /* snooker green */
+  }
+  .sport-cricket {
+    background: #229954; /* cricket green */
+  }

@@ -85,10 +85,10 @@
             <li><a href="{% url 'notifications' %}"><i class="fas fa-bell nav-icon"></i><span>Notifications</span></a></li>
             <li><a href="{% url 'sport' 'football' %}" {% if request.resolver_match.url_name == 'sport' and request.resolver_match.kwargs.sport == 'football' %}class="active"{% endif %}><i class="fas fa-futbol nav-icon"></i><span>Football</span></a></li>
             <li><a href="{% url 'sport' 'golf' %}"><i class="fas fa-golf-ball nav-icon"></i><span>Golf</span></a></li>
-            <li><a href="{% url 'sport' 'tennis' %}"><i class="fas fa-table-tennis nav-icon"></i><span>Tennis</span></a></li>
             <li><a href="{% url 'sport' 'horse_racing' %}"><i class="fas fa-horse nav-icon"></i><span>Horse Racing</span></a></li>
+            <li><a href="#" id="more-sports-btn"><i class="fas fa-ellipsis-h nav-icon"></i><span>More Sports</span></a></li>
+            <li><a href="{% url 'chat' %}"><i class="fas fa-comments nav-icon"></i><span>Chat</span></a></li>
             <li><a href="{% url 'profile' request.user.username|default:'guest' %}"><i class="fas fa-user nav-icon"></i><span>Profile</span></a></li>
-            <li><a href="{% url 'messages' %}"><i class="fas fa-envelope nav-icon"></i><span>Messages</span></a></li>
             <li><a href="{% url 'bookmarks' %}"><i class="fas fa-bookmark nav-icon"></i><span>Bookmarks</span></a></li>
             {% if request.user.userprofile.is_tipster %}
                 <li><a href="{% url 'top_tipsters_leaderboard' %}"><i class="fas fa-chart-line nav-icon"></i><span>Top Tipsters</span></a></li>
@@ -134,9 +134,6 @@
         </a>
         <a href="{% url 'sport' 'golf' %}" {% if request.resolver_match.url_name == 'sport' and request.resolver_match.kwargs.sport == 'golf' %}class="active"{% endif %}>
             <i class="fas fa-golf-ball"></i>
-        </a>
-        <a href="{% url 'sport' 'tennis' %}" {% if request.resolver_match.url_name == 'sport' and request.resolver_match.kwargs.sport == 'tennis' %}class="active"{% endif %}>
-            <i class="fas fa-table-tennis"></i>
         </a>
         <a href="{% url 'sport' 'horse_racing' %}" {% if request.resolver_match.url_name == 'sport' and request.resolver_match.kwargs.sport == 'horse_racing' %}class="active"{% endif %}>
             <i class="fas fa-horse"></i>
@@ -339,6 +336,31 @@
             <button class="post-submit" id="submit-post">Post</button>
             <span class="post-modal-close">×</span>
         </div>
+    </div>
+
+    <!-- More Sports Popup -->
+    <div class="more-sports-popup" id="more-sports-popup" style="display: none;">
+      <div class="more-sports-popup-content">
+        <button class="more-sports-close" id="more-sports-close">&times;</button>
+        <h3>More Sports</h3>
+        <ul class="more-sports-list">
+          <li><a href="{% url 'sport' 'tennis' %}"><i class="fas fa-table-tennis"></i> Tennis</a></li>
+          <li><a href="{% url 'sport' 'american_football' %}"><i class="fas fa-football-ball"></i> American Football</a></li>
+          <li><a href="{% url 'sport' 'baseball' %}"><i class="fas fa-baseball-ball"></i> Baseball</a></li>
+          <li><a href="{% url 'sport' 'basketball' %}"><i class="fas fa-basketball-ball"></i> Basketball</a></li>
+          <li><a href="{% url 'sport' 'cricket' %}"><i class="fa-solid fa-cricket-bat-ball"></i> Cricket</a></li>
+          <li><a href="{% url 'sport' 'volleyball' %}"><i class="fas fa-volleyball-ball"></i> Volleyball</a></li>
+          <li><a href="{% url 'sport' 'darts' %}"><i class="fas fa-bullseye"></i> Darts</a></li>
+          <li><a href="{% url 'sport' 'boxing' %}"><i class="fa-solid fa-hand-fist"></i> Boxing</a></li>
+          <li><a href="{% url 'sport' 'cycling' %}"><i class="fa-solid fa-bicycle"></i> Cycling</a></li>
+          <li><a href="{% url 'sport' 'greyhound_racing' %}"><i class="fa-solid fa-dog"></i> Greyhound Racing</a></li>
+          <li><a href="{% url 'sport' 'gaelic_games' %}"><i class="fa-solid fa-shield"></i> Gaelic Games</a></li>
+          <li><a href="{% url 'sport' 'motor_sport' %}"><i class="fa-solid fa-flag-checkered"></i> Motor Sport</a></li>
+          <li><a href="{% url 'sport' 'rugby_union' %}"><i class="fa-solid fa-shield"></i> Rugby Union</a></li>
+          <li><a href="{% url 'sport' 'snooker' %}"><i class="fa-solid fa-circle"></i> Snooker</a></li>
+          <!-- Add more sports as needed -->
+        </ul>
+      </div>
     </div>
 
     <!-- Hidden CSRF token and global JavaScript variables -->

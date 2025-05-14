@@ -6,6 +6,7 @@ from django.contrib.auth import views as auth_views
 from . import views
 from .views import subscription_views
 from .views.interaction_views import mark_notification_read
+from .views.general_views import chat_view
 
 # URL patterns for the Tipster Arena core app
 urlpatterns = [
@@ -136,6 +137,7 @@ urlpatterns = [
     ])),
     path('top-tipsters/', subscription_views.top_tipsters_leaderboard, name='top_tipsters_leaderboard'),
     path('api/mark-notification-read/', mark_notification_read, name='mark_notification_read'),
+    path('chat/', chat_view, name='chat'),
 ]
 
 

@@ -25,6 +25,19 @@ class Tip(models.Model):
             ('golf', 'Golf'),
             ('tennis', 'Tennis'),
             ('horse_racing', 'Horse Racing'),
+            ('american_football', 'American Football'),
+            ('baseball', 'Baseball'),
+            ('basketball', 'Basketball'),
+            ('boxing', 'Boxing'),
+            ('cricket', 'Cricket'),
+            ('cycling', 'Cycling'),
+            ('darts', 'Darts'),
+            ('gaelic_games', 'Gaelic Games'),
+            ('greyhound_racing', 'Greyhound Racing'),
+            ('motor_sport', 'Motor Sport'),
+            ('rugby_union', 'Rugby Union'),
+            ('snooker', 'Snooker'),
+            ('volleyball', 'Volleyball'),
         ]
     )  # Sport category for the tip
     text = models.TextField()  # Main content of the tip

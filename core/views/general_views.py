@@ -104,4 +104,7 @@ def cookie_policy(request):
 
 def accessibility(request):
     """Render accessibility page."""
-    return render(request, 'core/accessibility.html') 
+    return render(request, 'core/accessibility.html')
+
+def chat_view(request):
+    return render(request, 'core/chat.html') 

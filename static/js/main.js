@@ -5,10 +5,17 @@ function getCurrentPage() {
 
 // Import trending tips
 import trendingTips from './pages/trending-tips.js';
+import { setupNotifications } from './notifications.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   console.log('DOM loaded, page:', getCurrentPage());
   const page = getCurrentPage();
+
+  // Initialize WebSocket notifications
+  setupNotifications((notification) => {
+    console.log('Received notification via WebSocket:', notification);
+    // TODO: Update notification badge or DOM here
+  });
 
   try {
     const sharedModules = await Promise.all([
