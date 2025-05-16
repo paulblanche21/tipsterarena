@@ -21,6 +21,11 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-debug.log*
+.npm
+.yarn
+.yarnrc
+.pnp.*
 
 # IDE
 .idea/
@@ -48,13 +53,7 @@ coverage/
 .coverage
 htmlcov/
 
-# Keep essential build files
-!package.json
-!package-lock.json
-!requirements.txt
-!README.md
-
-# Build artifacts (but keep source)
+# Build artifacts
 *.pyc
 *.pyo
 *.pyd
@@ -76,4 +75,11 @@ wheels/
 *.egg
 
 # Documentation
-*.md 
+*.md
+
+# Keep essential build files
+!package.json
+!package-lock.json
+!requirements.txt
+!README.md
+!vite.config.mjs 

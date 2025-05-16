@@ -18,10 +18,6 @@ export default defineConfig({
         assetFileNames: '[name]-[hash].[ext]',
       },
     },
-    css: {
-      // Enable CSS minification in production
-      minify: true,
-    },
   },
   server: {
     port: 3000,
@@ -35,8 +31,8 @@ export default defineConfig({
       ignored: ['**/venv/**', '**/*.py', '**/site-packages/**'],
     },
   },
-    css: {
-      devSourcemap: true, // For debugging
-      // Vite bundles CSS from main.js imports automatically
-    }
+  css: {
+    devSourcemap: true,
+    minify: true,
+  },
 });
