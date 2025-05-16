@@ -7,13 +7,13 @@ from . import views
 from .views import subscription_views
 from .views.interaction_views import mark_notification_read
 from .views.general_views import chat_view
+from .views.api_views import upload_chat_image_api
 
 # URL patterns for the Tipster Arena core app
 urlpatterns = [
     # General routes
     path('', views.landing, name='landing'),
     path('home/', views.home, name='home'),
-    path('sport/<str:sport>/', views.sport_view, name='sport'),
     path('search/', views.search, name='search'),
 
     # Profile routes
@@ -72,28 +72,9 @@ urlpatterns = [
     path('api/verify-tip/', views.VerifyTipView.as_view(), name='verify_tip'),
 
     # API routes for data retrieval
-    path('horse-racing/cards/', views.horse_racing_fixtures, name='horse_racing_fixtures'),
-    path('api/race-meetings/', views.RaceMeetingList.as_view(), name='race-meetings'),
     path('api/trending-tips/', views.trending_tips_api, name='trending_tips_api'),
     path('api/current-user/', views.current_user_api, name='current_user_api'),
-    path('horse-racing/cards-json/', views.racecards_json_view, name='racecards_json'),
     path('csp-report/', views.csp_report, name='csp_report'),
-    path('api/fetch-football-events/',
-         views.FetchFootballEventsView.as_view(),
-         name='fetch_football_events'),
-    path('api/golf-events/fetch/', views.FetchGolfEventsView.as_view(), name='fetch_golf_events'),
-    path('api/golf-events/', views.GolfEventsList.as_view(), name='golf-events-list'),
-    path('api/golf-events/<str:event_id>/', views.GolfEventDetail.as_view(), name='golf-event-detail'),
-    path('api/tennis-events/', views.TennisEventsList.as_view(), name='tennis-events-list'),
-    path('api/tennis-events/<str:event_id>/', views.TennisEventDetail.as_view(), name='tennis-event-detail'),
-    path('api/tennis-events/<str:event_id>/stats/',
-         views.tennis_event_stats,
-         name='tennis-event-stats'),
-    path('api/horse-racing-events/', views.horse_racing_events, name='horse-racing-events'),
-    path('api/tips/', views.tip_list, name='tip_list'),
-    path('api/tips/<int:tip_id>/', views.tip_detail, name='tip_detail'),
-    path('api/tips/<int:tip_id>/like/', views.like_tip, name='like_tip'),
-    path('api/tips/<int:tip_id>/comments/', views.get_tip_comments, name='tip_comments'),
 
     # Authentication endpoints
     path('api/auth/login/', views.login_view, name='login'),
@@ -103,28 +84,11 @@ urlpatterns = [
     path('api/users/profile/', views.profile, name='user_profile'),
     path('api/users/kyc/', views.kyc_view, name='kyc'),
     path('api/users/notifications/', views.notifications, name='user_notifications'),
-
-    # Sports events endpoints
-    path('api/events/golf/', views.GolfEventsList.as_view(), name='golf_events'),
-    path('api/events/golf/<str:event_id>/', views.GolfEventDetail.as_view(), name='golf_event_detail'),
-    path('api/events/football/', views.FootballEventsList.as_view(), name='football_events'),
-    path('api/events/football/<str:event_id>/', views.FootballEventDetail.as_view(), name='football_event_detail'),
-    path('api/events/tennis/', views.TennisEventsList.as_view(), name='tennis_events'),
-    path('api/events/tennis/<str:event_id>/', views.TennisEventDetail.as_view(), name='tennis_event_detail'),
-    path('api/events/horse-racing/', views.horse_racing_events, name='horse_racing_events'),
-    path('api/events/horse-racing/<str:meeting_id>/', views.HorseRacingMeetingDetail.as_view(), name='horse_racing_meeting_detail'),
-    path('api/events/horse-racing/<str:meeting_id>/races/', views.HorseRacingRacesList.as_view(), name='horse_racing_races'),
-    path('api/events/horse-racing/<str:meeting_id>/races/<str:race_id>/', views.HorseRacingRaceDetail.as_view(), name='horse_racing_race_detail'),
     
-     # Tips endpoints
+    # Tips endpoints
     path('api/tips/', views.tip_list, name='tip_list'),
     path('api/tips/<int:tip_id>/', views.tip_detail, name='tip_detail'),
     path('api/tips/<int:tip_id>/like/', views.like_tip, name='like_tip'),
-    
-     # Horse Racing endpoints
-    path('api/horse-racing/betting-odds/bulk-upsert/',
-         views.HorseRacingBettingOddsBulkUpsert.as_view(),
-         name='horse_racing_betting_odds_bulk_upsert'),
 
     path('tipster/', include([
         path('become/', subscription_views.become_tipster, name='become_tipster'),
@@ -138,6 +102,7 @@ urlpatterns = [
     path('top-tipsters/', subscription_views.top_tipsters_leaderboard, name='top_tipsters_leaderboard'),
     path('api/mark-notification-read/', mark_notification_read, name='mark_notification_read'),
     path('chat/', chat_view, name='chat'),
+    path('api/upload-chat-image/', upload_chat_image_api, name='upload_chat_image_api'),
 ]
 
 

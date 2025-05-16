@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',       # Token authentication for REST framework
     'csp',                            # Content Security Policy enforcement
     "django_vite",                    # Integration with Vite for frontend assets
-    'django_crontab',                 # Cron job management  
     'social_django',                   # Social authentication support                     
     'channels',
 ]
@@ -214,21 +213,6 @@ REST_FRAMEWORK = {
     ],
 }
 
-CRONJOBS = [
-    # Tennis events population - runs at midnight every day
-    ('0 0 * * *', 'core.management.commands.populate_tennis.Command', '>> /var/log/tipsterarena/tennis_populate.log 2>&1'),
-    # Run update_football_events every 24 hours at midnight
-    ('0 0 * * *', 'core.cron.update_football_events', '>> /var/log/tipsterarena_cron.log 2>&1'),
-    # Run check_inplay_matches every 10 minutes
-    ('*/10 * * * *', 'core.cron.check_inplay_matches', '>> /var/log/tipsterarena_cron.log 2>&1'),
-    ('0 * * * *', 'core.views.fetch_and_store_golf_events', '>> /Users/paulblanche/Desktop/Tipster\\ Arena/logs/cron.log 2>&1'),
-    ('0 0 * * *', 'core.management.commands.populate_tennis.Command', '>> /path/to/your/project/logs/tennis_populate.log 2>&1'),
-    # New cron jobs for horse racing scrapers
-    ('0 6 * * *', 'core.management.commands.scrape_racecards.run', '>> /var/log/tipsterarena_cron.log 2>&1', {'day': 'today'}),
-    ('0 7 * * *', 'core.management.commands.scrape_results.run', '>> /var/log/tipsterarena_cron.log 2>&1', {'race_type': 'flat'}),
-    ('0 7 * * *', 'core.management.commands.scrape_results.run', '>> /var/log/tipsterarena_cron.log 2>&1', {'race_type': 'jumps'}),
-]
-
 # Logging configuration for cron jobs
 # settings.py
 LOGGING = {
@@ -286,9 +270,6 @@ STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
 STRIPE_MONTHLY_PRICE_ID = os.getenv('STRIPE_MONTHLY_PRICE_ID')
 STRIPE_YEARLY_PRICE_ID = os.getenv('STRIPE_YEARLY_PRICE_ID')
 STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
-
-# ESPN API Configuration
-ESPN_API_BASE_URL = 'https://site.api.espn.com/apis/site/v2/sports'
 
 ASGI_APPLICATION = 'tipsterarena.asgi.application'
 

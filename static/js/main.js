@@ -30,14 +30,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('Failed to load nav.js:', error);
         return null;
       }),
-      import('./pages/upcoming-events.js').then(module => {
-        console.log('Loaded upcoming-events.js');
-        module.initButtons();
-        return module;
-      }).catch(error => {
-        console.error('Failed to load upcoming-events.js:', error);
-        throw error;
-      }),
       import('./pages/search.js').then(module => {
         module.setupSearch();
         return module;
@@ -56,8 +48,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }),
     ]);
 
-    const upcomingEventsModule = sharedModules[2];
-
     if (page === '/' || page === '/home/') {
       await Promise.all([
         import('./pages/post.js').then(module => {
@@ -70,9 +60,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           module.setupReplyModal();
         }),
         import('./pages/bookmarks.js').then(module => module.setupBookmarkInteractions()),
-        import('./pages/golf-events.js').then(module => {
-          // Only call for golf-specific pages if needed
-        }),
       ]);
     }
 
@@ -88,9 +75,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           module.setupReplyModal();
         }),
         import('./pages/bookmarks.js').then(module => module.setupBookmarkInteractions()),
-        import('./pages/golf-events.js').then(module => {
-          // Only call for golf-specific pages if needed
-        }),
       ]);
     }
 
@@ -103,9 +87,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           module.setupReplyModal();
         }),
         import('./pages/bookmarks.js').then(module => module.setupBookmarkInteractions()),
-        import('./pages/golf-events.js').then(module => {
-          // Only call for golf-specific pages if needed
-        }),
       ]);
     }
 
@@ -120,11 +101,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           module.setupReplyModal();
         }),
         import('./pages/bookmarks.js').then(module => module.setupBookmarkInteractions()),
-        import('./pages/golf-events.js').then(module => {
-          if (page.includes('/sport/golf/')) {
-            module.setupLeaderboardUpdates();
-          }
-        }),
       ]);
     }
 

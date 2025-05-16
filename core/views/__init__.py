@@ -27,26 +27,6 @@ __all__ = [
     'trending_tips_api', 'VerifyTipView',
     'BurstRateThrottle', 'SustainedRateThrottle',
 
-    # Horse racing views
-    'validate_date_param', 'horse_racing_fixtures',
-    'racecards_json_view', 'horse_racing_events',
-    'HorseRacingMeetingDetail', 'HorseRacingBettingOddsBulkUpsert',
-    'RaceMeetingList', 'HorseRacingRacesList', 'HorseRacingRaceDetail',
-
-    # Tennis views
-    'validate_state_param', 'TennisEventsList',
-    'TennisEventDetail', 'tennis_event_stats',
-    'get_head_to_head_stats', 'get_player_form',
-    'get_tournament_history',
-
-    # Football views
-    'FootballEventsList', 'FootballEventDetail',
-    'FetchFootballEventsView',
-
-    # Golf views
-    'GolfEventsList', 'GolfEventDetail',
-    'FetchGolfEventsView',
-
     # General views
     'landing', 'search', 'csp_report',
     'terms_of_service', 'privacy_policy',
@@ -87,30 +67,6 @@ from .api_views import (
     current_user_api, suggested_users_api,
     trending_tips_api, VerifyTipView,
     BurstRateThrottle, SustainedRateThrottle
-)
-
-from .horse_racing_views import (
-    validate_date_param, horse_racing_fixtures,
-    racecards_json_view, horse_racing_events,
-    HorseRacingMeetingDetail, HorseRacingBettingOddsBulkUpsert,
-    RaceMeetingList, HorseRacingRacesList, HorseRacingRaceDetail
-)
-
-from .tennis_views import (
-    validate_state_param, TennisEventsList,
-    TennisEventDetail, tennis_event_stats,
-    get_head_to_head_stats, get_player_form,
-    get_tournament_history
-)
-
-from .football_views import (
-    FootballEventsList, FootballEventDetail,
-    FetchFootballEventsView
-)
-
-from .golf_views import (
-    GolfEventsList, GolfEventDetail,
-    FetchGolfEventsView
 )
 
 from .general_views import (

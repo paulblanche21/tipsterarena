@@ -10,33 +10,48 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U paul -d tipsterarena"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7
     restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   web:
     build: .
     command: daphne -b 0.0.0.0 -p 8000 tipsterarena.asgi:application
     volumes:
-      - .:/app
+      - ./media:/app/media
+      - ./staticfiles:/app/staticfiles
     ports:
       - "8000:8000"
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
-      DATABASE_URL: postgres://paul:yourpassword@db:5432/tipsterarena
+      DATABASE_URL: postgres://paul:Frankfurt5!@db:5432/tipsterarena
       REDIS_URL: redis://redis:6379/0
       DJANGO_SETTINGS_MODULE: tipsterarena.settings
-      # Add other env vars as needed
+      DEBUG: "False"
+      ALLOWED_HOSTS: "*"
 
   npm:
-    image: node:20
+    image: node:20-slim
     working_dir: /app
-    command: sh -c "npm install && npm run dev"
+    command: sh -c "npm run dev"
     volumes:
       - .:/app
+      - /app/node_modules
     ports:
       - "3000:3000"
     depends_on:

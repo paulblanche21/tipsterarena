@@ -8,11 +8,8 @@
     {% if sport == 'football' %}
         <link rel="stylesheet" href="{% static 'css/football.css' %}">
     {% endif %}
-    {% if sport == 'golf' %}
-        <link rel="stylesheet" href="{% static 'css/golf-events.css' %}">
-    {% endif %}
-    {% if sport == 'tennis' %}
-        <link rel="stylesheet" href="{% static 'css/tennis-events.css' %}">
+    {% if sport == 'horse_racing' %}
+        <link rel="stylesheet" href="{% static 'css/horse-racing.css' %}">
     {% endif %}
 {% endblock %}
 
@@ -135,28 +132,8 @@
                         </a>
                         {% if tip.sport == 'football' %}
                             <span class="sport-label sport-football">Football</span>
-                        {% elif tip.sport == 'golf' %}
-                            <span class="sport-label sport-golf">Golf</span>
-                        {% elif tip.sport == 'tennis' %}
-                            <span class="sport-label sport-tennis">Tennis</span>
                         {% elif tip.sport == 'horse_racing' %}
                             <span class="sport-label sport-horse-racing">Horse Racing</span>
-                        {% elif tip.sport == 'boxing' %}
-                            <span class="sport-label sport-boxing">Boxing</span>
-                        {% elif tip.sport == 'cycling' %}
-                            <span class="sport-label sport-cycling">Cycling</span>
-                        {% elif tip.sport == 'greyhound_racing' %}
-                            <span class="sport-label sport-greyhound-racing">Greyhound Racing</span>
-                        {% elif tip.sport == 'gaelic_games' %}
-                            <span class="sport-label sport-gaelic-games">Gaelic Games</span>
-                        {% elif tip.sport == 'motor_sport' %}
-                            <span class="sport-label sport-motor-sport">Motor Sport</span>
-                        {% elif tip.sport == 'rugby_union' %}
-                            <span class="sport-label sport-rugby-union">Rugby Union</span>
-                        {% elif tip.sport == 'snooker' %}
-                            <span class="sport-label sport-snooker">Snooker</span>
-                        {% elif tip.sport == 'cricket' %}
-                            <span class="sport-label sport-cricket">Cricket</span>
                         {% endif %}
                     </div>
                     <div class="tip-body">
@@ -198,172 +175,14 @@
                             <a href="#" class="tip-action tip-action-engagement"><i class="fas fa-users"></i></a>
                             <span class="tip-action-count">{{ tip.engagement|default:"0" }}</span>
                         </div>
-                        <div class="tip-action-spacer-large"></div>
-                        <div class="tip-action-group">
-                            <button class="tip-action tip-action-bookmark {% if request.user in tip.bookmarks.all %}bookmarked{% endif %}" 
-                                    data-action="bookmark"><i class="fas fa-bookmark"></i></button>
-                        </div>
-                        <div class="tip-action-group">
-                            <a href="#" class="tip-action tip-action-share-link"><i class="fas fa-arrow-up"></i></a>
-                        </div>
                     </div>
-                    <div class="tip-comments"></div>
                 </div>
             </div>
-            {% empty %}
-                <p>No tips yet for {{ sport|title }}. Be the first to post!</p>
             {% endfor %}
         </div>
-
-        <!-- Event modal -->
-        <div class="event-modal" id="event-modal" style="display: none;">
-            <div class="event-modal-content">
-                <span class="event-modal-close">×</span>
-                <h2 id="event-modal-title">Loading...</h2>
-                <div id="event-modal-body">
-                    <p>Loading events...</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Comment modal (unchanged) -->
-        <div class="comment-modal" id="comment-modal">
-            <div class="comment-modal-content">
-                <span class="comment-modal-close">×</span>
-                <div class="modal-tip">
-                    <img src="" alt="User Avatar" class="tip-avatar modal-tip-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
-                    <div class="modal-tip-content">
-                        <a href="#" class="tip-username">
-                            <strong class="modal-tip-username"></strong>
-                            <span class="user-handle-tip modal-tip-handle"></span>
-                        </a>
-                        <span class="modal-tip-sport"></span>
-                        <p class="modal-tip-text"></p>
-                        <small class="modal-tip-timestamp"></small>
-                        <div class="tip-actions">
-                            <div class="tip-action-group">
-                                <a href="#" class="tip-action tip-action-like" data-action="like" 
-                                   aria-label="{% if request.user in tip.likes.all %}Unlike this tip{% else %}Like this tip{% endif %}">
-                                    <i class="fas fa-heart"></i>
-                                </a>
-                                <span class="tip-action-count like-count">{{ tip.likes.count }}</span>
-                            </div>
-                            <div class="tip-action-group">
-                                <a href="#" class="tip-action tip-action-share" data-action="share" 
-                                   aria-label="Share this tip">
-                                    <i class="fas fa-retweet"></i>
-                                </a>
-                                <span class="tip-action-count share-count">{{ tip.shares.count }}</span>
-                            </div>
-                            <div class="tip-action-group">
-                                <a href="#" class="tip-action tip-action-comment" data-action="comment" 
-                                   aria-label="Comment on this tip">
-                                    <i class="fas fa-comment-dots"></i>
-                                </a>
-                                <span class="tip-action-count comment-count">{{ tip.comments.count }}</span>
-                            </div>
-                            <div class="tip-action-spacer"></div>
-                            <div class="tip-action-group">
-                                <a href="#" class="tip-action tip-action-engagement" 
-                                   aria-label="View engagement for this tip">
-                                    <i class="fas fa-users"></i>
-                                </a>
-                                <span class="tip-action-count">{{ tip.engagement|default:"0" }}</span>
-                            </div>
-                            <div class="tip-action-spacer-large"></div>
-                            <div class="tip-action-group">
-                                <button class="tip-action tip-action-bookmark {% if request.user in tip.bookmarks.all %}bookmarked{% endif %}" 
-                                        data-action="bookmark" 
-                                        aria-label="{% if request.user in tip.bookmarks.all %}Remove bookmark{% else %}Add bookmark{% endif %}">
-                                    <i class="fas fa-bookmark"></i>
-                                </button>
-                            </div>
-                            <div class="tip-action-group">
-                                <a href="#" class="tip-action tip-action-share-link" 
-                                   aria-label="Copy link to this tip">
-                                    <i class="fas fa-arrow-up"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="reply-to-header" style="display: none;">Replying to <span class="reply-to-username"></span></div>
-                <div class="post-reply-box">
-                    {% if request.user.is_authenticated and request.user.userprofile.avatar %}
-                        <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
-                    {% else %}
-                        <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="post-avatar">
-                    {% endif %}
-                    <div class="post-reply-content">
-                        <div class="post-username-container">
-                            <span class="post-username">{{ request.user.username|default:"Guest" }}</span>
-                        </div>
-                        <textarea placeholder="Post a Reply..." class="post-reply-input"></textarea>
-                        <div class="post-actions">
-                            <button class="post-action-btn image"><i class="fas fa-image"></i></button>
-                            <button class="post-action-btn gif"><i class="far fa-file-image"></i></button>
-                            <button class="post-action-btn poll"><i class="fas fa-chart-bar"></i></button>
-                            <button class="post-action-btn emoji"><i class="far fa-smile"></i></button>
-                            <button class="post-action-btn location"><i class="fas fa-map-marker-alt"></i></button>
-                            <button class="post-action-btn schedule"><i class="fas fa-clock"></i></button>
-                            <button class="post-action-btn bold"><i class="fas fa-bold"></i></button>
-                            <button class="post-action-btn italic"><i class="fas fa-italic"></i></button>
-                        </div>
-                        <button class="post-reply-submit">Reply</button>
-                    </div>
-                </div>
-                <div class="comment-list"></div>
-            </div>
-        </div>
-        <!-- Success notification popup -->
-        <div id="success-popup" class="success-popup">
-            <div class="success-popup-content">
-                <p>Tip posted successfully!</p>
-            </div>
-        </div>
-    </div>
-{% endblock %}
-
-{% block upcoming_events %}
-    <div class="sidebar-card upcoming-events-card upcoming-events-{{ sport }}" data-card="upcoming-events" style="background-color: var(--secondary-bg);">
-        <h3>
-            {% if sport == 'horse_racing' %}
-                Upcoming Meetings
-            {% else %}
-                Upcoming {{ sport|title }} Events
-            {% endif %}
-        </h3>
-        <div class="event-buttons">
-            {% if sport == 'horse_racing' %}
-                <button class="event-btn" data-category="upcoming_meetings" data-horse-racing="upcoming_meetings">Upcoming Meetings</button>
-                <button class="event-btn" data-category="at_the_post" data-horse-racing="at_the_post">At the Post</button>
-                <button class="event-btn" data-category="race_results" data-horse-racing="race_results">Race Results</button>
-            {% else %}
-                <button class="event-btn" data-category="fixtures">Fixtures</button>
-                <button class="event-btn" data-category="inplay">In Play</button>
-                <button class="event-btn" data-category="results">Results</button>
-            {% endif %}
-        </div>
-    </div>
-{% endblock %}
-
-{% block trending_tips %}
-    <div class="sidebar-card trending-tips-card" data-card="trending-tips" style="background-color: var(--secondary-bg);">
-        <h3>Trending {{ sport|title }} Tips</h3>
-        <div class="trending-tips-list">
-            <p>Loading trending tips...</p>
-        </div>
-        <a href="#" class="show-more" data-target="trending-tips">Show more</a>
     </div>
 {% endblock %}
 
 {% block extra_js %}
-    <script type="module" src="{% static 'js/pages/upcoming-events.js' %}"></script>
-    {% if sport == 'golf' %}
-        <script type="module" src="{% static 'js/pages/golf-events.js' %}"></script>
-    {% endif %}
-    {% if sport == 'tennis' %}
-        <script type="module" src="{% static 'js/pages/tennis-events.js' %}"></script>
-    {% endif %}
-    <script src="{% static 'js/mobile-header.js' %}"></script>
+    <!-- No additional JavaScript needed -->
 {% endblock %}

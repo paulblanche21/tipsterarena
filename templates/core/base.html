@@ -31,9 +31,6 @@
     <link rel="stylesheet" href="http://localhost:3000/static/css/misc.css">
     <link rel="stylesheet" href="http://localhost:3000/static/css/messages.css">
     <link rel="stylesheet" href="http://localhost:3000/static/css/football.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/tennis-events.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/golf-events.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/horse-racing-events.css">
     <link rel="stylesheet" href="http://localhost:3000/static/css/responsive.css">
     <link rel="stylesheet" href="http://localhost:3000/static/css/avatar.css">
     <link rel="stylesheet" href="http://localhost:3000/static/css/premium.css">
@@ -169,7 +166,26 @@
                 {% block upcoming_events %}
                 <div class="sidebar-card upcoming-events-card" data-card="upcoming-events" style="background-color: var(--secondary-bg);">
                     <h3>Upcoming Events</h3>
-                    <p>Click a button to view events.</p>
+                    <div class="event-buttons">
+                        <button class="sport-button" data-sport="football" data-category="fixtures" onclick="window.open('https://www.premierleague.com/fixtures', '_blank')">
+                            <i class="fas fa-futbol"></i> Football Fixtures
+                        </button>
+                        <button class="sport-button" data-sport="football" data-category="results" onclick="window.open('https://www.premierleague.com/results', '_blank')">
+                            <i class="fas fa-futbol"></i> Football Results
+                        </button>
+                        <button class="sport-button" data-sport="golf" data-category="fixtures" onclick="window.open('https://www.pgatour.com/tournaments', '_blank')">
+                            <i class="fas fa-golf-ball"></i> Golf Fixtures
+                        </button>
+                        <button class="sport-button" data-sport="golf" data-category="results" onclick="window.open('https://www.pgatour.com/results', '_blank')">
+                            <i class="fas fa-golf-ball"></i> Golf Results
+                        </button>
+                        <button class="sport-button" data-sport="horse_racing" data-category="fixtures" onclick="window.open('https://www.racingpost.com/racecards', '_blank')">
+                            <i class="fas fa-horse"></i> Horse Racing Fixtures
+                        </button>
+                        <button class="sport-button" data-sport="horse_racing" data-category="results" onclick="window.open('https://www.racingpost.com/results', '_blank')">
+                            <i class="fas fa-horse"></i> Horse Racing Results
+                        </button>
+                    </div>
                 </div>
                 {% endblock %}
                 {% block trending_tips %}{% endblock %}
@@ -214,19 +230,6 @@
                 <span class="messages-text-base">Messages</span>
                 <span class="messages-icon-base"><i class="fas fa-envelope"></i></span>
             </a>
-        </div>
-
-        <!-- Modal for Events -->
-        <div class="events-modal" id="events-modal" style="display: none;">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 id="modal-title">Upcoming Events</h2>
-                    <button class="modal-close-btn" id="modal-close-btn">×</button>
-                </div>
-                <div class="modal-body" id="modal-body">
-                    <p>Loading events...</p>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -358,7 +361,6 @@
           <li><a href="{% url 'sport' 'motor_sport' %}"><i class="fa-solid fa-flag-checkered"></i> Motor Sport</a></li>
           <li><a href="{% url 'sport' 'rugby_union' %}"><i class="fa-solid fa-shield"></i> Rugby Union</a></li>
           <li><a href="{% url 'sport' 'snooker' %}"><i class="fa-solid fa-circle"></i> Snooker</a></li>
-          <!-- Add more sports as needed -->
         </ul>
       </div>
     </div>
@@ -371,6 +373,7 @@
         window.default_avatar_url = "{% static 'img/default-avatar.png' %}";
         window.default_banner_url = "{% static 'img/default-banner.png' %}";
         window.dicebear_api = "https://api.dicebear.com/7.x/avataaars/svg";
+        window.currentAvatarUrl = {% if request.user.is_authenticated and request.user.userprofile.avatar %}"{{ request.user.userprofile.avatar.url }}"{% else %}window.default_avatar_url{% endif %};
     </script>
 
     <!-- Load mobile header script first -->

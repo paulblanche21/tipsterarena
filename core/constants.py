@@ -2,36 +2,17 @@
 Constants for the Tipster Arena Application.
 
 This module defines all the constant values used throughout the Tipster Arena application.
-These constants are primarily used for sports league configurations and other static data
+These constants are primarily used for configuration and other static data
 that needs to be consistent across the application.
 
 Available Constants:
-1. FOOTBALL_LEAGUES
-   - Configuration for major football leagues
-   - Each league entry contains:
-     * league_id: Unique identifier (e.g., 'eng.1' for Premier League)
-     * name: Display name of the league
-     * icon: Flag emoji representing the league's country
+1. SPORTS
+   - Configuration for all supported sports
+   - Each sport entry contains:
+     * sport_id: Unique identifier (e.g., 'football' for Football)
+     * name: Display name of the sport
+     * icon: Emoji representing the sport
      * priority: Display order (1 being highest priority)
-   - Currently includes: Premier League, La Liga, Serie A, Bundesliga, Ligue 1
-
-2. GOLF_TOURS
-   - Configuration for professional golf tours
-   - Each tour entry contains:
-     * tour_id: Unique identifier (e.g., 'pga' for PGA Tour)
-     * name: Display name of the tour
-     * icon: Emoji representing the sport
-     * priority: Display order
-   - Currently includes: PGA Tour, LPGA Tour, European Tour
-
-3. TENNIS_LEAGUES
-   - Configuration for professional tennis tours
-   - Each league entry contains:
-     * league_id: Unique identifier (e.g., 'atp' for ATP Tour)
-     * name: Display name of the league
-     * icon: Emoji representing the sport
-     * priority: Display order
-   - Currently includes: ATP Tour, WTA Tour
 
 Usage:
     These constants are used throughout the application for:
@@ -41,81 +22,117 @@ Usage:
     - Sorting and organizing sports events
 
 Example:
-    from core.constants import FOOTBALL_LEAGUES
+    from core.constants import SPORTS
 
-    # Get Premier League configuration
-    premier_league = next(
-        league for league in FOOTBALL_LEAGUES 
-        if league['league_id'] == 'eng.1'
+    # Get Football configuration
+    football = next(
+        sport for sport in SPORTS 
+        if sport['sport_id'] == 'football'
     )
-    print(f"{premier_league['icon']} {premier_league['name']}")
+    print(f"{football['icon']} {football['name']}")
 """
 
-FOOTBALL_LEAGUES = [
+SPORTS = [
     {
-        'league_id': 'eng.1',  # Premier League
-        'name': 'Premier League',
-        'icon': '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+        'sport_id': 'football',
+        'name': 'Football',
+        'icon': '⚽',
         'priority': 1
     },
     {
-        'league_id': 'esp.1',  # La Liga
-        'name': 'La Liga',
-        'icon': '🇪🇸',
+        'sport_id': 'golf',
+        'name': 'Golf',
+        'icon': '🏌️‍♂️',
         'priority': 2
     },
     {
-        'league_id': 'ita.1',  # Serie A
-        'name': 'Serie A',
-        'icon': '🇮🇹',
+        'sport_id': 'tennis',
+        'name': 'Tennis',
+        'icon': '🎾',
         'priority': 3
     },
     {
-        'league_id': 'ger.1',  # Bundesliga
-        'name': 'Bundesliga',
-        'icon': '🇩🇪',
+        'sport_id': 'horse_racing',
+        'name': 'Horse Racing',
+        'icon': '🐎',
         'priority': 4
     },
     {
-        'league_id': 'fra.1',  # Ligue 1
-        'name': 'Ligue 1',
-        'icon': '🇫🇷',
+        'sport_id': 'american_football',
+        'name': 'American Football',
+        'icon': '🏈',
         'priority': 5
-    }
-]
-
-GOLF_TOURS = [
-    {
-        'tour_id': 'pga',
-        'name': 'PGA Tour',
-        'icon': '🏌️‍♂️',
-        'priority': 1
     },
     {
-        'tour_id': 'lpga',
-        'name': 'LPGA Tour',
-        'icon': '🏌️‍♀️',
-        'priority': 2
+        'sport_id': 'baseball',
+        'name': 'Baseball',
+        'icon': '⚾',
+        'priority': 6
     },
     {
-        'tour_id': 'euro',
-        'name': 'European Tour',
-        'icon': '🇪🇺',
-        'priority': 3
-    }
-]
-
-TENNIS_LEAGUES = [
-    {
-        'league_id': 'atp',
-        'name': 'ATP Tour',
-        'icon': '🎾',
-        'priority': 1
+        'sport_id': 'basketball',
+        'name': 'Basketball',
+        'icon': '🏀',
+        'priority': 7
     },
     {
-        'league_id': 'wta',
-        'name': 'WTA Tour',
-        'icon': '🎾',
-        'priority': 2
+        'sport_id': 'boxing',
+        'name': 'Boxing',
+        'icon': '🥊',
+        'priority': 8
+    },
+    {
+        'sport_id': 'cricket',
+        'name': 'Cricket',
+        'icon': '🏏',
+        'priority': 9
+    },
+    {
+        'sport_id': 'cycling',
+        'name': 'Cycling',
+        'icon': '🚴',
+        'priority': 10
+    },
+    {
+        'sport_id': 'darts',
+        'name': 'Darts',
+        'icon': '🎯',
+        'priority': 11
+    },
+    {
+        'sport_id': 'gaelic_games',
+        'name': 'Gaelic Games',
+        'icon': '🏐',
+        'priority': 12
+    },
+    {
+        'sport_id': 'greyhound_racing',
+        'name': 'Greyhound Racing',
+        'icon': '🐕',
+        'priority': 13
+    },
+    {
+        'sport_id': 'motor_sport',
+        'name': 'Motor Sport',
+        'icon': '🏎️',
+        'priority': 14
+    },
+    {
+        'sport_id': 'rugby_union',
+        'name': 'Rugby Union',
+        'icon': '🏉',
+        'priority': 15
+    },
+    {
+        'sport_id': 'snooker',
+        'name': 'Snooker',
+        'icon': '🎱',
+        'priority': 16
+    },
+    {
+        'sport_id': 'volleyball',
+        'name': 'Volleyball',
+        'icon': '🏐',
+        'priority': 17
     }
 ] 

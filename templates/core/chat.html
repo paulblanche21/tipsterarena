@@ -1,6 +1,61 @@
 {% extends 'core/base.html' %}
-{% block title %}Chat Room{% endblock %}
+{% load static %}
+{% block title %}Chat Room - Tipster Arena{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/chat.css' %}">
+{% endblock %}
+
 {% block content %}
-  <h1>Welcome to the Chat Room!</h1>
-  <p>This is a placeholder for the chat feature.</p>
+<div class="chat-main-layout">
+    <!-- Center Chat Card -->
+    <div class="chat-feed-card">
+        <div class="chat-container">
+            <div class="chat-header">
+                <span>Tipster Arena Chat Room</span>
+                <span class="online-count">0 online</span>
+            </div>
+            <div class="chat-messages">
+                <!-- Chat messages will be dynamically added here -->
+            </div>
+            <div class="chat-input-container">
+                <div class="chat-actions">
+                    <button type="button" class="chat-action-btn emoji" title="Add emoji">
+                        <i class="far fa-smile"></i>
+                    </button>
+                    <button type="button" class="chat-action-btn gif" title="Add GIF">
+                        <i class="far fa-file-image"></i>
+                    </button>
+                    <button type="button" class="chat-action-btn image" title="Add image">
+                        <i class="fas fa-image"></i>
+                    </button>
+                </div>
+                <form class="chat-input-form">
+                    <input type="file" class="chat-image-input" accept="image/*" style="display: none;" />
+                    <textarea class="chat-input" placeholder="Type your message..." rows="1" autocomplete="off"></textarea>
+                    <button type="submit" class="chat-send-btn">Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block sidebar %}
+<aside class="sidebar">
+    <div class="sidebar-scrollable">
+        <div class="online-users-container">
+            <div class="online-users-header">
+                Online Users
+            </div>
+            <ul class="online-users-list">
+                <!-- Online users will be dynamically added here -->
+            </ul>
+        </div>
+    </div>
+</aside>
+{% endblock %}
+
+{% block extra_js %}
+    <script type="module" src="{% static 'js/pages/chat.js' %}"></script>
 {% endblock %} 

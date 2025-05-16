@@ -1,12 +1,10 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
-from asgiref.sync import sync_to_async
-from django.contrib.auth import get_user_model
+
 
 class NotificationConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        User = get_user_model()
         self.user = self.scope["user"]
         if self.user.is_anonymous:
             await self.close()
@@ -44,7 +42,6 @@ class NotificationConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def get_unread_notifications(self):
         from core.models import Notification
-        User = get_user_model()
         notifications = Notification.objects.filter(user=self.user, read=False).order_by('-created_at')[:5]
         result = []
         for n in notifications:
@@ -59,4 +56,85 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         return result
 
     async def notify(self, event):
-        await self.send(text_data=json.dumps(event["data"])) 
+        await self.send(text_data=json.dumps(event["data"]))
+
+class ChatConsumer(AsyncWebsocketConsumer):
+    online_users = set()
+
+    async def connect(self):
+        self.user = self.scope["user"]
+        self.group_name = "chatroom"
+        if self.user.is_anonymous:
+            await self.close()
+        else:
+            await self.channel_layer.group_add(self.group_name, self.channel_name)
+            ChatConsumer.online_users.add((self.user.username, self.get_avatar_url()))
+            await self.accept()
+            # Broadcast join
+            await self.channel_layer.group_send(
+                self.group_name,
+                {
+                    "type": "user_list_update",
+                    "users": list(ChatConsumer.online_users),
+                },
+            )
+
+    async def disconnect(self, close_code):
+        if not self.user.is_anonymous:
+            ChatConsumer.online_users.discard((self.user.username, self.get_avatar_url()))
+            await self.channel_layer.group_discard(self.group_name, self.channel_name)
+            # Broadcast leave
+            await self.channel_layer.group_send(
+                self.group_name,
+                {
+                    "type": "user_list_update",
+                    "users": list(ChatConsumer.online_users),
+                },
+            )
+
+    async def receive(self, text_data):
+        data = json.loads(text_data)
+        if data.get("type") == "chat_message":
+            message = data.get("message", "")
+            username = data.get("username", "Anonymous")
+            avatar_url = data.get("avatar_url", "")
+            image_url = data.get("image_url", None)
+            gif_url = data.get("gif_url", None)
+            # Optionally add timestamp here
+            await self.channel_layer.group_send(
+                self.group_name,
+                {
+                    "type": "chat_message_broadcast",
+                    "username": username,
+                    "avatar_url": avatar_url,
+                    "message": message,
+                    "image_url": image_url,
+                    "gif_url": gif_url,
+                },
+            )
+
+    async def chat_message_broadcast(self, event):
+        await self.send(text_data=json.dumps({
+            "type": "chat_message",
+            "username": event["username"],
+            "avatar_url": event["avatar_url"],
+            "message": event["message"],
+            "image_url": event.get("image_url"),
+            "gif_url": event.get("gif_url"),
+        }))
+
+    async def user_list_update(self, event):
+        await self.send(text_data=json.dumps({
+            "type": "user_list",
+            "users": event["users"],
+        }))
+
+    def get_avatar_url(self):
+        try:
+            profile = self.user.userprofile
+            if profile.avatar:
+                return profile.avatar.url
+        except Exception:
+            pass
+        from django.conf import settings
+        return settings.STATIC_URL + 'img/default-avatar.png' 
