@@ -89,7 +89,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'tipsterarena',
         'USER': 'paul',
-        'PASSWORD': config('DATABASE_PASSWORD'),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD', 'Frankfurt5!'),  # Fallback for local development
         'HOST': 'db',
         'PORT': '5432',
     },
@@ -97,7 +97,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'tipsterarena_test',
         'USER': 'paul',
-        'PASSWORD': config('DATABASE_PASSWORD'),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD', 'Frankfurt5!'),  # Fallback for local development
         'HOST': 'localhost',
         'PORT': '5432',
     }

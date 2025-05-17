@@ -2,20 +2,27 @@
 FROM node:20-slim AS node-builder
 WORKDIR /app
 
-# Set npm config to avoid hanging
-ENV NPM_CONFIG_LOGLEVEL=warn
-ENV NPM_CONFIG_FETCH_TIMEOUT=300000
-ENV NPM_CONFIG_FETCH_RETRIES=3
+# Set npm config to avoid hanging and improve performance
+ENV NPM_CONFIG_LOGLEVEL=warn \
+    NPM_CONFIG_FETCH_TIMEOUT=300000 \
+    NPM_CONFIG_FETCH_RETRIES=3 \
+    NODE_ENV=production
 
-# Copy only package files first to leverage Docker cache
+# Copy package files first to leverage Docker cache
 COPY package*.json ./
 COPY vite.config.mjs ./
 
 # Install dependencies with specific flags for better performance
-RUN npm install --no-audit --no-fund --prefer-offline --legacy-peer-deps --network-timeout=300000
+RUN npm ci --no-audit --no-fund --prefer-offline --legacy-peer-deps --network-timeout=300000
 
-# Copy static files and build
+# Copy static files after dependencies are installed
 COPY static/ ./static/
+
+# Ensure proper permissions
+RUN chown -R node:node /app
+
+# Build static files
+USER node
 RUN npm run build
 
 # Build stage for Python dependencies
@@ -60,16 +67,21 @@ ENV PYTHONUNBUFFERED=1 \
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     libpq-dev \
+    netcat-traditional \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p /app/media /app/staticfiles
 
 # Copy files from previous stages
 COPY --from=python-builder /usr/local/lib/python3.12/site-packages/ /usr/local/lib/python3.12/site-packages/
+COPY --from=python-builder /usr/local/bin/ /usr/local/bin/
 COPY --from=node-builder /app/static/dist/ ./static/dist/
 COPY . .
+
+# Make startup script executable
+RUN chmod +x start.sh
 
 # Collect static files
 RUN python manage.py collectstatic --noinput
 
-# Run the application
-CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "tipsterarena.asgi:application"] 
+# Run the application using the startup script
+CMD ["./start.sh"] 

@@ -5,6 +5,53 @@ from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from django.conf import settings
 import os
+from django.contrib.auth.models import User
+from django.db import models
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.throttling import UserRateThrottle
+from core.models import Tip  # Add Tip model import
+
+__all__ = [
+    'current_user_api',
+    'upload_chat_image_api',
+    'suggested_users_api',
+    'trending_tips_api',
+    'VerifyTipView',
+    'BurstRateThrottle',
+    'SustainedRateThrottle'
+]
+
+@login_required
+def current_user_api(request):
+    """Return current user's information."""
+    user = request.user
+    try:
+        profile = user.userprofile
+        return JsonResponse({
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'is_authenticated': True,
+            'profile': {
+                'display_name': profile.display_name or user.username,
+                'avatar': profile.avatar.url if profile.avatar else None,
+                'description': profile.description or '',
+                'kyc_completed': profile.kyc_completed,
+                'profile_completed': profile.profile_completed,
+                'payment_completed': profile.payment_completed,
+            }
+        })
+    except Exception as e:
+        return JsonResponse({
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'is_authenticated': True,
+            'profile': None
+        })
 
 @csrf_exempt
 @login_required
@@ -16,4 +63,95 @@ def upload_chat_image_api(request):
         path = default_storage.save(save_path, ContentFile(image.read()))
         image_url = settings.MEDIA_URL + path
         return JsonResponse({'success': True, 'url': image_url})
-    return HttpResponseBadRequest('Invalid request') 
+    return HttpResponseBadRequest('Invalid request')
+
+@login_required
+def suggested_users_api(request):
+    """Return a list of suggested users for the current user."""
+    current_user = request.user
+    # Get users that the current user does not follow and are not themselves
+    suggested_users = User.objects.exclude(
+        id=current_user.id
+    ).exclude(
+        followers=current_user
+    ).select_related('userprofile')[:10]  # Limit to 10 suggestions
+
+    suggested_users_list = []
+    for user in suggested_users:
+        profile = user.userprofile
+        suggested_users_list.append({
+            'username': user.username,
+            'display_name': profile.display_name or user.username,
+            'avatar': profile.avatar.url if profile.avatar else None,
+            'description': profile.description or ''
+        })
+
+    return JsonResponse({'suggested_users': suggested_users_list})
+
+@login_required
+def trending_tips_api(request):
+    """Return a list of trending tips."""
+    from core.models import Tip  # Import here to avoid circular imports
+    
+    # Get tips ordered by popularity (likes + shares + comments)
+    trending_tips = Tip.objects.annotate(
+        popularity=models.Count('likes') + models.Count('shares') + models.Count('comments')
+    ).order_by('-popularity', '-created_at')[:10]  # Limit to 10 tips
+
+    tips_list = []
+    for tip in trending_tips:
+        tips_list.append({
+            'id': tip.id,
+            'title': tip.title,
+            'content': tip.content,
+            'created_at': tip.created_at.isoformat(),
+            'author': {
+                'username': tip.author.username,
+                'display_name': tip.author.userprofile.display_name or tip.author.username,
+                'avatar': tip.author.userprofile.avatar.url if tip.author.userprofile.avatar else None
+            },
+            'likes_count': tip.likes.count(),
+            'shares_count': tip.shares.count(),
+            'comments_count': tip.comments.count()
+        })
+
+    return JsonResponse({'trending_tips': tips_list})
+
+class VerifyTipView(APIView):
+    """API view for verifying tips."""
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request, tip_id):
+        try:
+            tip = Tip.objects.get(id=tip_id)
+            if tip.author != request.user:
+                return Response(
+                    {'error': 'You can only verify your own tips'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            tip.verified = True
+            tip.save()
+            
+            return Response({
+                'message': 'Tip verified successfully',
+                'tip_id': tip.id
+            })
+        except Tip.DoesNotExist:
+            return Response(
+                {'error': 'Tip not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+class BurstRateThrottle(UserRateThrottle):
+    """Throttle for burst requests."""
+    rate = '5/minute'
+
+class SustainedRateThrottle(UserRateThrottle):
+    """Throttle for sustained requests."""
+    rate = '100/day' 

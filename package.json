@@ -28,9 +28,7 @@
 
     "preview": "vite preview",
 
-    "start": "vite",
-
-    "postinstall": "vite"
+    "start": "vite"
 
   },
 

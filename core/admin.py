@@ -10,8 +10,7 @@ from rest_framework.authtoken.models import Token
 from .models import (
       Tip, UserProfile, Like,
       Follow, Share,
-      Comment, MessageThread, Message, RaceMeeting,
-      RaceResult)
+      Comment, MessageThread, Message)
 
 @admin.register(Tip)
 class TipAdmin(admin.ModelAdmin):
@@ -212,5 +211,3 @@ admin.site.register(Share)
 admin.site.register(Comment)
 admin.site.register(MessageThread)
 admin.site.register(Message)
-admin.site.register(RaceMeeting)
-admin.site.register(RaceResult)

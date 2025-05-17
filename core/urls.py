@@ -15,6 +15,7 @@ urlpatterns = [
     path('', views.landing, name='landing'),
     path('home/', views.home, name='home'),
     path('search/', views.search, name='search'),
+    path('sport/<str:sport>/', views.sport_view, name='sport'),
 
     # Profile routes
     path('profile/<str:username>/',
@@ -69,7 +70,7 @@ urlpatterns = [
     path('api/tip/<int:tip_id>/', views.tip_detail, name='tip-detail'),
     path('api/toggle-bookmark/', views.toggle_bookmark, name='toggle_bookmark'),
     path('send-message/', views.send_message, name='send_message'),
-    path('api/verify-tip/', views.VerifyTipView.as_view(), name='verify_tip'),
+    path('api/verify-tip/<int:tip_id>/', views.VerifyTipView.as_view(), name='verify_tip'),
 
     # API routes for data retrieval
     path('api/trending-tips/', views.trending_tips_api, name='trending_tips_api'),
