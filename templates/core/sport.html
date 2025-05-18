@@ -132,8 +132,38 @@
                         </a>
                         {% if tip.sport == 'football' %}
                             <span class="sport-label sport-football">Football</span>
+                        {% elif tip.sport == 'golf' %}
+                            <span class="sport-label sport-golf">Golf</span>
+                        {% elif tip.sport == 'tennis' %}
+                            <span class="sport-label sport-tennis">Tennis</span>
                         {% elif tip.sport == 'horse_racing' %}
                             <span class="sport-label sport-horse-racing">Horse Racing</span>
+                        {% elif tip.sport == 'american_football' %}
+                            <span class="sport-label sport-american-football">American Football</span>
+                        {% elif tip.sport == 'baseball' %}
+                            <span class="sport-label sport-baseball">Baseball</span>
+                        {% elif tip.sport == 'basketball' %}
+                            <span class="sport-label sport-basketball">Basketball</span>
+                        {% elif tip.sport == 'boxing' %}
+                            <span class="sport-label sport-boxing">Boxing</span>
+                        {% elif tip.sport == 'cricket' %}
+                            <span class="sport-label sport-cricket">Cricket</span>
+                        {% elif tip.sport == 'cycling' %}
+                            <span class="sport-label sport-cycling">Cycling</span>
+                        {% elif tip.sport == 'darts' %}
+                            <span class="sport-label sport-darts">Darts</span>
+                        {% elif tip.sport == 'gaelic_games' %}
+                            <span class="sport-label sport-gaelic-games">Gaelic Games</span>
+                        {% elif tip.sport == 'greyhound_racing' %}
+                            <span class="sport-label sport-greyhound-racing">Greyhound Racing</span>
+                        {% elif tip.sport == 'motor_sport' %}
+                            <span class="sport-label sport-motor-sport">Motor Sport</span>
+                        {% elif tip.sport == 'rugby_union' %}
+                            <span class="sport-label sport-rugby-union">Rugby Union</span>
+                        {% elif tip.sport == 'snooker' %}
+                            <span class="sport-label sport-snooker">Snooker</span>
+                        {% elif tip.sport == 'volleyball' %}
+                            <span class="sport-label sport-volleyball">Volleyball</span>
                         {% endif %}
                     </div>
                     <div class="tip-body">
@@ -180,9 +210,45 @@
             </div>
             {% endfor %}
         </div>
+
+        <!-- Event controls -->
+        <div class="event-controls">
+            <select class="sport-selector">
+                <option value="{{ sport }}">{{ sport|title }}</option>
+            </select>
+            <div class="event-buttons">
+                <button class="event-btn" data-category="fixtures" data-horse-racing="upcoming_meetings">Fixtures</button>
+                <button class="event-btn" data-category="inplay" data-horse-racing="at_the_post">In Play</button>
+                <button class="event-btn" data-category="results" data-horse-racing="race_results">Results</button>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block trending_tips %}
+    <!-- Sidebar widget for trending tips -->
+    <div class="sidebar-card trending-tips-card" data-card="trending-tips">
+        <h3>Trending Tips</h3>
+        <div class="trending-tips-list">
+            {% for tip in trending_tips %}
+                <div class="trending-tip">
+                    <div class="trending-tip-content">
+                        <p class="trending-tip-text">{{ tip.text }}</p>
+                        <p class="trending-tip-user">@{{ tip.user.username }}</p>
+                    </div>
+                    <div class="trending-tip-heart">
+                        <i class="fas fa-heart"></i>
+                        <span class="trending-tip-heart-count">{{ tip.likes.count }}</span>
+                    </div>
+                </div>
+            {% empty %}
+                <p>No trending tips available</p>
+            {% endfor %}
+        </div>
+        <a href="#" class="show-more" data-target="trending-tips">Show more</a>
     </div>
 {% endblock %}
 
 {% block extra_js %}
-    <!-- No additional JavaScript needed -->
+    <script type="module" src="{% static 'js/pages/trending-tips.js' %}"></script>
 {% endblock %}

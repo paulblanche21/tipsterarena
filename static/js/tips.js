@@ -112,15 +112,30 @@ function setupTipInteractions() {
             currentUserData = {
                 avatarUrl: data.avatar_url || window.default_avatar_url,
                 handle: data.handle || window.currentUser || 'You',
-                isAdmin: data.is_admin || false
+                isAdmin: data.is_admin || false,
+                profile: data.profile || null
             };
             console.log('Current user data:', currentUserData);
         } else {
             console.warn(`Failed to fetch current user data: ${data.error}`);
+            // Set default values if fetch fails
+            currentUserData = {
+                avatarUrl: window.default_avatar_url,
+                handle: window.currentUser || 'You',
+                isAdmin: false,
+                profile: null
+            };
         }
     })
     .catch(error => {
         console.error('Error fetching current user data:', error);
+        // Set default values if fetch fails
+        currentUserData = {
+            avatarUrl: window.default_avatar_url,
+            handle: window.currentUser || 'You',
+            isAdmin: false,
+            profile: null
+        };
     });
 
     setupReplyModal();

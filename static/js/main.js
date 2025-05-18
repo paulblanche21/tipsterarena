@@ -48,13 +48,19 @@ document.addEventListener('DOMContentLoaded', async () => {
       }),
     ]);
 
+    // Initialize trending tips if the element exists
+    const trendingTipsList = document.querySelector('.trending-tips-list');
+    if (trendingTipsList) {
+      console.log('Initializing trending tips...');
+      trendingTips.init();
+    }
+
     if (page === '/' || page === '/home/') {
       await Promise.all([
         import('./pages/post.js').then(module => {
           module.setupCentralFeedPost();
           module.setupPostModal();
         }),
-        import('./pages/trending-tips.js').then(module => module.default.init()),
         import('./tips.js').then(module => {
           module.setupTipInteractions();
           module.setupReplyModal();
@@ -69,7 +75,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           module.setupCentralFeedPost();
           module.setupPostModal();
         }),
-        import('./pages/trending-tips.js').then(module => module.default.init()),
         import('./tips.js').then(module => {
           module.setupTipInteractions();
           module.setupReplyModal();
@@ -116,13 +121,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (page === '/messages/') {
       await import('./pages/messages.js').then(module => module.init());
-    }
-
-    // Initialize trending tips if the element exists
-    const trendingTipsList = document.querySelector('.trending-tips-list');
-    if (trendingTipsList) {
-        console.log('Initializing trending tips...');
-        trendingTips.init();
     }
 
     // Who to Follow

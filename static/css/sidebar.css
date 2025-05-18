@@ -2,25 +2,24 @@
 
 /* Upcoming Events Card Styling (Shared Base Styles) */
 .upcoming-events-card {
-    padding: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     background-color: var(--secondary-bg);
-    border-radius: var(--border-radius);
-    margin-bottom: 15px;
-    height: auto;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    overflow: hidden;
-    max-width: 350px;
-    width: 100%;
-    box-sizing: border-box;
-    min-height: 250px
+}
+
+.upcoming-events-card h3 {
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    font-weight: 600;
 }
 
 /* Ensure sidebar cards don't interfere */
 .sidebar-card {
     background-color: var(--secondary-bg);
-    border: 1px solid #e1e8ed;
+    border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 12px;
     margin-bottom: 12px;
@@ -32,7 +31,7 @@
 }
 
 .sidebar-card h3 {
-    color: #001f3f;
+    color: var(--text-primary);
     font-size: 16px;
     font-weight: 600;
     margin-bottom: 8px;
@@ -67,27 +66,29 @@
 
 /* Event Controls (Sport Selector and Buttons) */
 .event-controls {
-    margin-bottom: 12px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-  }
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+    background-color: var(--secondary-bg);
+    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
 
-
-  .event-item {
+.event-item {
     padding: 10px;
     margin-bottom: 8px;
     background: #ffffff;
     border-radius: 6px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     font-size: 13px;
-  }
-  
-  .event-item h4, .event-item p {
+}
+
+.event-item h4, .event-item p {
     margin: 3px 0;
     color: #001f3f;
-  }
-
+}
 
 /* Golf sidebar items */
 .event-item.golf-event {
@@ -95,104 +96,103 @@
     justify-content: space-between;
     align-items: center;
     font-size: 12px;
-  }
-  
-  /* Football sidebar items (match football-events.css) */
-  .event-item.football-event {
+}
+
+/* Football sidebar items (match football-events.css) */
+.event-item.football-event {
     padding: 8px;
     border: 1px solid #ddd;
-  }
-  
-  .event-item.football-event .card-header {
+}
+
+.event-item.football-event .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
     font-weight: 600;
-  }
-  
-  .event-item.football-event.live-match .card-header {
+}
+
+.event-item.football-event.live-match .card-header {
     background-color: #ffe6e6;
-  }
-  
-  .event-item.football-event .match-details {
+}
+
+.event-item.football-event .match-details {
     display: none;
     padding: 8px;
     background: #f9f9f9;
     border-top: 1px solid #eee;
     font-size: 12px;
-  }
+}
 
-
-  .event-item.tennis-event {
+.event-item.tennis-event {
     padding: 8px;
     border: 1px solid #ddd;
     border-radius: 5px;
     background: #fff;
     margin-bottom: 8px;
     font-size: 13px;
-  }
-  
-  .event-item.tennis-event .card-header {
+}
+
+.event-item.tennis-event .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
     font-weight: 600;
-  }
-  
-  .event-item.tennis-event.live-match .card-header {
+}
+
+.event-item.tennis-event.live-match .card-header {
     background-color: #ffe6e6;
-  }
-  
-  .event-item.tennis-event .match-details {
+}
+
+.event-item.tennis-event .match-details {
     display: none;
     padding: 8px;
     background: #f9f9f9;
     border-top: 1px solid #eee;
     font-size: 12px;
-  }
-  
-  .event-item.tennis-event .match-info .players {
+}
+
+.event-item.tennis-event .match-info .players {
     display: flex;
     align-items: center;
     gap: 8px;
     font-weight: bold;
-  }
-  
-  .event-item.tennis-event .match-info .score {
+}
+
+.event-item.tennis-event .match-info .score {
     font-weight: bold;
     color: #333;
-  }
-  
-  .event-item.tennis-event.live-match .match-info .score {
-    color: #e63946;
-  }
+}
 
-  .event-item.horse_racing-event {
+.event-item.tennis-event.live-match .match-info .score {
+    color: #e63946;
+}
+
+.event-item.horse_racing-event {
     padding: 8px;
     border: 1px solid #ddd;
     border-radius: 5px;
     background: #fff;
     margin-bottom: 8px;
     font-size: 13px;
-  }
-  
-  .event-item.horse_racing-event .card-header {
+}
+
+.event-item.horse_racing-event .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
     font-weight: 600;
-  }
-  
-  .event-item.horse_racing-event .card-content {
+}
+
+.event-item.horse_racing-event .card-content {
     display: none;
     padding: 8px;
     background: #f9f9f9;
     border-top: 1px solid #eee;
     font-size: 12px;
-  }
+}
 
 .card-header {
     display: flex;
@@ -200,68 +200,119 @@
     align-items: center;
     font-weight: 600;
     cursor: pointer;
-  }
-  
-  .match-details {
+}
+
+.match-details {
     font-size: 12px;
     color: #666666;
-  }
+}
 
-  
-  .sport-selector {
+.sport-selector {
     width: 100%;
-    padding: 8px;
-    border: 1px solid var(--border-color); /* #e1e8ed */
-    border-radius: var(--border-radius); /* 12px */
-    background: var(--secondary-bg); /* #ffffff */
-    color: var(--black);
-    font-family: var(--font-default);
-    font-size: var(--font-size-base); /* 14px */
-  }
-  
-  .sport-selector:focus {
-    outline: none;
-    border-color: var(--red-accent); /* #ff4136 */
-  }
-  
-  .event-buttons {
-    display: flex;
-    gap: 8px;
-  }
-  
-  .event-btn {
-    flex: 1;
-    padding: 10px;
-    border: none;
-    background: #e1e8ed; /* --border-color */
-    color: var(--black);
+    padding: 0.875rem 1rem;
+    border: 2px solid #e1e8ed;
+    border-radius: 10px;
+    background-color: #ffffff;
+    color: #1a2526;
+    font-size: 0.95rem;
+    font-weight: 500;
     cursor: pointer;
-    font-family: var(--font-default);
-    font-size: 14px; /* Matches --font-size-base */
+    transition: all 0.2s ease;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a2526' width='18px' height='18px'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
+    padding-right: 2.5rem;
+}
+
+.sport-selector:hover {
+    border-color: #ff4136;
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+}
+
+.sport-selector:focus {
+    outline: none;
+    border-color: #ff4136;
+    box-shadow: 0 0 0 3px rgba(255, 65, 54, 0.1);
+}
+
+.event-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    padding: 0.25rem;
+}
+
+.event-btn {
+    padding: 0.875rem 0.75rem;
+    border: 2px solid #e1e8ed;
+    border-radius: 10px;
+    background-color: #ffffff;
+    color: #1a2526;
+    font-size: 0.9rem;
     font-weight: 600;
-    border-radius: var(--border-radius); /* 12px */
-    transition: background 0.3s, color 0.3s;
-  }
-  
-  .event-btn.active {
-    background: var( --primary-bg);        /* Dark blue background used site-wide */ /* #1DA1F2 */
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.event-btn:hover {
+    background-color: #f8f9fa;
+    border-color: #ff4136;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    color: #ff4136;
+}
+
+.event-btn.active {
+    background-color: #ff4136;
     color: #ffffff;
-  }
-  
-  .event-btn:hover {
-    background: #d0d7de; /* Darker inactive */
-  }
-  
-  .event-btn.active:hover {
-    background: #0d8ecf; /* Darker --twitter-blue */
-  }
-  
-  .event-list {
+    border-color: #ff4136;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.event-btn:active {
+    transform: translateY(0);
+}
+
+.event-btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.event-btn:hover::after {
+    opacity: 1;
+}
+
+@media (max-width: 768px) {
+    .event-buttons {
+        grid-template-columns: 1fr;
+    }
+    
+    .event-btn {
+        width: 100%;
+    }
+}
+
+.event-list {
     flex: 1;
     overflow-y: auto;
     min-height: 150px; /* Enough for a few events */
     color: var(--gray-light); /* #666666 */
-  }
+}
 
 .sidebar-message-content {
     position: fixed;
@@ -460,7 +511,6 @@
     color: #000000;
     margin-bottom: 12px;
 }
-
 
 /* Search Input and Results */
 .search-wrapper {

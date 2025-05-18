@@ -12,7 +12,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.throttling import UserRateThrottle
-from core.models import Tip  # Add Tip model import
+from core.models import Tip, Follow  # Add Tip and Follow models import
+from django.db.models import Q
 
 __all__ = [
     'current_user_api',
@@ -31,10 +32,10 @@ def current_user_api(request):
     try:
         profile = user.userprofile
         return JsonResponse({
-            'id': user.id,
-            'username': user.username,
-            'email': user.email,
-            'is_authenticated': True,
+            'success': True,
+            'avatar_url': profile.avatar.url if profile.avatar else None,
+            'handle': profile.display_name or user.username,
+            'is_admin': user.is_staff,
             'profile': {
                 'display_name': profile.display_name or user.username,
                 'avatar': profile.avatar.url if profile.avatar else None,
@@ -46,10 +47,10 @@ def current_user_api(request):
         })
     except Exception as e:
         return JsonResponse({
-            'id': user.id,
-            'username': user.username,
-            'email': user.email,
-            'is_authenticated': True,
+            'success': True,
+            'avatar_url': None,
+            'handle': user.username,
+            'is_admin': user.is_staff,
             'profile': None
         })
 
@@ -67,26 +68,34 @@ def upload_chat_image_api(request):
 
 @login_required
 def suggested_users_api(request):
-    """Return a list of suggested users for the current user."""
-    current_user = request.user
-    # Get users that the current user does not follow and are not themselves
-    suggested_users = User.objects.exclude(
-        id=current_user.id
-    ).exclude(
-        followers=current_user
-    ).select_related('userprofile')[:10]  # Limit to 10 suggestions
+    """Return a list of suggested users to follow."""
+    try:
+        # Get users that the current user is not following
+        following = Follow.objects.filter(follower=request.user).values_list('followed', flat=True)
+        suggested_users = User.objects.exclude(
+            Q(id__in=following) | Q(id=request.user.id)
+        ).select_related('userprofile')[:5]
 
-    suggested_users_list = []
-    for user in suggested_users:
-        profile = user.userprofile
-        suggested_users_list.append({
-            'username': user.username,
-            'display_name': profile.display_name or user.username,
-            'avatar': profile.avatar.url if profile.avatar else None,
-            'description': profile.description or ''
+        users_data = []
+        for user in suggested_users:
+            profile = user.userprofile
+            users_data.append({
+                'username': user.username,
+                'handle': profile.handle,
+                'bio': profile.description or '',
+                'avatar_url': profile.avatar.url if profile.avatar else None,
+                'profile_url': f'/profile/{user.username}/'
+            })
+
+        return JsonResponse({
+            'success': True,
+            'users': users_data
         })
-
-    return JsonResponse({'suggested_users': suggested_users_list})
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
 
 @login_required
 def trending_tips_api(request):
@@ -102,17 +111,10 @@ def trending_tips_api(request):
     for tip in trending_tips:
         tips_list.append({
             'id': tip.id,
-            'title': tip.title,
-            'content': tip.content,
-            'created_at': tip.created_at.isoformat(),
-            'author': {
-                'username': tip.author.username,
-                'display_name': tip.author.userprofile.display_name or tip.author.username,
-                'avatar': tip.author.userprofile.avatar.url if tip.author.userprofile.avatar else None
-            },
+            'text': tip.text,
+            'username': tip.user.username,
             'likes_count': tip.likes.count(),
-            'shares_count': tip.shares.count(),
-            'comments_count': tip.comments.count()
+            'is_liked': tip.likes.filter(id=request.user.id).exists()
         })
 
     return JsonResponse({'trending_tips': tips_list})

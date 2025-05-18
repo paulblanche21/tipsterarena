@@ -5,11 +5,21 @@ class TrendingTips {
     constructor() {
         this.trendingTipsList = document.querySelector('.trending-tips-list');
         this.initialized = false;
+        this.retryCount = 0;
+        this.maxRetries = 3;
     }
 
     init() {
-        if (this.initialized) return;
+        if (this.initialized) {
+            console.log('Trending tips already initialized');
+            return;
+        }
         console.log("Initializing trending tips...");
+        
+        if (!this.trendingTipsList) {
+            console.error('Trending tips list element not found');
+            return;
+        }
         
         this.fetchTrendingTips();
         // Refresh every 60 seconds
@@ -22,7 +32,9 @@ class TrendingTips {
         try {
             console.log('Fetching trending tips...');
             const response = await fetch('/api/trending-tips/');
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             const data = await response.json();
             
             if (!this.trendingTipsList) {
@@ -33,6 +45,7 @@ class TrendingTips {
             this.trendingTipsList.innerHTML = ''; // Clear existing tips
             
             if (!data.trending_tips || data.trending_tips.length === 0) {
+                console.log('No trending tips available');
                 this.trendingTipsList.innerHTML = '<p>No trending tips available.</p>';
                 return;
             }
@@ -44,16 +57,24 @@ class TrendingTips {
             });
 
             this.attachHeartListeners();
+            this.retryCount = 0; // Reset retry count on success
         } catch (error) {
             console.error('Error fetching trending tips:', error);
             this.trendingTipsList.innerHTML = '<p>Error loading trending tips. Please try again later.</p>';
+            
+            // Implement retry logic
+            if (this.retryCount < this.maxRetries) {
+                this.retryCount++;
+                console.log(`Retrying fetch (${this.retryCount}/${this.maxRetries})...`);
+                setTimeout(() => this.fetchTrendingTips(), 5000); // Retry after 5 seconds
+            }
         }
     }
 
     createTipElement(tip) {
         const tipElement = document.createElement('div');
         tipElement.className = 'trending-tip';
-        tipElement.dataset.tipId = tip.id; // Add tip ID to the element
+        tipElement.dataset.tipId = tip.id;
         
         tipElement.innerHTML = `
             <div class="trending-tip-content">
@@ -136,6 +157,7 @@ class TrendingTips {
     }
 
     escapeHtml(unsafe) {
+        if (!unsafe) return '';
         return unsafe
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")

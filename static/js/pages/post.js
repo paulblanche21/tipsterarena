@@ -632,7 +632,7 @@ function setupCentralFeedPost() {
                                 <strong>${data.tip.username}</strong>
                                 <span class="user-handle">${data.tip.handle}</span>
                             </a>
-                            ${data.tip.sport === 'football' ? '<span class="sport-label sport-football">Football</span>' : data.tip.sport === 'golf' ? '<span class="sport-label sport-golf">Golf</span>' : data.tip.sport === 'tennis' ? '<span class="sport-label sport-tennis">Tennis</span>' : data.tip.sport === 'horse_racing' ? '<span class="sport-label sport-horse-racing">Horse Racing</span>' : ''}
+                            ${getSportLabel(data.tip.sport)}
                         </div>
                         <div class="tip-body">
                             <p>${data.tip.text}</p>
@@ -939,6 +939,32 @@ function handleModalPostSubmit() {
         console.error('Error posting tip:', error);
         alert('An error occurred while posting the tip.');
     });
+}
+
+// Helper function to generate sport label
+function getSportLabel(sport) {
+    const sportLabels = {
+        'football': 'Football',
+        'golf': 'Golf',
+        'tennis': 'Tennis',
+        'horse_racing': 'Horse Racing',
+        'american_football': 'American Football',
+        'baseball': 'Baseball',
+        'basketball': 'Basketball',
+        'boxing': 'Boxing',
+        'cricket': 'Cricket',
+        'cycling': 'Cycling',
+        'darts': 'Darts',
+        'gaelic_games': 'Gaelic Games',
+        'greyhound_racing': 'Greyhound Racing',
+        'motor_sport': 'Motor Sport',
+        'rugby_union': 'Rugby Union',
+        'snooker': 'Snooker',
+        'volleyball': 'Volleyball'
+    };
+    
+    const sportName = sportLabels[sport] || sport;
+    return `<span class="sport-label sport-${sport}">${sportName}</span>`;
 }
 
 export { 

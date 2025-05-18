@@ -25,44 +25,71 @@ services:
       timeout: 5s
       retries: 5
 
-  web:
-    build: .
-    command: daphne -b 0.0.0.0 -p 8000 tipsterarena.asgi:application
-    volumes:
-      - ./media:/app/media
-      - ./staticfiles:/app/staticfiles
-    ports:
-      - "8000:8000"
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    environment:
-      DATABASE_URL: postgres://paul:${DATABASE_PASSWORD}@db:5432/tipsterarena
-      REDIS_URL: redis://redis:6379/0
-      DJANGO_SETTINGS_MODULE: tipsterarena.settings
-      DEBUG: "False"
-      ALLOWED_HOSTS: "*"
-    secrets:
-      - db-password
-
   npm:
-    image: node:20-slim
-    working_dir: /app
-    command: sh -c "npm install && npm install vite && npm run dev"
+    build:
+      context: .
+      target: development
+    command: sh -c "npm install && npm run dev"
     volumes:
       - .:/app
       - /app/node_modules
     ports:
       - "3000:3000"
-    depends_on:
-      - web
     environment:
       NODE_ENV: development
+      VITE_HOST: 0.0.0.0
+      VITE_PORT: 3000
+
+  web:
+    build:
+      context: .
+      target: python
+    command: >
+      sh -c "python3 manage.py migrate &&
+             python3 manage.py collectstatic --noinput --clear &&
+             daphne -b 0.0.0.0 -p 8000 tipsterarena.asgi:application"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    expose:
+      - "8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      npm:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgres://paul:${DATABASE_PASSWORD}@db:5432/tipsterarena
+      REDIS_URL: redis://redis:6379/0
+      DJANGO_SETTINGS_MODULE: tipsterarena.settings
+      DEBUG: "True"
+      ALLOWED_HOSTS: "*"
+      DJANGO_VITE_DEV_MODE: "True"
+      NODE_ENV: "development"
+    secrets:
+      - db-password
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    volumes:
+      - static_volume:/app/static
+      - media_volume:/app/media
+    depends_on:
+      - web
+      - npm
 
 volumes:
   postgres_data:
+  static_volume:
+  media_volume:
 
 secrets:
   db-password:

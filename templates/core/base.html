@@ -9,30 +9,15 @@
     <title>{% block title %}Tipster Arena{% endblock %}</title>
     <link rel="icon" type="image/x-icon" href="{% static 'img/favicon.ico' %}">
 
+    <!-- Only load Vite CSS bundle for all styles -->
+    {% vite_asset 'css/styles.css' %}
+
     <!-- Set currentUsername for JS globally if authenticated -->
     {% if user.is_authenticated %}
     <script>
       window.currentUsername = "{{ user.username|escapejs }}";
     </script>
     {% endif %}
-
-    <!-- Core stylesheets for layout and components -->
-    <link rel="stylesheet" href="http://localhost:3000/static/css/base.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/navbar.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/sidebar.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/follow.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/post.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/tip.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/profile.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/notification.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/bookmarks.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/modal.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/landing.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/misc.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/messages.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/responsive.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/avatar.css">
-    <link rel="stylesheet" href="http://localhost:3000/static/css/premium.css">
 
     <!-- Load main JavaScript bundle via Vite -->
     {% vite_asset 'js/main.js' defer=True %}
@@ -165,25 +150,31 @@
                 {% block upcoming_events %}
                 <div class="sidebar-card upcoming-events-card" data-card="upcoming-events" style="background-color: var(--secondary-bg);">
                     <h3>Upcoming Events</h3>
-                    <div class="event-buttons">
-                        <button class="sport-button" data-sport="football" data-category="fixtures" onclick="window.open('https://www.premierleague.com/fixtures', '_blank')">
-                            <i class="fas fa-futbol"></i> Football Fixtures
-                        </button>
-                        <button class="sport-button" data-sport="football" data-category="results" onclick="window.open('https://www.premierleague.com/results', '_blank')">
-                            <i class="fas fa-futbol"></i> Football Results
-                        </button>
-                        <button class="sport-button" data-sport="golf" data-category="fixtures" onclick="window.open('https://www.pgatour.com/tournaments', '_blank')">
-                            <i class="fas fa-golf-ball"></i> Golf Fixtures
-                        </button>
-                        <button class="sport-button" data-sport="golf" data-category="results" onclick="window.open('https://www.pgatour.com/results', '_blank')">
-                            <i class="fas fa-golf-ball"></i> Golf Results
-                        </button>
-                        <button class="sport-button" data-sport="horse_racing" data-category="fixtures" onclick="window.open('https://www.racingpost.com/racecards', '_blank')">
-                            <i class="fas fa-horse"></i> Horse Racing Fixtures
-                        </button>
-                        <button class="sport-button" data-sport="horse_racing" data-category="results" onclick="window.open('https://www.racingpost.com/results', '_blank')">
-                            <i class="fas fa-horse"></i> Horse Racing Results
-                        </button>
+                    <div class="event-controls">
+                        <select class="sport-selector">
+                            <option value="football">Football</option>
+                            <option value="golf">Golf</option>
+                            <option value="tennis">Tennis</option>
+                            <option value="horse_racing">Horse Racing</option>
+                            <option value="american_football">American Football</option>
+                            <option value="baseball">Baseball</option>
+                            <option value="basketball">Basketball</option>
+                            <option value="boxing">Boxing</option>
+                            <option value="cricket">Cricket</option>
+                            <option value="cycling">Cycling</option>
+                            <option value="darts">Darts</option>
+                            <option value="gaelic_games">Gaelic Games</option>
+                            <option value="greyhound_racing">Greyhound Racing</option>
+                            <option value="motor_sport">Motor Sport</option>
+                            <option value="rugby_union">Rugby Union</option>
+                            <option value="snooker">Snooker</option>
+                            <option value="volleyball">Volleyball</option>
+                        </select>
+                        <div class="event-buttons">
+                            <button class="event-btn" data-category="fixtures">Fixtures</button>
+                            <button class="event-btn" data-category="inplay">In Play</button>
+                            <button class="event-btn" data-category="results">Results</button>
+                        </div>
                     </div>
                 </div>
                 {% endblock %}
@@ -379,6 +370,8 @@
     <script src="{% static 'js/mobile-header.js' %}"></script>
 
     <!-- Placeholder for page-specific JavaScript -->
-    {% block extra_js %}{% endblock %}
+    {% block extra_js %}
+    <script src="{% static 'js/upcoming-events.js' %}"></script>
+    {% endblock %}
 </body>
 </html>

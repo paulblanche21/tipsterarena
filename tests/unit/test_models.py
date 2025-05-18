@@ -6,7 +6,7 @@ from django.test import TestCase
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.contrib.auth import get_user_model
-from core.models import UserProfile, Tip, FootballEvent, GolfEvent, TennisEvent, HorseRacingRace
+from core.models import UserProfile, Tip, FootballEvent, TennisEvent, HorseRacingRace
 from core.models import (
     FootballLeague, FootballTeam, GolfTour, GolfCourse, TennisLeague, TennisTournament,
     HorseRacingCourse, HorseRacingMeeting, TennisPlayer

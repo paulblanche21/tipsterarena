@@ -98,7 +98,7 @@ DATABASES = {
         'NAME': 'tipsterarena_test',
         'USER': 'paul',
         'PASSWORD': os.getenv('DATABASE_PASSWORD', 'Frankfurt5!'),  # Fallback for local development
-        'HOST': 'localhost',
+        'HOST': 'db',
         'PORT': '5432',
     }
 }
@@ -119,19 +119,19 @@ TIME_ZONE = "UTC"        # Default time zone
 USE_I18N = True          # Enable internationalization
 USE_TZ = True            # Enable timezone support
 
-# Static files configuration (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
-STATIC_URL = '/static/'              # URL prefix for static files
-STATICFILES_DIRS = [BASE_DIR / 'static']  # Directory for static files during development
-STATIC_ROOT = BASE_DIR / 'staticfiles'    # Directory for collected static files in production
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
+# Media files
+MEDIA_URL = 'media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Add whitenoise for static file serving
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-# Media files configuration (user-uploaded content)
-MEDIA_URL = '/media/'         # URL prefix for media files
-MEDIA_ROOT = BASE_DIR / 'media'  # Directory for storing media files
-
 
 # Authentication settings
 LOGIN_REDIRECT_URL = '/home/'  # Redirect after successful login
@@ -187,13 +187,13 @@ CSP_OBJECT_SRC = ("'none'",)   # Disallow <object> and <embed> tags
 CSP_REPORT_ONLY = True         # Run CSP in report-only mode (logs violations without blocking)
 CSP_REPORT_URI = "/csp-report/"  # Endpoint for CSP violation reports
 
-# Django Vite configuration for frontend asset management
+# Django Vite
 DJANGO_VITE = {
     'default': {
-        'dev_mode': DEBUG,                    # Use Vite dev server in debug mode
-        'dev_server_port': 3000,              # Vite development server port
-        'static_url_prefix': '',              # No prefix for static URLs
-        'manifest_path': BASE_DIR / 'static/dist/manifest.json',  # Path to Vite manifest
+        'dev_mode': True,
+        'dev_server_port': 3000,
+        'manifest_path': os.path.join(BASE_DIR, 'static', 'dist', '.vite', 'manifest.json'),
+        'static_url_prefix': 'static/',  # Changed from 'dist/' to 'static/'
     }
 }
 
