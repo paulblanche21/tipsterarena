@@ -2,7 +2,7 @@
 import { getCSRFToken } from './utils.js';
 
 export function setupBookmarkInteractions() {
-    console.log('Setting up bookmark interactions...');
+    
     
     document.querySelectorAll('.tip-action-bookmark').forEach(button => {
         button.addEventListener('click', async (e) => {

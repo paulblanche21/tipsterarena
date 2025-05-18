@@ -223,6 +223,31 @@
             </div>
         </div>
     </div>
+
+    <!-- Comment Modal -->
+    <div id="comment-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="text-xl font-bold">Comments</h2>
+                <button id="comment-modal-close" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="comments-container" class="space-y-4">
+                    <!-- Comments will be loaded here -->
+                </div>
+                <div class="mt-4">
+                    <form id="comment-form" class="space-y-4">
+                        <textarea id="comment-content" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="3" placeholder="Write a comment..."></textarea>
+                        <div class="flex justify-end">
+                            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                                Comment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block trending_tips %}
@@ -251,4 +276,5 @@
 
 {% block extra_js %}
     <script type="module" src="{% static 'js/pages/trending-tips.js' %}"></script>
+    <script src="{% static 'js/tips.js' %}"></script>
 {% endblock %}

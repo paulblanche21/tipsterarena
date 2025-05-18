@@ -1,3 +1,5 @@
+import { attachFollowButtonListeners } from '../follow.js';
+
 function debounce(func, wait) {
   let timeout;
   return function (...args) {
@@ -62,11 +64,14 @@ export function setupSearch() {
                 <div class="search-details">
                   <a href="${user.profile_url}" class="search-username">${user.handle}</a>
                 </div>
+                <button class="follow-btn" data-username="${user.username}">Follow</button>
               </div>
             `;
             searchResults.innerHTML += userHtml;
             console.log('Added user result:', user.username);
           });
+          // Attach follow button listeners after adding users
+          attachFollowButtonListeners();
         }
 
         if (data.tips && data.tips.length > 0) {

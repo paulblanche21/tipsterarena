@@ -4,7 +4,6 @@ import json
 import logging
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q, Count, F
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -81,14 +80,26 @@ def search(request):
         'tips': tip_results,
     })
 
-@csrf_exempt
+@login_required
 def csp_report(request):
     """Handle Content Security Policy violation reports."""
     if request.method == "POST":
-        report = json.loads(request.body.decode("utf-8"))
-        logger.warning("CSP Violation: %s", report)
-        return HttpResponse(status=204)
-    return HttpResponse(status=400)
+        try:
+            report = json.loads(request.body.decode("utf-8"))
+            # Sanitize and validate the report
+            if not isinstance(report, dict):
+                return HttpResponse(status=400)
+            
+            # Log only essential information
+            logger.warning(
+                "CSP Violation: blocked-uri=%s, violated-directive=%s",
+                report.get('csp-report', {}).get('blocked-uri', 'unknown'),
+                report.get('csp-report', {}).get('violated-directive', 'unknown')
+            )
+            return HttpResponse(status=204)
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return HttpResponse(status=400)
+    return HttpResponse(status=405)  # Method Not Allowed
 
 # Policy page views
 def terms_of_service(request):
@@ -147,7 +158,7 @@ def home(request):
             bio = "No bio available"
         suggested_tipsters.append({
             'username': user.username,
-            'avatar': avatar_url,
+            'avatar_url': avatar_url,
             'bio': bio,
         })
 

@@ -9,6 +9,8 @@ from django.http import JsonResponse
 from django.conf import settings
 from django.db import transaction
 from django.contrib.auth.models import Group
+from django.core.cache import cache
+
 
 from ..forms import CustomUserCreationForm, KYCForm, UserProfileForm
 
@@ -19,6 +21,17 @@ def login_view(request):
     """Handle user authentication and login."""
     if request.user.is_authenticated:
         return redirect('home')
+    
+    # Rate limiting
+    ip = request.META.get('REMOTE_ADDR')
+    cache_key = f'login_attempts_{ip}'
+    attempts = cache.get(cache_key, 0)
+    
+    if attempts >= 5:  # Maximum 5 attempts
+        return JsonResponse({
+            'error': 'Too many login attempts. Please try again later.'
+        }, status=429)
+    
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
@@ -27,7 +40,12 @@ def login_view(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
+                # Reset attempts on successful login
+                cache.delete(cache_key)
                 return redirect('home')
+            else:
+                # Increment failed attempts
+                cache.set(cache_key, attempts + 1, 300)  # Store for 5 minutes
     else:
         form = AuthenticationForm()
     return render(request, 'core/login.html', {'form': form})

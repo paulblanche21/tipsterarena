@@ -2,6 +2,7 @@
 
 import logging
 import bleach
+import json
 from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
@@ -9,6 +10,7 @@ from django.http import JsonResponse
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Count, Q
+from django.core.exceptions import ValidationError
 
 from ..models import Tip, Like, Share, Comment, UserProfile
 from ..badges import award_badges
@@ -26,8 +28,21 @@ def post_tip(request):
             image = request.FILES.get('image')
             gif_url = request.POST.get('gif')
             location = request.POST.get('location')
-            poll = request.POST.get('poll', '{}')
-            emojis = request.POST.get('emojis', '{}')
+            
+            # Handle JSON fields safely
+            try:
+                poll = json.loads(request.POST.get('poll', '{}'))
+                if not isinstance(poll, dict):
+                    return JsonResponse({'success': False, 'error': 'Invalid poll format'}, status=400)
+            except json.JSONDecodeError:
+                return JsonResponse({'success': False, 'error': 'Invalid poll JSON'}, status=400)
+                
+            try:
+                emojis = json.loads(request.POST.get('emojis', '{}'))
+                if not isinstance(emojis, dict):
+                    return JsonResponse({'success': False, 'error': 'Invalid emojis format'}, status=400)
+            except json.JSONDecodeError:
+                return JsonResponse({'success': False, 'error': 'Invalid emojis JSON'}, status=400)
 
             # New fields
             odds_type = request.POST.get('odds_type')
@@ -50,49 +65,50 @@ def post_tip(request):
 
             allowed_tags = ['b', 'i']
             sanitized_text = bleach.clean(text, tags=allowed_tags, strip=True)
-
-            tip = Tip.objects.create(
+            
+            # Create tip with validated data
+            tip = Tip(
                 user=request.user,
                 text=sanitized_text,
-                audience=audience,
                 sport=sport,
-                image=image,
-                gif_url=gif_url,
-                location=location,
-                poll=poll,
-                emojis=emojis,
+                audience=audience,
+                poll=json.dumps(poll),
+                emojis=json.dumps(emojis),
                 odds=odds,
                 odds_format=odds_type,
                 bet_type=bet_type,
                 each_way=each_way,
-                confidence=int(confidence) if confidence else None
+                confidence=confidence
             )
-
-            response_data = {
+            
+            if image:
+                tip.image = image
+            if gif_url:
+                tip.gif_url = gif_url
+            if location:
+                tip.location = location
+                
+            # Validate the model
+            try:
+                tip.full_clean()
+                tip.save()
+            except ValidationError as e:
+                return JsonResponse({
+                    'success': False,
+                    'error': str(e)
+                }, status=400)
+            
+            return JsonResponse({
                 'success': True,
-                'message': 'Tip posted successfully!',
-                'tip': {
-                    'id': tip.id,
-                    'text': tip.text,
-                    'image': tip.image.url if tip.image else None,
-                    'gif': tip.gif_url if tip.gif_url else None,
-                    'created_at': tip.created_at.isoformat(),
-                    'username': tip.user.username,
-                    'handle': tip.user.userprofile.handle or f"@{tip.user.username}",
-                    'avatar': tip.user.userprofile.avatar.url if tip.user.userprofile.avatar else settings.STATIC_URL + 'img/default-avatar.png',
-                    'sport': tip.sport,
-                    'odds': tip.odds,
-                    'odds_format': tip.odds_format,
-                    'bet_type': tip.bet_type,
-                    'each_way': tip.each_way,
-                    'confidence': tip.confidence,
-                    'status': tip.status,
-                }
-            }
-            return JsonResponse(response_data)
+                'tip_id': tip.id
+            })
+            
         except Exception as e:
-            logger.error("Error posting tip: %s", str(e))
-            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+            logger.error(f"Error in post_tip: {str(e)}")
+            return JsonResponse({
+                'success': False,
+                'error': 'Internal server error'
+            }, status=500)
     return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
 
 @login_required

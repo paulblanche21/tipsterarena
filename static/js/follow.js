@@ -49,6 +49,22 @@ const styleSheet = document.createElement("style");
 styleSheet.textContent = styles;
 document.head.appendChild(styleSheet);
 
+// Helper function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
 export function attachFollowButtonListeners() {
     const followButtons = document.querySelectorAll('.follow-btn');
     followButtons.forEach(button => {
@@ -58,12 +74,19 @@ export function attachFollowButtonListeners() {
             const isFollowing = button.textContent === 'Following';
             
             try {
-                const response = await fetch(`/api/follow/${username}/`, {
+                const csrfToken = getCookie('csrftoken');
+                if (!csrfToken) {
+                    console.error('CSRF token not found');
+                    return;
+                }
+
+                const response = await fetch('/api/follow/', {
                     method: isFollowing ? 'DELETE' : 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken')
+                        'X-CSRFToken': csrfToken
                     },
+                    body: JSON.stringify({ username }),
                     credentials: 'include'
                 });
 
@@ -71,7 +94,7 @@ export function attachFollowButtonListeners() {
                     button.textContent = isFollowing ? 'Follow' : 'Following';
                     button.classList.toggle('following');
                 } else {
-                    console.error('Failed to follow/unfollow user');
+                    console.error('Failed to follow/unfollow user:', await response.text());
                 }
             } catch (error) {
                 console.error('Error following/unfollowing user:', error);
@@ -119,20 +142,4 @@ export function initShowMore() {
             }
         });
     });
-}
-
-// Helper function to get CSRF token
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
 } 

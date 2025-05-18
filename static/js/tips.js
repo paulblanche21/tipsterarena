@@ -113,7 +113,14 @@ function setupTipInteractions() {
                 avatarUrl: data.avatar_url || window.default_avatar_url,
                 handle: data.handle || window.currentUser || 'You',
                 isAdmin: data.is_admin || false,
-                profile: data.profile || null
+                profile: data.profile || {
+                    display_name: window.currentUser || 'You',
+                    avatar: window.default_avatar_url,
+                    description: '',
+                    kyc_completed: false,
+                    profile_completed: false,
+                    payment_completed: false
+                }
             };
             console.log('Current user data:', currentUserData);
         } else {
@@ -123,7 +130,14 @@ function setupTipInteractions() {
                 avatarUrl: window.default_avatar_url,
                 handle: window.currentUser || 'You',
                 isAdmin: false,
-                profile: null
+                profile: {
+                    display_name: window.currentUser || 'You',
+                    avatar: window.default_avatar_url,
+                    description: '',
+                    kyc_completed: false,
+                    profile_completed: false,
+                    payment_completed: false
+                }
             };
         }
     })
@@ -134,7 +148,14 @@ function setupTipInteractions() {
             avatarUrl: window.default_avatar_url,
             handle: window.currentUser || 'You',
             isAdmin: false,
-            profile: null
+            profile: {
+                display_name: window.currentUser || 'You',
+                avatar: window.default_avatar_url,
+                description: '',
+                kyc_completed: false,
+                profile_completed: false,
+                payment_completed: false
+            }
         };
     });
 

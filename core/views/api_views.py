@@ -46,19 +46,29 @@ def current_user_api(request):
             }
         })
     except Exception as e:
+        # Return a valid profile object with default values
         return JsonResponse({
             'success': True,
             'avatar_url': None,
             'handle': user.username,
             'is_admin': user.is_staff,
-            'profile': None
+            'profile': {
+                'display_name': user.username,
+                'avatar': None,
+                'description': '',
+                'kyc_completed': False,
+                'profile_completed': False,
+                'payment_completed': False,
+            }
         })
 
-@csrf_exempt
 @login_required
 def upload_chat_image_api(request):
     if request.method == 'POST' and request.FILES.get('image'):
         image = request.FILES['image']
+        # Validate file type
+        if not image.content_type.startswith('image/'):
+            return JsonResponse({'success': False, 'error': 'Invalid file type'}, status=400)
         # Save to media/chat_images/
         save_path = os.path.join('chat_images', image.name)
         path = default_storage.save(save_path, ContentFile(image.read()))
@@ -68,24 +78,54 @@ def upload_chat_image_api(request):
 
 @login_required
 def suggested_users_api(request):
-    """Return a list of suggested users to follow."""
+    """API endpoint to get suggested users to follow."""
     try:
+        limit = int(request.GET.get('limit', 10))
+        
         # Get users that the current user is not following
         following = Follow.objects.filter(follower=request.user).values_list('followed', flat=True)
         suggested_users = User.objects.exclude(
             Q(id__in=following) | Q(id=request.user.id)
-        ).select_related('userprofile')[:5]
+        ).select_related('userprofile')[:limit]
 
         users_data = []
         for user in suggested_users:
-            profile = user.userprofile
-            users_data.append({
-                'username': user.username,
-                'handle': profile.handle,
-                'bio': profile.description or '',
-                'avatar_url': profile.avatar.url if profile.avatar else None,
-                'profile_url': f'/profile/{user.username}/'
-            })
+            try:
+                profile = user.userprofile
+                
+                # Calculate user stats
+                total_tips = Tip.objects.filter(user=user).count()
+                followers_count = Follow.objects.filter(followed=user).count()
+                
+                # Calculate win rate
+                tips = Tip.objects.filter(user=user, status__in=['win', 'loss'])
+                total_verified_tips = tips.count()
+                wins = tips.filter(status='win').count()
+                win_rate = (wins / total_verified_tips * 100) if total_verified_tips > 0 else 0
+                
+                # Ensure avatar_url is always valid
+                avatar_url = None
+                if profile and profile.avatar:
+                    try:
+                        avatar_url = profile.avatar.url
+                    except:
+                        avatar_url = settings.STATIC_URL + 'img/default-avatar.png'
+                else:
+                    avatar_url = settings.STATIC_URL + 'img/default-avatar.png'
+                
+                users_data.append({
+                    'username': user.username,
+                    'handle': profile.handle if profile and profile.handle else f"@{user.username}",
+                    'bio': profile.description if profile and profile.description else '',
+                    'avatar_url': avatar_url,
+                    'profile_url': f'/profile/{user.username}/',
+                    'total_tips': total_tips,
+                    'win_rate': round(win_rate, 1),
+                    'followers_count': followers_count
+                })
+            except Exception as e:
+                # Skip users with invalid profiles
+                continue
 
         return JsonResponse({
             'success': True,

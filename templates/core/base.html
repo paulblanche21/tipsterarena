@@ -9,7 +9,17 @@
     <title>{% block title %}Tipster Arena{% endblock %}</title>
     <link rel="icon" type="image/x-icon" href="{% static 'img/favicon.ico' %}">
 
-    <!-- Only load Vite CSS bundle for all styles -->
+    <!-- Preload critical CSS -->
+    <link rel="preload" href="{% static 'css/base.css' %}" as="style">
+    <link rel="preload" href="{% static 'css/sidebar.css' %}" as="style">
+    <link rel="preload" href="{% static 'css/follow.css' %}" as="style">
+
+    <!-- Load critical CSS immediately -->
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/follow.css' %}">
+
+    <!-- Load Vite CSS bundle -->
     {% vite_asset 'css/styles.css' %}
 
     <!-- Set currentUsername for JS globally if authenticated -->
@@ -30,6 +40,21 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap">
     </noscript>
+
+    <!-- Add a style to prevent FOUC -->
+    <style>
+        /* Prevent FOUC */
+        .js-loading * {
+            transition: none !important;
+        }
+        body {
+            opacity: 0;
+        }
+        body.loaded {
+            opacity: 1;
+            transition: opacity 0.3s ease-in;
+        }
+    </style>
 
     <!-- Placeholder for page-specific CSS -->
     {% block extra_css %}{% endblock %}
@@ -185,7 +210,7 @@
                     <div class="follow-list">
                         {% for tipster in suggested_tipsters %}
                             <div class="follow-item">
-                                <img src="{{ tipster.avatar }}" alt="{{ tipster.username }} Avatar" class="follow-avatar" width="48" height="48">
+                                <img src="{{ tipster.avatar_url }}" alt="{{ tipster.username }} Avatar" class="follow-avatar" width="48" height="48">
                                 <div class="follow-details">
                                     <a href="/profile/{{ tipster.username }}/" class="follow-username">@{{ tipster.username }}</a>
                                     <p class="follow-bio">{{ tipster.bio|default:"No bio" }}</p>

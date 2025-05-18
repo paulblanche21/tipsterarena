@@ -11,26 +11,23 @@ class TrendingTips {
 
     init() {
         if (this.initialized) {
-            console.log('Trending tips already initialized');
             return;
         }
-        console.log("Initializing trending tips...");
+        
         
         if (!this.trendingTipsList) {
-            console.error('Trending tips list element not found');
             return;
         }
         
         this.fetchTrendingTips();
         // Refresh every 60 seconds
-        setInterval(() => this.fetchTrendingTips(), 60000);
+        setInterval(() => this.fetchTrendingTips(), 120000);
         
         this.initialized = true;
     }
 
     async fetchTrendingTips() {
         try {
-            console.log('Fetching trending tips...');
             const response = await fetch('/api/trending-tips/');
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -50,7 +47,7 @@ class TrendingTips {
                 return;
             }
 
-            console.log('Received trending tips:', data.trending_tips);
+            
             data.trending_tips.forEach(tip => {
                 const tipElement = this.createTipElement(tip);
                 this.trendingTipsList.appendChild(tipElement);
@@ -65,7 +62,6 @@ class TrendingTips {
             // Implement retry logic
             if (this.retryCount < this.maxRetries) {
                 this.retryCount++;
-                console.log(`Retrying fetch (${this.retryCount}/${this.maxRetries})...`);
                 setTimeout(() => this.fetchTrendingTips(), 5000); // Retry after 5 seconds
             }
         }
@@ -93,7 +89,6 @@ class TrendingTips {
     }
 
     attachHeartListeners() {
-        console.log('Attaching heart listeners...');
         const hearts = this.trendingTipsList.querySelectorAll('.trending-tip-heart');
         hearts.forEach(heart => {
             // Remove existing listeners

@@ -286,3 +286,23 @@ html {
   .btn-primary:hover {
     background-color: var(--accent-hover);
   }
+
+  /* Common avatar styles */
+  .post-avatar,
+  .tip-avatar,
+  .nav-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 768px) {
+    .post-avatar,
+    .tip-avatar,
+    .nav-avatar {
+        width: 40px;
+        height: 40px;
+    }
+  }

@@ -3,6 +3,13 @@ function getCurrentPage() {
   return window.location.pathname;
 }
 
+// Add loading state management
+document.documentElement.classList.add('js-loading');
+window.addEventListener('load', function() {
+  document.documentElement.classList.remove('js-loading');
+  document.body.classList.add('loaded');
+});
+
 // Import trending tips
 import trendingTips from './pages/trending-tips.js';
 import { setupNotifications } from './notifications.js';
@@ -16,6 +23,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('Received notification via WebSocket:', notification);
     // TODO: Update notification badge or DOM here
   });
+
+  // Initialize suggested users modal
+  await import('./pages/suggested-users.js').then(module => module.initSuggestedUsersModal());
 
   try {
     const sharedModules = await Promise.all([
@@ -38,7 +48,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         return null;
       }),
       import('./follow.js').then(module => {
-        console.log('Loaded follow.js');
         module.attachFollowButtonListeners();
         module.initShowMore();
         return module;
@@ -51,7 +60,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize trending tips if the element exists
     const trendingTipsList = document.querySelector('.trending-tips-list');
     if (trendingTipsList) {
-      console.log('Initializing trending tips...');
+      
       trendingTips.init();
     }
 
@@ -157,7 +166,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 limitedUsers.forEach(user => {
                   followList.innerHTML += `
                     <div class="follow-item">
-                      <img src="${user.avatar_url}" alt="${user.username}" class="follow-avatar">
+                      <img src="${user.avatar_url || '/static/img/default-avatar.png'}" 
+                           alt="${user.username}" 
+                           class="follow-avatar"
+                           onerror="this.onerror=null; this.src='/static/img/default-avatar.png';">
                       <div class="follow-details">
                         <a href="${user.profile_url}" class="follow-username">@${user.username}</a>
                         <p class="follow-bio">${user.bio}</p>

@@ -14,6 +14,7 @@ from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.db.models import F, Sum
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 
 from ..models import TipsterTier, TipsterSubscription,  User
 
@@ -177,7 +178,14 @@ def manage_tiers(request):
                         'error': "Invalid price value"
                     })
                 
-                tier = TipsterTier.objects.create(
+                # Validate features is a list
+                if not isinstance(features, list):
+                    return JsonResponse({
+                        'success': False,
+                        'error': "Features must be a list"
+                    })
+                
+                tier = TipsterTier(
                     tipster=request.user,
                     name=name,
                     price=price,
@@ -185,6 +193,17 @@ def manage_tiers(request):
                     features=features,
                     max_subscribers=max_subscribers
                 )
+                
+                # Validate the model
+                try:
+                    tier.full_clean()
+                    tier.save()
+                except ValidationError as e:
+                    return JsonResponse({
+                        'success': False,
+                        'error': str(e)
+                    })
+                
                 return JsonResponse({
                     'success': True,
                     'tier_id': tier.id

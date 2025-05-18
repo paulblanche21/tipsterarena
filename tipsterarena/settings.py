@@ -217,7 +217,7 @@ REST_FRAMEWORK = {
 # settings.py
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
+    'disable_existing_loggers': True,  # Changed to True to disable existing loggers
     'formatters': {
         'verbose': {
             'format': '{levelname} {asctime} {module} {message}',
@@ -227,20 +227,14 @@ LOGGING = {
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'level': 'DEBUG',
-            'formatter': 'verbose',
-        },
-        'file': {
-            'class': 'logging.FileHandler',
-            'filename': 'debug.log',  # File path relative to project root
-            'level': 'DEBUG',
+            'level': 'INFO',  # Changed from DEBUG to INFO
             'formatter': 'verbose',
         },
     },
     'loggers': {
         '': {
-            'handlers': ['console', 'file'],
-            'level': 'DEBUG',
+            'handlers': ['console'],
+            'level': 'INFO',  # Changed from DEBUG to INFO
             'propagate': True,
         },
     },

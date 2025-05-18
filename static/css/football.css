@@ -1,0 +1,101 @@
+/* football.css - Styles specific to football tips and events */
+
+/* Football-specific tip styling */
+.tip[data-sport="football"] {
+    border-left: 4px solid #1DA1F2;
+}
+
+/* Football event card styling */
+.football-event {
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.football-event .match-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.football-event .teams {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.football-event .team {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.football-event .team-logo {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
+.football-event .score {
+    font-weight: bold;
+    color: #1DA1F2;
+}
+
+.football-event .match-time {
+    color: #657786;
+    font-size: 0.9em;
+}
+
+.football-event .match-details {
+    font-size: 0.9em;
+    color: #657786;
+    margin-top: 8px;
+}
+
+/* Football-specific tip meta information */
+.tip-meta[data-sport="football"] {
+    background-color: #E8F5FE;
+    border-radius: 4px;
+    padding: 8px;
+    margin-top: 8px;
+}
+
+/* Football odds display */
+.football-odds {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.football-odds .odds-value {
+    font-weight: bold;
+    color: #1DA1F2;
+}
+
+/* Football match status indicators */
+.match-status {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 500;
+}
+
+.match-status.live {
+    background-color: #FF4136;
+    color: white;
+}
+
+.match-status.upcoming {
+    background-color: #2ECC40;
+    color: white;
+}
+
+.match-status.completed {
+    background-color: #7FDBFF;
+    color: #001f3f;
+} 

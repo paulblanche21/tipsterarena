@@ -34,7 +34,8 @@ __all__ = [
 def follow_user(request):
     """Handle following/unfollowing a user."""
     try:
-        username = request.POST.get('username')
+        data = json.loads(request.body)
+        username = data.get('username')
         if not username:
             return JsonResponse({
                 'success': False,
@@ -85,6 +86,11 @@ def follow_user(request):
             'success': False,
             'error': 'User not found'
         }, status=404)
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid JSON data'
+        }, status=400)
     except Exception as e:
         logger.error(f"Error in follow_user view: {str(e)}")
         return JsonResponse({

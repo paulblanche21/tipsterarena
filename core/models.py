@@ -12,6 +12,7 @@ from django.utils import timezone
 from django.conf import settings
 import stripe
 from django.core.exceptions import ValidationError
+import json
 
 # Model representing a user's tip
 class Tip(models.Model):
@@ -226,6 +227,29 @@ class Tip(models.Model):
         # Validate bet type
         if self.bet_type not in ['single', 'double', 'treble', 'accumulator']:
             raise ValidationError({'bet_type': 'Invalid bet type'})
+
+        # Validate JSON fields
+        try:
+            if self.poll:
+                json.loads(self.poll)
+            if self.emojis:
+                json.loads(self.emojis)
+            if self.release_schedule:
+                if not isinstance(self.release_schedule, dict):
+                    raise ValidationError({'release_schedule': 'Must be a valid JSON object'})
+        except json.JSONDecodeError:
+            raise ValidationError({'poll': 'Invalid JSON format'})
+
+    def get_release_schedule(self):
+        """Safe access to release schedule data."""
+        return self.release_schedule or {}
+
+    def get_poll_data(self):
+        """Safe access to poll data."""
+        try:
+            return json.loads(self.poll) if self.poll else {}
+        except json.JSONDecodeError:
+            return {}
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
@@ -444,6 +468,22 @@ class UserProfile(models.Model):
         """Return True if user should not see ads (Premium only)."""
         return self.tier == 'premium'
 
+    def clean(self):
+        super().clean()
+        # Validate premium features JSON
+        if self.premium_features:
+            if not isinstance(self.premium_features, dict):
+                raise ValidationError({'premium_features': 'Must be a valid JSON object'})
+
+    def get_premium_features(self):
+        """Safe access to premium features."""
+        try:
+            if not isinstance(self.premium_features, dict):
+                return {}
+            return self.premium_features
+        except Exception:
+            return {}
+
 class Like(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='likes')
     tip = models.ForeignKey(Tip, on_delete=models.CASCADE, related_name='likes', null=True, blank=True)
@@ -620,6 +660,22 @@ class TipsterTier(models.Model):
         """Calculate monthly revenue from this tier."""
         active_subs = self.get_subscriber_count()
         return self.price * active_subs
+
+    def clean(self):
+        super().clean()
+        # Validate features JSON
+        if self.features:
+            if not isinstance(self.features, list):
+                raise ValidationError({'features': 'Must be a valid JSON array'})
+
+    def get_features(self):
+        """Safe access to tier features."""
+        try:
+            if not isinstance(self.features, list):
+                return []
+            return self.features
+        except Exception:
+            return []
 
 class TipsterSubscription(models.Model):
     """DEPRECATED: Model for user subscriptions to tipsters. No longer used in new monetization model."""
