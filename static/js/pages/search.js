@@ -124,28 +124,25 @@ export function setupSearch() {
     const categoryButton = e.target.closest('.event-btn');
     const raceHeader = e.target.closest('.race-header');
 
-    console.log('Click event target:', e.target);
-    console.log('Closest card:', card);
-    console.log('Closest tip action:', tipAction);
-    console.log('Closest category button:', categoryButton);
-    console.log('Closest race header:', raceHeader);
+    // If clicking on an event button, stop event propagation and let upcoming-events.js handle it
+    if (categoryButton) {
+        e.stopPropagation();
+        return;
+    }
 
+    // If no search bar found, don't do anything
     if (!searchBar) {
-        console.log('Search bar not found, ignoring click handler');
         return;
     }
 
     if (raceHeader) {
-        console.log('Click on race header, letting expandable card handler process it');
         return;
     }
 
     if (searchBar.contains(e.target) || 
         (searchResults && searchResults.contains(e.target)) || 
         card || 
-        tipAction || 
-        categoryButton) {
-        console.log('Click inside search bar, results, card, tip action, or category button, keeping results visible');
+        tipAction) {
         return;
     }
 

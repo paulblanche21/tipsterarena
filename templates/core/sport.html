@@ -225,27 +225,73 @@
     </div>
 
     <!-- Comment Modal -->
-    <div id="comment-modal" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="text-xl font-bold">Comments</h2>
-                <button id="comment-modal-close" class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div id="comments-container" class="space-y-4">
-                    <!-- Comments will be loaded here -->
-                </div>
-                <div class="mt-4">
-                    <form id="comment-form" class="space-y-4">
-                        <textarea id="comment-content" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="3" placeholder="Write a comment..."></textarea>
-                        <div class="flex justify-end">
-                            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                                Comment
-                            </button>
+    <div class="comment-modal" id="comment-modal">
+        <div class="comment-modal-content">
+            <span class="comment-modal-close">×</span>
+            <div class="modal-tip">
+                <img src="" alt="User Avatar" class="tip-avatar modal-tip-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
+                <div class="modal-tip-content">
+                    <a href="#" class="tip-username">
+                        <strong class="modal-tip-username"></strong>
+                        <span class="user-handle-tip modal-tip-handle"></span>
+                    </a>
+                    <span class="modal-tip-sport"></span>
+                    <p class="modal-tip-text"></p>
+                    <small class="modal-tip-timestamp"></small>
+                    <div class="tip-actions">
+                        <div class="tip-action-group">
+                            <a href="#" class="tip-action tip-action-like" data-action="like" aria-label="Like this tip"><i class="fas fa-heart"></i></a>
+                            <span class="tip-action-count like-count">0</span>
                         </div>
-                    </form>
+                        <div class="tip-action-group">
+                            <a href="#" class="tip-action tip-action-share" data-action="share" aria-label="Share this tip"><i class="fas fa-retweet"></i></a>
+                            <span class="tip-action-count share-count">0</span>
+                        </div>
+                        <div class="tip-action-group">
+                            <a href="#" class="tip-action tip-action-comment" data-action="comment" aria-label="Comment on this tip"><i class="fas fa-comment-dots"></i></a>
+                            <span class="tip-action-count comment-count">0</span>
+                        </div>
+                        <div class="tip-action-spacer"></div>
+                        <div class="tip-action-group">
+                            <a href="#" class="tip-action tip-action-engagement" aria-label="View engagement"><i class="fas fa-users"></i></a>
+                            <span class="tip-action-count">0</span>
+                        </div>
+                        <div class="tip-action-spacer-large"></div>
+                        <div class="tip-action-group">
+                            <a href="#" class="tip-action tip-action-bookmark" aria-label="Bookmark this tip"><i class="fas fa-bookmark"></i></a>
+                        </div>
+                        <div class="tip-action-group">
+                            <a href="#" class="tip-action tip-action-share-link" aria-label="Share link to this tip"><i class="fas fa-arrow-up"></i></a>
+                        </div>
+                    </div>
                 </div>
             </div>
+            <div class="reply-to-header" style="display: none;">Replying to <span class="reply-to-username"></span></div>
+            <div class="post-reply-box">
+                {% if request.user.is_authenticated and request.user.userprofile.avatar %}
+                    <img src="{{ request.user.userprofile.avatar.url }}" alt="User Avatar" class="post-avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
+                {% else %}
+                    <img src="{% static 'img/default-avatar.png' %}" alt="User Avatar" class="post-avatar">
+                {% endif %}
+                <div class="post-reply-content">
+                    <div class="post-username-container">
+                        <span class="post-username">{{ request.user.username|default:"Guest" }}</span>
+                    </div>
+                    <textarea placeholder="Post a Reply..." class="post-reply-input"></textarea>
+                    <div class="post-actions">
+                        <button class="post-action-btn image"><i class="fas fa-image"></i></button>
+                        <button class="post-action-btn gif"><i class="far fa-file-image"></i></button>
+                        <button class="post-action-btn poll"><i class="fas fa-chart-bar"></i></button>
+                        <button class="post-action-btn emoji"><i class="far fa-smile"></i></button>
+                        <button class="post-action-btn location"><i class="fas fa-map-marker-alt"></i></button>
+                        <button class="post-action-btn schedule"><i class="fas fa-clock"></i></button>
+                        <button class="post-action-btn bold"><i class="fas fa-bold"></i></button>
+                        <button class="post-action-btn italic"><i class="fas fa-italic"></i></button>
+                    </div>
+                    <button class="post-reply-submit">Reply</button>
+                </div>
+            </div>
+            <div class="comment-list"></div>
         </div>
     </div>
 {% endblock %}
@@ -275,6 +321,6 @@
 {% endblock %}
 
 {% block extra_js %}
-    <script type="module" src="{% static 'js/pages/trending-tips.js' %}"></script>
-    <script src="{% static 'js/tips.js' %}"></script>
+    <script type="module" src="{% static 'js/pages/tips.js' %}"></script>
+    <script src="{% static 'js/upcoming-events.js' %}"></script>
 {% endblock %}

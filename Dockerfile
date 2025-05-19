@@ -47,15 +47,34 @@ RUN npm run build
 # =========================================
 FROM python:3.11-slim AS python
 WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install Python dependencies
 COPY requirements.txt .
 RUN pip install -r requirements.txt
+
+# Copy the entire project
 COPY . .
-RUN python3 manage.py collectstatic --noinput
+
+# Create necessary directories
+RUN mkdir -p /app/staticfiles /app/media
+
+# Collect static files
+RUN python3 manage.py collectstatic --noinput --clear
 
 # =========================================
 # Final stage: Combine Python and built static files
 # =========================================
 FROM python AS final
 COPY --from=production /app/static/dist /app/static/dist
+
+# Ensure static files are in the correct location
+RUN mkdir -p /app/staticfiles && \
+    cp -r /app/static/* /app/staticfiles/
+
 ENV PYTHONUNBUFFERED=1
-CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"] 
+CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "tipsterarena.asgi:application"] 

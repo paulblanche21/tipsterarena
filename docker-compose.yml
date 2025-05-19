@@ -45,16 +45,19 @@ services:
       context: .
       target: python
     command: >
-      sh -c "python3 manage.py migrate &&
+      sh -c "echo 'Starting migrations...' &&
+             python3 manage.py migrate &&
+             echo 'Collecting static files...' &&
              python3 manage.py collectstatic --noinput --clear &&
-             daphne -b 0.0.0.0 -p 8000 tipsterarena.asgi:application"
+             echo 'Starting Daphne server...' &&
+             daphne -v 2 -b 0.0.0.0 -p 8000 tipsterarena.asgi:application"
     volumes:
       - .:/app
       - /app/node_modules
       - static_volume:/app/staticfiles
       - media_volume:/app/media
-    expose:
-      - "8000"
+    ports:
+      - "8000:8000"
     depends_on:
       db:
         condition: service_healthy
@@ -70,6 +73,13 @@ services:
       ALLOWED_HOSTS: "*"
       DJANGO_VITE_DEV_MODE: "True"
       NODE_ENV: "development"
+      PYTHONUNBUFFERED: "1"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
     secrets:
       - db-password
 
@@ -80,8 +90,8 @@ services:
     ports:
       - "80:80"
     volumes:
-      - static_volume:/app/static
-      - media_volume:/app/media
+      - static_volume:/app/staticfiles:ro
+      - media_volume:/app/media:ro
     depends_on:
       - web
       - npm

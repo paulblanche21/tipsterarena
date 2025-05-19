@@ -8,7 +8,6 @@ from .views.auth_views import *
 from .views.tip_views import *
 from .views.profile_views import *
 from .views.sport_views import *
-from .views.api_views import *
 from .views.general_views import *
 
 # Move this to the very end of the file:

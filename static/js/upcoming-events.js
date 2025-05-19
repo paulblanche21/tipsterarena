@@ -5,19 +5,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // Sport URLs mapping
     const sportUrls = {
         football: {
-            fixtures: 'https://www.premierleague.com/fixtures',
-            inplay: 'https://www.premierleague.com/live',
-            results: 'https://www.premierleague.com/results'
+            fixtures: 'https://www.livescore.com/en/',
+            inplay: 'https://www.livescore.com/en/',
+            results: 'https://www.livescore.com/en/'
         },
         golf: {
-            fixtures: 'https://www.pgatour.com/tournaments',
+            fixtures: 'https://www.pgatour.com/schedule',
             inplay: 'https://www.pgatour.com/leaderboard',
             results: 'https://www.pgatour.com/results'
         },
         tennis: {
-            fixtures: 'https://www.atptour.com/en/tournaments',
-            inplay: 'https://www.atptour.com/en/scores/current',
-            results: 'https://www.atptour.com/en/results'
+            fixtures: 'https://www.skysports.com/tennis/scores-schedule',
+            inplay: 'https://www.skysports.com/tennis/scores-schedule',
+            results: 'https://www.skysports.com/tennis/scores-schedule'
         },
         horse_racing: {
             fixtures: 'https://www.racingpost.com/racecards',
