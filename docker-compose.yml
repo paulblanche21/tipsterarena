@@ -104,3 +104,13 @@ volumes:
 secrets:
   db-password:
     file: db/password.txt 
+
+environment:
+  DATABASE_URL: postgres://paul:${DATABASE_PASSWORD}@db:5432/tipsterarena
+  REDIS_URL: redis://redis:6379/0
+  DJANGO_SETTINGS_MODULE: tipsterarena.settings
+  DEBUG: "True"
+  ALLOWED_HOSTS: "*"
+  DJANGO_VITE_DEV_MODE: "True"
+  NODE_ENV: "development"
+  PYTHONUNBUFFERED: "1"

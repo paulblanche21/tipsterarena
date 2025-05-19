@@ -166,18 +166,34 @@ class VerifyTipView(APIView):
     def post(self, request, tip_id):
         try:
             tip = Tip.objects.get(id=tip_id)
-            if tip.author != request.user:
+            if not request.user.is_staff:
                 return Response(
-                    {'error': 'You can only verify your own tips'},
+                    {'error': 'Only staff members can verify tips'},
                     status=status.HTTP_403_FORBIDDEN
                 )
             
+            status_value = request.data.get('status')
+            if not status_value:
+                return Response(
+                    {'error': 'Status is required'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            if status_value not in ['win', 'loss', 'dead_heat', 'void_non_runner']:
+                return Response(
+                    {'error': 'Invalid status value'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            tip.status = status_value
             tip.verified = True
+            tip.resolution_note = request.data.get('resolution_note', '')
             tip.save()
             
             return Response({
-                'message': 'Tip verified successfully',
-                'tip_id': tip.id
+                'message': f'Tip verified as {status_value}',
+                'tip_id': tip.id,
+                'status': status_value
             })
         except Tip.DoesNotExist:
             return Response(

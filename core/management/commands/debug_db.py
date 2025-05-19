@@ -1,5 +1,4 @@
 from django.core.management.base import BaseCommand
-from django.db import connection
 from core.models import FootballEvent, FootballLeague, FootballTeam
 from core.views import fetch_and_store_football_events
 

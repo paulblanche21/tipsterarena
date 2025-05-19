@@ -87,18 +87,18 @@ WSGI_APPLICATION = "tipsterarena.wsgi.application"  # WSGI application entry poi
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'tipsterarena',
-        'USER': 'paul',
-        'PASSWORD': os.getenv('DATABASE_PASSWORD', 'Frankfurt5!'),  # Fallback for local development
-        'HOST': 'db',
-        'PORT': '5432',
+        'NAME': os.environ.get('DB_NAME', 'tipsterarena'),
+        'USER': os.environ.get('DB_USER', 'postgres'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'postgres'),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),  # Will be 'db' in Docker, 'localhost' locally
+        'PORT': os.environ.get('DB_PORT', '5432'),
     },
     'test': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'tipsterarena_test',
         'USER': 'paul',
         'PASSWORD': os.getenv('DATABASE_PASSWORD', 'Frankfurt5!'),  # Fallback for local development
-        'HOST': 'db',
+        'HOST': 'localhost',  # Changed from 'db' to 'localhost' for local development
         'PORT': '5432',
     }
 }

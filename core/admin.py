@@ -12,13 +12,38 @@ from .models import (
       Follow, Share,
       Comment, MessageThread, Message)
 
+class PendingTipFilter(admin.SimpleListFilter):
+    """Filter to show pending tips."""
+    title = 'Verification Status'
+    parameter_name = 'verification_status'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('pending', 'Pending Verification'),
+            ('verified', 'Verified'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'pending':
+            return queryset.filter(status='pending')
+        if self.value() == 'verified':
+            return queryset.exclude(status='pending')
+        return queryset
+
 @admin.register(Tip)
 class TipAdmin(admin.ModelAdmin):
     """Admin interface for managing betting tips and their verification status."""
     list_display = ('user', 'sport', 'text', 'odds', 'odds_format', 'bet_type', 'each_way', 'confidence', 'status', 'created_at')
     search_fields = ('user__username', 'text')
-    list_filter = ('sport', 'each_way', 'status')
+    list_filter = (PendingTipFilter, 'sport', 'each_way', 'status')
     actions = ['verify_as_win', 'verify_as_loss', 'verify_as_dead_heat', 'verify_as_void_non_runner']
+    list_per_page = 50  # Show more tips per page
+    ordering = ('-created_at',)  # Show newest tips first
+
+    def get_queryset(self, request):
+        """Customize the queryset to show pending tips first."""
+        qs = super().get_queryset(request)
+        return qs.order_by('status', '-created_at')  # Pending tips first, then by date
 
     def verify_as_win(self, request, queryset):
         try:
@@ -37,31 +62,27 @@ class TipAdmin(admin.ModelAdmin):
             'Content-Type': 'application/json',
         }
         for tip in queryset:
-            if tip.status == 'pending':
-                try:
-                    response = requests.post(
-                        f"{settings.SITE_URL}/api/verify-tip/",
-                        json={
-                            'tip_id': tip.id,
-                            'status': 'win',
-                            'resolution_note': (
-                                'Verified as win via admin action'
-                            )
-                        },
-                        headers=headers,
-                        timeout=10
-                    )
-                    response.raise_for_status()
-                    self.message_user(request, f"Tip {tip.id} verified as win.", messages.SUCCESS)
-                except requests.exceptions.RequestException as e:
-                    self.message_user(
-                        request,
-                        (
-                            f"Error verifying tip {tip.id}: "
-                            f"{response.json().get('error', response.text) if 'response' in locals() else str(e)}"
-                        ),
-                        messages.ERROR
-                    )
+            try:
+                response = requests.post(
+                    f"{settings.SITE_URL}/api/verify-tip/{tip.id}/",
+                    json={
+                        'status': 'win',
+                        'resolution_note': 'Verified as win via admin action'
+                    },
+                    headers=headers,
+                    timeout=10
+                )
+                response.raise_for_status()
+                self.message_user(request, f"Tip {tip.id} verified as win.", messages.SUCCESS)
+            except requests.exceptions.RequestException as e:
+                self.message_user(
+                    request,
+                    (
+                        f"Error verifying tip {tip.id}: "
+                        f"{response.json().get('error', response.text) if 'response' in locals() else str(e)}"
+                    ),
+                    messages.ERROR
+                )
 
     verify_as_win.short_description = "Verify selected tips as Win"
 
@@ -83,31 +104,27 @@ class TipAdmin(admin.ModelAdmin):
             'Content-Type': 'application/json',
         }
         for tip in queryset:
-            if tip.status == 'pending':
-                try:
-                    response = requests.post(
-                        f"{settings.SITE_URL}/api/verify-tip/",
-                        json={
-                            'tip_id': tip.id,
-                            'status': 'loss',
-                            'resolution_note': (
-                                'Verified as loss via admin action'
-                            )
-                        },
-                        headers=headers,
-                        timeout=10
-                    )
-                    response.raise_for_status()
-                    self.message_user(request, f"Tip {tip.id} verified as loss.", messages.SUCCESS)
-                except requests.exceptions.RequestException as e:
-                    self.message_user(
-                        request,
-                        (
-                            f"Error verifying tip {tip.id}: "
-                            f"{response.json().get('error', response.text) if 'response' in locals() else str(e)}"
-                        ),
-                        messages.ERROR
-                    )
+            try:
+                response = requests.post(
+                    f"{settings.SITE_URL}/api/verify-tip/{tip.id}/",
+                    json={
+                        'status': 'loss',
+                        'resolution_note': 'Verified as loss via admin action'
+                    },
+                    headers=headers,
+                    timeout=10
+                )
+                response.raise_for_status()
+                self.message_user(request, f"Tip {tip.id} verified as loss.", messages.SUCCESS)
+            except requests.exceptions.RequestException as e:
+                self.message_user(
+                    request,
+                    (
+                        f"Error verifying tip {tip.id}: "
+                        f"{response.json().get('error', response.text) if 'response' in locals() else str(e)}"
+                    ),
+                    messages.ERROR
+                )
 
     verify_as_loss.short_description = "Verify selected tips as Loss"
 
@@ -129,31 +146,27 @@ class TipAdmin(admin.ModelAdmin):
             'Content-Type': 'application/json',
         }
         for tip in queryset:
-            if tip.status == 'pending':
-                try:
-                    response = requests.post(
-                        f"{settings.SITE_URL}/api/verify-tip/",
-                        json={
-                            'tip_id': tip.id,
-                            'status': 'dead_heat',
-                            'resolution_note': (
-                                'Verified as dead heat via admin action'
-                            )
-                        },
-                        headers=headers,
-                        timeout=10
-                    )
-                    response.raise_for_status()
-                    self.message_user(request, f"Tip {tip.id} verified as dead heat.", messages.SUCCESS)
-                except requests.exceptions.RequestException as e:
-                    self.message_user(
-                        request,
-                        (
-                            f"Error verifying tip {tip.id}: "
-                            f"{response.json().get('error', response.text) if 'response' in locals() else str(e)}"
-                        ),
-                        messages.ERROR
-                    )
+            try:
+                response = requests.post(
+                    f"{settings.SITE_URL}/api/verify-tip/{tip.id}/",
+                    json={
+                        'status': 'dead_heat',
+                        'resolution_note': 'Verified as dead heat via admin action'
+                    },
+                    headers=headers,
+                    timeout=10
+                )
+                response.raise_for_status()
+                self.message_user(request, f"Tip {tip.id} verified as dead heat.", messages.SUCCESS)
+            except requests.exceptions.RequestException as e:
+                self.message_user(
+                    request,
+                    (
+                        f"Error verifying tip {tip.id}: "
+                        f"{response.json().get('error', response.text) if 'response' in locals() else str(e)}"
+                    ),
+                    messages.ERROR
+                )
 
     verify_as_dead_heat.short_description = "Verify selected tips as Dead Heat"
 
@@ -175,31 +188,27 @@ class TipAdmin(admin.ModelAdmin):
             'Content-Type': 'application/json',
         }
         for tip in queryset:
-            if tip.status == 'pending':
-                try:
-                    response = requests.post(
-                        f"{settings.SITE_URL}/api/verify-tip/",
-                        json={
-                            'tip_id': tip.id,
-                            'status': 'void_non_runner',
-                            'resolution_note': (
-                                'Verified as void/non runner via admin action'
-                            )
-                        },
-                        headers=headers,
-                        timeout=10
-                    )
-                    response.raise_for_status()
-                    self.message_user(request, f"Tip {tip.id} verified as void/non runner.", messages.SUCCESS)
-                except requests.exceptions.RequestException as e:
-                    self.message_user(
-                        request,
-                        (
-                            f"Error verifying tip {tip.id}: "
-                            f"{response.json().get('error', response.text) if 'response' in locals() else str(e)}"
-                        ),
-                        messages.ERROR
-                    )
+            try:
+                response = requests.post(
+                    f"{settings.SITE_URL}/api/verify-tip/{tip.id}/",
+                    json={
+                        'status': 'void_non_runner',
+                        'resolution_note': 'Verified as void/non runner via admin action'
+                    },
+                    headers=headers,
+                    timeout=10
+                )
+                response.raise_for_status()
+                self.message_user(request, f"Tip {tip.id} verified as void/non runner.", messages.SUCCESS)
+            except requests.exceptions.RequestException as e:
+                self.message_user(
+                    request,
+                    (
+                        f"Error verifying tip {tip.id}: "
+                        f"{response.json().get('error', response.text) if 'response' in locals() else str(e)}"
+                    ),
+                    messages.ERROR
+                )
 
     verify_as_void_non_runner.short_description = "Verify selected tips as Void/Non Runner"
 
