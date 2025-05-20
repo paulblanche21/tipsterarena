@@ -204,28 +204,30 @@ class Tip(models.Model):
 
     def clean(self):
         super().clean()
-        # Validate odds format
-        if self.odds_format not in ['decimal', 'fractional']:
-            raise ValidationError({'odds_format': 'Invalid odds format'})
+        # Only validate odds if they are provided
+        if self.odds and self.odds_format:
+            # Validate odds format
+            if self.odds_format not in ['decimal', 'fractional']:
+                raise ValidationError({'odds_format': 'Invalid odds format'})
+            
+            # Validate odds value
+            if self.odds_format == 'decimal':
+                try:
+                    odds = float(self.odds)
+                    if odds < 1.0:
+                        raise ValidationError({'odds': 'Decimal odds must be greater than or equal to 1.0'})
+                except ValueError:
+                    raise ValidationError({'odds': 'Invalid decimal odds format'})
+            elif self.odds_format == 'fractional':
+                try:
+                    num, denom = map(int, self.odds.split('/'))
+                    if denom == 0:
+                        raise ValidationError({'odds': 'Denominator cannot be zero'})
+                except (ValueError, AttributeError):
+                    raise ValidationError({'odds': 'Invalid fractional odds format'})
         
-        # Validate odds value
-        if self.odds_format == 'decimal':
-            try:
-                odds = float(self.odds)
-                if odds < 1.0:
-                    raise ValidationError({'odds': 'Decimal odds must be greater than or equal to 1.0'})
-            except ValueError:
-                raise ValidationError({'odds': 'Invalid decimal odds format'})
-        elif self.odds_format == 'fractional':
-            try:
-                num, denom = map(int, self.odds.split('/'))
-                if denom == 0:
-                    raise ValidationError({'odds': 'Denominator cannot be zero'})
-            except (ValueError, AttributeError):
-                raise ValidationError({'odds': 'Invalid fractional odds format'})
-        
-        # Validate bet type
-        if self.bet_type not in ['single', 'double', 'treble', 'accumulator']:
+        # Validate bet type if provided
+        if self.bet_type and self.bet_type not in ['single', 'double', 'treble', 'accumulator']:
             raise ValidationError({'bet_type': 'Invalid bet type'})
 
         # Validate JSON fields

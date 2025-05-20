@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SITE_URL = 'http://localhost:8000'  # For development; adjust for production
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-or8ih)*8^-c_@9h4r&sojeg#*5841-k%f9s+$tj##9n=&thm)4"  # Replace with a secure key in production
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-or8ih)*8^-c_@9h4r&sojeg#*5841-k%f9s+$${tj}##9n=&thm)4')  # Replace with a secure key in production
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True  # Set to False in production for security
@@ -88,17 +88,17 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get('DB_NAME', 'tipsterarena'),
-        'USER': os.environ.get('DB_USER', 'postgres'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', 'postgres'),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),  # Will be 'db' in Docker, 'localhost' locally
+        'USER': os.environ.get('DB_USER', 'admin'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'Frankfurt5!'),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),  # Always use localhost by default
         'PORT': os.environ.get('DB_PORT', '5432'),
     },
     'test': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'tipsterarena_test',
-        'USER': 'paul',
-        'PASSWORD': os.getenv('DATABASE_PASSWORD', 'Frankfurt5!'),  # Fallback for local development
-        'HOST': 'localhost',  # Changed from 'db' to 'localhost' for local development
+        'USER': 'admin',
+        'PASSWORD': os.getenv('DATABASE_PASSWORD', 'Frankfurt5!'),
+        'HOST': 'localhost',
         'PORT': '5432',
     }
 }
@@ -193,7 +193,7 @@ DJANGO_VITE = {
         'dev_mode': True,
         'dev_server_port': 3000,
         'manifest_path': os.path.join(BASE_DIR, 'static', 'dist', '.vite', 'manifest.json'),
-        'static_url_prefix': 'static/',  # Changed from 'dist/' to 'static/'
+        'static_url_prefix': '',  # Changed from 'static/' to empty string
     }
 }
 

@@ -3,7 +3,7 @@ services:
     image: postgres:15
     environment:
       POSTGRES_DB: tipsterarena
-      POSTGRES_USER: paul
+      POSTGRES_USER: admin
       POSTGRES_PASSWORD_FILE: /run/secrets/db-password
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -11,7 +11,7 @@ services:
     secrets:
       - db-password
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U paul -d tipsterarena"]
+      test: ["CMD-SHELL", "pg_isready -U admin -d tipsterarena"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -66,7 +66,11 @@ services:
       npm:
         condition: service_started
     environment:
-      DATABASE_URL: postgres://paul:${DATABASE_PASSWORD}@db:5432/tipsterarena
+      DB_HOST: db
+      DB_NAME: tipsterarena
+      DB_USER: admin
+      DB_PASSWORD_FILE: /run/secrets/db-password
+      DB_PORT: 5432
       REDIS_URL: redis://redis:6379/0
       DJANGO_SETTINGS_MODULE: tipsterarena.settings
       DEBUG: "True"
@@ -103,14 +107,4 @@ volumes:
 
 secrets:
   db-password:
-    file: db/password.txt 
-
-environment:
-  DATABASE_URL: postgres://paul:${DATABASE_PASSWORD}@db:5432/tipsterarena
-  REDIS_URL: redis://redis:6379/0
-  DJANGO_SETTINGS_MODULE: tipsterarena.settings
-  DEBUG: "True"
-  ALLOWED_HOSTS: "*"
-  DJANGO_VITE_DEV_MODE: "True"
-  NODE_ENV: "development"
-  PYTHONUNBUFFERED: "1"
+    file: db/password.txt

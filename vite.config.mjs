@@ -86,5 +86,5 @@ export default defineConfig({
       'static/js/mobile-header.js'
     ]
   },
-  base: '/static/'
+  base: ''
 });

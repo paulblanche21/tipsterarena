@@ -327,14 +327,17 @@
                     </select>
                 </div>
                 <div class="tip-confidence">
-                    <label for="confidence">Confidence (1 Star = Very Low  5 Star = Very High ):</label>
-                    <select class="confidence" name="confidence" id="confidence">
-                        <option value="1">1 Star</option>
-                        <option value="2">2 Stars</option>
-                        <option value="3" selected>3 Stars</option>
-                        <option value="4">4 Stars</option>
-                        <option value="5">5 Stars</option>
-                    </select>
+                    <label for="confidence">Confidence Rating:</label>
+                    <div class="star-rating">
+                        <input type="hidden" name="confidence" id="confidence" value="3">
+                        <div class="stars">
+                            <i class="fas fa-star" data-rating="1"></i>
+                            <i class="fas fa-star" data-rating="2"></i>
+                            <i class="fas fa-star" data-rating="3"></i>
+                            <i class="far fa-star" data-rating="4"></i>
+                            <i class="far fa-star" data-rating="5"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="post-preview" style="display: none;">

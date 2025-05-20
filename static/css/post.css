@@ -798,3 +798,35 @@ b {
     font-size: var(--font-size-base);
     color: #333;
   }
+  
+  .star-rating {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .star-rating .stars {
+    display: flex;
+    gap: 4px;
+  }
+  
+  .star-rating .stars i {
+    font-size: 24px;
+    color: #ffd700;
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
+  
+  .star-rating .stars i:hover,
+  .star-rating .stars i:hover ~ i {
+    color: #ffd700;
+  }
+  
+  .star-rating .stars i.far {
+    color: #ccc;
+  }
+  
+  .star-rating .stars i.far:hover,
+  .star-rating .stars i.far:hover ~ i {
+    color: #ffd700;
+  }

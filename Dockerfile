@@ -70,11 +70,8 @@ RUN python3 manage.py collectstatic --noinput --clear
 # Final stage: Combine Python and built static files
 # =========================================
 FROM python AS final
-COPY --from=production /app/static/dist /app/static/dist
-
-# Ensure static files are in the correct location
-RUN mkdir -p /app/staticfiles && \
-    cp -r /app/static/* /app/staticfiles/
+# Copy built static files from production stage
+COPY --from=production /app/static/dist /app/staticfiles/dist
 
 ENV PYTHONUNBUFFERED=1
 CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "tipsterarena.asgi:application"] 

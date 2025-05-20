@@ -61,11 +61,63 @@ function debounce(func, wait) {
 // Function to validate odds based on the selected format (decimal or fractional)
 function validateOdds(oddsType, decimalOdds, numerator, denominator) {
     if (oddsType === 'decimal') {
-        return decimalOdds && /^\d*\.?\d+$/.test(decimalOdds) && parseFloat(decimalOdds) > 1; // e.g., 2.5
+        if (!decimalOdds || !decimalOdds.trim()) {
+            return false;
+        }
+        const odds = parseFloat(decimalOdds);
+        return !isNaN(odds) && odds >= 1.0 && /^\d*\.?\d+$/.test(decimalOdds);
     } else if (oddsType === 'fractional') {
-        return numerator && denominator && /^\d+$/.test(numerator) && /^\d+$/.test(denominator) && parseInt(denominator) !== 0; // e.g., 3 and 2
+        if (!numerator || !denominator || !numerator.trim() || !denominator.trim()) {
+            return false;
+        }
+        const num = parseInt(numerator);
+        const den = parseInt(denominator);
+        return !isNaN(num) && !isNaN(den) && den !== 0 && /^\d+$/.test(numerator) && /^\d+$/.test(denominator);
     }
     return false;
+}
+
+// Function to validate form before submission
+function validateForm(text, oddsType, decimalOdds, numerator, denominator, betType) {
+    console.log('Validating form with values:', {
+        text,
+        oddsType,
+        decimalOdds,
+        numerator,
+        denominator,
+        betType
+    });
+
+    if (!text || !text.trim()) {
+        alert('Please enter a tip before posting.');
+        return false;
+    }
+
+    // Check if any odds-related field has a value
+    const hasOddsValue = (oddsType && oddsType !== 'decimal') || // Only count oddsType if it's not the default
+                        (decimalOdds && decimalOdds.trim()) || 
+                        (numerator && numerator.trim()) || 
+                        (denominator && denominator.trim());
+
+    console.log('Has odds value:', hasOddsValue);
+
+    // Only validate odds if any odds-related field is filled
+    if (hasOddsValue) {
+        console.log('Validating odds...');
+        if (!validateOdds(oddsType, decimalOdds, numerator, denominator)) {
+            alert('Please enter valid odds or leave all odds fields empty.');
+            return false;
+        }
+    }
+
+    // Only validate bet type if odds are provided
+    if (hasOddsValue && !betType) {
+        alert('Please select a bet type when providing odds.');
+        return false;
+    }
+
+    console.log('Form validation passed');
+    return true;
 }
 
 // Function to show the GIF search modal
@@ -547,22 +599,15 @@ function setupCentralFeedPost() {
         const eachWayValue = eachWay.value;
         const confidenceValue = confidence.value;
 
-        let odds;
-        if (oddsTypeValue === 'decimal') {
-            odds = oddsInputDecimal.value.trim();
-        } else {
-            const numerator = oddsNumerator.value.trim();
-            const denominator = oddsDenominator.value.trim();
-            odds = `${numerator}/${denominator}`;
-        }
-
-        if (!text) {
-            alert('Please enter a tip before posting.');
-            return;
-        }
-
-        if (!sport) {
-            alert('Sport is not defined. Please select a sport or ensure the page is configured correctly.');
+        // Validate form before proceeding
+        if (!validateForm(
+            text,
+            oddsTypeValue,
+            oddsInputDecimal.value.trim(),
+            oddsNumerator.value.trim(),
+            oddsDenominator.value.trim(),
+            bet
+        )) {
             return;
         }
 
@@ -571,15 +616,15 @@ function setupCentralFeedPost() {
         formData.append('audience', audience);
         formData.append('sport', sport);
         formData.append('odds_type', oddsTypeValue);
-        if (oddsTypeValue === 'decimal' && odds) {
-            formData.append('odds-input-decimal', odds);
+        if (oddsTypeValue === 'decimal' && oddsInputDecimal.value.trim()) {
+            formData.append('odds-input-decimal', oddsInputDecimal.value.trim());
         } else if (oddsTypeValue === 'fractional' && oddsNumerator.value.trim() && oddsDenominator.value.trim()) {
             formData.append('odds-numerator', oddsNumerator.value.trim());
             formData.append('odds-denominator', oddsDenominator.value.trim());
         }
         formData.append('bet_type', bet);
         formData.append('each_way', eachWayValue);
-        if (confidenceValue) formData.append('confidence', confidenceValue);
+        if (confidenceValue) formData.append('confidence', parseInt(confidenceValue, 10));
 
         const modalImageInput = document.querySelectorAll('input[type="file"]')[1];
         if (postInput.dataset.imageFile && modalImageInput && modalImageInput.files[0]) {
@@ -594,6 +639,9 @@ function setupCentralFeedPost() {
         }
         formData.append('poll', '{}');
         formData.append('emojis', '{}');
+        formData.append('release_schedule', JSON.stringify({
+            'default': new Date().toISOString()  // Set immediate release for default tier
+        }));  // Properly format as JSON string with default tier
 
         fetch('/api/post-tip/', {
             method: 'POST',
@@ -659,6 +707,9 @@ function setupCentralFeedPost() {
             alert('An error occurred while posting the tip.');
         });
     });
+
+    // Initialize star rating
+    setupStarRating();
 }
 
 // Function to setup the post modal
@@ -833,6 +884,9 @@ function setupPostModal() {
             });
         }
     }
+
+    // Initialize star rating
+    setupStarRating();
 }
 
 // Handle modal post submission
@@ -858,22 +912,15 @@ function handleModalPostSubmit() {
     const eachWayValue = eachWay.value;
     const confidenceValue = confidence.value; // Replaced stake with confidenceValue
 
-    let odds;
-    if (oddsTypeValue === 'decimal') {
-        odds = oddsInputDecimal.value.trim();
-    } else {
-        const numerator = oddsNumerator.value.trim();
-        const denominator = oddsDenominator.value.trim();
-        odds = `${numerator}/${denominator}`;
-    }
-
-    if (!text) {
-        alert('Please enter a tip before posting.');
-        return;
-    }
-
-    if (!sport) {
-        alert('Sport is not defined. Please select a sport or ensure the page is configured correctly.');
+    // Validate form before proceeding
+    if (!validateForm(
+        text,
+        oddsTypeValue,
+        oddsInputDecimal.value.trim(),
+        oddsNumerator.value.trim(),
+        oddsDenominator.value.trim(),
+        bet
+    )) {
         return;
     }
 
@@ -882,15 +929,15 @@ function handleModalPostSubmit() {
     formData.append('audience', audience);
     formData.append('sport', sport);
     formData.append('odds_type', oddsTypeValue);
-    if (oddsTypeValue === 'decimal' && odds) {
-        formData.append('odds-input-decimal', odds);
+    if (oddsTypeValue === 'decimal' && oddsInputDecimal.value.trim()) {
+        formData.append('odds-input-decimal', oddsInputDecimal.value.trim());
     } else if (oddsTypeValue === 'fractional' && oddsNumerator.value.trim() && oddsDenominator.value.trim()) {
         formData.append('odds-numerator', oddsNumerator.value.trim());
         formData.append('odds-denominator', oddsDenominator.value.trim());
     }
     formData.append('bet_type', bet);
     formData.append('each_way', eachWayValue);
-    if (confidenceValue) formData.append('confidence', confidenceValue); // Replaced stake with confidence
+    if (confidenceValue) formData.append('confidence', parseInt(confidenceValue, 10));
 
     const modalImageInput = document.querySelectorAll('input[type="file"]')[1];
     if (modalInput.dataset.imageFile && modalImageInput && modalImageInput.files[0]) {
@@ -905,6 +952,9 @@ function handleModalPostSubmit() {
     }
     formData.append('poll', '{}');
     formData.append('emojis', '{}');
+    formData.append('release_schedule', JSON.stringify({
+        'default': new Date().toISOString()  // Set immediate release for default tier
+    }));  // Properly format as JSON string with default tier
 
     fetch('/api/post-tip/', {
         method: 'POST',
@@ -965,6 +1015,76 @@ function getSportLabel(sport) {
     
     const sportName = sportLabels[sport] || sport;
     return `<span class="sport-label sport-${sport}">${sportName}</span>`;
+}
+
+function setupStarRating() {
+    // Setup star rating for both central feed and modal
+    const starContainers = document.querySelectorAll('.star-rating');
+    
+    starContainers.forEach(container => {
+        const stars = container.querySelectorAll('.stars i');
+        const hiddenInput = container.querySelector('input[type="hidden"]');
+        
+        // Set initial state based on default value
+        const initialRating = parseInt(hiddenInput.value);
+        stars.forEach(star => {
+            const rating = parseInt(star.dataset.rating);
+            if (rating <= initialRating) {
+                star.classList.remove('far');
+                star.classList.add('fas');
+            } else {
+                star.classList.remove('fas');
+                star.classList.add('far');
+            }
+        });
+
+        stars.forEach(star => {
+            star.addEventListener('click', () => {
+                const rating = parseInt(star.dataset.rating);
+                hiddenInput.value = rating;
+                
+                // Update star icons
+                stars.forEach(s => {
+                    const starRating = parseInt(s.dataset.rating);
+                    if (starRating <= rating) {
+                        s.classList.remove('far');
+                        s.classList.add('fas');
+                    } else {
+                        s.classList.remove('fas');
+                        s.classList.add('far');
+                    }
+                });
+            });
+
+            star.addEventListener('mouseover', () => {
+                const rating = parseInt(star.dataset.rating);
+                stars.forEach(s => {
+                    const starRating = parseInt(s.dataset.rating);
+                    if (starRating <= rating) {
+                        s.classList.remove('far');
+                        s.classList.add('fas');
+                    } else {
+                        s.classList.remove('fas');
+                        s.classList.add('far');
+                    }
+                });
+            });
+
+            star.addEventListener('mouseout', () => {
+                const currentRating = parseInt(hiddenInput.value);
+                stars.forEach(s => {
+                    const starRating = parseInt(s.dataset.rating);
+                    if (starRating <= currentRating) {
+                        s.classList.remove('far');
+                        s.classList.add('fas');
+                    } else {
+                        s.classList.remove('fas');
+                        s.classList.add('far');
+                    }
+                });
+            });
+        });
+    });
 }
 
 export { 
