@@ -45,19 +45,22 @@ INSTALLED_APPS = [
     'csp',                            # Content Security Policy enforcement
     "django_vite",                    # Integration with Vite for frontend assets
     'social_django',                   # Social authentication support                     
-    'channels',
+    'channels',                       # WebSocket support
+    'django_extensions',              # Development tools
+    'debug_toolbar',                  # Debug toolbar
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",         # Security enhancements
-    "whitenoise.middleware.WhiteNoiseMiddleware",                 # Add this line
+    "whitenoise.middleware.WhiteNoiseMiddleware",           # Static file serving
     "django.contrib.sessions.middleware.SessionMiddleware",   # Session support
-    'corsheaders.middleware.CorsMiddleware',                 # CORS middleware for handling cross-origin requests
+    'corsheaders.middleware.CorsMiddleware',                 # CORS middleware
     "django.middleware.common.CommonMiddleware",             # Common utilities
     "django.middleware.csrf.CsrfViewMiddleware",             # CSRF protection
     "django.contrib.auth.middleware.AuthenticationMiddleware",  # User authentication
     "django.contrib.messages.middleware.MessageMiddleware",  # Messages support
     "django.middleware.clickjacking.XFrameOptionsMiddleware",  # Clickjacking protection
+    'debug_toolbar.middleware.DebugToolbarMiddleware',       # Debug toolbar
 ]
 
 ROOT_URLCONF = "tipsterarena.urls"  # Root URL configuration
@@ -213,29 +216,63 @@ REST_FRAMEWORK = {
     ],
 }
 
-# Logging configuration for cron jobs
-# settings.py
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': True,  # Changed to True to disable existing loggers
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
-            'style': '{',
+# Debug toolbar settings
+INTERNAL_IPS = [
+    '127.0.0.1',
+    '0.0.0.0',
+]
+
+# Enable auto-reloading
+DJANGO_AUTO_RELOAD = True
+
+# Enable file watching
+FILE_UPLOAD_HANDLERS = [
+    'django.core.files.uploadhandler.MemoryFileUploadHandler',
+    'django.core.files.uploadhandler.TemporaryFileUploadHandler',
+]
+
+# WebSocket settings
+ASGI_APPLICATION = 'tipsterarena.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('redis', 6379)],
+            'capacity': 1500,  # Maximum number of messages that can be in a channel layer
+            'expiry': 3600,   # Message expiry in seconds
         },
     },
+}
+
+# Development-specific logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'level': 'INFO',  # Changed from DEBUG to INFO
-            'formatter': 'verbose',
         },
     },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
     'loggers': {
-        '': {
+        'django': {
             'handlers': ['console'],
-            'level': 'INFO',  # Changed from DEBUG to INFO
-            'propagate': True,
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'channels': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'daphne': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
         },
     },
 }
@@ -264,11 +301,3 @@ STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
 STRIPE_MONTHLY_PRICE_ID = os.getenv('STRIPE_MONTHLY_PRICE_ID')
 STRIPE_YEARLY_PRICE_ID = os.getenv('STRIPE_YEARLY_PRICE_ID')
 STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
-
-ASGI_APPLICATION = 'tipsterarena.asgi.application'
-
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
-    },
-}

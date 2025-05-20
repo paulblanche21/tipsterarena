@@ -100,3 +100,8 @@ websocket-client==1.8.0
 wsproto==1.2.0
 yarl==1.20.0
 pylint-django==2.5.3
+
+# Development dependencies
+django-debug-toolbar==4.2.0
+django-extensions==3.2.3
+watchdog==3.0.0

@@ -198,50 +198,52 @@
   .tip-action {
     color: var(--gray-light) !important;
     text-decoration: none;
-    font-size: clamp(12px, 3vw, 14px);
+    font-size: clamp(16px, 4vw, 20px);
     transition: color 0.2s, background-color 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: clamp(24px, 6vw, 28px);
-    height: clamp(24px, 6vw, 28px);
+    width: clamp(32px, 8vw, 40px);
+    height: clamp(32px, 8vw, 40px);
     border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.05);
   }
   
   /* Hover state for tip actions */
   .tip-action:hover {
     color: var(--red-accent);
+    background-color: rgba(255, 65, 54, 0.1);
   }
   
   /* Specific hover states for tip actions */
   .tip-action-like:hover {
-    color: var(--red-accent) !important;
-    background-color: rgba(255, 65, 54, 0.1);
+    color: #ff4d4d !important;
+    background-color: rgba(255, 77, 77, 0.1);
   }
   
   .tip-action-retweet:hover {
-    color: var(--primary-bg) !important;
-    background-color: rgba(0, 31, 63, 0.1);
+    color: #4d94ff !important;
+    background-color: rgba(77, 148, 255, 0.1);
   }
   
   .tip-action-comment:hover {
-    color: var(--primary-bg) !important;
-    background-color: rgba(0, 31, 63, 0.1);
+    color: #4dff88 !important;
+    background-color: rgba(77, 255, 136, 0.1);
   }
   
   .tip-action-engagement:hover {
-    color: var(--red-accent) !important;
-    background-color: rgba(255, 65, 54, 0.1);
+    color: #ff4d4d !important;
+    background-color: rgba(255, 77, 77, 0.1);
   }
   
   .tip-action-bookmark:hover {
-    color: var(--primary-bg) !important;
-    background-color: rgba(0, 31, 63, 0.1);
+    color: #ffd24d !important;
+    background-color: rgba(255, 210, 77, 0.1);
   }
   
   .tip-action-share:hover {
-    color: var(--primary-bg) !important;
-    background-color: rgba(0, 31, 63, 0.1);
+    color: #4d94ff !important;
+    background-color: rgba(77, 148, 255, 0.1);
   }
   
   /* Icon within tip actions */
@@ -251,17 +253,17 @@
   
   /* Liked state for like action */
   .tip-action-like.liked i {
-    color: #ff4136 !important;
+    color: #ff4d4d !important;
   }
   
   /* Shared state for share action */
   .tip-action-share.shared i {
-    color: var(--primary-bg) !important;
+    color: #4d94ff !important;
   }
   
   /* Styles for tip action counts */
   .tip-action-count {
-    font-size: clamp(10px, 2vw, 12px);
+    font-size: clamp(12px, 3vw, 14px);
     color: var(--gray-light);
     margin-right: clamp(4px, 1vw, 6px);
   }
@@ -270,7 +272,7 @@
   .tip-action-group {
     display: flex;
     align-items: center;
-    gap: clamp(2px, 1vw, 4px);
+    gap: clamp(4px, 1vw, 6px);
   }
   
   /* Small spacer between tip action groups */

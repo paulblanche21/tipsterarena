@@ -137,4 +137,63 @@ class ChatConsumer(AsyncWebsocketConsumer):
         except Exception:
             pass
         from django.conf import settings
-        return settings.STATIC_URL + 'img/default-avatar.png' 
+        return settings.STATIC_URL + 'img/default-avatar.png'
+
+class DirectMessageConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.user = self.scope["user"]
+        if self.user.is_anonymous:
+            await self.close()
+            return
+
+        # Get thread_id from URL
+        self.thread_id = self.scope['url_route']['kwargs']['thread_id']
+        
+        # Create a unique group name for this thread
+        self.thread_group_name = f"thread_{self.thread_id}"
+        
+        # Add to thread group
+        await self.channel_layer.group_add(
+            self.thread_group_name,
+            self.channel_name
+        )
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        # Remove from thread group
+        await self.channel_layer.group_discard(
+            self.thread_group_name,
+            self.channel_name
+        )
+
+    async def receive(self, text_data):
+        data = json.loads(text_data)
+        if data.get("type") == "direct_message":
+            message = data.get("message", "")
+            sender = data.get("sender", "")
+            image_url = data.get("image_url")
+            gif_url = data.get("gif_url")
+            
+            # Broadcast to thread group
+            await self.channel_layer.group_send(
+                self.thread_group_name,
+                {
+                    "type": "direct_message_broadcast",
+                    "sender": sender,
+                    "message": message,
+                    "image_url": image_url,
+                    "gif_url": gif_url,
+                    "created_at": data.get("created_at")
+                }
+            )
+
+    async def direct_message_broadcast(self, event):
+        # Send message to WebSocket
+        await self.send(text_data=json.dumps({
+            "type": "direct_message",
+            "sender": event["sender"],
+            "message": event["message"],
+            "image_url": event.get("image_url"),
+            "gif_url": event.get("gif_url"),
+            "created_at": event.get("created_at")
+        })) 

@@ -49,8 +49,8 @@ services:
              python3 manage.py migrate &&
              echo 'Collecting static files...' &&
              python3 manage.py collectstatic --noinput --clear &&
-             echo 'Starting Daphne server...' &&
-             daphne -v 2 -b 0.0.0.0 -p 8000 tipsterarena.asgi:application"
+             echo 'Starting Daphne server with auto-reload...' &&
+             daphne -v 2 -b 0.0.0.0 -p 8000 --proxy-headers --access-log - tipsterarena.asgi:application"
     volumes:
       - .:/app
       - /app/node_modules
@@ -78,6 +78,7 @@ services:
       DJANGO_VITE_DEV_MODE: "True"
       NODE_ENV: "development"
       PYTHONUNBUFFERED: "1"
+      DJANGO_AUTO_RELOAD: "True"
     deploy:
       resources:
         limits:

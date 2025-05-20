@@ -8,6 +8,18 @@
     {% load static %}
     <!-- Stylesheet for landing and auth pages -->
     <link rel="stylesheet" href="{% static 'css/landing.css' %}">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('.auth-form');
+            form.addEventListener('submit', function(e) {
+                console.log('Form submitted');
+                const username = form.querySelector('[name="username"]').value;
+                const password = form.querySelector('[name="password"]').value;
+                console.log('Username:', username);
+                console.log('Password length:', password.length);
+            });
+        });
+    </script>
 </head>
 <body>
     <!-- Container for the login interface -->
@@ -52,7 +64,7 @@
         {% endif %}
 
         <!-- Navigation links for signup and landing page -->
-        <p class="auth-links">Don’t have an account? <a href="{% url 'signup' %}" class="auth-link">Sign up here</a>.</p>
+        <p class="auth-links">Don't have an account? <a href="{% url 'signup' %}" class="auth-link">Sign up here</a>.</p>
         <p class="auth-links"><a href="{% url 'landing' %}" class="auth-link">Back to Landing</a></p>
     </div>
 </body>

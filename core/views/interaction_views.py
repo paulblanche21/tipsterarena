@@ -169,6 +169,23 @@ def send_message(request):
         gif_url=gif_url
     )
 
+    # Send WebSocket message
+    from channels.layers import get_channel_layer
+    from asgiref.sync import async_to_sync
+    
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f"thread_{thread.id}",
+        {
+            "type": "direct_message_broadcast",
+            "sender": request.user.username,
+            "message": message.content,
+            "image_url": message.image.url if message.image else None,
+            "gif_url": message.gif_url,
+            "created_at": message.created_at.isoformat()
+        }
+    )
+
     return JsonResponse({
         'success': True,
         'message_id': message.id,

@@ -2,10 +2,18 @@
 import { showEmojiPicker, showGifModal } from './post.js';
 
 let defaultMessageContent = ''; // Store the default content of the messageContent area
+let socket = null;
 
 function init() {
-    console.log('messages.js init() called');
-    console.log('Document readyState in init():', document.readyState);
+    console.log('=== messages.js init() called ===');
+    console.log('Document readyState:', document.readyState);
+    console.log('Current URL:', window.location.href);
+    console.log('All buttons in document:', document.querySelectorAll('button'));
+    console.log('All elements with ID containing "Message":', document.querySelectorAll('[id*="Message"]'));
+    console.log('Message content element:', document.getElementById('messageContent'));
+    console.log('New message button:', document.getElementById('newMessageBtn'));
+    console.log('Settings button:', document.getElementById('settingsBtn'));
+    console.log('Send message button:', document.getElementById('sendMessageBtn'));
 
     const messageContent = document.getElementById('messageContent');
     if (messageContent) {
@@ -15,30 +23,60 @@ function init() {
         console.log('messageContent not found on initial load');
     }
 
+    // Handle new message button in header
     const newMessageBtn = document.getElementById('newMessageBtn');
-    const newMessageSidebarBtn = document.getElementById('newMessageSidebarBtn');
-    const closeModalBtn = document.getElementById('closeModalBtn');
-    const recipientInput = document.getElementById('recipientUsername');
-    const settingsBtn = document.getElementById('settingsBtn');
-    const nextBtn = document.getElementById('nextBtn');
-
+    console.log('newMessageBtn element:', newMessageBtn);
     if (newMessageBtn) {
-        newMessageBtn.addEventListener('click', () => {
-            console.log('New message button clicked (direct listener)');
+        console.log('Found newMessageBtn in header');
+        newMessageBtn.addEventListener('click', function(e) {
+            console.log('New message button clicked (header)');
+            e.preventDefault();
+            e.stopPropagation();
             openNewMessageModal();
         });
-        console.log('New message button listener attached');
+        console.log('Added click listener to newMessageBtn');
     }
+
+    // Handle new message button in sidebar
+    const newMessageSidebarBtn = document.getElementById('newMessageSidebarBtn');
+    console.log('newMessageSidebarBtn element:', newMessageSidebarBtn);
     if (newMessageSidebarBtn) {
-        newMessageSidebarBtn.addEventListener('click', openNewMessageModal);
-        console.log('New message sidebar button listener attached');
+        console.log('Found newMessageSidebarBtn in sidebar');
+        newMessageSidebarBtn.addEventListener('click', function(e) {
+            console.log('New message button clicked (sidebar)');
+            e.preventDefault();
+            e.stopPropagation();
+            openNewMessageModal();
+        });
+        console.log('Added click listener to newMessageSidebarBtn');
     }
+
+    // Handle envelope icon
+    const envelopeIcon = document.querySelector('.fa-envelope');
+    console.log('envelopeIcon element:', envelopeIcon);
+    if (envelopeIcon) {
+        console.log('Found envelope icon');
+        envelopeIcon.addEventListener('click', function(e) {
+            console.log('Envelope icon clicked');
+            e.preventDefault();
+            e.stopPropagation();
+            openNewMessageModal();
+        });
+        console.log('Added click listener to envelope icon');
+    }
+
+    // Rest of the init function...
+    const closeModalBtn = document.getElementById('closeModalBtn');
     if (closeModalBtn) {
         closeModalBtn.addEventListener('click', closeNewMessageModal);
     }
+
+    const recipientInput = document.getElementById('recipientUsername');
     if (recipientInput) {
         recipientInput.addEventListener('input', inputHandler);
     }
+
+    const settingsBtn = document.getElementById('settingsBtn');
     if (settingsBtn) {
         console.log('Attaching event listener to settings button');
         settingsBtn.addEventListener('click', () => {
@@ -77,20 +115,15 @@ function init() {
             });
         });
     }
+
+    const nextBtn = document.getElementById('nextBtn');
     if (nextBtn) {
         nextBtn.addEventListener('click', startNewConversation);
         console.log('Next button listener attached');
     }
 
+    // Document-level delegation for thread cards
     document.addEventListener('click', (e) => {
-        const newMessageTarget = e.target.closest('#newMessageBtn');
-        if (newMessageTarget) {
-            console.log('New message button clicked (delegated listener)');
-            openNewMessageModal();
-            e.preventDefault();
-            e.stopPropagation();
-        }
-
         const threadCardTarget = e.target.closest('.card[data-thread-id]');
         if (threadCardTarget) {
             const threadCards = document.querySelectorAll('.card[data-thread-id]');
@@ -98,6 +131,10 @@ function init() {
             threadCardTarget.classList.add('selected');
             const threadId = threadCardTarget.getAttribute('data-thread-id');
             console.log('Thread card clicked, threadId:', threadId);
+            
+            // Connect to WebSocket for this thread
+            connectWebSocket(threadId);
+            
             fetch(`/messages/${threadId}/`, {
                 method: 'GET',
                 headers: {
@@ -126,43 +163,13 @@ function init() {
             e.stopPropagation();
         }
     });
-    console.log('Document-level delegation listener attached for #newMessageBtn and thread cards');
+    console.log('Document-level delegation listener attached for thread cards');
 
     initializeActionButtons();
 
     const threadCards = document.querySelectorAll('.card[data-thread-id]');
     console.log('Thread cards found:', threadCards.length);
-    threadCards.forEach(card => {
-        card.addEventListener('click', () => {
-            threadCards.forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
-            const threadId = card.getAttribute('data-thread-id');
-            console.log('Thread card clicked, threadId:', threadId);
-            fetch(`/messages/${threadId}/`, {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-            })
-            .then(response => response.text())
-            .then(html => {
-                const messageContent = document.getElementById('messageContent');
-                if (messageContent) {
-                    messageContent.innerHTML = html;
-                    const sendMessageBtn = document.getElementById('sendMessageBtn');
-                    if (sendMessageBtn) {
-                        const threadId = sendMessageBtn.getAttribute('data-thread-id');
-                        sendMessageBtn.addEventListener('click', () => sendMessage(threadId));
-                    }
-                    const messagesList = document.getElementById('messagesList');
-                    if (messagesList) {
-                        messagesList.scrollTop = messagesList.scrollHeight;
-                    }
-                    initializeActionButtons();
-                }
-            });
-        });
-    });
+    // Remove duplicate event listeners since we're using document-level delegation
 
     const sendMessageBtn = document.getElementById('sendMessageBtn');
     if (sendMessageBtn) {
@@ -177,18 +184,37 @@ function init() {
 }
 
 function initializeActionButtons() {
-    const photoBtn = document.querySelector('.action-btn[title="Add image"]');
-    const gifBtn = document.querySelector('.action-btn[title="Add GIF"]');
-    const emojiBtn = document.querySelector('.action-btn[title="Add emoji"]');
+    console.log('Initializing action buttons...');
+    
+    // Use IDs instead of title attributes for more reliable selection
+    const photoBtn = document.getElementById('imageBtn');
+    const gifBtn = document.getElementById('gifBtn');
+    const emojiBtn = document.getElementById('emojiBtn');
     const messageInput = document.getElementById('messageInput');
     const previewDiv = document.querySelector('.msg-message-preview');
 
+    console.log('Found buttons:', {
+        photoBtn: photoBtn,
+        gifBtn: gifBtn,
+        emojiBtn: emojiBtn,
+        messageInput: messageInput,
+        previewDiv: previewDiv
+    });
+
+    // Only initialize if we're in a thread view
     if (!messageInput || !previewDiv) {
-        console.log('messageInput or msg-message-preview not found');
+        console.log('No thread selected - action buttons not initialized');
         return;
     }
 
+    // Add auto-resize functionality
+    messageInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+
     if (photoBtn) {
+        console.log('Setting up photo button...');
         const photoInput = document.createElement('input');
         photoInput.type = 'file';
         photoInput.accept = 'image/*';
@@ -196,10 +222,12 @@ function initializeActionButtons() {
         document.body.appendChild(photoInput);
 
         photoBtn.addEventListener('click', () => {
+            console.log('Photo button clicked');
             photoInput.click();
         });
 
         photoInput.addEventListener('change', (e) => {
+            console.log('Photo selected');
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
@@ -217,20 +245,26 @@ function initializeActionButtons() {
     }
 
     if (gifBtn) {
+        console.log('Setting up GIF button...');
         gifBtn.addEventListener('click', () => {
+            console.log('GIF button clicked');
             showGifModal(messageInput, previewDiv);
         });
     }
 
     if (emojiBtn) {
+        console.log('Setting up emoji button...');
         emojiBtn.addEventListener('click', () => {
+            console.log('Emoji button clicked');
             showEmojiPicker(messageInput, emojiBtn);
         });
     }
 
     const removePreviewBtn = previewDiv.querySelector('.msg-remove-preview');
     if (removePreviewBtn) {
+        console.log('Setting up remove preview button...');
         removePreviewBtn.addEventListener('click', () => {
+            console.log('Remove preview clicked');
             previewDiv.style.display = 'none';
             messageInput.dataset.imageFile = '';
             messageInput.dataset.gifUrl = '';
@@ -287,128 +321,193 @@ function updateMessageFeedCard(threadId, latestMessage) {
     }
 }
 
-function sendMessage(threadId) {
+function connectWebSocket(threadId) {
+    const wsScheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const wsPath = `${wsScheme}://${window.location.host}/ws/messages/${threadId}/`;
+    
+    if (socket) {
+        socket.close();
+    }
+    
+    socket = new WebSocket(wsPath);
+    
+    socket.onopen = function() {
+        console.log('Direct message WebSocket connected');
+    };
+    
+    socket.onmessage = function(event) {
+        try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'direct_message') {
+                appendMessage({
+                    content: data.message,
+                    image: data.image_url,
+                    gif_url: data.gif_url,
+                    created_at: data.created_at,
+                    thread_id: threadId
+                });
+            }
+        } catch (e) {
+            console.error('Error parsing direct message:', e);
+        }
+    };
+    
+    socket.onclose = function() {
+        console.log('Direct message WebSocket closed');
+    };
+    
+    socket.onerror = function(error) {
+        console.error('Direct message WebSocket error:', error);
+    };
+}
+
+async function sendMessage(threadId) {
     const messageInput = document.getElementById('messageInput');
-    const sendButton = document.getElementById('sendMessageBtn');
-    const previewDiv = document.querySelector('.msg-message-preview');
-    const content = messageInput.value.trim();
+    const message = messageInput.value.trim();
+    const sendBtn = document.querySelector('.send-btn');
+    
+    if (!message && !previewDiv.querySelector('img')) return;
 
-    if (!content && !messageInput.dataset.imageFile && !messageInput.dataset.gifUrl) {
-        alert('Message content, image, or GIF must be provided');
-        return;
-    }
+    try {
+        sendBtn.classList.add('loading');
+        sendBtn.disabled = true;
 
-    sendButton.disabled = true;
-    sendButton.textContent = 'Sending...';
-
-    const formData = new FormData();
-    formData.append('thread_id', threadId);
-    formData.append('content', content);
-    if (messageInput.dataset.imageFile && messageInput.dataset.image) {
-        const photoInput = document.querySelector('input[type="file"][accept="image/*"]');
-        if (photoInput && photoInput.files[0]) {
-            formData.append('image', photoInput.files[0]);
+        const formData = new FormData();
+        formData.append('message', message);
+        
+        const imageFile = document.querySelector('input[type="file"]')?.files[0];
+        if (imageFile) {
+            formData.append('image', imageFile);
         }
-    }
-    if (messageInput.dataset.gifUrl) {
-        formData.append('gif_url', messageInput.dataset.gifUrl);
-    }
 
-    fetch('/send-message/', {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': getCsrfToken(),
-        },
-        body: formData,
-    })
-    .then(response => {
+        const response = await fetch(`/messages/send/${threadId}/`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+
         if (!response.ok) {
-            return response.text().then(text => {
-                throw new Error(`HTTP error! Status: ${response.status}, Response: ${text}`);
-            });
+            throw new Error('Failed to send message');
         }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            appendMessage(data);
-            messageInput.value = '';
-            messageInput.dataset.imageFile = '';
-            messageInput.dataset.gifUrl = '';
-            previewDiv.style.display = 'none';
-            const photoInput = document.querySelector('input[type="file"][accept="image/*"]');
-            if (photoInput) photoInput.value = '';
-        } else {
-            alert('Error sending message: ' + data.error);
+
+        const data = await response.json();
+        
+        // Send via WebSocket if connected
+        if (socket && socket.readyState === WebSocket.OPEN) {
+            socket.send(JSON.stringify({
+                'message': message,
+                'image_url': data.image_url || null,
+                'gif_url': data.gif_url || null
+            }));
         }
-    })
-    .catch(error => {
+
+        // Clear input and preview
+        messageInput.value = '';
+        messageInput.style.height = 'auto';
+        previewDiv.innerHTML = '';
+        previewDiv.style.display = 'none';
+        
+        // Refresh messages
+        await fetchMessages(threadId);
+    } catch (error) {
         console.error('Error sending message:', error);
         alert('Failed to send message. Please try again.');
-    })
-    .finally(() => {
-        sendButton.disabled = false;
-        sendButton.textContent = 'Send';
-    });
+    } finally {
+        sendBtn.classList.remove('loading');
+        sendBtn.disabled = false;
+    }
 }
 
 function openNewMessageModal() {
-    console.log('Opening new message modal');
+    console.log('Opening new message modal...');
     const modal = document.getElementById('newMessageModal');
-    if (modal) {
-        modal.style.display = 'block';
-        modal.style.zIndex = '10000';
-        console.log('Modal display set to block');
-
-        const recipientInput = document.getElementById('recipientUsername');
-        if (recipientInput) {
-            recipientInput.removeEventListener('input', inputHandler);
-            recipientInput.addEventListener('input', inputHandler);
-            console.log('Recipient input listener reattached');
-        } else {
-            console.log('recipientUsername not found in modal');
-        }
-
-        const closeModalBtn = document.getElementById('closeModalBtn');
-        if (closeModalBtn) {
-            closeModalBtn.removeEventListener('click', closeNewMessageModal);
-            closeModalBtn.addEventListener('click', closeNewMessageModal);
-            console.log('Close modal button listener reattached');
-        } else {
-            console.log('closeModalBtn not found in modal');
-        }
-
-        const nextBtn = document.getElementById('nextBtn');
-        if (nextBtn) {
-            nextBtn.removeEventListener('click', startNewConversation);
-            nextBtn.addEventListener('click', startNewConversation);
-            nextBtn.disabled = true;
-            console.log('Next button listener reattached and reset to disabled');
-        } else {
-            console.log('nextBtn not found in modal');
-        }
-    } else {
-        console.log('Modal element not found');
+    if (!modal) {
+        console.error('Modal element not found');
+        return;
     }
+    console.log('Found modal element:', modal);
+    
+    // Show the modal
+    modal.style.display = 'block';
+    // Force a reflow
+    modal.offsetHeight;
+    // Add the show class
+    modal.classList.add('show');
+    
+    // Focus the search input
+    const searchInput = document.getElementById('recipientUsername');
+    if (searchInput) {
+        searchInput.focus();
+    }
+    
+    // Clear any previous selections
+    const selectedUsers = document.getElementById('selectedUsers');
+    if (selectedUsers) {
+        selectedUsers.innerHTML = '';
+    }
+    
+    // Reset the next button
+    const nextBtn = document.getElementById('nextBtn');
+    if (nextBtn) {
+        nextBtn.disabled = true;
+    }
+    
+    // Clear the search input
+    if (searchInput) {
+        searchInput.value = '';
+    }
+    
+    // Clear any previous suggestions
+    const suggestionsList = document.getElementById('userSuggestions');
+    if (suggestionsList) {
+        suggestionsList.innerHTML = '';
+    }
+    
+    console.log('Modal opened successfully');
 }
 
 function closeNewMessageModal() {
-    console.log('Closing new message modal');
+    console.log('Closing new message modal...');
     const modal = document.getElementById('newMessageModal');
-    const recipientInput = document.getElementById('recipientUsername');
-    const suggestionsDiv = document.getElementById('userSuggestions');
-    if (modal) {
+    if (!modal) {
+        console.error('Modal element not found');
+        return;
+    }
+    
+    // Remove the show class
+    modal.classList.remove('show');
+    // Wait for the transition to complete
+    setTimeout(() => {
         modal.style.display = 'none';
-        console.log('Modal hidden');
-    } else {
-        console.log('Modal element not found in closeNewMessageModal');
+    }, 300);
+    
+    // Clear any selections
+    const selectedUsers = document.getElementById('selectedUsers');
+    if (selectedUsers) {
+        selectedUsers.innerHTML = '';
     }
-    if (recipientInput) {
-        recipientInput.value = '';
+    
+    // Reset the next button
+    const nextBtn = document.getElementById('nextBtn');
+    if (nextBtn) {
+        nextBtn.disabled = true;
     }
-    if (suggestionsDiv) {
-        suggestionsDiv.innerHTML = '';
+    
+    // Clear the search input
+    const searchInput = document.getElementById('recipientUsername');
+    if (searchInput) {
+        searchInput.value = '';
     }
+    
+    // Clear any suggestions
+    const suggestionsList = document.getElementById('userSuggestions');
+    if (suggestionsList) {
+        suggestionsList.innerHTML = '';
+    }
+    
+    console.log('Modal closed successfully');
 }
 
 function inputHandler(e) {

@@ -5,7 +5,7 @@
 
 {% block page_css %}
     <!-- Additional stylesheet for messages-specific styling -->
-    <link rel="stylesheet" href="http://localhost:3000/static/css/messages.css">
+    <link rel="stylesheet" href="{% static 'css/messages.css' %}">
 {% endblock %}
 
 {% block title %}Messages - Tipster Arena{% endblock %}
@@ -218,5 +218,9 @@
 {% endblock %}
 
 {% block extra_js %}
-    <!-- No additional scripts needed, as main.js handles dynamic functionality -->
+    <!-- Import and initialize messages functionality -->
+    <script type="module">
+        import { init } from '{% static "js/pages/messages.js" %}';
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
 {% endblock %}
