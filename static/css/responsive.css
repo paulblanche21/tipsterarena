@@ -474,6 +474,8 @@
     text-decoration: none;
     box-shadow: var(--shadow-light);
     transition: all 0.2s ease;
+    min-width: 120px;
+    min-height: 40px;
 }
 
 .messages-card:hover {
@@ -503,6 +505,8 @@
         height: 50px;
         padding: 0;
         border-radius: 50%;
+        min-width: 50px;
+        min-height: 50px;
     }
     
     .messages-text-base {

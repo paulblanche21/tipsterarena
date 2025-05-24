@@ -64,7 +64,7 @@ def home(request):
             bio = "No bio available"
         suggested_tipsters.append({
             'username': user.username,
-            'avatar': avatar_url,
+            'avatar_url': avatar_url,
             'bio': bio,
         })
 

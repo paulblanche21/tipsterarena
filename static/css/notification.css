@@ -17,7 +17,7 @@
 
 /* Unread notification styling */
 .notification.unread {
-    background-color: var(--highlight-bg);  /* Slightly different background for unread */
+    background-color: white;  /* Slightly different background for unread */
     border-left: 4px solid var(--primary-color); /* Left border indicator */
 }
 

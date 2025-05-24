@@ -111,6 +111,7 @@
     min-height: 300px;
     display: flex;
     flex-direction: column;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .trending-tips-card h3 {
@@ -118,78 +119,115 @@
     font-size: 1.2rem;
     font-weight: 600;
     margin-bottom: 1rem;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e9ecef;
 }
 
 .trending-tips-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
     color: black;
+    overflow-y: auto;
+    max-height: 400px;
+    padding-right: 5px;
 }
 
-.trending-tips-list p {
-    color: black;
-    font-size: 0.95rem;
-    text-align: center;
-    padding: 15px;
-    margin: 0;
+.trending-tips-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.trending-tips-list::-webkit-scrollbar-track {
+    background: var(--secondary-bg);
+    border-radius: 3px;
+}
+
+.trending-tips-list::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+.trending-tips-list::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
 }
 
 .trending-tip {
-    padding: 12px;
-    border-radius: 8px;
+    padding: 15px;
+    border-radius: 10px;
     background: #ffffff;
     border: 1px solid #e9ecef;
-    transition: background-color 0.2s;
+    transition: all 0.2s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
 }
 
 .trending-tip:hover {
-    background: #f8f9fa;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: #dee2e6;
+    text-decoration: none;
+    color: inherit;
+}
+
+.trending-tip:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
 .trending-tip-content {
     flex: 1;
+    min-width: 0;
 }
 
 .trending-tip-text {
-    color: #000000;
+    color: #1a1a1a;
     font-size: 0.95rem;
     line-height: 1.4;
     margin-bottom: 8px;
+    word-wrap: break-word;
 }
 
 .trending-tip-user {
-    color: #000000;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #666;
     font-size: 0.9rem;
+}
+
+.trending-tip-user span {
+    color: #1a1a1a;
     font-weight: 500;
 }
 
-.trending-tip-user a {
-    color: #000000;
-    text-decoration: none;
-}
-
-.trending-tip-user a:hover {
-    text-decoration: underline;
-}
-
-.trending-tip-stats {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 8px;
-}
-
-.trending-tip-stat {
+.trending-tip-heart {
     display: flex;
     align-items: center;
     gap: 4px;
-    color: #1a1a1a;
+    color: #ff4136;
+    font-size: 0.9rem;
+    padding: 4px 8px;
+    background: rgba(255, 65, 54, 0.1);
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    pointer-events: none;
+}
+
+.trending-tip:hover .trending-tip-heart {
+    background: rgba(255, 65, 54, 0.15);
+}
+
+.trending-tip-heart i {
     font-size: 0.9rem;
 }
 
-.trending-tip-stat i {
-    color: #1a1a1a;
+.trending-tip-heart-count {
+    font-weight: 500;
 }
 
 /* Event Controls (Sport Selector and Buttons) */

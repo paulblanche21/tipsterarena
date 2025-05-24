@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize trending tips if the element exists
     const trendingTipsList = document.querySelector('.trending-tips-list');
     if (trendingTipsList) {
-      await import('./pages/trending-tips.js').then(module => module.default.init());
+      await import('./pages/trending-tips.js').then(module => module.trendingTips);
     }
 
     if (page === '/' || page === '/home/') {

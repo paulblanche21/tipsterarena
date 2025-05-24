@@ -209,18 +209,18 @@
                     <div class="trending-tips-list">
                         {% if trending_tips %}
                             {% for tip in trending_tips %}
-                            <div class="trending-tip">
+                            <a href="{% url 'profile' tip.user.username %}#tip-{{ tip.id }}" class="trending-tip">
                                 <div class="trending-tip-content">
                                     <p class="trending-tip-text">{{ tip.text }}</p>
-                                    <p class="trending-tip-user">
-                                        <a href="{% url 'profile' tip.user.username %}">@{{ tip.user.username }}</a>
-                                    </p>
+                                    <div class="trending-tip-user">
+                                        <span>@{{ tip.user.username }}</span>
+                                    </div>
                                 </div>
                                 <div class="trending-tip-heart">
                                     <i class="fas fa-heart"></i>
                                     <span class="trending-tip-heart-count">{{ tip.likes_count }}</span>
                                 </div>
-                            </div>
+                            </a>
                             {% endfor %}
                         {% else %}
                             <p>No trending tips at the moment.</p>
@@ -234,7 +234,10 @@
                     <div class="follow-list">
                         {% for tipster in suggested_tipsters %}
                             <div class="follow-item">
-                                <img src="{{ tipster.avatar_url }}" alt="{{ tipster.username }} Avatar" class="follow-avatar" width="48" height="48">
+                                <img src="{{ tipster.avatar_url }}" 
+                                     alt="{{ tipster.username }}" 
+                                     class="follow-avatar"
+                                     onerror="this.onerror=null; this.src='{% static 'img/default-avatar.png' %}';">
                                 <div class="follow-details">
                                     <a href="/profile/{{ tipster.username }}/" class="follow-username">@{{ tipster.username }}</a>
                                     <p class="follow-bio">{{ tipster.bio|default:"No bio" }}</p>
@@ -399,10 +402,12 @@
     </div>
 
     <!-- Floating Messages Button (hidden on messages page) -->
-    <a href="{% url 'messages' %}" class="messages-card" title="Messages">
-        <span class="messages-icon-base"><i class="fas fa-envelope"></i></span>
-        <span class="messages-text-base">Messages</span>
-    </a>
+    <div class="messages-container">
+        <a href="{% url 'messages' %}" class="messages-card">
+            <span class="messages-text-base">Messages</span>
+            <i class="fas fa-envelope messages-icon-base"></i>
+        </a>
+    </div>
 
     <!-- Hidden CSRF token and global JavaScript variables -->
     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
