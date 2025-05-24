@@ -146,13 +146,17 @@ class DirectMessageConsumer(AsyncWebsocketConsumer):
             await self.close()
             return
 
-        # Get thread_id from URL
-        self.thread_id = self.scope['url_route']['kwargs']['thread_id']
+        # Get thread_id from URL if present
+        self.thread_id = self.scope['url_route']['kwargs'].get('thread_id')
         
-        # Create a unique group name for this thread
-        self.thread_group_name = f"thread_{self.thread_id}"
+        if self.thread_id:
+            # Create a unique group name for this thread
+            self.thread_group_name = f"thread_{self.thread_id}"
+        else:
+            # For base messages endpoint, use user-specific group
+            self.thread_group_name = f"user_messages_{self.user.id}"
         
-        # Add to thread group
+        # Add to appropriate group
         await self.channel_layer.group_add(
             self.thread_group_name,
             self.channel_name
@@ -160,7 +164,7 @@ class DirectMessageConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
-        # Remove from thread group
+        # Remove from group
         await self.channel_layer.group_discard(
             self.thread_group_name,
             self.channel_name
@@ -168,9 +172,16 @@ class DirectMessageConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         data = json.loads(text_data)
+        
+        # Handle heartbeat messages
+        if data.get("type") == "heartbeat":
+            await self.send(text_data=json.dumps({
+                "type": "heartbeat_ack"
+            }))
+            return
+            
         if data.get("type") == "direct_message":
             message = data.get("message", "")
-            sender = data.get("sender", "")
             image_url = data.get("image_url")
             gif_url = data.get("gif_url")
             
@@ -179,7 +190,7 @@ class DirectMessageConsumer(AsyncWebsocketConsumer):
                 self.thread_group_name,
                 {
                     "type": "direct_message_broadcast",
-                    "sender": sender,
+                    "sender": self.user.username,
                     "message": message,
                     "image_url": image_url,
                     "gif_url": gif_url,

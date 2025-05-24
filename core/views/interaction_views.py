@@ -136,10 +136,8 @@ def messages_view(request, thread_id=None):
     return render(request, 'core/messages.html', context)
 
 @login_required
-def send_message(request):
+def send_message(request, thread_id=None):
     """Handle sending a new message or creating a new message thread."""
-    thread_id = request.POST.get('thread_id')
-    recipient_username = request.POST.get('recipient_username')
     content = request.POST.get('content')
     image = request.FILES.get('image')
     gif_url = request.POST.get('gif_url')
@@ -150,6 +148,7 @@ def send_message(request):
     if thread_id:
         thread = get_object_or_404(MessageThread, id=thread_id, participants=request.user)
     else:
+        recipient_username = request.POST.get('recipient_username')
         if not recipient_username:
             return JsonResponse({'success': False, 'error': 'Recipient username required'}, status=400)
         recipient = get_object_or_404(User, username=recipient_username)

@@ -3,7 +3,7 @@
 {% load static %}
 <!-- messages.html: Template for the Messages page in Tipster Arena. Displays message threads and conversation details. -->
 
-{% block page_css %}
+{% block extra_css %}
     <!-- Additional stylesheet for messages-specific styling -->
     <link rel="stylesheet" href="{% static 'css/messages.css' %}">
 {% endblock %}
@@ -16,17 +16,17 @@
     <!-- Hidden CSRF token for form submissions -->
     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
     <!-- Main container for messages layout -->
-    <div class="messages-container">
+    <div class="messages-container" data-username="{{ request.user.username }}">
         <!-- Left-hand feed showing message threads -->
         <div class="messages-feed">
             <!-- Header with title and action icons -->
-            <h2 class="messages-header">
+            <div class="messages-header">
                 <span class="messages-title">Messages</span>
                 <span class="messages-icons">
                     <span class="messages-settings" id="settingsBtn"><i class="fa-solid fa-gear"></i></span>
                     <span class="messages-new" id="newMessageBtn"><i class="fa-solid fa-envelope"></i></span>
                 </span>
-            </h2>
+            </div>
             {% if message_threads %}
                 {% for item in message_threads %}
                 <!-- Card representing a message thread -->
@@ -41,8 +41,8 @@
                             {% endif %}
                             <div class="card-content">
                                 <div class="card-header">
-                                    <span class="username"><strong>{{ other_participant.username }}</strong></span>
-                                    <span class="user-handle">
+                                    <span class="username">{{ other_participant.username }}</span>
+                                    <span class="user-handle" id="message-feed-handle">
                                         {% if other_participant.userprofile.handle %}
                                             {{ other_participant.userprofile.handle }}
                                         {% else %}
@@ -218,9 +218,5 @@
 {% endblock %}
 
 {% block extra_js %}
-    <!-- Import and initialize messages functionality -->
-    <script type="module">
-        import { init } from '{% static "js/pages/messages.js" %}';
-        document.addEventListener('DOMContentLoaded', init);
-    </script>
+    <script type="module" src="{% static 'js/pages/messages.js' %}"></script>
 {% endblock %}

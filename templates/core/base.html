@@ -238,14 +238,6 @@
             </div>
         </aside>
         {% endblock %}
-
-        <!-- Messages container moved outside sidebar -->
-        <div class="messages-container">
-            <a href="{% url 'messages' %}" class="messages-card">
-                <span class="messages-text-base">Messages</span>
-                <span class="messages-icon-base"><i class="fas fa-envelope"></i></span>
-            </a>
-        </div>
     </div>
 
     <!-- Post Modal -->
@@ -397,9 +389,20 @@
     <!-- Load mobile header script first -->
     <script src="{% static 'js/mobile-header.js' %}"></script>
 
-    <!-- Placeholder for page-specific JavaScript -->
-    {% block extra_js %}
-    <script src="{% static 'js/upcoming-events.js' %}"></script>
-    {% endblock %}
+    <!-- Load page-specific JavaScript -->
+    {% block extra_js %}{% endblock %}
+
+    <!-- Initialize page -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add loaded class to body to prevent FOUC
+            document.body.classList.add('loaded');
+            
+            // Initialize any page-specific functionality
+            if (typeof initPage === 'function') {
+                initPage();
+            }
+        });
+    </script>
 </body>
 </html>

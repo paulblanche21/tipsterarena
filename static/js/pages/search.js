@@ -119,6 +119,23 @@ export function setupSearch() {
   document.addEventListener('click', (e) => {
     const searchBar = document.querySelector('.search-bar');
     const searchResults = document.querySelector('.search-results');
+    
+    // Only handle search-related clicks if we're on a page with search functionality
+    if (!searchBar || !searchResults) {
+        return;
+    }
+
+    // Check if we're on the messages page
+    if (document.body.classList.contains('messages-page')) {
+        return;
+    }
+
+    // Check if the click is on a message-related element
+    const messageButton = e.target.closest('.messages-new, .new-message-btn, #newMessageBtn, #newMessageSidebarBtn');
+    if (messageButton) {
+        return;
+    }
+
     const card = e.target.closest('.event-card, .tennis-card, .golf-card, .horse-racing-card');
     const tipAction = e.target.closest('.tip-action');
     const categoryButton = e.target.closest('.event-btn');
@@ -130,25 +147,18 @@ export function setupSearch() {
         return;
     }
 
-    // If no search bar found, don't do anything
-    if (!searchBar) {
-        return;
-    }
-
     if (raceHeader) {
         return;
     }
 
     if (searchBar.contains(e.target) || 
-        (searchResults && searchResults.contains(e.target)) || 
+        searchResults.contains(e.target) || 
         card || 
         tipAction) {
         return;
     }
 
-    if (searchResults) {
-        searchResults.style.display = 'none';
-    }
+    searchResults.style.display = 'none';
   });
 
   searchBar.addEventListener('focus', () => {

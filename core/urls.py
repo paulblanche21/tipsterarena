@@ -43,6 +43,7 @@ urlpatterns = [
     # Messaging routes
     path('messages/', views.messages_view, name='messages'),
     path('messages/<int:thread_id>/', views.messages_view, name='message_thread'),
+    path('messages/send/<int:thread_id>/', views.send_message, name='send_message'),
     path('messages/settings/', views.message_settings_view, name='message_settings'),
 
     # Social interaction routes
@@ -69,7 +70,6 @@ urlpatterns = [
     path('api/share-comment/', views.share_comment, name='share_comment'),
     path('api/tip/<int:tip_id>/', views.tip_detail, name='tip-detail'),
     path('api/toggle-bookmark/', views.toggle_bookmark, name='toggle_bookmark'),
-    path('send-message/', views.send_message, name='send_message'),
     path('api/verify-tip/<int:tip_id>/', views.VerifyTipView.as_view(), name='verify_tip'),
 
     # API routes for data retrieval

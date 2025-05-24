@@ -165,8 +165,10 @@ CSP_CONNECT_SRC = (
     "ws://127.0.0.1:8000",
     "wss://localhost:8000",
     "wss://127.0.0.1:8000",
-    "https://*.twimg.com",
-    "https://api.x.com"
+    "ws://localhost",
+    "wss://localhost",
+    "ws://127.0.0.1",
+    "wss://127.0.0.1"
 )
 CSP_STYLE_SRC = (
     "'self'",                  # Allow styles from same origin

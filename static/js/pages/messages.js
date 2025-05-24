@@ -3,185 +3,198 @@ import { showEmojiPicker, showGifModal } from './post.js';
 
 let defaultMessageContent = ''; // Store the default content of the messageContent area
 let socket = null;
+let currentThreadId = null;
+let reconnectAttempts = 0;
+let heartbeatInterval = null;
+const MAX_RECONNECT_ATTEMPTS = 5;
+const HEARTBEAT_INTERVAL = 30000; // 30 seconds
 
-function init() {
-    console.log('=== messages.js init() called ===');
-    console.log('Document readyState:', document.readyState);
-    console.log('Current URL:', window.location.href);
-    console.log('All buttons in document:', document.querySelectorAll('button'));
-    console.log('All elements with ID containing "Message":', document.querySelectorAll('[id*="Message"]'));
-    console.log('Message content element:', document.getElementById('messageContent'));
-    console.log('New message button:', document.getElementById('newMessageBtn'));
-    console.log('Settings button:', document.getElementById('settingsBtn'));
-    console.log('Send message button:', document.getElementById('sendMessageBtn'));
-
-    const messageContent = document.getElementById('messageContent');
-    if (messageContent) {
-        defaultMessageContent = messageContent.innerHTML;
-        console.log('Default message content stored:', defaultMessageContent);
-    } else {
-        console.log('messageContent not found on initial load');
+export function initializeWebSocket(threadId = null) {
+    console.log('Initializing WebSocket connection...');
+    const wsScheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const wsPath = threadId 
+        ? `${wsScheme}://${window.location.host}/ws/messages/${threadId}/`
+        : `${wsScheme}://${window.location.host}/ws/messages/`;
+    
+    if (socket) {
+        console.log('Closing existing WebSocket connection');
+        clearInterval(heartbeatInterval);
+        socket.close();
     }
-
-    // Handle new message button in header
-    const newMessageBtn = document.getElementById('newMessageBtn');
-    console.log('newMessageBtn element:', newMessageBtn);
-    if (newMessageBtn) {
-        console.log('Found newMessageBtn in header');
-        newMessageBtn.addEventListener('click', function(e) {
-            console.log('New message button clicked (header)');
-            e.preventDefault();
-            e.stopPropagation();
-            openNewMessageModal();
-        });
-        console.log('Added click listener to newMessageBtn');
+    
+    try {
+        socket = new WebSocket(wsPath);
+        
+        socket.onopen = function() {
+            console.log('WebSocket connected for', threadId ? `thread ${threadId}` : 'messages');
+            reconnectAttempts = 0;
+            
+            // Start heartbeat
+            heartbeatInterval = setInterval(() => {
+                if (socket.readyState === WebSocket.OPEN) {
+                    socket.send(JSON.stringify({ type: 'heartbeat' }));
+                }
+            }, HEARTBEAT_INTERVAL);
+        };
+        
+        socket.onmessage = function(event) {
+            try {
+                const data = JSON.parse(event.data);
+                
+                // Handle heartbeat acknowledgment
+                if (data.type === 'heartbeat_ack') {
+                    return;
+                }
+                
+                // Handle direct messages
+                if (data.type === 'direct_message') {
+                    appendMessage({
+                        content: data.message,
+                        image: data.image_url,
+                        gif_url: data.gif_url,
+                        created_at: data.created_at,
+                        sender: data.sender,
+                        thread_id: threadId
+                    });
+                }
+            } catch (e) {
+                console.error('Error parsing WebSocket message:', e);
+            }
+        };
+        
+        socket.onclose = function() {
+            console.log('WebSocket closed');
+            clearInterval(heartbeatInterval);
+            
+            // Attempt to reconnect if we haven't exceeded max attempts
+            if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                reconnectAttempts++;
+                console.log(`Attempting to reconnect (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`);
+                setTimeout(() => initializeWebSocket(threadId), 2000);
+            }
+        };
+        
+        socket.onerror = function(error) {
+            console.error('WebSocket error:', error);
+        };
+        
+        currentThreadId = threadId;
+    } catch (error) {
+        console.error('Error initializing WebSocket:', error);
     }
+}
 
-    // Handle new message button in sidebar
+export function init() {
+    console.log('Initializing messages page...');
+    
+    // Initialize action buttons if a thread is already selected
+    const selectedThread = document.querySelector('.message-thread');
+    if (selectedThread) {
+        initializeActionButtons();
+    }
+    
+    // Set up event listeners for message threads
+    const cards = document.querySelectorAll('.card');
+    console.log('Found message cards:', cards.length);
+    
+    cards.forEach(card => {
+        if (card.dataset.threadId) {
+            console.log('Setting up click handler for card:', card.dataset.threadId);
+            // Remove any existing click handlers
+            card.removeEventListener('click', handleCardClick);
+            // Add new click handler
+            card.addEventListener('click', handleCardClick);
+        }
+    });
+    
+    // Set up event listeners for new message buttons
+    const newMessageBtn = document.querySelector('.messages-new');
+    const newMessageBtnAlt = document.getElementById('newMessageBtn');
     const newMessageSidebarBtn = document.getElementById('newMessageSidebarBtn');
-    console.log('newMessageSidebarBtn element:', newMessageSidebarBtn);
+    
+    console.log('Found message buttons:', {
+        newMessageBtn: newMessageBtn,
+        newMessageBtnAlt: newMessageBtnAlt,
+        newMessageSidebarBtn: newMessageSidebarBtn
+    });
+    
+    const handleNewMessageClick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('New message button clicked');
+        showNewMessageModal();
+    };
+    
+    // Remove all existing event listeners first
+    if (newMessageBtn) {
+        newMessageBtn.replaceWith(newMessageBtn.cloneNode(true));
+        const newBtn = document.querySelector('.messages-new');
+        newBtn.addEventListener('click', handleNewMessageClick);
+    }
+    
+    if (newMessageBtnAlt) {
+        newMessageBtnAlt.replaceWith(newMessageBtnAlt.cloneNode(true));
+        const newBtnAlt = document.getElementById('newMessageBtn');
+        newBtnAlt.addEventListener('click', handleNewMessageClick);
+    }
+    
     if (newMessageSidebarBtn) {
-        console.log('Found newMessageSidebarBtn in sidebar');
-        newMessageSidebarBtn.addEventListener('click', function(e) {
-            console.log('New message button clicked (sidebar)');
-            e.preventDefault();
-            e.stopPropagation();
-            openNewMessageModal();
-        });
-        console.log('Added click listener to newMessageSidebarBtn');
+        newMessageSidebarBtn.replaceWith(newMessageSidebarBtn.cloneNode(true));
+        const newSidebarBtn = document.getElementById('newMessageSidebarBtn');
+        newSidebarBtn.addEventListener('click', handleNewMessageClick);
     }
-
-    // Handle envelope icon
-    const envelopeIcon = document.querySelector('.fa-envelope');
-    console.log('envelopeIcon element:', envelopeIcon);
-    if (envelopeIcon) {
-        console.log('Found envelope icon');
-        envelopeIcon.addEventListener('click', function(e) {
-            console.log('Envelope icon clicked');
-            e.preventDefault();
-            e.stopPropagation();
-            openNewMessageModal();
-        });
-        console.log('Added click listener to envelope icon');
-    }
-
-    // Rest of the init function...
+    
+    // Set up event listener for close modal button
     const closeModalBtn = document.getElementById('closeModalBtn');
     if (closeModalBtn) {
-        closeModalBtn.addEventListener('click', closeNewMessageModal);
+        closeModalBtn.replaceWith(closeModalBtn.cloneNode(true));
+        const newCloseBtn = document.getElementById('closeModalBtn');
+        newCloseBtn.addEventListener('click', handleCloseModal);
     }
-
-    const recipientInput = document.getElementById('recipientUsername');
-    if (recipientInput) {
-        recipientInput.addEventListener('input', inputHandler);
-    }
-
+    
+    // Set up event listener for settings button
     const settingsBtn = document.getElementById('settingsBtn');
     if (settingsBtn) {
         console.log('Attaching event listener to settings button');
-        settingsBtn.addEventListener('click', () => {
-            console.log('Settings button clicked');
-            fetch('/messages/settings/', {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-            })
-            .then(response => response.text())
-            .then(html => {
-                const messageContent = document.getElementById('messageContent');
-                console.log('Message content element:', messageContent);
-                console.log('Fetched HTML:', html);
-                if (messageContent) {
-                    messageContent.innerHTML = html;
-                    const closeSettingsBtn = document.getElementById('closeSettingsBtn');
-                    if (closeSettingsBtn) {
-                        closeSettingsBtn.addEventListener('click', () => {
-                            console.log('Close settings button clicked');
-                            if (messageContent) {
-                                messageContent.innerHTML = defaultMessageContent;
-                                console.log('Restored default message content');
-                                const newMessageSidebarBtn = document.getElementById('newMessageSidebarBtn');
-                                if (newMessageSidebarBtn) {
-                                    newMessageSidebarBtn.addEventListener('click', openNewMessageModal);
-                                }
-                            }
-                        });
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Fetch error:', error);
-            });
-        });
+        settingsBtn.replaceWith(settingsBtn.cloneNode(true));
+        const newSettingsBtn = document.getElementById('settingsBtn');
+        newSettingsBtn.addEventListener('click', handleSettingsClick);
     }
-
-    const nextBtn = document.getElementById('nextBtn');
-    if (nextBtn) {
-        nextBtn.addEventListener('click', startNewConversation);
-        console.log('Next button listener attached');
-    }
-
-    // Document-level delegation for thread cards
-    document.addEventListener('click', (e) => {
-        const threadCardTarget = e.target.closest('.card[data-thread-id]');
-        if (threadCardTarget) {
-            const threadCards = document.querySelectorAll('.card[data-thread-id]');
-            threadCards.forEach(c => c.classList.remove('selected'));
-            threadCardTarget.classList.add('selected');
-            const threadId = threadCardTarget.getAttribute('data-thread-id');
-            console.log('Thread card clicked, threadId:', threadId);
-            
-            // Connect to WebSocket for this thread
-            connectWebSocket(threadId);
-            
-            fetch(`/messages/${threadId}/`, {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-            })
-            .then(response => response.text())
-            .then(html => {
-                const messageContent = document.getElementById('messageContent');
-                if (messageContent) {
-                    messageContent.innerHTML = html;
-                    const sendMessageBtn = document.getElementById('sendMessageBtn');
-                    if (sendMessageBtn) {
-                        const threadId = sendMessageBtn.getAttribute('data-thread-id');
-                        sendMessageBtn.addEventListener('click', () => sendMessage(threadId));
-                    }
-                    const messagesList = document.getElementById('messagesList');
-                    if (messagesList) {
-                        messagesList.scrollTop = messagesList.scrollHeight;
-                    }
-                    initializeActionButtons();
-                }
-            })
-            .catch(error => console.error('Error loading thread:', error));
-            e.preventDefault();
-            e.stopPropagation();
+    
+    // Initialize WebSocket connection only if we're in a thread view
+    if (selectedThread) {
+        const threadId = selectedThread.dataset.threadId;
+        if (threadId) {
+            initializeWebSocket(threadId);
         }
-    });
-    console.log('Document-level delegation listener attached for thread cards');
-
-    initializeActionButtons();
-
-    const threadCards = document.querySelectorAll('.card[data-thread-id]');
-    console.log('Thread cards found:', threadCards.length);
-    // Remove duplicate event listeners since we're using document-level delegation
-
-    const sendMessageBtn = document.getElementById('sendMessageBtn');
-    if (sendMessageBtn) {
-        const threadId = sendMessageBtn.getAttribute('data-thread-id');
-        sendMessageBtn.addEventListener('click', () => sendMessage(threadId));
-    }
-
-    const messagesList = document.getElementById('messagesList');
-    if (messagesList) {
-        messagesList.scrollTop = messagesList.scrollHeight;
+    } else {
+        initializeWebSocket();
     }
 }
+
+// Event handler functions
+function handleCardClick(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Card clicked:', this.dataset.threadId);
+    loadThread(this.dataset.threadId);
+}
+
+function handleCloseModal(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    hideNewMessageModal();
+}
+
+function handleSettingsClick(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Settings button clicked');
+    showSettings();
+}
+
+// Call init when the DOM is loaded
+document.addEventListener('DOMContentLoaded', init);
 
 function initializeActionButtons() {
     console.log('Initializing action buttons...');
@@ -276,15 +289,17 @@ function initializeActionButtons() {
     }
 }
 
-function appendMessage(data) {
+export function appendMessage(data) {
     const messagesList = document.getElementById('messagesList');
     if (!messagesList) {
         console.log('messagesList not found');
         return;
     }
 
+    const messagesContainer = document.querySelector('.messages-container');
+    const isCurrentUser = data.sender === messagesContainer.getAttribute('data-username');
     const messageDiv = document.createElement('div');
-    messageDiv.className = 'message sent';
+    messageDiv.className = `message ${isCurrentUser ? 'sent' : 'received'}`;
     messageDiv.innerHTML = `
         <p>${data.content}</p>
         ${data.image ? `<img src="${data.image}" alt="Message Image" class="msg-message-image">` : ''}
@@ -321,107 +336,71 @@ function updateMessageFeedCard(threadId, latestMessage) {
     }
 }
 
-function connectWebSocket(threadId) {
-    const wsScheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
-    const wsPath = `${wsScheme}://${window.location.host}/ws/messages/${threadId}/`;
+async function sendMessage(threadId) {
+    console.log('Sending message to thread:', threadId);
+    const messageInput = document.getElementById('messageInput');
+    const previewDiv = document.querySelector('.msg-message-preview');
+    const previewImg = previewDiv.querySelector('.msg-preview-media');
     
-    if (socket) {
-        socket.close();
+    if (!messageInput || !messageInput.value.trim() && !messageInput.dataset.imageFile && !messageInput.dataset.gifUrl) {
+        console.log('No message content to send');
+        return;
     }
     
-    socket = new WebSocket(wsPath);
-    
-    socket.onopen = function() {
-        console.log('Direct message WebSocket connected');
-    };
-    
-    socket.onmessage = function(event) {
-        try {
-            const data = JSON.parse(event.data);
-            if (data.type === 'direct_message') {
-                appendMessage({
-                    content: data.message,
-                    image: data.image_url,
-                    gif_url: data.gif_url,
-                    created_at: data.created_at,
-                    thread_id: threadId
-                });
-            }
-        } catch (e) {
-            console.error('Error parsing direct message:', e);
-        }
-    };
-    
-    socket.onclose = function() {
-        console.log('Direct message WebSocket closed');
-    };
-    
-    socket.onerror = function(error) {
-        console.error('Direct message WebSocket error:', error);
-    };
-}
-
-async function sendMessage(threadId) {
-    const messageInput = document.getElementById('messageInput');
-    const message = messageInput.value.trim();
-    const sendBtn = document.querySelector('.send-btn');
-    
-    if (!message && !previewDiv.querySelector('img')) return;
-
     try {
-        sendBtn.classList.add('loading');
-        sendBtn.disabled = true;
-
         const formData = new FormData();
-        formData.append('message', message);
+        formData.append('content', messageInput.value.trim());
         
-        const imageFile = document.querySelector('input[type="file"]')?.files[0];
-        if (imageFile) {
-            formData.append('image', imageFile);
+        if (messageInput.dataset.imageFile) {
+            formData.append('image', messageInput.dataset.image);
         }
-
+        
+        if (messageInput.dataset.gifUrl) {
+            formData.append('gif_url', messageInput.dataset.gifUrl);
+        }
+        
         const response = await fetch(`/messages/send/${threadId}/`, {
             method: 'POST',
             body: formData,
             headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
+                'X-CSRFToken': getCsrfToken(),
+            },
         });
-
+        
         if (!response.ok) {
             throw new Error('Failed to send message');
         }
-
+        
         const data = await response.json();
         
-        // Send via WebSocket if connected
-        if (socket && socket.readyState === WebSocket.OPEN) {
-            socket.send(JSON.stringify({
-                'message': message,
-                'image_url': data.image_url || null,
-                'gif_url': data.gif_url || null
-            }));
+        if (data.success) {
+            // Clear input and preview
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            messageInput.dataset.imageFile = '';
+            messageInput.dataset.gifUrl = '';
+            previewDiv.style.display = 'none';
+            previewImg.src = '';
+            
+            // Re-initialize action buttons
+            initializeActionButtons();
+            
+            // Scroll to bottom
+            const messagesList = document.querySelector('.messages-list');
+            if (messagesList) {
+                messagesList.scrollTop = messagesList.scrollHeight;
+            }
+        } else {
+            throw new Error(data.error || 'Failed to send message');
         }
-
-        // Clear input and preview
-        messageInput.value = '';
-        messageInput.style.height = 'auto';
-        previewDiv.innerHTML = '';
-        previewDiv.style.display = 'none';
-        
-        // Refresh messages
-        await fetchMessages(threadId);
     } catch (error) {
         console.error('Error sending message:', error);
         alert('Failed to send message. Please try again.');
-    } finally {
-        sendBtn.classList.remove('loading');
-        sendBtn.disabled = false;
     }
 }
 
-function openNewMessageModal() {
-    console.log('Opening new message modal...');
+function showNewMessageModal() {
+    console.log('Showing new message modal...');
     const modal = document.getElementById('newMessageModal');
     if (!modal) {
         console.error('Modal element not found');
@@ -452,6 +431,7 @@ function openNewMessageModal() {
     const nextBtn = document.getElementById('nextBtn');
     if (nextBtn) {
         nextBtn.disabled = true;
+        nextBtn.addEventListener('click', startNewConversation);
     }
     
     // Clear the search input
@@ -459,16 +439,19 @@ function openNewMessageModal() {
         searchInput.value = '';
     }
     
-    // Clear any previous suggestions
+    // Clear any suggestions
     const suggestionsList = document.getElementById('userSuggestions');
     if (suggestionsList) {
         suggestionsList.innerHTML = '';
     }
     
-    console.log('Modal opened successfully');
+    // Add event listener for the search input
+    if (searchInput) {
+        searchInput.addEventListener('input', inputHandler);
+    }
 }
 
-function closeNewMessageModal() {
+function hideNewMessageModal() {
     console.log('Closing new message modal...');
     const modal = document.getElementById('newMessageModal');
     if (!modal) {
@@ -505,6 +488,11 @@ function closeNewMessageModal() {
     const suggestionsList = document.getElementById('userSuggestions');
     if (suggestionsList) {
         suggestionsList.innerHTML = '';
+    }
+    
+    // Remove event listener for the search input
+    if (searchInput) {
+        searchInput.removeEventListener('input', inputHandler);
     }
     
     console.log('Modal closed successfully');
@@ -563,7 +551,7 @@ function startNewConversation() {
         return;
     }
     console.log('Starting conversation with:', recipientUsername);
-    fetch('/send-message/', {
+    fetch('/messages/send/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -574,46 +562,45 @@ function startNewConversation() {
     .then(response => {
         console.log('Send message response status:', response.status);
         if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+            throw new Error('Failed to send message');
         }
         return response.json();
     })
     .then(data => {
-        console.log('Send message response data:', data);
         if (data.success) {
-            closeNewMessageModal();
-            fetch(`/messages/${data.thread_id}/`, {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-            })
-            .then(response => response.text())
-            .then(html => {
-                const messageContent = document.getElementById('messageContent');
-                if (messageContent) {
-                    messageContent.innerHTML = html;
-                    const sendMessageBtn = document.getElementById('sendMessageBtn');
-                    if (sendMessageBtn) {
-                        const threadId = sendMessageBtn.getAttribute('data-thread-id');
-                        sendMessageBtn.addEventListener('click', () => sendMessage(threadId));
+            console.log('Message sent successfully:', data);
+            // Hide the new message modal
+            hideNewMessageModal();
+            
+            // Load the thread view
+            fetch(`/messages/${data.thread_id}/`)
+                .then(response => response.text())
+                .then(html => {
+                    const messageContent = document.getElementById('messageContent');
+                    if (messageContent) {
+                        messageContent.innerHTML = html;
+                        const sendMessageBtn = document.getElementById('sendMessageBtn');
+                        if (sendMessageBtn) {
+                            const threadId = sendMessageBtn.getAttribute('data-thread-id');
+                            sendMessageBtn.addEventListener('click', () => sendMessage(threadId));
+                        }
+                        const messagesList = document.getElementById('messagesList');
+                        if (messagesList) {
+                            messagesList.scrollTop = messagesList.scrollHeight;
+                        }
+                        initializeActionButtons();
                     }
-                    const messagesList = document.getElementById('messagesList');
-                    if (messagesList) {
-                        messagesList.scrollTop = messagesList.scrollHeight;
-                    }
-                    initializeActionButtons();
-                }
-                updateMessageFeedCard(data.thread_id, "Hello! Let's start a conversation.");
-            })
-            .catch(error => console.error('Error loading thread:', error));
+                    // Update the message feed card
+                    updateMessageFeedCard(data.thread_id, "Hello! Let's start a conversation.");
+                })
+                .catch(error => console.error('Error loading thread:', error));
         } else {
             alert('Error: ' + (data.error || 'Unknown error'));
         }
     })
     .catch(error => {
-        console.error('Error sending message:', error);
-        alert('Failed to start conversation. Check console for details.');
+        console.error('Error starting conversation:', error);
+        alert('Failed to start conversation. Please try again.');
     });
 }
 
@@ -625,4 +612,164 @@ function getCsrfToken() {
     return tokenElement ? tokenElement.value : '';
 }
 
-export { init };
+async function fetchMessages(threadId) {
+    try {
+        const response = await fetch(`/messages/${threadId}/`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch messages');
+        }
+        
+        const html = await response.text();
+        const messageContent = document.getElementById('messageContent');
+        if (messageContent) {
+            messageContent.innerHTML = html;
+            const messagesList = document.getElementById('messagesList');
+            if (messagesList) {
+                messagesList.scrollTop = messagesList.scrollHeight;
+            }
+            initializeActionButtons();
+        }
+    } catch (error) {
+        console.error('Error fetching messages:', error);
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+export function loadThread(threadId) {
+    console.log('Loading thread:', threadId);
+    try {
+        fetch(`/messages/${threadId}/`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load thread');
+                }
+                return response.text();
+            })
+            .then(html => {
+                // Update the thread content
+                const messageContent = document.getElementById('messageContent');
+                if (messageContent) {
+                    messageContent.innerHTML = html;
+                    
+                    // Wait for DOM to update
+                    setTimeout(() => {
+                        // Initialize action buttons after thread content is loaded
+                        initializeActionButtons();
+                        
+                        // Scroll to bottom of messages
+                        const messagesList = document.querySelector('.messages-list');
+                        if (messagesList) {
+                            messagesList.scrollTop = messagesList.scrollHeight;
+                        }
+                    }, 0);
+                }
+                
+                // Update active state in the feed
+                document.querySelectorAll('.card').forEach(card => {
+                    card.classList.remove('active');
+                    if (card.dataset.threadId === threadId) {
+                        card.classList.add('active');
+                    }
+                });
+                
+                // Store the current thread ID
+                currentThreadId = threadId;
+                
+                // Connect to thread-specific WebSocket
+                initializeWebSocket(threadId);
+            })
+            .catch(error => {
+                console.error('Error loading thread:', error);
+                alert('Failed to load thread. Please try again.');
+            });
+    } catch (error) {
+        console.error('Error loading thread:', error);
+        alert('Failed to load thread. Please try again.');
+    }
+}
+
+export function showSettings() {
+    console.log('Showing message settings...');
+    const settingsModal = document.createElement('div');
+    settingsModal.className = 'modal';
+    settingsModal.id = 'messageSettingsModal';
+    
+    // Fetch the message settings template
+    fetch('/message-settings/')
+        .then(response => response.text())
+        .then(html => {
+            settingsModal.innerHTML = html;
+            document.body.appendChild(settingsModal);
+            
+            // Show the modal
+            settingsModal.style.display = 'block';
+            // Force a reflow
+            settingsModal.offsetHeight;
+            // Add the show class
+            settingsModal.classList.add('show');
+            
+            // Add event listener for close button
+            const closeBtn = settingsModal.querySelector('.close-settings');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    settingsModal.classList.remove('show');
+                    setTimeout(() => {
+                        settingsModal.remove();
+                    }, 300);
+                });
+            }
+            
+            // Add event listeners for radio buttons
+            const radioButtons = settingsModal.querySelectorAll('input[type="radio"]');
+            radioButtons.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    const value = e.target.value;
+                    // Save the setting
+                    fetch('/api/message-settings/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCsrfToken(),
+                        },
+                        body: JSON.stringify({
+                            allow_messages: value
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log('Message settings updated successfully');
+                        } else {
+                            console.error('Failed to update message settings:', data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error updating message settings:', error);
+                    });
+                });
+            });
+        })
+        .catch(error => {
+            console.error('Error loading message settings:', error);
+        });
+}

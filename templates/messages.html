@@ -1,0 +1,78 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/messages.css' %}">
+    <link rel="stylesheet" href="{% static 'css/modal.css' %}">
+{% endblock %}
+
+{% block title %}Messages - Tipster Arena{% endblock %}
+
+{% block body_class %}messages-page{% endblock %}
+
+{% block content %}
+<div class="messages-container" data-username="{{ request.user.username }}">
+    <!-- Messages Feed (Left Side) -->
+    <div class="messages-feed">
+        <div class="messages-header">
+            <h2 class="messages-title">Messages</h2>
+            <div class="messages-icons">
+                <button class="messages-settings" id="settingsBtn" title="Settings">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <button class="messages-new" id="newMessageBtn" title="New Message">
+                    <i class="fas fa-edit"></i>
+                </button>
+            </div>
+        </div>
+        <!-- Message cards will be dynamically inserted here -->
+    </div>
+
+    <!-- Message Thread (Right Side) -->
+    <div class="message-thread">
+        <div class="thread-header">
+            <!-- Thread header will be dynamically updated -->
+        </div>
+        <div class="messages-list" id="messagesList">
+            <!-- Messages will be dynamically inserted here -->
+        </div>
+        <div class="message-input">
+            <div class="message-actions">
+                <button class="action-btn" id="imageBtn" title="Add attachment">
+                    <i class="fas fa-paperclip"></i>
+                </button>
+                <button class="action-btn" id="emojiBtn" title="Add emoji">
+                    <i class="fas fa-smile"></i>
+                </button>
+            </div>
+            <textarea id="messageInput" placeholder="Write a message..." rows="1"></textarea>
+            <button id="sendMessageBtn" title="Send message">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- New Message Modal -->
+<div id="newMessageModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span class="close" id="closeModalBtn">×</span>
+            <h3>New message</h3>
+            <button id="nextBtn" class="next-btn" disabled>Next</button>
+        </div>
+        <div class="selected-users" id="selectedUsers"></div>
+        <div class="modal-search">
+            <input type="text" id="recipientUsername" placeholder="Search people...">
+        </div>
+        <div id="userSuggestions" class="suggestions-list"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script type="module">
+        import { init } from "{% static 'js/pages/messages.js' %}";
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+{% endblock %} 

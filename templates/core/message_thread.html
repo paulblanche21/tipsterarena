@@ -4,56 +4,71 @@
 <div class="message-thread">
     <!-- Header with participant details -->
     <div class="thread-header">
-        <div class="user-details">
-            {% if other_participant %}
-                <!-- Display participant's username and handle -->
-                <h3>{{ other_participant.username }}</h3>
+        <div class="thread-header-top">
+            <h2 class="thread-header-name">{{ other_participant.username }}</h2>
+            <span class="thread-header-info"><i class="fa-solid fa-info-circle"></i></span>
+        </div>
+        <div class="thread-header-details">
+            {% if other_participant.userprofile.avatar %}
+                <img src="{{ other_participant.userprofile.avatar.url }}" alt="Avatar" class="avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
+            {% else %}
+                <img src="{% static 'img/default-avatar.png' %}" alt="Default Avatar" class="avatar">
+            {% endif %}
+            <div class="user-details">
                 <p class="handle">@{{ other_participant.userprofile.handle|default:other_participant.username }}</p>
-                <!-- Optional bio if available -->
                 {% if other_participant.userprofile.description %}
                     <p class="bio">{{ other_participant.userprofile.description }}</p>
                 {% endif %}
-                <!-- Stats showing join date and follower count -->
                 <p class="stats">
                     Joined {{ other_participant.date_joined|date:"F Y" }} • 
                     {{ other_participant.userprofile.followers_count }} Followers
                 </p>
-                <!-- Follow status indicator -->
-                {% if other_participant.followers.exists %}
-                    {% if request.user in other_participant.followers.all %}
-                        <p class="follow-status">You followed this account</p>
-                    {% endif %}
-                {% endif %}
-            {% else %}
-                <!-- Fallback for unknown participant -->
-                <h3>Unknown User</h3>
-                <p class="handle">@unknown</p>
-                <p class="stats">Details unavailable</p>
-            {% endif %}
+            </div>
         </div>
     </div>
+
     <!-- List of messages in the thread -->
     <div class="messages-list" id="messagesList">
         {% for message in messages %}
-            <!-- Individual message with styling based on sender -->
             <div class="message {% if message.sender == request.user %}sent{% else %}received{% endif %}">
                 <p>{{ message.content }}</p>
+                {% if message.image %}
+                    <img src="{{ message.image.url }}" alt="Message Image" class="msg-message-image">
+                {% endif %}
+                {% if message.gif_url %}
+                    <img src="{{ message.gif_url }}" alt="Message GIF" class="msg-message-image">
+                {% endif %}
                 <small>{{ message.created_at|date:"M d, Y, g:i A" }}</small>
             </div>
         {% empty %}
-            <!-- Placeholder for empty thread -->
-            <p>No messages yet. Say hello!</p>
+            <div class="empty-thread">
+                <p>No messages yet. Say hello!</p>
+            </div>
         {% endfor %}
     </div>
+
+    <!-- Preview area for media before sending -->
+    <div class="msg-message-preview" style="display: none;">
+        <img src="" alt="Preview" class="msg-preview-media">
+        <span class="msg-remove-preview">×</span>
+    </div>
+
     <!-- Input area for sending new messages -->
     <div class="message-input">
-        <textarea id="messageInput" placeholder="Type a message..."></textarea>
         <div class="message-actions">
-            <!-- Buttons for adding media and sending message -->
-            <button class="action-btn" title="Add photo"><i class="fa-solid fa-camera"></i></button>
-            <button class="action-btn" title="Add GIF"><i class="fa-solid fa-film"></i></button>
-            <button class="action-btn" title="Add emoji"><i class="fa-solid fa-face-smile"></i></button>
-            <button id="sendMessageBtn" data-thread-id="{{ thread.id }}">Send</button>
+            <button type="button" class="action-btn" id="imageBtn" title="Add image">
+                <i class="fa-solid fa-image"></i>
+            </button>
+            <button type="button" class="action-btn" id="gifBtn" title="Add GIF">
+                <i class="fa-solid fa-gift"></i>
+            </button>
+            <button type="button" class="action-btn" id="emojiBtn" title="Add emoji">
+                <i class="fa-solid fa-face-smile"></i>
+            </button>
         </div>
+        <textarea id="messageInput" placeholder="Type a message..." rows="1"></textarea>
+        <button id="sendMessageBtn" data-thread-id="{{ thread.id }}" class="send-btn">
+            <i class="fa-solid fa-paper-plane"></i>
+        </button>
     </div>
 </div>

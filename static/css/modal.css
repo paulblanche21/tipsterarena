@@ -14,6 +14,10 @@
     align-items: center;
 }
 
+.event-modal.active {
+    display: flex;
+}
+
 /* Modal content */
 .event-modal-content {
     background: var(--secondary-bg);
@@ -37,6 +41,7 @@
     background: none;
     border: none;
     padding: 5px;
+    pointer-events: auto;
 }
 
 .event-modal-close:hover {
@@ -173,13 +178,13 @@
     right: 350px; /* Match sidebar width from base.css */
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
-    z-index: 11000; /* Above custom-alert (z-index: 10000) */
+    z-index: 1000; /* Match event modal z-index */
     justify-content: center;
     align-items: center;
 }
 
 .comment-modal.active {
-    display: flex; /* Use flex to center content */
+    display: flex;
 }
 
 .comment-modal.hidden {
@@ -191,13 +196,13 @@
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-hover);
-    width: calc(100% - 20px); /* Match .tip-feed */
+    width: calc(100% - 20px);
     max-height: 90vh;
     overflow-y: auto;
     position: relative;
     padding: var(--padding-small);
     box-sizing: border-box;
-    margin: 0 10px 10px 10px; /* Match .tip-feed margins */
+    margin: 0 10px 10px 10px;
 }
 
 .comment-modal-close {
@@ -209,6 +214,7 @@
     cursor: pointer;
     border: none;
     background: none;
+    pointer-events: auto;
 }
 
 .comment-modal-close:hover {
