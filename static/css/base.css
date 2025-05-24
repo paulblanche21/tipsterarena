@@ -323,3 +323,222 @@ html {
         height: 40px;
     }
   }
+
+  .trending-tips-list {
+    position: relative;
+    min-height: 50px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 5px;
+  }
+
+  .trending-tips-list::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .trending-tips-list::-webkit-scrollbar-track {
+    background: var(--secondary-bg);
+    border-radius: 3px;
+  }
+
+  .trending-tips-list::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+  }
+
+  .trending-tips-list::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+  }
+
+  .trending-tips-list.loading {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .trending-tips-list.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ccc;
+    border-top-color: #333;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+  }
+
+  .messages-card {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    z-index: 1000;
+  }
+
+  .messages-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    background-color: var(--primary-color-dark);
+  }
+
+  .messages-icon-base {
+    font-size: 1.2rem;
+  }
+
+  .messages-text-base {
+    display: none;
+  }
+
+  .trending-tips-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+  }
+
+  .trending-tips-modal-content {
+    position: relative;
+    background-color: var(--primary-bg);
+    margin: 50px auto;
+    padding: 20px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    overflow-y: auto;
+  }
+
+  .trending-tips-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .trending-tips-modal-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--text-color);
+  }
+
+  .trending-tips-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-color);
+    cursor: pointer;
+    padding: 5px;
+  }
+
+  .trending-tips-modal-close:hover {
+    color: var(--primary-color);
+  }
+
+  .trending-tips-list-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .trending-tip-modal-item {
+    padding: 15px;
+    background-color: var(--secondary-bg);
+    border-radius: 8px;
+    transition: transform 0.2s ease;
+  }
+
+  .trending-tip-modal-item:hover {
+    transform: translateY(-2px);
+  }
+
+  .trending-tip-modal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .trending-tip-modal-text {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.4;
+  }
+
+  .trending-tip-modal-user {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .trending-tip-modal-stats {
+    display: flex;
+    gap: 15px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .trending-tip-modal-stat {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .trending-tip-modal-stat i {
+    color: var(--primary-color);
+  }
+
+  /* Remove modal styles */
+  .modal-overlay,
+  .modal-content,
+  .modal-header,
+  .modal-close,
+  .modal-trending-tips-list {
+    display: none;
+  }
+
+  .follow-list {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 5px;
+  }
+
+  .follow-list::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .follow-list::-webkit-scrollbar-track {
+    background: var(--secondary-bg);
+    border-radius: 3px;
+  }
+
+  .follow-list::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+  }
+
+  .follow-list::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+  }

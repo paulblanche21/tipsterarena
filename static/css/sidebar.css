@@ -64,7 +64,35 @@
 /* Specific Heights for Who to Follow */
 .sidebar-card[data-card="who-to-follow"] {
     min-height: 350px;
+    max-height: 350px;
     background: #ffffff;
+    display: flex;
+    flex-direction: column;
+}
+
+.follow-list {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+    margin-bottom: 0;
+}
+
+.follow-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.follow-list::-webkit-scrollbar-track {
+    background: var(--secondary-bg);
+    border-radius: 3px;
+}
+
+.follow-list::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+.follow-list::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
 }
 
 /* Specific Heights for Trending Tips */
@@ -544,7 +572,7 @@
 .who-to-follow-header {
     font-size: 18px;
     font-weight: 700;
-    color: #000000;
+    color: #000000 !important;
     margin-bottom: 12px;
 }
 

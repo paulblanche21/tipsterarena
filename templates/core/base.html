@@ -204,28 +204,21 @@
                 </div>
                 {% endblock %}
                 {% block trending_tips %}
-                <div class="sidebar-card">
-                    <div class="sidebar-card-header">
-                        <h3>Trending Tips</h3>
-                    </div>
-                    <div class="sidebar-card-content">
+                <div class="sidebar-card trending-tips-card" data-card="trending-tips">
+                    <h3>Trending Tips</h3>
+                    <div class="trending-tips-list">
                         {% if trending_tips %}
                             {% for tip in trending_tips %}
                             <div class="trending-tip">
-                                <div class="trending-tip-avatar">
-                                    <img src="{{ tip.user.avatar.url|default:'/static/img/default-avatar.png' }}" alt="{{ tip.user.username }}">
-                                </div>
                                 <div class="trending-tip-content">
-                                    <div class="trending-tip-text">{{ tip.text }}</div>
-                                    <div class="trending-tip-user">
+                                    <p class="trending-tip-text">{{ tip.text }}</p>
+                                    <p class="trending-tip-user">
                                         <a href="{% url 'profile' tip.user.username %}">@{{ tip.user.username }}</a>
-                                    </div>
-                                    <div class="trending-tip-stats">
-                                        <div class="trending-tip-stat">
-                                            <i class="fas fa-heart"></i>
-                                            <span>{{ tip.likes_count }}</span>
-                                        </div>
-                                    </div>
+                                    </p>
+                                </div>
+                                <div class="trending-tip-heart">
+                                    <i class="fas fa-heart"></i>
+                                    <span class="trending-tip-heart-count">{{ tip.likes_count }}</span>
                                 </div>
                             </div>
                             {% endfor %}
@@ -233,24 +226,8 @@
                             <p>No trending tips at the moment.</p>
                         {% endif %}
                     </div>
-                    <div class="sidebar-card-footer">
-                        <a href="#" class="show-more" data-target="trending-tips">Show more</a>
-                    </div>
                 </div>
-
-                <!-- Trending Tips Modal -->
-                <div id="trending-tips-modal" class="trending-tips-modal">
-                    <div class="trending-tips-modal-content">
-                        <div class="trending-tips-modal-header">
-                            <h3>Trending Tips</h3>
-                            <button class="trending-tips-modal-close">&times;</button>
-                        </div>
-                        <div class="trending-tips-list-modal">
-                            <!-- Tips will be loaded here dynamically -->
-                        </div>
-                    </div>
-                </div>
-                {% endblock %}
+                {% endblock trending_tips %}
                 <!-- Who to follow widget -->
                 <div class="sidebar-card" data-card="who-to-follow">
                     <h3 class="who-to-follow-header">Who to Follow</h3>
@@ -268,7 +245,6 @@
                             <p>No suggested tipsters available.</p>
                         {% endfor %}
                     </div>
-                    <a href="#" class="show-more" data-target="who-to-follow">Show more</a>
                 </div>
                 <!-- Policy and copyright links -->
                 <div class="sidebar-card" data-card="policy-links">

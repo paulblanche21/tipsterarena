@@ -51,7 +51,7 @@ def home(request):
         id__in=followed_users
     ).exclude(
         id=current_user.id
-    ).distinct()[:2]
+    ).distinct()[:10]
 
     suggested_tipsters = []
     for user in suggested_users:

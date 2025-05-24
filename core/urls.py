@@ -74,7 +74,7 @@ urlpatterns = [
     path('api/verify-tip/<int:tip_id>/', views.VerifyTipView.as_view(), name='verify_tip'),
 
     # API routes for data retrieval
-    path('api/trending-tips/', trending_tips, name='trending_tips_api'),
+    path('api/trending-tips/', views.trending_tips_api, name='trending_tips_api'),
     path('api/current-user/', views.current_user_api, name='current_user_api'),
     path('csp-report/', views.csp_report, name='csp_report'),
 
@@ -94,6 +94,7 @@ urlpatterns = [
 
     path('tipster/', include([
         path('tier-setup/', subscription_views.tier_setup, name='tier_setup'),
+        path('setup-tiers/', subscription_views.setup_tiers, name='setup_tiers'),
         path('dashboard/', subscription_views.tipster_dashboard, name='tipster_dashboard'),
         path('tiers/', subscription_views.manage_tiers, name='manage_tiers'),
         path('subscribe/<str:username>/<int:tier_id>/', subscription_views.subscribe_to_tipster, name='subscribe_to_tipster'),

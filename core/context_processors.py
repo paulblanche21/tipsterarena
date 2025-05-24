@@ -56,7 +56,7 @@ def suggested_tipsters(request):
     following = Follow.objects.filter(follower=request.user).values_list('followed', flat=True)
     suggested_users = User.objects.exclude(
         Q(id__in=following) | Q(id=request.user.id)
-    ).select_related('userprofile')[:3]
+    ).select_related('userprofile')[:10]
 
     tipsters = []
     for user in suggested_users:

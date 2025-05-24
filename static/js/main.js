@@ -11,7 +11,6 @@ window.addEventListener('load', function() {
 });
 
 // Import trending tips
-import trendingTips from './pages/trending-tips.js';
 import { setupNotifications } from './notifications.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -59,8 +58,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize trending tips if the element exists
     const trendingTipsList = document.querySelector('.trending-tips-list');
     if (trendingTipsList) {
-      
-      trendingTips.init();
+      await import('./pages/trending-tips.js').then(module => module.default.init());
     }
 
     if (page === '/' || page === '/home/') {
@@ -135,7 +133,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const followList = document.querySelector('.follow-list');
     if (followList) {
       try {
-        const response = await fetch('/api/suggested-users/', {
+        const response = await fetch('/api/suggested-users/?limit=10', {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
@@ -161,8 +159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else {
               followList.innerHTML = '';
               if (data.users && data.users.length > 0) {
-                const limitedUsers = data.users.slice(0, 3);
-                limitedUsers.forEach(user => {
+                data.users.forEach(user => {
                   followList.innerHTML += `
                     <div class="follow-item">
                       <img src="${user.avatar_url || '/static/img/default-avatar.png'}" 
@@ -184,7 +181,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           }
         }
       } catch (error) {
-        console.error('Error fetching suggested users:', error);
+        console.error('Error loading suggested users:', error);
         followList.innerHTML = '<p>Unable to load suggestions.</p>';
       }
     }
