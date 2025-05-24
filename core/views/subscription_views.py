@@ -15,8 +15,9 @@ from django.contrib import messages
 from django.db.models import F, Sum
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from datetime import timedelta
 
-from ..models import TipsterTier, TipsterSubscription,  User
+from ..models import TipsterTier, TipsterSubscription, UserProfile, User
 
 # Configure Stripe
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -97,6 +98,11 @@ def setup_tiers(request):
             messages.success(request, "You are now on the Free plan.")
             return redirect('home')
 
+    return render(request, 'core/tier_setup.html')
+
+@login_required
+def tier_setup(request):
+    """Display the tier setup page with Free and Premium options."""
     return render(request, 'core/tier_setup.html')
 
 @login_required
@@ -381,271 +387,141 @@ def subscribe_to_tipster(request, username, tier_id):
         })
 
 @login_required
-def cancel_subscription(request, subscription_id):
-    """Handle subscription cancellation."""
-    try:
-        subscription = get_object_or_404(
-            TipsterSubscription,
-            id=subscription_id,
-            subscriber=request.user,
-            status='active'
-        )
-        
-        # Cancel subscription
-        subscription.cancel()
-        messages.success(request, "Subscription cancelled successfully.")
-        
-        return JsonResponse({'success': True})
-        
-    except Exception as e:
-        logger.error(f"Error in cancel_subscription: {str(e)}")
-        return JsonResponse({
-            'success': False,
-            'error': "An error occurred while cancelling your subscription"
-        })
+def cancel_subscription(request):
+    """Cancel Premium subscription."""
+    if request.method == 'POST':
+        try:
+            # Get active subscription
+            subscriptions = stripe.Subscription.list(
+                customer=request.user.userprofile.stripe_customer_id,
+                status='active'
+            )
+            
+            if subscriptions.data:
+                # Cancel at period end
+                stripe.Subscription.modify(
+                    subscriptions.data[0].id,
+                    cancel_at_period_end=True
+                )
+                messages.success(request, 'Your subscription will be cancelled at the end of the billing period.')
+            else:
+                messages.error(request, 'No active subscription found.')
+                
+        except Exception as e:
+            messages.error(request, f'Error cancelling subscription: {str(e)}')
+            
+    return redirect('profile', username=request.user.username)
 
 @csrf_exempt
 @require_POST
 def stripe_webhook(request):
-    """Handle Stripe webhook events for subscription lifecycle."""
-    if 'HTTP_STRIPE_SIGNATURE' not in request.META:
-        logger.error("No Stripe signature found")
-        return HttpResponse(status=400)
+    """Handle Stripe webhook events."""
+    payload = request.body
+    sig_header = request.META['HTTP_STRIPE_SIGNATURE']
 
     try:
         event = stripe.Webhook.construct_event(
-            request.body,
-            request.META['HTTP_STRIPE_SIGNATURE'],
-            settings.STRIPE_WEBHOOK_SECRET
+            payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
         )
-    except (ValueError, stripe.error.SignatureVerificationError) as e:
-        logger.error(f"Invalid webhook payload or signature: {str(e)}")
-        return HttpResponse(status=400)
+    except ValueError as e:
+        return JsonResponse({'error': 'Invalid payload'}, status=400)
+    except stripe.error.SignatureVerificationError as e:
+        return JsonResponse({'error': 'Invalid signature'}, status=400)
 
-    try:
-        with transaction.atomic():
-            if event.type == 'customer.subscription.created':
-                handle_subscription_created(event.data.object)
-            elif event.type == 'customer.subscription.updated':
-                handle_subscription_updated(event.data.object)
-            elif event.type == 'customer.subscription.deleted':
-                handle_subscription_deleted(event.data.object)
-            elif event.type == 'invoice.payment_succeeded':
-                handle_payment_succeeded(event.data.object)
-            elif event.type == 'invoice.payment_failed':
-                handle_payment_failed(event.data.object)
-            else:
-                logger.info(f"Unhandled event type: {event.type}")
-        return HttpResponse(status=200)
-    except TipsterSubscription.DoesNotExist:
-        logger.error(f"Subscription not found for event {event.type}")
-        return HttpResponse(status=200)  # Don't retry missing subscriptions
-    except Exception as e:
-        logger.error(f"Error processing {event.type}: {str(e)}", exc_info=True)
-        return HttpResponse(status=500)  # Retry on unexpected errors
+    if event.type == 'customer.subscription.created':
+        handle_subscription_created(event.data.object)
+    elif event.type == 'customer.subscription.updated':
+        handle_subscription_updated(event.data.object)
+    elif event.type == 'customer.subscription.deleted':
+        handle_subscription_deleted(event.data.object)
+    elif event.type == 'invoice.payment_succeeded':
+        handle_payment_succeeded(event.data.object)
+    elif event.type == 'invoice.payment_failed':
+        handle_payment_failed(event.data.object)
+
+    return JsonResponse({'status': 'success'})
 
 def handle_subscription_created(subscription):
     """Handle new subscription creation."""
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    
     try:
-        db_subscription = TipsterSubscription.objects.get(
-            stripe_subscription_id=subscription.id
-        )
-        
-        if subscription.status == 'active':
-            with transaction.atomic():
-                db_subscription.status = 'active'
-                db_subscription.save()
-                
-                # Update tipster stats
-                profile = db_subscription.tier.tipster.userprofile
-                profile.total_subscribers = F('total_subscribers') + 1
-                profile.subscription_revenue = F('subscription_revenue') + db_subscription.tier.price
-                profile.save()
-                
-    except TipsterSubscription.DoesNotExist:
-        logger.error(f"Subscription not found for stripe_subscription_id: {subscription.id}")
+        user = User.objects.get(userprofile__stripe_customer_id=subscription.customer)
+        user.userprofile.tier = 'premium'
+        user.userprofile.tier_expiry = timezone.now() + timedelta(days=30)
+        user.userprofile.save()
+    except User.DoesNotExist:
+        pass
 
 def handle_subscription_updated(subscription):
     """Handle subscription updates."""
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    
     try:
-        db_subscription = TipsterSubscription.objects.get(
-            stripe_subscription_id=subscription.id
-        )
-        
-        old_status = db_subscription.status
-        new_status = subscription.status
-        
-        if old_status != new_status:
-            if new_status == 'active' and old_status != 'active':
-                # Subscription became active
-                with transaction.atomic():
-                    db_subscription.status = 'active'
-                    db_subscription.save()
-                    
-                    profile = db_subscription.tier.tipster.userprofile
-                    profile.total_subscribers = F('total_subscribers') + 1
-                    profile.subscription_revenue = F('subscription_revenue') + db_subscription.tier.price
-                    profile.save()
-                    
-            elif old_status == 'active' and new_status != 'active':
-                # Subscription became inactive
-                with transaction.atomic():
-                    db_subscription.status = new_status
-                    db_subscription.save()
-                    
-                    profile = db_subscription.tier.tipster.userprofile
-                    profile.total_subscribers = F('total_subscribers') - 1
-                    profile.subscription_revenue = F('subscription_revenue') - db_subscription.tier.price
-                    profile.save()
-            else:
-                # Other status changes
-                db_subscription.status = new_status
-                db_subscription.save()
-                
-    except TipsterSubscription.DoesNotExist:
-        logger.error(f"Subscription not found for stripe_subscription_id: {subscription.id}")
+        user = User.objects.get(userprofile__stripe_customer_id=subscription.customer)
+        if subscription.status == 'active':
+            user.userprofile.tier = 'premium'
+            user.userprofile.tier_expiry = timezone.now() + timedelta(days=30)
+        elif subscription.status == 'canceled':
+            user.userprofile.tier = 'free'
+            user.userprofile.tier_expiry = None
+        user.userprofile.save()
+    except User.DoesNotExist:
+        pass
 
 def handle_subscription_deleted(subscription):
-    """Handle subscription cancellation."""
+    """Handle subscription deletion."""
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    
     try:
-        db_subscription = TipsterSubscription.objects.get(
-            stripe_subscription_id=subscription.id
-        )
-        
-        if db_subscription.status == 'active':
-            with transaction.atomic():
-                db_subscription.status = 'cancelled'
-                db_subscription.save()
-                
-                # Update tipster stats
-                profile = db_subscription.tier.tipster.userprofile
-                profile.total_subscribers = F('total_subscribers') - 1
-                profile.subscription_revenue = F('subscription_revenue') - db_subscription.tier.price
-                profile.save()
-                
-    except TipsterSubscription.DoesNotExist:
-        logger.error(f"Subscription not found for stripe_subscription_id: {subscription.id}")
+        user = User.objects.get(userprofile__stripe_customer_id=subscription.customer)
+        user.userprofile.tier = 'free'
+        user.userprofile.tier_expiry = None
+        user.userprofile.save()
+    except User.DoesNotExist:
+        pass
 
 def handle_payment_succeeded(invoice):
     """Handle successful payment."""
-    if invoice.subscription:
-        try:
-            db_subscription = TipsterSubscription.objects.get(
-                stripe_subscription_id=invoice.subscription
-            )
-            
-            # Update subscription dates
-            db_subscription.last_payment_date = timezone.now()
-            db_subscription.end_date = timezone.now() + timezone.timedelta(days=30)
-            db_subscription.next_payment_date = db_subscription.end_date
-            db_subscription.save()
-            
-        except TipsterSubscription.DoesNotExist:
-            logger.error(f"Subscription not found for invoice: {invoice.id}")
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    
+    try:
+        user = User.objects.get(userprofile__stripe_customer_id=invoice.customer)
+        user.userprofile.tier = 'premium'
+        user.userprofile.tier_expiry = timezone.now() + timedelta(days=30)
+        user.userprofile.save()
+    except User.DoesNotExist:
+        pass
 
 def handle_payment_failed(invoice):
     """Handle failed payment."""
-    if invoice.subscription:
-        try:
-            db_subscription = TipsterSubscription.objects.get(
-                stripe_subscription_id=invoice.subscription
-            )
-            
-            # Update subscription status
-            db_subscription.status = 'past_due'
-            db_subscription.save()
-            
-            # TODO: Send notification to user about failed payment
-            
-        except TipsterSubscription.DoesNotExist:
-            logger.error(f"Subscription not found for invoice: {invoice.id}")
-
-def top_tipsters_leaderboard(request):
-    """Public leaderboard of Top Tipsters using composite score algorithm."""
+    from django.contrib.auth import get_user_model
     User = get_user_model()
-    # Only premium users are eligible
-    tipsters_qs = User.objects.filter(userprofile__tier='premium')
-    leaderboard = []
-    # Precompute max values for normalization
-    max_owr = 0
-    max_win_rate = 0
-    max_consistency = 0
-    max_engagement = 0
-    tipster_metrics = []
-    for user in tipsters_qs:
-        profile = user.userprofile
-        tips = user.tip_set.filter(status__in=['win', 'loss'])
-        total_tips = tips.count()
-        if total_tips == 0:
-            continue
-        # Odds-Weighted Success Rate
-        ows_sum = 0
-        for tip in tips:
-            if tip.status == 'win':
-                try:
-                    if tip.odds is None or tip.odds_format is None:
-                        continue
-                    if tip.odds_format.lower() == 'decimal':
-                        odds = float(tip.odds)
-                    elif tip.odds_format.lower() == 'fractional':
-                        num, denom = map(float, tip.odds.split('/'))
-                        odds = (num / denom) + 1
-                    else:
-                        continue
-                    ows_sum += (odds - 1) / odds
-                except Exception:
-                    continue
-        odds_weighted_success = ows_sum / total_tips if total_tips else 0
-        # Raw Win Rate
-        wins = tips.filter(status='win').count()
-        raw_win_rate = wins / total_tips if total_tips else 0
-        # Consistency
-        avg_outcome = raw_win_rate
-        variance = sum([(1 if tip.status == 'win' else 0) - avg_outcome for tip in tips])
-        variance = sum([(1 if tip.status == 'win' else 0 - avg_outcome) ** 2 for tip in tips]) / total_tips if total_tips else 0
-        consistency = 1 / (1 + variance)
-        # Engagement
-        followers = user.followers.count()
-        likes = tips.aggregate(total_likes=Sum('likes__id'))['total_likes'] or 0
-        comments = tips.aggregate(total_comments=Sum('comments__id'))['total_comments'] or 0
-        engagement = followers + likes + comments
-        # Track max for normalization
-        max_owr = max(max_owr, odds_weighted_success)
-        max_win_rate = max(max_win_rate, raw_win_rate)
-        max_consistency = max(max_consistency, consistency)
-        max_engagement = max(max_engagement, engagement)
-        tipster_metrics.append({
-            'user': user,
-            'profile': profile,
-            'odds_weighted_success': odds_weighted_success,
-            'raw_win_rate': raw_win_rate,
-            'consistency': consistency,
-            'engagement': engagement,
-            'total_tips': total_tips,
-            'win_rate': profile.win_rate,
-            'followers_count': followers,
-            'premium_tips': user.tip_set.filter(is_premium_tip=True).count(),
-        })
-    # Normalize and calculate composite score
-    for m in tipster_metrics:
-        norm_owr = (m['odds_weighted_success'] / max_owr * 100) if max_owr else 0
-        norm_win_rate = (m['raw_win_rate'] / max_win_rate * 100) if max_win_rate else 0
-        norm_consistency = (m['consistency'] / max_consistency * 100) if max_consistency else 0
-        norm_engagement = (m['engagement'] / max_engagement * 100) if max_engagement else 0
-        composite = (
-            0.6 * norm_owr +
-            0.15 * norm_win_rate +
-            0.15 * norm_consistency +
-            0.10 * norm_engagement
-        )
-        leaderboard.append({
-            'username': m['user'].username,
-            'avatar_url': m['profile'].avatar.url if m['profile'].avatar else '/static/img/default-avatar.png',
-            'win_rate': m['win_rate'],
-            'total_tips': m['total_tips'],
-            'followers_count': m['followers_count'],
-            'premium_tips': m['premium_tips'],
-            'points': round(composite, 2),
-        })
-    leaderboard = sorted(leaderboard, key=lambda t: t['points'], reverse=True)
-    return render(request, 'core/top_tipsters.html', {'top_tipsters': leaderboard}) 
+    
+    try:
+        user = User.objects.get(userprofile__stripe_customer_id=invoice.customer)
+        user.userprofile.tier = 'free'
+        user.userprofile.tier_expiry = None
+        user.userprofile.save()
+    except User.DoesNotExist:
+        pass
+
+@login_required
+def top_tipsters_leaderboard(request):
+    """Display the top tipsters leaderboard."""
+    if not request.user.userprofile.tier == 'premium':
+        messages.warning(request, 'Premium subscription required to view Top Tipsters.')
+        return redirect('tier_setup')
+        
+    top_tipsters = UserProfile.objects.filter(
+        is_tipster=True,
+        is_top_tipster=True
+    ).order_by('-win_rate', '-total_tips')[:10]
+    
+    return render(request, 'core/top_tipsters_leaderboard.html', {
+        'top_tipsters': top_tipsters
+    }) 

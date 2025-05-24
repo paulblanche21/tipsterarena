@@ -1,95 +1,203 @@
 {% extends 'core/base.html' %}
 {% load static %}
 
-{% block title %}Choose Your Experience - Tipster Arena{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/premium.css' %}">
-{% endblock %}
+{% block title %}Choose Your Plan - Tipster Arena{% endblock %}
 
 {% block content %}
-<div class="onboarding-container">
-    <div class="onboarding-header">
-        <h1>Welcome to Tipster Arena!</h1>
-        <p class="subtitle">Choose the plan that fits your betting journey. Upgrade anytime!</p>
+<div class="tier-setup">
+    <div class="tier-setup-header">
+        <h1>Choose Your Plan</h1>
+        <p class="subtitle">Select the plan that best fits your needs</p>
     </div>
 
-    <div class="tiers-comparison">
-        <div class="tier-card free">
-            <h2>Free</h2>
-            <ul class="tier-features">
-                <li>Post up to 2 tips/day (60/month)</li>
-                <li>Access basic tipster stats</li>
-                <li>Follow up to 10 tipsters</li>
-                <li>View public tips & leaderboards</li>
-                <li>Like tips</li>
-                <li class="feature-ad">See ads from betting partners</li>
-            </ul>
-            <button class="select-tier-btn" data-tier="free">Continue with Free</button>
-        </div>
+    <div class="tier-cards">
+        <!-- Basic Tier -->
         <div class="tier-card basic">
-            <h2>Basic <span class="badge-trial">1 Month Free!</span></h2>
-            <ul class="tier-features">
-                <li>Ad-free experience <span class="feature-ad">(First month only)</span></li>
-                <li>Post up to 100 tips/month</li>
-                <li>Access advanced stats</li>
-                <li>Follow unlimited tipsters</li>
-                <li>Comment on tips & join discussions</li>
-                <li>Like tips</li>
-                <li>See ads after trial ends</li>
-            </ul>
-            <button class="select-tier-btn" data-tier="basic">Start Free Basic Trial</button>
-            <div class="tier-price">€7/month after trial</div>
+            <div class="tier-header">
+                <h2>Basic</h2>
+                <p class="price">Free</p>
+            </div>
+            <div class="tier-features">
+                <ul>
+                    <li><i class="fas fa-check"></i> Access to free tips</li>
+                    <li><i class="fas fa-check"></i> Basic tipster profiles</li>
+                    <li><i class="fas fa-check"></i> Community engagement</li>
+                    <li><i class="fas fa-check"></i> Basic statistics</li>
+                    <li><i class="fas fa-check"></i> Standard support</li>
+                </ul>
+            </div>
+            <div class="tier-action">
+                <a href="{% url 'home' %}" class="btn-secondary">Continue with Basic</a>
+            </div>
         </div>
+
+        <!-- Premium Tier -->
         <div class="tier-card premium">
-            <h2>Premium <span class="badge-popular">Most Popular</span></h2>
-            <ul class="tier-features">
-                <li>All Basic features</li>
-                <li>Access Premium Tips from Top Tipsters</li>
-                <li>Priority profile visibility</li>
-                <li>Custom badges & analytics dashboard</li>
-                <li>Early access to new features</li>
-                <li class="feature-ad">No ads, ever</li>
-                <li><strong>Compete for Top Tipster status and earn a share of the monthly prize pool <span style="color:var(--red-accent);">(Premium only)</span></strong></li>
-            </ul>
-            <button class="select-tier-btn" data-tier="premium">Upgrade to Premium</button>
-            <div class="tier-price">€12/month</div>
+            <div class="tier-header">
+                <h2>Premium</h2>
+                <p class="price">€7/month</p>
+                <p class="price-subtitle">Billed monthly</p>
+            </div>
+            <div class="tier-features">
+                <ul>
+                    <li><i class="fas fa-check"></i> All Basic features</li>
+                    <li><i class="fas fa-check"></i> Access to Top Tipsters</li>
+                    <li><i class="fas fa-check"></i> Premium tips access</li>
+                    <li><i class="fas fa-check"></i> Advanced statistics</li>
+                    <li><i class="fas fa-check"></i> Priority support</li>
+                    <li><i class="fas fa-check"></i> Exclusive content</li>
+                    <li><i class="fas fa-check"></i> Ad-free experience</li>
+                </ul>
+            </div>
+            <div class="tier-action">
+                <a href="{% url 'payment' %}" class="btn-primary">Upgrade to Premium</a>
+            </div>
         </div>
-    </div>
-
-    <div class="onboarding-promo">
-        <div class="promo-banner">
-            <strong>Referral Program:</strong> Invite friends and get <b>7 days of Basic</b> for free!
-        </div>
-        <div class="promo-banner">
-            <strong>Top Tipster?</strong> <a href="#" class="apply-top-tipster">Apply to join the Top Tipsters program</a>
-        </div>
-    </div>
-
-    <div class="onboarding-faq">
-        <h3>Frequently Asked Questions</h3>
-        <ul>
-            <li><b>Can I upgrade or downgrade later?</b> Yes, you can change your plan anytime from your profile settings.</li>
-            <li><b>What happens after my Basic trial?</b> You'll be billed €7/month unless you cancel or downgrade to Free.</li>
-            <li><b>How do I become a Top Tipster?</b> Top Tipster status is awarded automatically to the best performers based on our transparent algorithm (win rate, tips, engagement, and more). The cream always rises to the top!</li>
-        </ul>
     </div>
 </div>
 
-<form id="tier-selection-form" method="POST" style="display:none;">
-    {% csrf_token %}
-    <input type="hidden" name="tier" id="selected-tier-input">
-</form>
+<style>
+.tier-setup {
+    max-width: var(--content-width);
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: var(--secondary-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-light);
+}
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.select-tier-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const tier = this.dataset.tier;
-            document.getElementById('selected-tier-input').value = tier;
-            document.getElementById('tier-selection-form').submit();
-        });
-    });
-});
-</script>
+.tier-setup-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.tier-setup-header h1 {
+    color: var(--primary-bg);
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.subtitle {
+    color: var(--gray-light);
+    font-size: 1.2rem;
+}
+
+.tier-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.tier-card {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    box-shadow: var(--shadow-light);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.tier-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
+}
+
+.tier-card.premium {
+    border: 2px solid var(--red-accent);
+    position: relative;
+}
+
+.tier-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.tier-header h2 {
+    color: var(--primary-bg);
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.price {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary-bg);
+    margin: 0.5rem 0;
+}
+
+.price-subtitle {
+    color: var(--gray-light);
+    font-size: 0.9rem;
+}
+
+.tier-features {
+    margin: 2rem 0;
+}
+
+.tier-features ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.tier-features li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    color: var(--primary-bg);
+}
+
+.tier-features i {
+    color: var(--red-accent);
+    margin-right: 1rem;
+}
+
+.tier-action {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.btn-primary, .btn-secondary {
+    display: inline-block;
+    padding: 1rem 2rem;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    width: 100%;
+    text-align: center;
+}
+
+.btn-primary {
+    background-color: var(--red-accent);
+    color: white;
+}
+
+.btn-secondary {
+    background-color: var(--secondary-bg);
+    color: var(--primary-bg);
+    border: 2px solid var(--border-color);
+}
+
+.btn-primary:hover {
+    background-color: #e63939;
+    transform: translateY(-2px);
+}
+
+.btn-secondary:hover {
+    background-color: var(--border-color);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .tier-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .tier-setup {
+        padding: 1rem;
+        margin: 1rem;
+    }
+}
+</style>
 {% endblock %} 

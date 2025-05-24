@@ -99,7 +99,7 @@
             {% if request.user.userprofile.is_tipster %}
                 <li><a href="{% url 'top_tipsters_leaderboard' %}"><i class="fas fa-chart-line nav-icon"></i><span>Top Tipsters</span></a></li>
             {% else %}
-                <li><a href="{% url 'become_tipster' %}"><i class="fas fa-star nav-icon"></i><span>Go Pro</span></a></li>
+                <li><a href="{% url 'tier_setup' %}"><i class="fas fa-star nav-icon"></i><span>Go Premium</span></a></li>
             {% endif %}
         </ul>
         <div class="nav-post">
@@ -149,7 +149,7 @@
                 <i class="fas fa-chart-line"></i>
             </a>
         {% else %}
-            <a href="{% url 'become_tipster' %}" {% if request.resolver_match.url_name == 'become_tipster' %}class="active"{% endif %}>
+            <a href="{% url 'tier_setup' %}" {% if request.resolver_match.url_name == 'tier_setup' %}class="active"{% endif %}>
                 <i class="fas fa-star"></i>
             </a>
         {% endif %}
@@ -203,7 +203,54 @@
                     </div>
                 </div>
                 {% endblock %}
-                {% block trending_tips %}{% endblock %}
+                {% block trending_tips %}
+                <div class="sidebar-card">
+                    <div class="sidebar-card-header">
+                        <h3>Trending Tips</h3>
+                    </div>
+                    <div class="sidebar-card-content">
+                        {% if trending_tips %}
+                            {% for tip in trending_tips %}
+                            <div class="trending-tip">
+                                <div class="trending-tip-avatar">
+                                    <img src="{{ tip.user.avatar.url|default:'/static/img/default-avatar.png' }}" alt="{{ tip.user.username }}">
+                                </div>
+                                <div class="trending-tip-content">
+                                    <div class="trending-tip-text">{{ tip.text }}</div>
+                                    <div class="trending-tip-user">
+                                        <a href="{% url 'profile' tip.user.username %}">@{{ tip.user.username }}</a>
+                                    </div>
+                                    <div class="trending-tip-stats">
+                                        <div class="trending-tip-stat">
+                                            <i class="fas fa-heart"></i>
+                                            <span>{{ tip.likes_count }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p>No trending tips at the moment.</p>
+                        {% endif %}
+                    </div>
+                    <div class="sidebar-card-footer">
+                        <a href="#" class="show-more" data-target="trending-tips">Show more</a>
+                    </div>
+                </div>
+
+                <!-- Trending Tips Modal -->
+                <div id="trending-tips-modal" class="trending-tips-modal">
+                    <div class="trending-tips-modal-content">
+                        <div class="trending-tips-modal-header">
+                            <h3>Trending Tips</h3>
+                            <button class="trending-tips-modal-close">&times;</button>
+                        </div>
+                        <div class="trending-tips-list-modal">
+                            <!-- Tips will be loaded here dynamically -->
+                        </div>
+                    </div>
+                </div>
+                {% endblock %}
                 <!-- Who to follow widget -->
                 <div class="sidebar-card" data-card="who-to-follow">
                     <h3 class="who-to-follow-header">Who to Follow</h3>
@@ -374,6 +421,12 @@
         </ul>
       </div>
     </div>
+
+    <!-- Floating Messages Button (hidden on messages page) -->
+    <a href="{% url 'messages' %}" class="messages-card" title="Messages">
+        <span class="messages-icon-base"><i class="fas fa-envelope"></i></span>
+        <span class="messages-text-base">Messages</span>
+    </a>
 
     <!-- Hidden CSRF token and global JavaScript variables -->
     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">

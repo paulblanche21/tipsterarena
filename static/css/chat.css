@@ -174,7 +174,7 @@
 }
 
 .chat-send-btn {
-    background: var(--twitter-blue);
+    background: var(--red-accent);
     color: #fff;
     border: none;
     border-radius: 24px;
@@ -185,7 +185,7 @@
 }
 
 .chat-send-btn:hover {
-    background: #1a91da;
+    background: #e63b31;
 }
 
 .chat-send-btn:disabled {
@@ -267,10 +267,18 @@
 .online-user-item {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     padding: 8px;
     border-radius: 8px;
     transition: background-color 0.2s;
+    height: 40px;
+    box-sizing: border-box;
+}
+
+.user-info-flex {
+    display: flex;
+    align-items: center;
+    height: 32px;
 }
 
 .online-user-item:hover {
@@ -282,10 +290,19 @@
     height: 32px;
     border-radius: 50%;
     object-fit: cover;
+    flex-shrink: 0;
+    display: block;
 }
 
 .online-user-item .user-name {
     flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 32px;
+    height: 32px;
+    font-size: 14px;
+    margin-left: 0;
 }
 
 .online-user-item .user-status {
@@ -293,6 +310,8 @@
     height: 8px;
     background: #4caf50;
     border-radius: 50%;
+    flex-shrink: 0;
+    margin-left: 4px;
 }
 
 @media (max-width: 768px) {

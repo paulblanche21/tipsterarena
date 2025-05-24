@@ -71,33 +71,24 @@ export function attachFollowButtonListeners() {
         button.addEventListener('click', async (e) => {
             e.preventDefault();
             const username = button.dataset.username;
-            const isFollowing = button.textContent === 'Following';
+            const isFollowing = button.classList.contains('followed');
             
             try {
-                const csrfToken = getCookie('csrftoken');
-                if (!csrfToken) {
-                    console.error('CSRF token not found');
-                    return;
-                }
-
-                const response = await fetch('/api/follow/', {
+                const response = await fetch(`/api/follow/${username}/`, {
                     method: isFollowing ? 'DELETE' : 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken
+                        'X-CSRFToken': getCookie('csrftoken')
                     },
-                    body: JSON.stringify({ username }),
                     credentials: 'include'
                 });
 
                 if (response.ok) {
+                    button.classList.toggle('followed');
                     button.textContent = isFollowing ? 'Follow' : 'Following';
-                    button.classList.toggle('following');
-                } else {
-                    console.error('Failed to follow/unfollow user:', await response.text());
                 }
             } catch (error) {
-                console.error('Error following/unfollowing user:', error);
+                console.error('Error toggling follow status:', error);
             }
         });
     });

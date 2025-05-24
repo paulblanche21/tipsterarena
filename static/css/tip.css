@@ -196,17 +196,18 @@
   
   /* Base styles for tip action buttons */
   .tip-action {
-    color: var(--gray-light) !important;
+    color: var(--text-secondary);
     text-decoration: none;
-    font-size: clamp(16px, 4vw, 20px);
-    transition: color 0.2s, background-color 0.2s;
-    display: flex;
+    padding: 0.4rem;  /* Reduced from default padding */
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: clamp(32px, 8vw, 40px);
-    height: clamp(32px, 8vw, 40px);
-    border-radius: 50%;
-    background-color: rgba(0, 0, 0, 0.05);
+    font-size: 0.9rem;  /* Reduced from default font size */
+    width: 2rem;  /* Reduced from default width */
+    height: 2rem;  /* Reduced from default height */
+    margin: 0 0.2rem;  /* Reduced from default margin */
   }
   
   /* Hover state for tip actions */
@@ -248,7 +249,7 @@
   
   /* Icon within tip actions */
   .tip-action i {
-    vertical-align: middle;
+    font-size: 0.9rem;  /* Reduced from default font size */
   }
   
   /* Liked state for like action */
@@ -263,16 +264,16 @@
   
   /* Styles for tip action counts */
   .tip-action-count {
-    font-size: clamp(12px, 3vw, 14px);
-    color: var(--gray-light);
-    margin-right: clamp(4px, 1vw, 6px);
+    font-size: 0.8rem;  /* Reduced from default font size */
+    margin-left: 0.2rem;  /* Reduced from default margin */
+    color: var(--text-secondary);
   }
   
   /* Group container for tip action and count */
   .tip-action-group {
     display: flex;
     align-items: center;
-    gap: clamp(4px, 1vw, 6px);
+    margin-right: 0.5rem;  /* Reduced from default margin */
   }
   
   /* Small spacer between tip action groups */

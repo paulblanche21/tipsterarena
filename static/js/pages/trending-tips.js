@@ -4,6 +4,10 @@ import { getCSRFToken } from './utils.js';
 class TrendingTips {
     constructor() {
         this.trendingTipsList = document.querySelector('.trending-tips-list');
+        this.showMoreBtn = document.querySelector('.show-more[data-target="trending-tips"]');
+        this.modal = document.getElementById('trending-tips-modal');
+        this.closeBtn = this.modal?.querySelector('.trending-tips-modal-close');
+        this.tipsList = this.modal?.querySelector('.trending-tips-list-modal');
         this.initialized = false;
         this.retryCount = 0;
         this.maxRetries = 3;
@@ -14,7 +18,6 @@ class TrendingTips {
             return;
         }
         
-        
         if (!this.trendingTipsList) {
             return;
         }
@@ -23,7 +26,86 @@ class TrendingTips {
         // Refresh every 60 seconds
         setInterval(() => this.fetchTrendingTips(), 120000);
         
+        // Initialize modal functionality
+        if (this.showMoreBtn && this.modal && this.closeBtn && this.tipsList) {
+            this.initModal();
+        }
+        
         this.initialized = true;
+    }
+
+    initModal() {
+        // Show modal
+        this.showMoreBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.loadModalTrendingTips();
+            this.modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        });
+
+        // Close modal
+        this.closeBtn.addEventListener('click', () => {
+            this.modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+
+        // Close modal when clicking outside
+        this.modal.addEventListener('click', (e) => {
+            if (e.target === this.modal) {
+                this.modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        });
+    }
+
+    async loadModalTrendingTips() {
+        try {
+            const response = await fetch('/api/trending-tips/?limit=30');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            
+            this.tipsList.innerHTML = ''; // Clear existing tips
+            data.forEach(tip => {
+                const tipElement = this.createModalTipElement(tip);
+                this.tipsList.appendChild(tipElement);
+            });
+        } catch (error) {
+            console.error('Error loading modal trending tips:', error);
+            this.tipsList.innerHTML = '<p class="error-message">Failed to load trending tips. Please try again later.</p>';
+        }
+    }
+
+    createModalTipElement(tip) {
+        const div = document.createElement('div');
+        div.className = 'trending-tip-modal-item';
+        div.innerHTML = `
+            <div class="trending-tip-modal-content">
+                <p class="trending-tip-modal-text">${this.escapeHtml(tip.text)}</p>
+                <div class="trending-tip-modal-user">
+                    <img src="${tip.user.avatar_url || '/static/img/default-avatar.png'}" 
+                         alt="${tip.user.username}" 
+                         class="trending-tip-modal-avatar">
+                    <span>@${tip.user.username}</span>
+                </div>
+                <div class="trending-tip-modal-stats">
+                    <div class="trending-tip-modal-stat">
+                        <i class="fas fa-heart"></i>
+                        <span>${tip.likes_count}</span>
+                    </div>
+                    <div class="trending-tip-modal-stat">
+                        <i class="fas fa-comment"></i>
+                        <span>${tip.comments_count}</span>
+                    </div>
+                    <div class="trending-tip-modal-stat">
+                        <i class="fas fa-share"></i>
+                        <span>${tip.shares_count}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        return div;
     }
 
     async fetchTrendingTips() {
@@ -47,7 +129,6 @@ class TrendingTips {
                 return;
             }
 
-            
             data.trending_tips.forEach(tip => {
                 const tipElement = this.createTipElement(tip);
                 this.trendingTipsList.appendChild(tipElement);

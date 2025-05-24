@@ -59,7 +59,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps(event["data"]))
 
 class ChatConsumer(AsyncWebsocketConsumer):
-    online_users = set()
+    online_users = {}  # Changed from set to dict
 
     async def connect(self):
         self.user = self.scope["user"]
@@ -68,50 +68,63 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.close()
         else:
             await self.channel_layer.group_add(self.group_name, self.channel_name)
-            ChatConsumer.online_users.add((self.user.username, self.get_avatar_url()))
+            # Store user info with username as key
+            ChatConsumer.online_users[self.user.username] = self.get_avatar_url()
             await self.accept()
             # Broadcast join
             await self.channel_layer.group_send(
                 self.group_name,
                 {
                     "type": "user_list_update",
-                    "users": list(ChatConsumer.online_users),
+                    "users": [(username, avatar_url) for username, avatar_url in ChatConsumer.online_users.items()],
                 },
             )
 
     async def disconnect(self, close_code):
         if not self.user.is_anonymous:
-            ChatConsumer.online_users.discard((self.user.username, self.get_avatar_url()))
+            # Remove user by username
+            if self.user.username in ChatConsumer.online_users:
+                del ChatConsumer.online_users[self.user.username]
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
             # Broadcast leave
             await self.channel_layer.group_send(
                 self.group_name,
                 {
                     "type": "user_list_update",
-                    "users": list(ChatConsumer.online_users),
+                    "users": [(username, avatar_url) for username, avatar_url in ChatConsumer.online_users.items()],
                 },
             )
 
     async def receive(self, text_data):
-        data = json.loads(text_data)
-        if data.get("type") == "chat_message":
-            message = data.get("message", "")
-            username = data.get("username", "Anonymous")
-            avatar_url = data.get("avatar_url", "")
-            image_url = data.get("image_url", None)
-            gif_url = data.get("gif_url", None)
-            # Optionally add timestamp here
-            await self.channel_layer.group_send(
-                self.group_name,
-                {
-                    "type": "chat_message_broadcast",
-                    "username": username,
-                    "avatar_url": avatar_url,
-                    "message": message,
-                    "image_url": image_url,
-                    "gif_url": gif_url,
-                },
-            )
+        try:
+            data = json.loads(text_data)
+            if data.get("type") == "chat_message":
+                message = data.get("message", "")
+                username = data.get("username", "Anonymous")
+                avatar_url = data.get("avatar_url", "")
+                image_url = data.get("image_url", None)
+                gif_url = data.get("gif_url", None)
+                await self.channel_layer.group_send(
+                    self.group_name,
+                    {
+                        "type": "chat_message_broadcast",
+                        "username": username,
+                        "avatar_url": avatar_url,
+                        "message": message,
+                        "image_url": image_url,
+                        "gif_url": gif_url,
+                    },
+                )
+            elif data.get("type") == "request_user_list":
+                # Send current user list to the requesting client
+                await self.send(text_data=json.dumps({
+                    "type": "user_list",
+                    "users": [(username, avatar_url) for username, avatar_url in ChatConsumer.online_users.items()],
+                }))
+        except json.JSONDecodeError:
+            print("Error decoding JSON message")
+        except Exception as e:
+            print(f"Error in receive: {str(e)}")
 
     async def chat_message_broadcast(self, event):
         await self.send(text_data=json.dumps({

@@ -6,43 +6,53 @@
     margin-bottom: 1.5rem;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    background-color: var(--secondary-bg);
+    background-color: #ffffff;
 }
 
 .upcoming-events-card h3 {
     margin-bottom: 1rem;
-    color: var(--text-primary);
+    color: #1a1a1a;
     font-size: 1.2rem;
     font-weight: 600;
 }
 
 /* Ensure sidebar cards don't interfere */
 .sidebar-card {
-    background-color: var(--secondary-bg);
-    border: 1px solid var(--border-color);
+    background: #ffffff;
     border-radius: 12px;
-    padding: 12px;
-    margin-bottom: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    min-height: 200px;
-    position: relative;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-card-header {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
 }
 
-.sidebar-card h3 {
-    color:  var(--primary-bg);
-    font-size: 16px;
+.sidebar-card-header h3 {
+    font-size: 1.1rem;
     font-weight: 600;
-    margin-bottom: 8px;
+    color: #1a1a1a;
+    margin: 0;
 }
 
-/* Adjust padding or height if needed to accommodate "Show more" */
+.sidebar-card-content {
+    margin-bottom: 15px;
+}
+
+.sidebar-card-footer {
+    text-align: center;
+}
+
 .sidebar-card p {
-    color: #666666;
-    font-size: 14px;
+    
+    font-size: 0.9rem;
     line-height: 1.4;
-    margin-bottom: 0;
 }
 
 /* Ensure Sidebar Card Fits Policy Links */
@@ -54,14 +64,104 @@
 /* Specific Heights for Who to Follow */
 .sidebar-card[data-card="who-to-follow"] {
     min-height: 350px;
+    background: #ffffff;
 }
 
-/* Specific Heights for Trending Tips (updated) */
+/* Specific Heights for Trending Tips */
 .sidebar-card[data-card="trending-tips"] {
+    background: #ffffff;
+    min-height: 300px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    overflow-y: auto;
+}
+
+.trending-tips-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+}
+
+.trending-tips-card h3 {
+    color: #1a1a1a;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.trending-tips-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: black;
+}
+
+.trending-tips-list p {
+    color: black;
+    font-size: 0.95rem;
+    text-align: center;
+    padding: 15px;
+    margin: 0;
+}
+
+.trending-tip {
+    padding: 12px;
+    border-radius: 8px;
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    transition: background-color 0.2s;
+}
+
+.trending-tip:hover {
+    background: #f8f9fa;
+}
+
+.trending-tip-content {
+    flex: 1;
+}
+
+.trending-tip-text {
+    color: #000000;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    margin-bottom: 8px;
+}
+
+.trending-tip-user {
+    color: #000000;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.trending-tip-user a {
+    color: #000000;
+    text-decoration: none;
+}
+
+.trending-tip-user a:hover {
+    text-decoration: underline;
+}
+
+.trending-tip-stats {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.trending-tip-stat {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #1a1a1a;
+    font-size: 0.9rem;
+}
+
+.trending-tip-stat i {
+    color: #1a1a1a;
 }
 
 /* Event Controls (Sport Selector and Buttons) */
@@ -390,118 +490,54 @@
     color: #ff4136;
 }
 
-/* Trending Tips Card */
-.trending-tips-card {
-    background-color: white;
-    border-radius: 10px;
-    padding: 15px;
-    margin-bottom: 15px;
-    min-height: 300px;
+/* Fixture Buttons */
+.fixture-buttons {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
 }
 
-/* Trending Tips List */
-.trending-tips-list {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    width: 100%;
-    overflow: hidden;
-}
-
-/* Trending Tip Row */
-.trending-tip {
-    display: flex;
-    align-items: flex-start;
-    padding: 10px;
-    border-bottom: 1px solid #e1e8ed;
-    position: relative;
-}
-
-.trending-tip:last-child {
-    border-bottom: none;
-}
-
-/* Trending Tip Content */
-.trending-tip-content {
-    flex: 1;
-    min-width: 0; /* Prevents content from overflowing */
-    padding-right: 40px; /* Space for the heart icon */
-}
-
-/* Trending Tip Text */
-.trending-tip-text {
-    font-size: 14px;
-    color: #14171a;
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Trending Tip User */
-.trending-tip-user {
-    font-size: 13px;
-    color: #657786;
-    margin-top: 4px;
-}
-
-.trending-tip-user .user-link {
-    color: #657786;
-    text-decoration: none;
-    transition: color 0.2s ease;
-}
-
-.trending-tip-user .user-link:hover {
-    color: #001f3f;
-    text-decoration: underline;
-}
-
-/* Heart Icon Container */
-.trending-tip-heart {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    color: #657786; /* Default gray color */
-}
-
-.trending-tip-heart.liked {
-    color: #e0245e; /* Red color for liked tips */
-}
-
-.trending-tip-heart i {
-    margin-right: 4px;
-    transition: color 0.2s ease;
-}
-
-.trending-tip-heart:hover {
-    color: #e0245e; /* Red on hover */
+.fixture-button {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    color: var(--text-primary);
     cursor: pointer;
+    transition: all 0.2s;
+    flex: 1;
+    min-width: 120px;
+    text-align: center;
 }
 
-.trending-tip-heart-count {
-    font-size: 13px;
-    color: #657786;
+.fixture-button:hover {
+    background: var(--hover-bg);
+    border-color: var(--primary-color);
+}
+
+.fixture-button.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
 }
 
 /* Show More Link */
 .show-more {
-    color: #1da1f2;
+    display: block;
+    text-align: center;
+    padding: 12px;
+    color: #1a1a1a;
     text-decoration: none;
-    font-size: 14px;
-    margin-top: auto;
-    padding-top: 15px;
-    border-top: 1px solid #e1e8ed;
+    font-weight: 500;
+    border-top: 1px solid #e9ecef;
+    transition: background-color 0.2s;
 }
 
 .show-more:hover {
-    text-decoration: underline;
+    background-color: #f8f9fa;
+    color: #1a1a1a;
 }
 
 /* Who to Follow Header */
@@ -682,6 +718,207 @@
 .policy-content a:hover {
     text-decoration: underline;
     color: #b32d39;
+}
+
+/* Trending Tips Modal Styles */
+.trending-tips-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.trending-tips-modal-content {
+    position: relative;
+    background-color: #ffffff;
+    margin: 10% auto;
+    padding: 20px;
+    width: 90%;
+    max-width: 600px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.trending-tips-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e9ecef;
+    color:black;
+}
+
+.trending-tips-modal-header h3 {
+    color: #000000;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.trending-tips-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #000000;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.trending-tips-list-modal {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.trending-tip-modal-item {
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.trending-tip-modal-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.trending-tip-modal-content {
+    display: flex;
+    gap: 16px;
+    min-height: 120px;
+}
+
+.trending-tip-modal-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid #e9ecef;
+}
+
+.trending-tip-modal-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.trending-tip-modal-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: black;
+}
+
+.trending-tip-modal-text p {
+    color: #000000;
+    font-size: 1rem;
+    line-height: 1.5;
+    margin: 0;
+    padding: 0;
+}
+
+.trending-tip-modal-user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.trending-tip-modal-user a {
+    color: #000000;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: color 0.2s ease;
+}
+
+.trending-tip-modal-user a:hover {
+    color: #1da1f2;
+}
+
+.trending-tip-modal-stats {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #e9ecef;
+}
+
+.trending-tip-modal-stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #000000;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.trending-tip-modal-stat:hover {
+    color: #1da1f2;
+}
+
+.trending-tip-modal-stat i {
+    color: inherit;
+    font-size: 1rem;
+    transition: color 0.2s ease;
+}
+
+/* Add a subtle gradient background to the modal content */
+.trending-tips-modal-content {
+    background: linear-gradient(to bottom, #ffffff, #fafafa);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Style the scrollbar for the modal list */
+.trending-tips-list-modal::-webkit-scrollbar {
+    width: 8px;
+}
+
+.trending-tips-list-modal::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.trending-tips-list-modal::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.trending-tips-list-modal::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .trending-tips-modal-content {
+        margin: 20px;
+        width: auto;
+    }
+    
+    .fixture-button {
+        min-width: calc(50% - 4px);
+    }
+}
+
+@media (max-width: 480px) {
+    .fixture-button {
+        min-width: 100%;
+    }
 }
 
 

@@ -30,6 +30,22 @@ class PendingTipFilter(admin.SimpleListFilter):
             return queryset.exclude(status='pending')
         return queryset
 
+class TierFilter(admin.SimpleListFilter):
+    """Filter to show users by tier."""
+    title = 'Subscription Tier'
+    parameter_name = 'tier'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('basic', 'Basic (Free)'),
+            ('premium', 'Premium (€7/month)'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(tier=self.value())
+        return queryset
+
 @admin.register(Tip)
 class TipAdmin(admin.ModelAdmin):
     """Admin interface for managing betting tips and their verification status."""
@@ -212,8 +228,50 @@ class TipAdmin(admin.ModelAdmin):
 
     verify_as_void_non_runner.short_description = "Verify selected tips as Void/Non Runner"
 
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    """Admin interface for managing user profiles and their subscription tiers."""
+    list_display = ('user', 'handle', 'tier', 'tier_expiry', 'is_tipster', 'is_top_tipster', 'total_earnings')
+    list_filter = (TierFilter, 'is_tipster', 'is_top_tipster')
+    search_fields = ('user__username', 'handle', 'description')
+    readonly_fields = ('total_earnings', 'monthly_earnings', 'revenue_share_percentage')
+    fieldsets = (
+        ('User Information', {
+            'fields': ('user', 'handle', 'avatar', 'banner', 'description', 'location', 'date_of_birth')
+        }),
+        ('Subscription Status', {
+            'fields': ('tier', 'tier_expiry', 'trial_used'),
+            'description': 'Premium users (€7/month) get access to Top Tipsters and an ad-free experience.'
+        }),
+        ('Tipster Status', {
+            'fields': ('is_tipster', 'is_top_tipster', 'top_tipster_since', 'tipster_description', 'tipster_rules')
+        }),
+        ('Earnings', {
+            'fields': ('total_earnings', 'monthly_earnings', 'revenue_share_percentage')
+        }),
+        ('Account Settings', {
+            'fields': ('allow_messages', 'kyc_completed', 'payment_completed', 'profile_completed')
+        })
+    )
+    actions = ['upgrade_to_premium', 'downgrade_to_basic']
+
+    def upgrade_to_premium(self, request, queryset):
+        """Upgrade selected users to Premium tier."""
+        for profile in queryset:
+            profile.tier = 'premium'
+            profile.save()
+        self.message_user(request, f"Successfully upgraded {queryset.count()} users to Premium tier.")
+    upgrade_to_premium.short_description = "Upgrade selected users to Premium (€7/month)"
+
+    def downgrade_to_basic(self, request, queryset):
+        """Downgrade selected users to Basic tier."""
+        for profile in queryset:
+            profile.tier = 'basic'
+            profile.save()
+        self.message_user(request, f"Successfully downgraded {queryset.count()} users to Basic tier.")
+    downgrade_to_basic.short_description = "Downgrade selected users to Basic (Free)"
+
 # Other registrations unchanged...
-admin.site.register(UserProfile)
 admin.site.register(Like)
 admin.site.register(Follow)
 admin.site.register(Share)

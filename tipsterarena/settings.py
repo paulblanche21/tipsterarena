@@ -78,6 +78,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",        # Authentication context
                 "django.contrib.messages.context_processors.messages",  # Messages context
                 'core.context_processors.suggested_tipsters',         # Custom processor for suggested tipsters
+                'core.context_processors.trending_tips',             # Custom processor for trending tips
             ],
         },
     },

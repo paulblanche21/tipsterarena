@@ -119,6 +119,7 @@ export function setupSearch() {
   document.addEventListener('click', (e) => {
     const searchBar = document.querySelector('.search-bar');
     const searchResults = document.querySelector('.search-results');
+    const trendingTipsModal = document.getElementById('trending-tips-modal');
     
     // Only handle search-related clicks if we're on a page with search functionality
     if (!searchBar || !searchResults) {
@@ -133,6 +134,11 @@ export function setupSearch() {
     // Check if the click is on a message-related element
     const messageButton = e.target.closest('.messages-new, .new-message-btn, #newMessageBtn, #newMessageSidebarBtn');
     if (messageButton) {
+        return;
+    }
+
+    // Don't close search results if clicking inside trending tips modal
+    if (trendingTipsModal && trendingTipsModal.contains(e.target)) {
         return;
     }
 

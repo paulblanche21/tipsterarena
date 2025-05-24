@@ -8,18 +8,18 @@ the integrity of the platform's features.
 
 Available Decorators:
 1. check_daily_tip_limit
-   - Enforces a daily limit of 5 tips for free users
-   - Premium users are exempt from this limit
+   - Enforces a daily limit of 2 tips for Basic users
+   - Premium users have unlimited tips
    - Raises PermissionDenied if limit is exceeded
 
 2. check_follow_limit
-   - Restricts free users to following a maximum of 100 users
+   - Restricts Basic users to following a maximum of 10 users
    - Premium users can follow unlimited users
    - Raises PermissionDenied if limit is exceeded
 
 3. premium_required
    - Restricts access to premium-only features
-   - Verifies user membership in 'Premium Users' group
+   - Verifies user has Premium tier
    - Raises PermissionDenied for non-premium users
 
 4. check_ownership
@@ -48,40 +48,44 @@ Usage Examples:
 from functools import wraps
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
+from django.shortcuts import redirect
+from django.contrib import messages
 
 
 def check_daily_tip_limit(view_func):
-    """Decorator to enforce daily tip limit for basic users."""
+    """Decorator to enforce daily tip limit for Basic users."""
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
-        if not request.user.groups.filter(name='Premium Users').exists():
-            # Check how many tips user has created today
-            today = timezone.now().date()
-            tips_today = request.user.tip_set.filter(
-                created_at__date=today
-            ).count()
+        if not request.user.is_authenticated:
+            raise PermissionDenied('Please log in to post tips.')
             
-            if tips_today >= 5:
-                raise PermissionDenied(
-                    'Free users can only create 5 tips per day. '
-                    'Upgrade to Premium to create unlimited tips!'
-                )
+        profile = request.user.userprofile
+        today = timezone.now().date()
+        tips_today = request.user.tip_set.filter(created_at__date=today).count()
+        
+        if profile.tier == 'free':
+            if tips_today >= 2:
+                messages.warning(request, 'Basic tier: Max 2 tips per day. Upgrade to Premium for unlimited tips!')
+                return redirect('tier_setup')
+                
         return view_func(request, *args, **kwargs)
     return wrapper
 
 def check_follow_limit(view_func):
-    """Decorator to enforce follow limit for basic users."""
+    """Decorator to enforce follow limit for Basic users."""
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
-        if not request.user.groups.filter(name='Premium Users').exists():
-            # Check how many users they are following
-            following_count = request.user.following.count()
+        if not request.user.is_authenticated:
+            raise PermissionDenied('Please log in to follow users.')
             
-            if following_count >= 100:
-                raise PermissionDenied(
-                    'Free users can only follow up to 100 users. '
-                    'Upgrade to Premium to follow unlimited users!'
-                )
+        profile = request.user.userprofile
+        following_count = request.user.following.count()
+        
+        if profile.tier == 'free':
+            if following_count >= 10:
+                messages.warning(request, 'Basic tier: Max 10 follows. Upgrade to Premium for unlimited follows!')
+                return redirect('tier_setup')
+                
         return view_func(request, *args, **kwargs)
     return wrapper
 
@@ -89,11 +93,14 @@ def premium_required(view_func):
     """Decorator to restrict access to premium users only."""
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
-        if not request.user.groups.filter(name='Premium Users').exists():
-            raise PermissionDenied(
-                'This feature is only available to Premium users. '
-                'Upgrade now to access!'
-            )
+        if not request.user.is_authenticated:
+            messages.warning(request, 'Please log in to access this feature.')
+            return redirect('login')
+            
+        if request.user.userprofile.tier != 'premium':
+            messages.warning(request, 'This feature is only available to Premium users. Upgrade now to access!')
+            return redirect('tier_setup')
+            
         return view_func(request, *args, **kwargs)
     return wrapper
 
@@ -102,6 +109,9 @@ def check_ownership(model_class):
     def decorator(view_func):
         @wraps(view_func)
         def wrapper(request, *args, **kwargs):
+            if not request.user.is_authenticated:
+                raise PermissionDenied('Please log in to perform this action.')
+                
             # Get object ID from request
             obj_id = kwargs.get('id') or request.POST.get('id')
             if not obj_id:
@@ -113,7 +123,7 @@ def check_ownership(model_class):
             # Check if user owns the object
             if obj.user != request.user:
                 # Premium users might have additional permissions
-                if not request.user.groups.filter(name='Premium Users').exists():
+                if request.user.userprofile.tier != 'premium':
                     raise PermissionDenied('You do not have permission to modify this object')
             
             return view_func(request, *args, **kwargs)

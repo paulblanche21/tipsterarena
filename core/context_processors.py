@@ -43,8 +43,8 @@ Usage:
 """
 
 from django.contrib.auth.models import User
-from .models import  Follow
-from django.db.models import Q
+from .models import  Follow, Tip
+from django.db.models import Q, Count
 
 
 def suggested_tipsters(request):
@@ -74,3 +74,23 @@ def suggested_tipsters(request):
             continue
 
     return {'suggested_tipsters': tipsters}
+
+def trending_tips(request):
+    """Add trending tips to the context."""
+    # Get top 3 tips based on likes count
+    trending_tips = Tip.objects.annotate(
+        likes_count=Count('likes')
+    ).order_by('-likes_count')[:3]
+
+    tips_data = []
+    for tip in trending_tips:
+        tips_data.append({
+            'id': tip.id,
+            'text': tip.text,
+            'user': {
+                'username': tip.user.username,
+            },
+            'likes_count': tip.likes_count
+        })
+
+    return {'trending_tips': tips_data}

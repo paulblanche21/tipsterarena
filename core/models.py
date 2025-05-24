@@ -156,48 +156,22 @@ class Tip(models.Model):
     premium_tip_views = models.IntegerField(default=0, help_text='Number of times this Premium Tip was viewed.')
 
     def is_visible_to(self, user):
-        """Check if tip is visible to a specific user."""
-        # Public tips are visible to everyone
-        if self.visibility == 'public':
-            return True
-
-        # Must be authenticated
+        """Check if tip is visible to user based on their tier and timing."""
         if not user.is_authenticated:
             return False
 
-        # Tip owner can always see their tips
-        if user == self.user:
+        # Premium users can see all tips immediately
+        if user.userprofile.tier == 'premium':
             return True
 
-        # Check premium access
-        if self.visibility == 'premium' and not user.userprofile.is_premium:
-            return False
+        # For basic users, check if the tip is from a top tipster
+        if self.user.userprofile.is_top_tipster:
+            # Check if 1 hour has passed since tip creation
+            time_since_creation = timezone.now() - self.created_at
+            return time_since_creation.total_seconds() >= 3600  # 1 hour in seconds
 
-        # Check subscriber access
-        if self.visibility == 'subscribers':
-            return TipsterSubscription.objects.filter(
-                subscriber=user,
-                tier__tipster=self.user,
-                status='active'
-            ).exists()
-
-        # Check tier-specific access
-        if self.visibility == 'tier_specific':
-            current_time = timezone.now()
-            user_subs = TipsterSubscription.objects.filter(
-                subscriber=user,
-                tier__in=self.allowed_tiers.all(),
-                status='active'
-            )
-            
-            for sub in user_subs:
-                release_time = self.release_schedule.get(str(sub.tier.id))
-                if release_time and timezone.datetime.fromisoformat(release_time) <= current_time:
-                    return True
-            
-            return False
-
-        return False
+        # Basic users can see non-top-tipster tips immediately
+        return True
 
     def __str__(self):
         return f"{self.user.username} - {self.sport}: {self.text[:20]}"  # String representation for admin/debugging
@@ -252,6 +226,22 @@ class Tip(models.Model):
             return json.loads(self.poll) if self.poll else {}
         except json.JSONDecodeError:
             return {}
+
+    def calculate_revenue_share(self):
+        """Calculate revenue share for this tip."""
+        if not self.user.userprofile.is_top_tipster:
+            return 0
+
+        # Get total premium revenue for the month
+        total_premium_revenue = UserProfile.objects.filter(
+            tier='premium'
+        ).count() * 7  # €7 per premium user
+
+        # Calculate share based on tipster's performance
+        tipster = self.user.userprofile
+        if tipster.revenue_share_percentage > 0:
+            return (total_premium_revenue * tipster.revenue_share_percentage) / 100
+        return 0
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
@@ -384,7 +374,7 @@ class UserProfile(models.Model):
 
     tier = models.CharField(
         max_length=10,
-        choices=[('free', 'Free'), ('basic', 'Basic'), ('premium', 'Premium')],
+        choices=[('free', 'Free'), ('premium', 'Premium')],
         default='free',
         help_text='Current subscription tier for the user.'
     )
@@ -392,6 +382,26 @@ class UserProfile(models.Model):
     trial_used = models.BooleanField(default=False, help_text='Has the user used their free trial?')
     is_top_tipster = models.BooleanField(default=False, help_text='Is this user a Top Tipster?')
     top_tipster_since = models.DateTimeField(null=True, blank=True, help_text='When the user became a Top Tipster.')
+
+    # Revenue tracking
+    total_earnings = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+        help_text='Total earnings from tips and revenue sharing'
+    )
+    monthly_earnings = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+        help_text='Earnings for current month'
+    )
+    revenue_share_percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=0,
+        help_text='Percentage of premium revenue shared with this tipster'
+    )
 
     def save(self, *args, **kwargs):
         # Ensure handle starts with @
@@ -432,9 +442,9 @@ class UserProfile(models.Model):
                 return False, 'Free tier: Max 2 tips per day.'
             if tips_this_month >= 60:
                 return False, 'Free tier: Max 60 tips per month.'
-        elif self.tier == 'basic':
+        elif self.tier == 'premium':
             if tips_this_month >= 100:
-                return False, 'Basic tier: Max 100 tips per month.'
+                return False, 'Premium tier: Max 100 tips per month.'
         # Premium: no enforced limit (could add a cap if desired)
         return True, ''
 
@@ -448,43 +458,53 @@ class UserProfile(models.Model):
 
     def can_comment(self):
         """Return True if user can comment on tips."""
-        return self.tier in ['basic', 'premium']
+        return self.tier in ['premium']
 
     def can_view_premium_tip(self):
-        """Return True if user can view Premium Tips."""
+        """Check if user can view premium tips."""
         return self.tier == 'premium'
 
     def can_post_premium_tip(self):
-        """Return (True, reason) if user can post a Premium Tip (Top Tipsters only, 1/week)."""
-        from django.utils import timezone
-        if not self.is_top_tipster:
-            return False, 'Only Top Tipsters can post Premium Tips.'
-        now = timezone.now()
-        week_ago = now - timezone.timedelta(days=7)
-        tips_this_week = self.user.tip_set.filter(is_premium_tip=True, premium_tip_posted_at__gte=week_ago).count()
-        if tips_this_week >= 1:
-            return False, 'Top Tipsters: Only 1 Premium Tip per week.'
-        return True, ''
+        """Check if user can post premium tips."""
+        return self.tier == 'premium' and self.is_tipster
 
     def is_ad_free(self):
-        """Return True if user should not see ads (Premium only)."""
+        """Check if user has ad-free experience."""
         return self.tier == 'premium'
 
-    def clean(self):
-        super().clean()
-        # Validate premium features JSON
-        if self.premium_features:
-            if not isinstance(self.premium_features, dict):
-                raise ValidationError({'premium_features': 'Must be a valid JSON object'})
+    def can_view_early_tips(self):
+        """Check if user can view tips before the 1-hour delay."""
+        return self.tier == 'premium'
+
+    def can_earn_revenue(self):
+        """Check if user can earn from tips and revenue sharing."""
+        return self.tier == 'premium' and self.is_tipster
+
+    def get_tip_visibility_delay(self):
+        """Get the delay in minutes before tips become visible to basic users."""
+        return 60 if self.is_top_tipster else 0  # 1 hour delay for top tipsters
 
     def get_premium_features(self):
-        """Safe access to premium features."""
-        try:
-            if not isinstance(self.premium_features, dict):
-                return {}
-            return self.premium_features
-        except Exception:
-            return {}
+        """Get list of premium features available to user."""
+        if self.tier == 'premium':
+            return {
+                'unlimited_tips': True,
+                'unlimited_follows': True,
+                'ad_free': True,
+                'early_access': True,
+                'top_tipsters': True,
+                'revenue_sharing': True,
+                'enhanced_engagement': True
+            }
+        return {
+            'unlimited_tips': False,
+            'unlimited_follows': False,
+            'ad_free': False,
+            'early_access': False,
+            'top_tipsters': False,
+            'revenue_sharing': False,
+            'enhanced_engagement': False
+        }
 
 class Like(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='likes')

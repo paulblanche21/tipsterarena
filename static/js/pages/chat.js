@@ -15,25 +15,38 @@ const wsPath = `${wsScheme}://${window.location.host}/ws/chat/`;
 let socket = null;
 
 function connectWebSocket() {
+    console.log('Attempting to connect to WebSocket...');
     socket = new WebSocket(wsPath);
 
     socket.onopen = function() {
-        console.log('Chat WebSocket connected');
+        console.log('Chat WebSocket connected successfully');
+        // Request initial user list
+        socket.send(JSON.stringify({ type: 'request_user_list' }));
     };
 
     socket.onmessage = function(event) {
         try {
             const data = JSON.parse(event.data);
+            console.log('Received WebSocket message:', data.type);
             if (data.type === 'chat_message') {
                 addMessageToFeed(data.username, data.message, data.image_url, data.gif_url, data.emoji, data.avatar_url);
+            } else if (data.type === 'user_list') {
+                console.log('Updating user list with:', data.users);
+                updateOnlineUsers(data.users);
+                // Update online count
+                const onlineCount = document.querySelector('.online-count');
+                if (onlineCount) {
+                    onlineCount.textContent = `${data.users.length} online`;
+                }
             }
         } catch (e) {
             console.error('Error parsing chat message:', e);
         }
     };
 
-    socket.onclose = function() {
-        console.log('Chat WebSocket closed, reconnecting in 2s...');
+    socket.onclose = function(event) {
+        console.log('Chat WebSocket closed:', event.code, event.reason);
+        console.log('Reconnecting in 2s...');
         setTimeout(connectWebSocket, 2000);
     };
 
@@ -42,7 +55,11 @@ function connectWebSocket() {
     };
 }
 
-connectWebSocket();
+// Connect when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Page loaded, connecting to WebSocket...');
+    connectWebSocket();
+});
 
 // DOM Elements
 const chatForm = document.querySelector('.chat-input-form');
@@ -52,6 +69,7 @@ const emojiBtn = document.querySelector('.chat-action-btn.emoji');
 const gifBtn = document.querySelector('.chat-action-btn.gif');
 const imageBtn = document.querySelector('.chat-action-btn.image');
 const imageInput = document.querySelector('.chat-image-input');
+const onlineUsersList = document.querySelector('.online-users-list');
 
 // Add preview div for GIF/image (insert after chat input form if not present)
 let chatPreviewDiv = document.querySelector('.chat-preview');
@@ -117,34 +135,23 @@ imageInput.addEventListener('change', function() {
     }
 });
 
-const onlineUsersSidebar = document.querySelector('.online-users-sidebar .profile-content');
-
 // Helper to update online users list
 function updateOnlineUsers(users) {
-    const list = onlineUsersSidebar.querySelector('.online-users-list');
-    list.innerHTML = '';
+    if (!onlineUsersList) return;
+    onlineUsersList.innerHTML = '';
     users.forEach(([username, avatarUrl]) => {
+        console.log('Rendering user:', username, 'Avatar URL:', avatarUrl);
         const li = document.createElement('li');
-        li.style.marginBottom = '16px';
-        li.style.display = 'flex';
-        li.style.alignItems = 'center';
+        li.className = 'online-user-item';
+        // Use flexbox for alignment, and avoid nested <strong> in <span>
         li.innerHTML = `
-            <img src="${avatarUrl}" alt="Avatar" style="width:28px;height:28px;border-radius:50%;object-fit:cover;margin-right:10px;">
-            <span>${username === window.currentUsername ? '<strong>(You)</strong>' : username}</span>
+            <img src="${avatarUrl}" alt="Avatar" class="user-avatar" onerror="this.src='${window.default_avatar_url}'">
+            <div class="user-info-flex">
+                <span class="user-name">${username === window.currentUsername ? '(You)' : username}</span>
+            </div>
+            <span class="user-status"></span>
         `;
-        list.appendChild(li);
-    });
-}
-
-// Listen for user_list events
-if (socket) {
-    socket.addEventListener('message', function(event) {
-        try {
-            const data = JSON.parse(event.data);
-            if (data.type === 'user_list') {
-                updateOnlineUsers(data.users);
-            }
-        } catch (e) {}
+        onlineUsersList.appendChild(li);
     });
 }
 
