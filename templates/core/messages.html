@@ -17,9 +17,14 @@
     <div class="messages-feed">
         <div class="messages-header">
             <h2>Messages</h2>
-            <button class="messages-new" onclick="openNewMessageModal()">
-                <i class="fas fa-edit"></i>
-            </button>
+            <div class="messages-icons">
+                <button class="messages-settings" onclick="openSettingsModal()" title="Settings">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <button class="messages-new" onclick="openNewMessageModal()" title="New Message">
+                    <i class="fas fa-edit"></i>
+                </button>
+            </div>
         </div>
         <div class="messages-list">
             {% for message in messages %}
@@ -87,6 +92,13 @@
             </div>
         </div>
     </div>
+
+    <!-- Settings Modal (hidden by default) -->
+    <div id="settingsModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            {% include 'core/message_settings.html' %}
+        </div>
+    </div>
 {% endblock %}
 
 {% block sidebar %}
@@ -98,6 +110,28 @@
     import { init } from "{% static 'js/pages/messages.js' %}";
     document.addEventListener('DOMContentLoaded', function() {
         init();
+    });
+</script>
+<script>
+    function openSettingsModal() {
+        document.getElementById('settingsModal').style.display = 'block';
+    }
+    function closeSettingsModal() {
+        document.getElementById('settingsModal').style.display = 'none';
+    }
+    // Close modal when clicking outside modal-content
+    window.addEventListener('click', function(event) {
+        const modal = document.getElementById('settingsModal');
+        if (event.target === modal) {
+            closeSettingsModal();
+        }
+    });
+    // Also close on X button in modal
+    document.addEventListener('DOMContentLoaded', function() {
+        const closeBtn = document.getElementById('closeSettingsBtn');
+        if (closeBtn) {
+            closeBtn.onclick = closeSettingsModal;
+        }
     });
 </script>
 {% endblock %}

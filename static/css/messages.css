@@ -361,8 +361,8 @@
     background: var(--secondary-bg);
     height: calc(100vh - 60px);
     min-width: 0;
-    max-width: calc(100% - 350px);
-    overflow: hidden;
+    max-width: calc(100vw - 250px - 360px); /* 250px navbar + 350px feed + 10px margin */
+    overflow: auto;
     position: relative;
 }
 
