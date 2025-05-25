@@ -21,6 +21,7 @@ __all__ = [
     'follow_user', 'messages_view', 'send_message',
     'get_thread_messages', 'notifications', 'message_settings_view',
     'bookmarks', 'like_comment', 'share_comment', 'toggle_bookmark',
+    'get_messages', 'start_message_thread',
 
     # API views
     'current_user_api', 'suggested_users_api',
@@ -60,7 +61,8 @@ from .sport_views import (
 from .interaction_views import (
     follow_user, messages_view, send_message,
     get_thread_messages, notifications, message_settings_view,
-    bookmarks, like_comment, share_comment, toggle_bookmark
+    bookmarks, like_comment, share_comment, toggle_bookmark,
+    get_messages, start_message_thread
 )
 
 from .api_views import (

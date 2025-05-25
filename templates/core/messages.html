@@ -13,202 +13,78 @@
 {% block body_class %}messages-page{% endblock %}
 
 {% block content %}
-    <!-- Hidden CSRF token for form submissions -->
-    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-    <!-- Main container for messages layout -->
-    <div class="messages-container" data-username="{{ request.user.username }}">
-        <!-- Left-hand feed showing message threads -->
-        <div class="messages-feed">
-            <!-- Header with title and action icons -->
-            <div class="messages-header">
-                <span class="messages-title">Messages</span>
-                <span class="messages-icons">
-                    <span class="messages-settings" id="settingsBtn"><i class="fa-solid fa-gear"></i></span>
-                    <span class="messages-new" id="newMessageBtn"><i class="fa-solid fa-envelope"></i></span>
-                </span>
-            </div>
-            {% if message_threads %}
-                {% for item in message_threads %}
-                <!-- Card representing a message thread -->
-                <div class="card" data-thread-id="{{ item.thread.id }}">
-                    {% with other_participant=item.other_participant %}
-                        {% if other_participant %}
-                            <!-- Avatar for thread participant -->
-                            {% if other_participant.userprofile.avatar %}
-                                <img src="{{ other_participant.userprofile.avatar.url }}" alt="User Avatar" class="avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
-                            {% else %}
-                                <img src="{% static 'img/default-avatar.png' %}" alt="Default Avatar" class="avatar">
-                            {% endif %}
-                            <div class="card-content">
-                                <div class="card-header">
-                                    <span class="username">{{ other_participant.username }}</span>
-                                    <span class="user-handle" id="message-feed-handle">
-                                        {% if other_participant.userprofile.handle %}
-                                            {{ other_participant.userprofile.handle }}
-                                        {% else %}
-                                            @{{ other_participant.username }}
-                                        {% endif %}
-                                    </span>
-                                    <span class="message-date">{{ item.thread.updated_at|date:"M d" }}</span>
-                                </div>
-                                <!-- Preview of the last message -->
-                                <p class="message-preview">
-                                    {% if item.last_message %}
-                                        {{ item.last_message.content|truncatechars:50 }}
-                                    {% else %}
-                                        No message
-                                    {% endif %}
-                                </p>
-                            </div>
-                        {% else %}
-                            <!-- Fallback for unknown participant -->
-                            <div class="card-content">
-                                <div class="card-header">
-                                    <span class="username">Unknown User</span>
-                                </div>
-                                <p class="message-preview">
-                                    {% if item.last_message %}
-                                        {{ item.last_message.content|truncatechars:50 }}
-                                    {% else %}
-                                        No message
-                                    {% endif %}
-                                </p>
-                            </div>
-                        {% endif %}
-                    {% endwith %}
-                </div>
-                {% empty %}
-                    <!-- Placeholder for no threads -->
-                    <div class="card">
-                        <div class="card-content">
-                            <p>No messages yet. Start a conversation!</p>
-                        </div>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <!-- Alternative placeholder for no threads -->
-                <div class="card">
-                    <div class="card-content">
-                        <p>No messages yet. Start a conversation!</p>
-                    </div>
-                </div>
-            {% endif %}
+    <!-- Messages feed (left side) -->
+    <div class="messages-feed">
+        <div class="messages-header">
+            <h2>Messages</h2>
+            <button class="messages-new" onclick="openNewMessageModal()">
+                <i class="fas fa-edit"></i>
+            </button>
         </div>
-
-        <!-- Right-hand feed for selected thread or placeholder -->
-        <aside class="sidebar-messages" id="messageContent">
-            {% if selected_thread %}
-                <!-- Render the selected message thread -->
-                <div class="message-thread">
-                    <div class="thread-header">
-                        <div class="thread-header-top">
-                            <h2 class="thread-header-name">{{ selected_thread.other_participant.username }}</h2>
-                            <span class="thread-header-info"><i class="fa-solid fa-info-circle"></i></span>
-                        </div>
-                        <div class="thread-header-details">
-                            {% if selected_thread.other_participant %}
-                                <!-- Participant avatar -->
-                                {% if selected_thread.other_participant.userprofile.avatar %}
-                                    <img src="{{ selected_thread.other_participant.userprofile.avatar.url }}" alt="Avatar" class="avatar" onerror="this.src='{% static 'img/default-avatar.png' %}';">
-                                {% else %}
-                                    <img src="{% static 'img/default-avatar.png' %}" alt="Default Avatar" class="avatar">
-                                {% endif %}
-                                <div class="user-details">
-                                    <h3>{{ selected_thread.other_participant.username }}</h3>
-                                    <span class="user-handle">
-                                        {% if selected_thread.other_participant.userprofile.handle %}
-                                            {{ selected_thread.other_participant.userprofile.handle }}
-                                        {% else %}
-                                            @{{ selected_thread.other_participant.username }}
-                                        {% endif %}
-                                    </span>
-                                    {% if selected_thread.other_participant.userprofile.description %}
-                                        <p class="user-bio">{{ selected_thread.other_participant.userprofile.description }}</p>
-                                    {% endif %}
-                                    {% if selected_thread.other_participant.email %}
-                                        <p class="user-email">ENQS: {{ selected_thread.other_participant.email }}</p>
-                                    {% endif %}
-                                    <p class="user-stats">
-                                        Joined {{ selected_thread.other_participant.date_joined|date:"F Y" }} • 
-                                        {{ selected_thread.follower_count }} Followers
-                                    </p>
-                                    {% if selected_thread.followed_by %}
-                                        <p class="user-followed-by">
-                                            Followed by {{ selected_thread.followed_by|join:", " }}{% if selected_thread.followed_by|length > 2 %} and {{ selected_thread.followed_by|length|add:-2 }} others you follow{% endif %}
-                                        </p>
-                                    {% endif %}
-                                </div>
-                            {% else %}
-                                <h3>Unknown User</h3>
-                            {% endif %}
-                        </div>
+        <div class="messages-list">
+            {% for message in messages %}
+            <div class="card" data-thread-id="{{ message.thread.id }}">
+                <img src="{{ message.sender.profile.avatar.url|default:'/static/images/default-avatar.png' }}" alt="Avatar" class="avatar">
+                <div class="card-content">
+                    <div class="card-header">
+                        <span class="username">{{ message.sender.username }}</span>
+                        <span class="message-date">{{ message.created_at|timesince }} ago</span>
                     </div>
-                    <!-- List of messages in the thread -->
-                    <div class="messages-list" id="messagesList">
-                        {% if messages %}
-                            {% for message in messages %}
-                                <div class="message {% if message.sender == request.user %}sent{% else %}received{% endif %}">
-                                    <p>{{ message.content }}</p>
-                                    {% if message.image %}
-                                        <img src="{{ message.image.url }}" alt="Message Image" class="msg-message-image">
-                                    {% endif %}
-                                    {% if message.gif_url %}
-                                        <img src="{{ message.gif_url }}" alt="Message GIF" class="msg-message-image">
-                                    {% endif %}
-                                    <small>{{ message.created_at|date:"M d, Y, g:i A" }}</small>
-                                </div>
-                            {% empty %}
-                                <p>No messages yet. Say hello!</p>
-                            {% endfor %}
-                        {% else %}
-                            <p>No messages available.</p>
-                        {% endif %}
-                    </div>
-                    <!-- Preview area for media before sending -->
-                    <div class="msg-message-preview" style="display: none;">
-                        <img src="" alt="Preview" class="msg-preview-media">
-                        <span class="msg-remove-preview">×</span>
-                    </div>
-                    <!-- Input area for sending new messages -->
-                    <div class="message-input">
-                        <div class="message-actions">
-                            <button type="button" class="action-btn" id="imageBtn" title="Add image">
-                                <i class="fa-solid fa-image"></i>
-                            </button>
-                            <button type="button" class="action-btn" id="gifBtn" title="Add GIF">
-                                <i class="fa-solid fa-gift"></i>
-                            </button>
-                            <button type="button" class="action-btn" id="emojiBtn" title="Add emoji">
-                                <i class="fa-solid fa-face-smile"></i>
-                            </button>
-                        </div>
-                        <textarea id="messageInput" placeholder="Type a message..."></textarea>
-                        <button id="sendMessageBtn" data-thread-id="{{ selected_thread.id }}">Send</button>
-                    </div>
+                    <div class="message-preview">{{ message.content|truncatechars:50 }}</div>
                 </div>
-            {% else %}
-                <!-- Placeholder when no thread is selected -->
-                <h3>Select a message</h3>
-                <p>Choose from your existing conversations, start a new one, or just keep swimming.</p>
-                <button class="new-message-btn" id="newMessageSidebarBtn">New message</button>
-            {% endif %}
-        </aside>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <p>No messages yet. Start a conversation!</p>
+            </div>
+            {% endfor %}
+        </div>
     </div>
 
-    <!-- Modal for starting a new message -->
+    <!-- Message thread (right side) -->
+    <div class="message-thread">
+        <div class="thread-header">
+            <img src="{% static 'img/default-avatar.png' %}" alt="Avatar" class="avatar">
+            <h3 class="thread-header-name">Select a conversation</h3>
+        </div>
+        <div class="messages-list" id="messagesList"></div>
+        <div class="message-input">
+            <div class="message-actions">
+                <button class="action-btn" title="Add image">
+                    <i class="fas fa-image"></i>
+                </button>
+                <button class="action-btn" title="Add GIF">
+                    <i class="fas fa-gift"></i>
+                </button>
+                <button class="action-btn" title="Add emoji">
+                    <i class="fas fa-smile"></i>
+                </button>
+            </div>
+            <textarea id="messageInput" placeholder="Type a message..." rows="1"></textarea>
+            <button id="sendMessageBtn" class="send-btn">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- New Message Modal -->
     <div id="newMessageModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <span class="close" id="closeModalBtn">×</span>
                 <h3>New message</h3>
-                <button id="nextBtn" class="next-btn" disabled>Next</button>
+                <button class="close-modal" onclick="closeNewMessageModal()">&times;</button>
             </div>
-            <div class="selected-users" id="selectedUsers"></div>
-            <div class="modal-search">
-                <input type="text" id="recipientUsername" placeholder="Search people...">
-                <a href="#" class="create-group">Create a group</a>
+            <div class="modal-body">
+                <div class="search-container">
+                    <input type="text" id="userSearch" placeholder="Search users..." onkeyup="searchUsers(this.value)">
+                    <div id="searchResults" class="search-results"></div>
+                </div>
+                <div id="selectedUsers" class="selected-users"></div>
             </div>
-            <div id="userSuggestions" class="suggestions-list"></div>
+            <div class="modal-footer">
+                <button class="cancel-btn" onclick="closeNewMessageModal()">Cancel</button>
+                <button class="next-btn" onclick="startNewConversation()">Next</button>
+            </div>
         </div>
     </div>
 {% endblock %}
@@ -218,5 +94,10 @@
 {% endblock %}
 
 {% block extra_js %}
-    <script type="module" src="{% static 'js/pages/messages.js' %}"></script>
+<script type="module">
+    import { init } from "{% static 'js/pages/messages.js' %}";
+    document.addEventListener('DOMContentLoaded', function() {
+        init();
+    });
+</script>
 {% endblock %}

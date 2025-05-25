@@ -2,7 +2,7 @@
 import logging
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 import json
@@ -27,6 +27,8 @@ __all__ = [
     'like_comment',
     'share_comment',
     'mark_notification_read',
+    'get_messages',
+    'start_message_thread',
 ]
 
 @login_required
@@ -331,5 +333,73 @@ def mark_notification_read(request):
         notification.read = True
         notification.save()
         return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+@login_required
+@require_http_methods(["GET"])
+def get_messages(request):
+    """Get all message threads for the current user."""
+    user = request.user
+    message_threads = (MessageThread.objects.filter(participants=user)
+                      .order_by('-updated_at')
+                      .prefetch_related('participants__userprofile'))
+
+    threads_data = []
+    for thread in message_threads:
+        other_participant = thread.participants.exclude(id=user.id).first()
+        last_message = thread.messages.last()
+        
+        threads_data.append({
+            'thread_id': thread.id,
+            'username': other_participant.username if other_participant else None,
+            'avatar': other_participant.userprofile.avatar.url if other_participant and hasattr(other_participant, 'userprofile') and other_participant.userprofile.avatar else None,
+            'last_message': last_message.content if last_message else '',
+            'last_message_date': last_message.created_at if last_message else thread.updated_at,
+            'unread_count': thread.messages.filter(is_read=False).exclude(sender=user).count()
+        })
+
+    return JsonResponse(threads_data, safe=False)
+
+@login_required
+def start_message_thread(request):
+    """Start a new message thread with one or more users."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        user_ids = data.get('user_ids', [])
+        
+        if not user_ids:
+            return JsonResponse({'success': False, 'error': 'No users specified'}, status=400)
+
+        # Get the current user
+        current_user = request.user
+        
+        # Get all participants including current user
+        participants = [current_user] + [User.objects.get(id=uid) for uid in user_ids]
+        
+        # Check if a thread already exists with these exact participants
+        existing_thread = MessageThread.objects.filter(participants=current_user)
+        for participant in participants[1:]:
+            existing_thread = existing_thread.filter(participants=participant)
+        
+        if existing_thread.exists():
+            thread = existing_thread.first()
+        else:
+            # Create new thread
+            thread = MessageThread.objects.create()
+            thread.participants.add(*participants)
+
+        return JsonResponse({
+            'success': True,
+            'thread_id': thread.id
+        })
+
+    except User.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'One or more users not found'}, status=404)
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON data'}, status=400)
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500) 

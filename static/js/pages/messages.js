@@ -5,41 +5,105 @@ let messageInput;
 let sendMessageBtn;
 let messagesList;
 let newMessageBtn;
+let modal;
+let userSearch;
+let searchResults;
+let selectedUsers;
+let nextBtn;
 
 // State
 let currentThread = null;
 let currentUser = null;
 
-// Initialize
-export function init() {
-    console.log('Initializing messages page...');
-    
-    // Initialize elements
-    messagesFeed = document.querySelector('.messages-feed');
-    messageThread = document.querySelector('.message-thread');
-    messageInput = document.getElementById('messageInput');
-    sendMessageBtn = document.getElementById('sendMessageBtn');
-    messagesList = document.querySelector('.messages-list');
-    newMessageBtn = document.querySelector('.messages-new');
+// Modal functions
+function openNewMessageModal() {
+    modal.style.display = 'block';
+    userSearch.focus();
+}
 
-    // Only proceed if we have the required elements
-    if (!messagesFeed || !messageThread || !messageInput || !sendMessageBtn || !messagesList) {
-        console.error('Required message elements not found');
+function closeNewMessageModal() {
+    modal.style.display = 'none';
+    userSearch.value = '';
+    searchResults.innerHTML = '';
+    selectedUsers.innerHTML = '';
+    nextBtn.disabled = true;
+}
+
+// Search functions
+function searchUsers(query) {
+    if (query.length < 2) {
+        searchResults.innerHTML = '';
         return;
     }
 
-    // Initialize WebSocket connection
-    console.log('Initializing WebSocket connection...');
-    initializeWebSocket();
-
-    // Load messages and setup event listeners
-    loadMessages();
-    setupEventListeners();
+    fetch(`/api/users/search/?q=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+            searchResults.innerHTML = '';
+            data.users.forEach(user => {
+                const userElement = document.createElement('div');
+                userElement.className = 'user-result';
+                userElement.innerHTML = `
+                    <img src="${user.avatar || '/static/images/default-avatar.png'}" alt="${user.username}">
+                    <div class="user-info">
+                        <span class="username">${user.username}</span>
+                        <span class="handle">@${user.username}</span>
+                    </div>
+                `;
+                userElement.addEventListener('click', () => selectUser(user));
+                searchResults.appendChild(userElement);
+            });
+        })
+        .catch(error => console.error('Error searching users:', error));
 }
 
-// Load messages
+function selectUser(user) {
+    const selectedUser = document.createElement('div');
+    selectedUser.className = 'selected-user';
+    selectedUser.dataset.userId = user.id;
+    selectedUser.innerHTML = `
+        <img src="${user.avatar || '/static/images/default-avatar.png'}" alt="${user.username}">
+        <span>${user.username}</span>
+        <button class="remove-user">&times;</button>
+    `;
+    
+    selectedUser.querySelector('.remove-user').addEventListener('click', () => {
+        selectedUser.remove();
+        nextBtn.disabled = selectedUsers.children.length === 0;
+    });
+    
+    selectedUsers.appendChild(selectedUser);
+    nextBtn.disabled = false;
+    userSearch.value = '';
+    searchResults.innerHTML = '';
+}
+
+function startNewConversation() {
+    const userIds = Array.from(selectedUsers.children).map(el => el.dataset.userId);
+    
+    fetch('/api/messages/start/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            user_ids: userIds
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeNewMessageModal();
+            loadMessageThread(data.thread_id);
+        }
+    })
+    .catch(error => console.error('Error starting conversation:', error));
+}
+
+// Message handling functions
 function loadMessages() {
-    fetch('/api/messages/')  // Note the trailing slash
+    fetch('/api/messages/')
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -51,7 +115,6 @@ function loadMessages() {
         })
         .catch(error => {
             console.error('Error loading messages:', error);
-            // Show error state in UI
             if (messagesFeed) {
                 messagesFeed.innerHTML = `
                     <div class="error-message">
@@ -63,7 +126,6 @@ function loadMessages() {
         });
 }
 
-// Render messages feed
 function renderMessagesFeed(messages) {
     if (!messagesFeed) return;
     
@@ -84,7 +146,6 @@ function renderMessagesFeed(messages) {
     });
 }
 
-// Create message card
 function createMessageCard(message) {
     const card = document.createElement('div');
     card.className = 'card';
@@ -105,19 +166,16 @@ function createMessageCard(message) {
     return card;
 }
 
-// Open thread
 function openThread(threadId) {
     if (!threadId) return;
     
     currentThread = threadId;
     
-    // Update active state in feed
     document.querySelectorAll('.card').forEach(card => {
         card.classList.toggle('active', card.dataset.threadId === threadId);
     });
 
-    // Load thread messages
-    fetch(`/api/messages/${threadId}/`)  // Note the trailing slash
+    fetch(`/api/messages/${threadId}/`)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -129,7 +187,6 @@ function openThread(threadId) {
         })
         .catch(error => {
             console.error('Error loading thread:', error);
-            // Show error state in UI
             if (messagesList) {
                 messagesList.innerHTML = `
                     <div class="error-message">
@@ -141,13 +198,11 @@ function openThread(threadId) {
         });
 }
 
-// Render thread
 function renderThread(data) {
     if (!messagesList) return;
     
     currentUser = data.user;
     
-    // Update thread header
     const threadHeader = document.querySelector('.thread-header');
     if (threadHeader) {
         threadHeader.innerHTML = `
@@ -156,18 +211,15 @@ function renderThread(data) {
         `;
     }
 
-    // Render messages
     messagesList.innerHTML = '';
     data.messages.forEach(message => {
         const messageElement = createMessageElement(message);
         messagesList.appendChild(messageElement);
     });
 
-    // Scroll to bottom
     messagesList.scrollTop = messagesList.scrollHeight;
 }
 
-// Create message element
 function createMessageElement(message) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${message.is_sent ? 'sent' : 'received'}`;
@@ -180,7 +232,6 @@ function createMessageElement(message) {
     return messageDiv;
 }
 
-// Send message
 function sendMessage() {
     if (!currentThread || !messageInput || !messageInput.value.trim()) return;
 
@@ -189,7 +240,7 @@ function sendMessage() {
         content: messageInput.value.trim()
     };
 
-    fetch('/api/messages/send/', {  // Note the trailing slash
+    fetch('/api/messages/send/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -213,7 +264,6 @@ function sendMessage() {
     })
     .catch(error => {
         console.error('Error sending message:', error);
-        // Show error state in UI
         const errorDiv = document.createElement('div');
         errorDiv.className = 'error-message';
         errorDiv.textContent = 'Failed to send message. Please try again.';
@@ -221,14 +271,11 @@ function sendMessage() {
     });
 }
 
-// Setup event listeners
 function setupEventListeners() {
     if (!sendMessageBtn || !messageInput) return;
 
-    // Send message on button click
     sendMessageBtn.addEventListener('click', sendMessage);
 
-    // Send message on Enter (but allow Shift+Enter for new line)
     messageInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -236,16 +283,54 @@ function setupEventListeners() {
         }
     });
 
-    // New message button
     if (newMessageBtn) {
-        newMessageBtn.addEventListener('click', () => {
-            // TODO: Implement new message modal
-            console.log('New message clicked');
-        });
+        newMessageBtn.addEventListener('click', openNewMessageModal);
     }
+
+    // Close modal when clicking outside
+    window.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            closeNewMessageModal();
+        }
+    });
 }
 
-// Helper function to get CSRF token
+function initializeWebSocket() {
+    const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
+    const ws_path = `${ws_scheme}://${window.location.host}/ws/messages/`;
+    const messagesSocket = new WebSocket(ws_path);
+
+    messagesSocket.onopen = function(e) {
+        console.log('WebSocket connected for messages');
+    };
+
+    messagesSocket.onmessage = function(e) {
+        try {
+            const data = JSON.parse(e.data);
+            if (data.type === 'message') {
+                if (currentThread === data.thread_id) {
+                    const messageElement = createMessageElement(data.message);
+                    messagesList.appendChild(messageElement);
+                    messagesList.scrollTop = messagesList.scrollHeight;
+                }
+                loadMessages();
+            }
+        } catch (error) {
+            console.error('Error processing WebSocket message:', error);
+        }
+    };
+
+    messagesSocket.onclose = function(e) {
+        console.log('WebSocket disconnected for messages');
+        setTimeout(initializeWebSocket, 5000);
+    };
+
+    messagesSocket.onerror = function(error) {
+        console.error('WebSocket error:', error);
+    };
+}
+
+// Helper functions
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -261,7 +346,6 @@ function getCookie(name) {
     return cookieValue;
 }
 
-// Helper function to format dates
 function formatDate(dateString) {
     if (!dateString) return '';
     
@@ -269,55 +353,51 @@ function formatDate(dateString) {
     const now = new Date();
     const diff = now - date;
     
-    // Less than 24 hours
     if (diff < 24 * 60 * 60 * 1000) {
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
     
-    // Less than 7 days
     if (diff < 7 * 24 * 60 * 60 * 1000) {
         return date.toLocaleTimeString([], { weekday: 'short' });
     }
     
-    // Otherwise show full date
     return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
 }
 
-// Initialize WebSocket connection
-function initializeWebSocket() {
-    const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
-    const ws_path = `${ws_scheme}://${window.location.host}/ws/messages/`;
-    const messagesSocket = new WebSocket(ws_path);
+// Initialize
+export function init() {
+    console.log('Initializing messages page...');
+    
+    // Initialize elements
+    messagesFeed = document.querySelector('.messages-feed');
+    messageThread = document.querySelector('.message-thread');
+    messageInput = document.getElementById('messageInput');
+    sendMessageBtn = document.getElementById('sendMessageBtn');
+    messagesList = document.getElementById('messagesList');
+    newMessageBtn = document.querySelector('.messages-new');
+    modal = document.getElementById('newMessageModal');
+    userSearch = document.getElementById('userSearch');
+    searchResults = document.getElementById('searchResults');
+    selectedUsers = document.getElementById('selectedUsers');
+    nextBtn = document.querySelector('.next-btn');
 
-    messagesSocket.onopen = function(e) {
-        console.log('WebSocket connected for messages');
-    };
+    // Only proceed if we have the required elements
+    if (!messagesFeed || !messageThread || !messageInput || !sendMessageBtn || !messagesList) {
+        console.error('Required message elements not found');
+        return;
+    }
 
-    messagesSocket.onmessage = function(e) {
-        try {
-            const data = JSON.parse(e.data);
-            // Handle incoming messages
-            if (data.type === 'message') {
-                if (currentThread === data.thread_id) {
-                    const messageElement = createMessageElement(data.message);
-                    messagesList.appendChild(messageElement);
-                    messagesList.scrollTop = messagesList.scrollHeight;
-                }
-                // Refresh the messages feed to update the preview
-                loadMessages();
-            }
-        } catch (error) {
-            console.error('Error processing WebSocket message:', error);
-        }
-    };
+    // Initialize WebSocket connection
+    console.log('Initializing WebSocket connection...');
+    initializeWebSocket();
 
-    messagesSocket.onclose = function(e) {
-        console.log('WebSocket disconnected for messages');
-        // Attempt to reconnect after 5 seconds
-        setTimeout(initializeWebSocket, 5000);
-    };
+    // Load messages and setup event listeners
+    loadMessages();
+    setupEventListeners();
+}
 
-    messagesSocket.onerror = function(error) {
-        console.error('WebSocket error:', error);
-    };
-} 
+// Make functions available globally for onclick handlers
+window.openNewMessageModal = openNewMessageModal;
+window.closeNewMessageModal = closeNewMessageModal;
+window.searchUsers = searchUsers;
+window.startNewConversation = startNewConversation; 

@@ -5,7 +5,13 @@ from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from . import views
 from .views import subscription_views
-from .views.interaction_views import mark_notification_read
+from .views.interaction_views import (
+    mark_notification_read,
+    get_messages,
+    send_message,
+    get_thread_messages,
+    start_message_thread
+)
 from .views.general_views import chat_view
 from .views.api_views import upload_chat_image_api
 from .views.trending_views import trending_tips
@@ -44,7 +50,6 @@ urlpatterns = [
     # Messaging routes
     path('messages/', views.messages_view, name='messages'),
     path('messages/<int:thread_id>/', views.messages_view, name='message_thread'),
-    path('messages/send/<int:thread_id>/', views.send_message, name='send_message'),
     path('messages/settings/', views.message_settings_view, name='message_settings'),
 
     # Social interaction routes
@@ -76,21 +81,12 @@ urlpatterns = [
     # API routes for data retrieval
     path('api/trending-tips/', views.trending_tips_api, name='trending_tips_api'),
     path('api/current-user/', views.current_user_api, name='current_user_api'),
-    path('csp-report/', views.csp_report, name='csp_report'),
-
-    # Authentication endpoints
-    path('api/auth/login/', views.login_view, name='login'),
-    path('api/auth/logout/', auth_views.LogoutView.as_view(), name='logout'),
-
-    # User profile endpoints
-    path('api/users/profile/', views.profile, name='user_profile'),
-    path('api/users/kyc/', views.kyc_view, name='kyc'),
-    path('api/users/notifications/', views.notifications, name='user_notifications'),
     
-    # Tips endpoints
-    path('api/tips/', views.tip_list, name='tip_list'),
-    path('api/tips/<int:tip_id>/', views.tip_detail, name='tip_detail'),
-    path('api/tips/<int:tip_id>/like/', views.like_tip, name='like_tip'),
+    # Message API routes
+    path('api/messages/', get_messages, name='api_messages'),
+    path('api/messages/send/', send_message, name='api_send_message'),
+    path('api/messages/thread/<int:thread_id>/', get_thread_messages, name='api_thread_messages'),
+    path('api/messages/start/', start_message_thread, name='api_start_message_thread'),
 
     path('tipster/', include([
         path('tier-setup/', subscription_views.tier_setup, name='tier_setup'),
