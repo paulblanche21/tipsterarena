@@ -263,11 +263,8 @@
 
 .no-suggestions {
     text-align: center;
-    padding: 40px;
+    padding: 20px;
     color: var(--gray-600);
-    background: white;
-    border-radius: 12px;
-    border: 1px solid var(--border-color);
 }
 
 /* Modal Styles */
@@ -443,26 +440,27 @@
 }
 
 .error-message {
-    padding: 20px;
     text-align: center;
-    color: #e0245e;
-    font-size: 14px;
-    background-color: #ffffff;
+    padding: 20px;
+    color: var(--red-accent);
 }
 
 .retry-btn {
     margin-top: 10px;
     padding: 8px 16px;
-    background: var(--red-accent);
-    color: white;
-    border: none;
+    background: linear-gradient(45deg, var(--red-accent), var(--red-dark));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    border: 1px solid var(--red-accent);
     border-radius: 20px;
     cursor: pointer;
-    transition: background-color 0.2s;
 }
 
 .retry-btn:hover {
     background: var(--red-dark);
+    color: white;
+    -webkit-text-fill-color: white;
 }
 
 /* Gradient Text Elements */

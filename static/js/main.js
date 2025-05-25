@@ -10,7 +10,7 @@ window.addEventListener('load', function() {
   document.body.classList.add('loaded');
 });
 
-// Import trending tips
+// Import notifications
 import { setupNotifications } from './notifications.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -23,8 +23,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     // TODO: Update notification badge or DOM here
   });
 
-  // Initialize suggested users modal
-  await import('./pages/suggested-users.js').then(module => module.initSuggestedUsersModal());
+  // Initialize sidebar components
+  await import('./pages/sidebar.js').then(module => {
+    module.initSuggestedUsersModal();
+    new module.TrendingTips();
+  });
+
+  // Initialize upcoming events if the element exists
+  const upcomingEventsCard = document.querySelector('.upcoming-events-card');
+  if (upcomingEventsCard) {
+    await import('./pages/upcoming-events.js').then(module => {
+      new module.UpcomingEvents();
+    });
+  }
 
   try {
     const sharedModules = await Promise.all([
@@ -54,12 +65,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         return null;
       }),
     ]);
-
-    // Initialize trending tips if the element exists
-    const trendingTipsList = document.querySelector('.trending-tips-list');
-    if (trendingTipsList) {
-      await import('./pages/trending-tips.js').then(module => module.trendingTips);
-    }
 
     if (page === '/' || page === '/home/') {
       await Promise.all([

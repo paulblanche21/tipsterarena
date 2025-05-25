@@ -1,5 +1,7 @@
 import { attachFollowButtonListeners } from '../follow.js';
+import { getCSRFToken } from './utils.js';
 
+// Suggested Users Modal
 export function initSuggestedUsersModal() {
     const showMoreLinks = document.querySelectorAll('.show-more[data-target="who-to-follow"]');
     
@@ -89,4 +91,98 @@ export function initSuggestedUsersModal() {
             }
         });
     });
-} 
+}
+
+// Trending Tips
+export class TrendingTips {
+    constructor() {
+        this.trendingTipsList = document.querySelector('.trending-tips-list');
+        this.init();
+    }
+
+    init() {
+        if (this.trendingTipsList) {
+            this.fetchTrendingTips();
+        }
+    }
+
+    async fetchTrendingTips() {
+        if (!this.trendingTipsList) return;
+
+        this.trendingTipsList.classList.add('loading');
+
+        try {
+            const response = await fetch('/api/trending-tips/');
+            const data = await response.json();
+
+            if (data.trending_tips && data.trending_tips.length > 0) {
+                this.trendingTipsList.innerHTML = data.trending_tips.map(tip => `
+                    <div class="trending-tip" data-tip-id="${tip.id}">
+                        <div class="trending-tip-content">
+                            <p class="tip-text">${tip.text}</p>
+                            <div class="tip-meta">
+                                <span class="tip-user">${tip.username}</span>
+                                <div class="tip-actions">
+                                    <div class="tip-action-group">
+                                        <a href="#" class="tip-action tip-action-like" data-action="like">
+                                            <i class="fas fa-heart"></i>
+                                        </a>
+                                        <span class="tip-action-count like-count">${tip.likes_count}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                this.attachLikeListeners();
+            } else {
+                this.trendingTipsList.innerHTML = '<p class="no-tips">No trending tips available</p>';
+            }
+        } catch (error) {
+            console.error('Error fetching trending tips:', error);
+            this.trendingTipsList.innerHTML = '<p class="error">Error loading trending tips</p>';
+        } finally {
+            this.trendingTipsList.classList.remove('loading');
+        }
+    }
+
+    attachLikeListeners() {
+        const likeButtons = this.trendingTipsList.querySelectorAll('.tip-action-like');
+        likeButtons.forEach(button => {
+            button.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const tipElement = button.closest('.trending-tip');
+                const tipId = tipElement.dataset.tipId;
+                const likeCount = button.nextElementSibling;
+
+                try {
+                    const formData = new FormData();
+                    formData.append('tip_id', tipId);
+
+                    const response = await fetch('/api/like-tip/', {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'X-CSRFToken': getCSRFToken() },
+                        credentials: 'include'
+                    });
+
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    
+                    const data = await response.json();
+                    if (data.success) {
+                        button.classList.toggle('active');
+                        likeCount.textContent = data.likes_count;
+                    }
+                } catch (error) {
+                    console.error('Error liking tip:', error);
+                }
+            });
+        });
+    }
+}
+
+// Initialize both features when the DOM is loaded
+// Remove the DOMContentLoaded event listener since we're exporting the functions 

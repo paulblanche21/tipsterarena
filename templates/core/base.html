@@ -207,24 +207,26 @@
                 <div class="sidebar-card trending-tips-card" data-card="trending-tips">
                     <h3>Trending Tips</h3>
                     <div class="trending-tips-list">
-                        {% if trending_tips %}
-                            {% for tip in trending_tips %}
-                            <a href="{% url 'profile' tip.user.username %}#tip-{{ tip.id }}" class="trending-tip">
+                        {% for tip in trending_tips %}
+                            <div class="trending-tip" data-tip-id="{{ tip.id }}">
                                 <div class="trending-tip-content">
-                                    <p class="trending-tip-text">{{ tip.text }}</p>
-                                    <div class="trending-tip-user">
-                                        <span>@{{ tip.user.username }}</span>
+                                    <p class="tip-text">{{ tip.text }}</p>
+                                    <div class="tip-meta">
+                                        <span class="tip-user">@{{ tip.user.username }}</span>
+                                        <div class="tip-actions">
+                                            <div class="tip-action-group">
+                                                <a href="#" class="tip-action tip-action-like" data-action="like">
+                                                    <i class="fas fa-heart"></i>
+                                                </a>
+                                                <span class="tip-action-count like-count">{{ tip.likes.count }}</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="trending-tip-heart">
-                                    <i class="fas fa-heart"></i>
-                                    <span class="trending-tip-heart-count">{{ tip.likes_count }}</span>
-                                </div>
-                            </a>
-                            {% endfor %}
-                        {% else %}
-                            <p>No trending tips at the moment.</p>
-                        {% endif %}
+                            </div>
+                        {% empty %}
+                            <p>No trending tips available</p>
+                        {% endfor %}
                     </div>
                 </div>
                 {% endblock trending_tips %}
