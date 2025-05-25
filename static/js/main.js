@@ -126,7 +126,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     if (page === '/messages/') {
-      await import('./pages/messages.js').then(module => module.init());
+      try {
+        const messagesModule = await import('./pages/messages.js');
+        // Wait for DOM to be fully loaded and ready
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', () => messagesModule.init());
+        } else {
+          messagesModule.init();
+        }
+      } catch (error) {
+        console.error('Failed to initialize messages module:', error);
+      }
     }
 
     // Who to Follow
@@ -181,11 +191,11 @@ document.addEventListener('DOMContentLoaded', async () => {
           }
         }
       } catch (error) {
-        console.error('Error loading suggested users:', error);
+        console.error('Error fetching suggested users:', error);
         followList.innerHTML = '<p>Unable to load suggestions.</p>';
       }
     }
   } catch (error) {
-    console.error('Error initializing:', error);
+    console.error('Error initializing shared modules:', error);
   }
 });

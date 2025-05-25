@@ -71,8 +71,5 @@
 {% endblock %}
 
 {% block extra_js %}
-    <script type="module">
-        import { init } from "{% static 'js/pages/messages.js' %}";
-        document.addEventListener('DOMContentLoaded', init);
-    </script>
+    <!-- Messages module is initialized in main.js -->
 {% endblock %} 
