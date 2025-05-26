@@ -85,7 +85,7 @@ urlpatterns = [
     
     # Message API routes
     path('api/messages/', get_messages, name='api_messages'),
-    path('api/messages/send/', send_message, name='api_send_message'),
+    path('api/messages/send/<int:thread_id>/', send_message, name='api_send_message'),
     path('api/messages/thread/<int:thread_id>/', get_thread_messages, name='api_thread_messages'),
     path('api/messages/start/', start_message_thread, name='api_start_message_thread'),
     path('api/users/search/', search_users, name='api_search_users'),

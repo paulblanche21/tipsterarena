@@ -141,79 +141,109 @@ def messages_view(request, thread_id=None):
 @login_required
 def send_message(request, thread_id=None):
     """Handle sending a new message or creating a new message thread."""
-    content = request.POST.get('content')
-    image = request.FILES.get('image')
-    gif_url = request.POST.get('gif_url')
+    try:
+        # Try to get data from JSON first
+        if request.content_type == 'application/json':
+            data = json.loads(request.body)
+            content = data.get('content')
+            image = request.FILES.get('image')
+            gif_url = data.get('gif_url')
+        else:
+            # Fall back to form data
+            content = request.POST.get('content')
+            image = request.FILES.get('image')
+            gif_url = request.POST.get('gif_url')
 
-    if not content and not image and not gif_url:
-        return JsonResponse({'success': False, 'error': 'Message content, image, or GIF URL must be provided'}, status=400)
+        if not content and not image and not gif_url:
+            return JsonResponse({'success': False, 'error': 'Message content, image, or GIF URL must be provided'}, status=400)
 
-    if thread_id:
-        thread = get_object_or_404(MessageThread, id=thread_id, participants=request.user)
-    else:
-        recipient_username = request.POST.get('recipient_username')
-        if not recipient_username:
-            return JsonResponse({'success': False, 'error': 'Recipient username required'}, status=400)
-        recipient = get_object_or_404(User, username=recipient_username)
-        if recipient == request.user:
-            return JsonResponse({'success': False, 'error': 'Cannot message yourself'}, status=400)
+        if thread_id:
+            thread = get_object_or_404(MessageThread, id=thread_id, participants=request.user)
+        else:
+            recipient_username = request.POST.get('recipient_username')
+            if not recipient_username:
+                return JsonResponse({'success': False, 'error': 'Recipient username required'}, status=400)
+            recipient = get_object_or_404(User, username=recipient_username)
+            if recipient == request.user:
+                return JsonResponse({'success': False, 'error': 'Cannot message yourself'}, status=400)
 
-        thread = MessageThread.objects.filter(participants=request.user).filter(participants=recipient).first()
-        if not thread:
-            thread = MessageThread.objects.create()
-            thread.participants.add(request.user, recipient)
+            thread = MessageThread.objects.filter(participants=request.user).filter(participants=recipient).first()
+            if not thread:
+                thread = MessageThread.objects.create()
+                thread.participants.add(request.user, recipient)
 
-    message = Message.objects.create(
-        thread=thread,
-        sender=request.user,
-        content=content or '',
-        image=image,
-        gif_url=gif_url
-    )
+        message = Message.objects.create(
+            thread=thread,
+            sender=request.user,
+            content=content or '',
+            image=image,
+            gif_url=gif_url
+        )
 
-    # Send WebSocket message
-    from channels.layers import get_channel_layer
-    from asgiref.sync import async_to_sync
-    
-    channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(
-        f"thread_{thread.id}",
-        {
-            "type": "direct_message_broadcast",
-            "sender": request.user.username,
-            "message": message.content,
-            "image_url": message.image.url if message.image else None,
-            "gif_url": message.gif_url,
-            "created_at": message.created_at.isoformat()
-        }
-    )
+        # Send WebSocket message
+        from channels.layers import get_channel_layer
+        from asgiref.sync import async_to_sync
+        
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f"thread_{thread.id}",
+            {
+                "type": "direct_message_broadcast",
+                "sender": request.user.username,
+                "message": message.content,
+                "image_url": message.image.url if message.image else None,
+                "gif_url": message.gif_url,
+                "created_at": message.created_at.isoformat()
+            }
+        )
 
-    return JsonResponse({
-        'success': True,
-        'message_id': message.id,
-        'content': message.content,
-        'created_at': message.created_at.isoformat(),
-        'sender': message.sender.username,
-        'thread_id': thread.id,
-        'image': message.image.url if message.image else None,
-        'gif_url': message.gif_url if message.gif_url else None,
-    })
+        return JsonResponse({
+            'success': True,
+            'message_id': message.id,
+            'content': message.content,
+            'created_at': message.created_at.isoformat(),
+            'sender': message.sender.username,
+            'thread_id': thread.id,
+            'image': message.image.url if message.image else None,
+            'gif_url': message.gif_url if message.gif_url else None,
+        })
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        logger.error(f"Error in send_message view: {str(e)}")
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 @login_required
 def get_thread_messages(request, thread_id):
     """Retrieve and return messages for a specific thread."""
     thread = get_object_or_404(MessageThread, id=thread_id, participants=request.user)
     messages = thread.messages.all().order_by('created_at')
+    
+    # Get the other participant's information
+    other_participant = thread.participants.exclude(id=request.user.id).first()
+    user_info = None
+    if other_participant:
+        user_info = {
+            'username': other_participant.username,
+            'avatar': other_participant.userprofile.avatar.url if hasattr(other_participant, 'userprofile') and other_participant.userprofile.avatar else '/static/images/default-avatar.png'
+        }
+    
     messages_data = [
         {
             'id': msg.id,
             'content': msg.content,
             'sender': msg.sender.username,
             'created_at': msg.created_at.isoformat(),
+            'image': msg.image.url if msg.image else None,
+            'gif_url': msg.gif_url
         }
         for msg in messages
     ]
-    return JsonResponse({'success': True, 'messages': messages_data})
+    return JsonResponse({
+        'success': True, 
+        'messages': messages_data,
+        'user': user_info
+    })
 
 @login_required
 def notifications(request):
@@ -393,9 +423,19 @@ def start_message_thread(request):
             thread = MessageThread.objects.create()
             thread.participants.add(*participants)
 
+        # Get the other participant's information
+        other_participant = thread.participants.exclude(id=current_user.id).first()
+        user_info = None
+        if other_participant:
+            user_info = {
+                'username': other_participant.username,
+                'avatar': other_participant.userprofile.avatar.url if hasattr(other_participant, 'userprofile') and other_participant.userprofile.avatar else '/static/images/default-avatar.png'
+            }
+
         return JsonResponse({
             'success': True,
-            'thread_id': thread.id
+            'thread_id': thread.id,
+            'user': user_info
         })
 
     except User.DoesNotExist:

@@ -178,7 +178,22 @@ function startNewConversation() {
     .then(data => {
         if (data.success) {
             hideModal('newMessageModal');
-            loadMessageThread(data.thread_id);
+            openThread(data.thread_id);
+            // Clear selected users and reset next button
+            selectedUsers.innerHTML = '';
+            nextBtn.disabled = true;
+            
+            // Update thread header with user information
+            const threadHeader = document.querySelector('.thread-header');
+            if (threadHeader && data.user) {
+                const avatarUrl = data.user.avatar || '/static/images/default-avatar.png';
+                const username = data.user.username || 'Unknown User';
+                
+                threadHeader.innerHTML = `
+                    <img src="${avatarUrl}" alt="Avatar" class="avatar">
+                    <h3 class="thread-header-name">${username}</h3>
+                `;
+            }
         }
     })
     .catch(error => console.error('Error starting conversation:', error));
@@ -267,6 +282,17 @@ function openThread(threadId) {
         })
         .then(data => {
             renderThread(data);
+            // Update thread header with user information
+            const threadHeader = document.querySelector('.thread-header');
+            if (threadHeader) {
+                const avatarUrl = data.user?.avatar || '/static/images/default-avatar.png';
+                const username = data.user?.username || 'Unknown User';
+                
+                threadHeader.innerHTML = `
+                    <img src="${avatarUrl}" alt="Avatar" class="avatar">
+                    <h3 class="thread-header-name">${username}</h3>
+                `;
+            }
         })
         .catch(error => {
             console.error('Error loading thread:', error);
@@ -286,17 +312,6 @@ function renderThread(data) {
     
     currentUser = data.user;
     
-    const threadHeader = document.querySelector('.thread-header');
-    if (threadHeader) {
-        const avatarUrl = currentUser?.avatar || '/static/images/default-avatar.png';
-        const username = currentUser?.username || 'Unknown User';
-        
-        threadHeader.innerHTML = `
-            <img src="${avatarUrl}" alt="Avatar" class="avatar">
-            <h3 class="thread-header-name">${username}</h3>
-        `;
-    }
-
     messagesList.innerHTML = '';
     if (data.messages && Array.isArray(data.messages)) {
         data.messages.forEach(message => {
@@ -324,11 +339,10 @@ function sendMessage() {
     if (!currentThread || !messageInput || !messageInput.value.trim()) return;
 
     const message = {
-        thread_id: currentThread,
         content: messageInput.value.trim()
     };
 
-    fetch('/api/messages/send/', {
+    fetch(`/api/messages/send/${currentThread}/`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -345,7 +359,12 @@ function sendMessage() {
     .then(data => {
         if (data.success) {
             messageInput.value = '';
-            const messageElement = createMessageElement(data.message);
+            const messageElement = createMessageElement({
+                content: data.content,
+                sender: data.sender,
+                created_at: data.created_at,
+                is_sent: true
+            });
             messagesList.appendChild(messageElement);
             messagesList.scrollTop = messagesList.scrollHeight;
         }
