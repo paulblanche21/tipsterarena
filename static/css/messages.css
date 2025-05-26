@@ -96,7 +96,7 @@
 
 /* Specific style for user handle in message feed */
 #message-feed-handle {
-    color: black !important;
+    color: black;
 }
 
 /* Avatar within cards */
@@ -121,64 +121,167 @@
     text-decoration: underline;  /* Underline on hover */
 }
 
-/* Styles for the new message modal overlay */
-.modal {
+/* Messages modal styles */
+.messages-modal {
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
-    display: none;
-    justify-content: center;
-    align-items: center;
     z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
-.modal.show {
+.messages-modal.show {
     display: flex;
+    opacity: 1;
 }
 
-/* Content within the new message modal */
-.modal-content {
-    background: var(--secondary-bg);
-    border-radius: 12px;
-    padding: 20px;
+.messages-modal-content {
+    position: relative;
+    background: var(--primary-bg);
     width: 90%;
     max-width: 500px;
+    margin: auto;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transform: translateY(-20px);
+    transition: transform 0.3s ease;
+}
+
+.messages-modal.show .messages-modal-content {
+    transform: translateY(0);
+}
+
+.messages-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.messages-modal-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--text-color);
+}
+
+.messages-modal-body {
+    padding: 1rem;
+}
+
+.messages-modal-footer {
+    padding: 1rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+/* Search section within modal */
+.messages-modal .search-container {
     position: relative;
+    margin-bottom: 1rem;
+}
+
+/* Search input within modal */
+.messages-modal #userSearch {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background: var(--secondary-bg);
+    color: var(--text-color);
+    font-size: 0.9rem;
+    transition: border-color 0.3s ease;
+}
+
+.messages-modal #userSearch:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+/* Footer within modal */
+.messages-modal .messages-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Next button within modal */
+.messages-modal .next-btn {
+    padding: 0.5rem 1rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.messages-modal .next-btn:disabled {
+    background: var(--border-color);
+    cursor: not-allowed;
+}
+
+.messages-modal .next-btn:not(:disabled):hover {
+    background: var(--primary-color-dark);
+}
+
+/* Suggestions list within modal */
+.messages-modal .search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--primary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    max-height: 200px;
+    overflow-y: auto;
     z-index: 1001;
 }
 
-/* Header within the modal */
-.modal-header {
-    display: flex;             /* Flex layout */
-    align-items: center;       /* Center vertically */
-    justify-content: space-between;  /* Space out children */
-    padding: 15px;             /* Padding */
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);  /* Light gray border */
-    background-color: var(--secondary-bg); /* Light gray background */
-}
-
-/* Title within modal header */
-.modal-header h3 {
-    font-size: 18px;           /* Larger font */
-    font-weight: bold;         /* Bold for emphasis */
-    color: var(--primary-bg);            /* Dark blue text */
-    margin: 0;                 /* No margins */
-    flex: 1;                   /* Take available space */
-    text-align: center;        /* Center-align text */
-}
-
-/* Close button within modal */
-.close {
-    position: absolute;
-    right: 10px;
-    top: 10px;
-    font-size: 24px;
+.messages-modal .user-result {
+    padding: 0.75rem;
     cursor: pointer;
-    z-index: 1002;
-    pointer-events: auto;
+    transition: background-color 0.3s ease;
+}
+
+.messages-modal .user-result:hover {
+    background: var(--secondary-bg);
+}
+
+.messages-modal .selected-users {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.messages-modal .selected-user {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: var(--secondary-bg);
+    border-radius: var(--border-radius);
+}
+
+.messages-modal .selected-user .remove-user {
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: color 0.3s ease;
+}
+
+.messages-modal .selected-user .remove-user:hover {
+    color: var(--danger-color);
 }
 
 /* Search section within modal */
@@ -278,31 +381,31 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .messages-page .main-container {
-        margin-left: 0 !important;
-        margin-right: 0 !important;
+        margin-left: 0;
+        margin-right: 0;
     }
 
     .messages-page .content {
-        flex-direction: column !important;
-        height: calc(100vh - 60px) !important;
-        margin-top: 60px !important;
-        width: 100% !important;
+        flex-direction: column;
+        height: calc(100vh - 60px);
+        margin-top: 60px;
+        width: 100%;
     }
 
     .messages-feed {
-        flex: none !important;
-        height: 40vh !important;
-        width: 100% !important;
-        min-width: 100% !important;
-        max-width: 100% !important;
-        border-right: none !important;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+        flex: none;
+        height: 40vh;
+        width: 100%;
+        min-width: 100%;
+        max-width: 100%;
+        border-right: none;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     }
 
     .message-thread {
-        height: 60vh !important;
-        width: 100% !important;
-        max-width: 100% !important;
+        height: 60vh;
+        width: 100%;
+        max-width: 100%;
     }
 }
 
@@ -319,22 +422,22 @@
 
 /* Override main container for messages page only */
 .messages-page .main-container {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
-    background: var(--secondary-bg) !important;
+    margin-left: 0;
+    margin-right: 0;
+    width: 100vw;
+    max-width: 100vw;
+    background: var(--secondary-bg);
 }
 
 /* Override content area for messages page only */
 .messages-page .content {
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
-    height: 100vh !important;
-    display: flex !important;
-    background: var(--secondary-bg) !important;
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    max-width: 100vw;
+    height: 100vh;
+    display: flex;
+    background: var(--secondary-bg);
 }
 
 /* Messages feed (left side) */
@@ -781,4 +884,39 @@
     font-weight: 600;
     color: var(--primary-text);
     margin: 0;
+}
+
+/* Ensure icons in messages header are visible and styled */
+.messages-header .messages-icons {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.messages-header .messages-settings,
+.messages-header .messages-new {
+    background: var(--red-accent);
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: background-color 0.2s;
+}
+
+.messages-header .messages-settings:hover,
+.messages-header .messages-new:hover {
+    background-color: #e63b31;
+    transform: scale(1.1);
+}
+
+/* Make thread header name dark for visibility */
+.message-thread .thread-header-name {
+    color: #222;
 }

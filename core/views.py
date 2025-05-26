@@ -4,7 +4,7 @@ This module is a placeholder that imports all views from their respective module
 The actual view implementations can be found in the views/ directory.
 """
 
-from .views.auth_views import *
+from views.auth_views import *
 from .views.tip_views import *
 from .views.profile_views import *
 from .views.sport_views import *

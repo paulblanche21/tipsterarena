@@ -4,6 +4,7 @@ let messageThread;
 let messageInput;
 let sendMessageBtn;
 let messagesList;
+let messagesFeedList;
 let newMessageBtn;
 let modal;
 let userSearch;
@@ -16,17 +17,74 @@ let currentThread = null;
 let currentUser = null;
 
 // Modal functions
-function openNewMessageModal() {
-    modal.style.display = 'block';
-    userSearch.focus();
+function showModal(modalId) {
+    console.log('Showing modal:', modalId);
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        // First ensure the modal has the correct base class
+        if (!modal.classList.contains('messages-modal')) {
+            modal.classList.add('messages-modal');
+        }
+        // Then add the show class
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+        console.log('Modal classes after show:', modal.className);
+    } else {
+        console.error('Modal element not found:', modalId);
+    }
 }
 
-function closeNewMessageModal() {
-    modal.style.display = 'none';
-    userSearch.value = '';
-    searchResults.innerHTML = '';
-    selectedUsers.innerHTML = '';
-    nextBtn.disabled = true;
+function hideModal(modalId) {
+    console.log('Hiding modal:', modalId);
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('show');
+        document.body.style.overflow = '';
+        console.log('Modal classes after hide:', modal.className);
+    } else {
+        console.error('Modal element not found:', modalId);
+    }
+}
+
+// Initialize modal elements
+function initializeModals() {
+    console.log('Initializing modals...');
+    modal = document.getElementById('newMessageModal');
+    userSearch = document.getElementById('userSearch');
+    searchResults = document.getElementById('searchResults');
+    selectedUsers = document.getElementById('selectedUsers');
+    nextBtn = document.querySelector('.next-btn');
+
+    if (!modal || !userSearch || !searchResults || !selectedUsers || !nextBtn) {
+        console.error('Missing modal elements:', {
+            modal: !!modal,
+            userSearch: !!userSearch,
+            searchResults: !!searchResults,
+            selectedUsers: !!selectedUsers,
+            nextBtn: !!nextBtn
+        });
+        return;
+    }
+
+    // Ensure modal has the correct class
+    if (!modal.classList.contains('messages-modal')) {
+        modal.classList.add('messages-modal');
+    }
+
+    // Add event listeners for modal
+    const closeButtons = modal.querySelectorAll('.close-modal, .cancel-btn');
+    closeButtons.forEach(button => {
+        button.addEventListener('click', () => hideModal('newMessageModal'));
+    });
+
+    // Close modal when clicking outside
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            hideModal('newMessageModal');
+        }
+    });
+
+    console.log('Modal elements initialized successfully');
 }
 
 // Search functions
@@ -94,7 +152,7 @@ function startNewConversation() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            closeNewMessageModal();
+            hideModal('newMessageModal');
             loadMessageThread(data.thread_id);
         }
     })
@@ -115,8 +173,8 @@ function loadMessages() {
         })
         .catch(error => {
             console.error('Error loading messages:', error);
-            if (messagesFeed) {
-                messagesFeed.innerHTML = `
+            if (messagesFeedList) {
+                messagesFeedList.innerHTML = `
                     <div class="error-message">
                         <p>Unable to load messages. Please try again later.</p>
                         <button class="retry-btn" onclick="loadMessages()">Retry</button>
@@ -127,22 +185,22 @@ function loadMessages() {
 }
 
 function renderMessagesFeed(messages) {
-    if (!messagesFeed) return;
-    
-    messagesFeed.innerHTML = '';
-    
+    if (!messagesFeedList) return;
+
+    messagesFeedList.innerHTML = '';
+
     if (!messages || messages.length === 0) {
-        messagesFeed.innerHTML = `
+        messagesFeedList.innerHTML = `
             <div class="no-messages">
                 <p>No messages yet. Start a conversation!</p>
             </div>
         `;
         return;
     }
-    
+
     messages.forEach(message => {
         const card = createMessageCard(message);
-        messagesFeed.appendChild(card);
+        messagesFeedList.appendChild(card);
     });
 }
 
@@ -175,7 +233,7 @@ function openThread(threadId) {
         card.classList.toggle('active', card.dataset.threadId === threadId);
     });
 
-    fetch(`/api/messages/${threadId}/`)
+    fetch(`/api/messages/thread/${threadId}/`)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -284,15 +342,17 @@ function setupEventListeners() {
     });
 
     if (newMessageBtn) {
-        newMessageBtn.addEventListener('click', openNewMessageModal);
+        newMessageBtn.addEventListener('click', () => showModal('newMessageModal'));
     }
 
     // Close modal when clicking outside
-    window.addEventListener('click', function(event) {
-        if (event.target === modal) {
-            closeNewMessageModal();
-        }
-    });
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                hideModal('newMessageModal');
+            }
+        });
+    }
 }
 
 function initializeWebSocket() {
@@ -374,30 +434,23 @@ export function init() {
     messageInput = document.getElementById('messageInput');
     sendMessageBtn = document.getElementById('sendMessageBtn');
     messagesList = document.getElementById('messagesList');
+    messagesFeedList = document.getElementById('messagesFeedList');
     newMessageBtn = document.querySelector('.messages-new');
-    modal = document.getElementById('newMessageModal');
-    userSearch = document.getElementById('userSearch');
-    searchResults = document.getElementById('searchResults');
-    selectedUsers = document.getElementById('selectedUsers');
-    nextBtn = document.querySelector('.next-btn');
 
-    // Only proceed if we have the required elements
-    if (!messagesFeed || !messageThread || !messageInput || !sendMessageBtn || !messagesList) {
-        console.error('Required message elements not found');
-        return;
-    }
+    // Initialize modals
+    initializeModals();
 
-    // Initialize WebSocket connection
-    console.log('Initializing WebSocket connection...');
-    initializeWebSocket();
-
-    // Load messages and setup event listeners
-    loadMessages();
+    // Setup event listeners
     setupEventListeners();
+
+    // Load initial messages
+    loadMessages();
+
+    console.log('Messages page initialized successfully');
 }
 
 // Make functions available globally for onclick handlers
-window.openNewMessageModal = openNewMessageModal;
-window.closeNewMessageModal = closeNewMessageModal;
+window.showModal = showModal;
+window.hideModal = hideModal;
 window.searchUsers = searchUsers;
 window.startNewConversation = startNewConversation; 

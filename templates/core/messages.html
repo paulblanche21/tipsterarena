@@ -3,11 +3,6 @@
 {% load static %}
 <!-- messages.html: Template for the Messages page in Tipster Arena. Displays message threads and conversation details. -->
 
-{% block extra_css %}
-    <!-- Additional stylesheet for messages-specific styling -->
-    <link rel="stylesheet" href="{% static 'css/messages.css' %}">
-{% endblock %}
-
 {% block title %}Messages - Tipster Arena{% endblock %}
 
 {% block body_class %}messages-page{% endblock %}
@@ -21,12 +16,12 @@
                 <button class="messages-settings" onclick="openSettingsModal()" title="Settings">
                     <i class="fas fa-cog"></i>
                 </button>
-                <button class="messages-new" onclick="openNewMessageModal()" title="New Message">
+                <button class="messages-new" onclick="showModal('newMessageModal')" title="New Message">
                     <i class="fas fa-edit"></i>
                 </button>
             </div>
         </div>
-        <div class="messages-list">
+        <div class="messages-list" id="messagesFeedList">
             {% for message in messages %}
             <div class="card" data-thread-id="{{ message.thread.id }}">
                 <img src="{{ message.sender.profile.avatar.url|default:'/static/images/default-avatar.png' }}" alt="Avatar" class="avatar">
@@ -52,7 +47,9 @@
             <img src="{% static 'img/default-avatar.png' %}" alt="Avatar" class="avatar">
             <h3 class="thread-header-name">Select a conversation</h3>
         </div>
-        <div class="messages-list" id="messagesList"></div>
+        <div class="messages-list" id="messagesList">
+            <!-- Messages will be loaded here dynamically -->
+        </div>
         <div class="message-input">
             <div class="message-actions">
                 <button class="action-btn" title="Add image">
@@ -73,29 +70,29 @@
     </div>
 
     <!-- New Message Modal -->
-    <div id="newMessageModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
+    <div id="newMessageModal" class="messages-modal">
+        <div class="messages-modal-content">
+            <div class="messages-modal-header">
                 <h3>New message</h3>
-                <button class="close-modal" onclick="closeNewMessageModal()">&times;</button>
+                <button class="close-modal" onclick="hideModal('newMessageModal')">&times;</button>
             </div>
-            <div class="modal-body">
+            <div class="messages-modal-body">
                 <div class="search-container">
                     <input type="text" id="userSearch" placeholder="Search users..." onkeyup="searchUsers(this.value)">
                     <div id="searchResults" class="search-results"></div>
                 </div>
                 <div id="selectedUsers" class="selected-users"></div>
             </div>
-            <div class="modal-footer">
-                <button class="cancel-btn" onclick="closeNewMessageModal()">Cancel</button>
-                <button class="next-btn" onclick="startNewConversation()">Next</button>
+            <div class="messages-modal-footer">
+                <button class="cancel-btn" onclick="hideModal('newMessageModal')">Cancel</button>
+                <button class="next-btn" onclick="startNewConversation()" disabled>Next</button>
             </div>
         </div>
     </div>
 
-    <!-- Settings Modal (hidden by default) -->
-    <div id="settingsModal" class="modal" style="display:none;">
-        <div class="modal-content">
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="messages-modal">
+        <div class="messages-modal-content">
             {% include 'core/message_settings.html' %}
         </div>
     </div>
@@ -114,24 +111,11 @@
 </script>
 <script>
     function openSettingsModal() {
-        document.getElementById('settingsModal').style.display = 'block';
+        showModal('settingsModal');
     }
+    
     function closeSettingsModal() {
-        document.getElementById('settingsModal').style.display = 'none';
+        hideModal('settingsModal');
     }
-    // Close modal when clicking outside modal-content
-    window.addEventListener('click', function(event) {
-        const modal = document.getElementById('settingsModal');
-        if (event.target === modal) {
-            closeSettingsModal();
-        }
-    });
-    // Also close on X button in modal
-    document.addEventListener('DOMContentLoaded', function() {
-        const closeBtn = document.getElementById('closeSettingsBtn');
-        if (closeBtn) {
-            closeBtn.onclick = closeSettingsModal;
-        }
-    });
 </script>
 {% endblock %}
