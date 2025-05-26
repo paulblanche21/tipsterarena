@@ -29,6 +29,7 @@ __all__ = [
     'mark_notification_read',
     'get_messages',
     'start_message_thread',
+    'search_users',
 ]
 
 @login_required
@@ -402,4 +403,26 @@ def start_message_thread(request):
     except json.JSONDecodeError:
         return JsonResponse({'success': False, 'error': 'Invalid JSON data'}, status=400)
     except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=500) 
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+@login_required
+@require_http_methods(["GET"])
+def search_users(request):
+    """Search for users by username."""
+    query = request.GET.get('q', '').strip()
+    if not query or len(query) < 2:
+        return JsonResponse({'users': []})
+
+    users = User.objects.filter(
+        username__icontains=query
+    ).exclude(
+        id=request.user.id
+    ).select_related('userprofile')[:10]
+
+    users_data = [{
+        'id': user.id,
+        'username': user.username,
+        'avatar': user.userprofile.avatar.url if hasattr(user, 'userprofile') and user.userprofile.avatar else None,
+    } for user in users]
+
+    return JsonResponse({'users': users_data}) 

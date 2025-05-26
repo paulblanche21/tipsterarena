@@ -76,6 +76,7 @@ class PaywallMiddleware:
                 '/static/',
                 '/media/',
                 '/api/current-user/',  # Allow current user API
+                '/api/users/search/',  # Allow user search API
                 '/search/',
                 '/home/',
                 '/sport/',  # Allow viewing sports

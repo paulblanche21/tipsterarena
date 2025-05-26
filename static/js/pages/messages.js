@@ -21,7 +21,9 @@ function showModal(modalId) {
     console.log('Showing modal:', modalId);
     const modal = document.getElementById(modalId);
     if (modal) {
-        // First ensure the modal has the correct base class
+        // Remove any existing modal classes first
+        modal.classList.remove('modal');
+        // Ensure the modal has the correct base class
         if (!modal.classList.contains('messages-modal')) {
             modal.classList.add('messages-modal');
         }
@@ -38,7 +40,10 @@ function hideModal(modalId) {
     console.log('Hiding modal:', modalId);
     const modal = document.getElementById(modalId);
     if (modal) {
+        // Remove the show class first
         modal.classList.remove('show');
+        // Keep only the messages-modal class
+        modal.classList.remove('modal');
         document.body.style.overflow = '';
         console.log('Modal classes after hide:', modal.className);
     } else {
@@ -66,7 +71,8 @@ function initializeModals() {
         return;
     }
 
-    // Ensure modal has the correct class
+    // Ensure modal has only the correct class
+    modal.classList.remove('modal');
     if (!modal.classList.contains('messages-modal')) {
         modal.classList.add('messages-modal');
     }
@@ -84,6 +90,13 @@ function initializeModals() {
         }
     });
 
+    // Initialize search functionality
+    if (userSearch) {
+        userSearch.addEventListener('input', (e) => {
+            searchUsers(e.target.value);
+        });
+    }
+
     console.log('Modal elements initialized successfully');
 }
 
@@ -95,24 +108,36 @@ function searchUsers(query) {
     }
 
     fetch(`/api/users/search/?q=${encodeURIComponent(query)}`)
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             searchResults.innerHTML = '';
-            data.users.forEach(user => {
-                const userElement = document.createElement('div');
-                userElement.className = 'user-result';
-                userElement.innerHTML = `
-                    <img src="${user.avatar || '/static/images/default-avatar.png'}" alt="${user.username}">
-                    <div class="user-info">
-                        <span class="username">${user.username}</span>
-                        <span class="handle">@${user.username}</span>
-                    </div>
-                `;
-                userElement.addEventListener('click', () => selectUser(user));
-                searchResults.appendChild(userElement);
-            });
+            if (data.users && data.users.length > 0) {
+                data.users.forEach(user => {
+                    const userElement = document.createElement('div');
+                    userElement.className = 'user-result';
+                    userElement.innerHTML = `
+                        <img src="${user.avatar || '/static/images/default-avatar.png'}" alt="${user.username}">
+                        <div class="user-info">
+                            <span class="username">${user.username}</span>
+                            <span class="handle">@${user.username}</span>
+                        </div>
+                    `;
+                    userElement.addEventListener('click', () => selectUser(user));
+                    searchResults.appendChild(userElement);
+                });
+            } else {
+                searchResults.innerHTML = '<div class="no-results">No users found</div>';
+            }
         })
-        .catch(error => console.error('Error searching users:', error));
+        .catch(error => {
+            console.error('Error searching users:', error);
+            searchResults.innerHTML = '<div class="error-message">Error searching users. Please try again.</div>';
+        });
 }
 
 function selectUser(user) {
@@ -263,17 +288,22 @@ function renderThread(data) {
     
     const threadHeader = document.querySelector('.thread-header');
     if (threadHeader) {
+        const avatarUrl = currentUser?.avatar || '/static/images/default-avatar.png';
+        const username = currentUser?.username || 'Unknown User';
+        
         threadHeader.innerHTML = `
-            <img src="${data.user.avatar || '/static/images/default-avatar.png'}" alt="Avatar" class="avatar">
-            <h3 class="thread-header-name">${data.user.username}</h3>
+            <img src="${avatarUrl}" alt="Avatar" class="avatar">
+            <h3 class="thread-header-name">${username}</h3>
         `;
     }
 
     messagesList.innerHTML = '';
-    data.messages.forEach(message => {
-        const messageElement = createMessageElement(message);
-        messagesList.appendChild(messageElement);
-    });
+    if (data.messages && Array.isArray(data.messages)) {
+        data.messages.forEach(message => {
+            const messageElement = createMessageElement(message);
+            messagesList.appendChild(messageElement);
+        });
+    }
 
     messagesList.scrollTop = messagesList.scrollHeight;
 }

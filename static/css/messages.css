@@ -130,26 +130,29 @@
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
+    z-index: 9999;
     opacity: 0;
     transition: opacity 0.3s ease;
+    align-items: center;
+    justify-content: center;
 }
 
 .messages-modal.show {
-    display: flex;
+    display: flex !important;
     opacity: 1;
 }
 
 .messages-modal-content {
     position: relative;
-    background: var(--primary-bg);
+    background: #ffffff;
     width: 90%;
     max-width: 500px;
-    margin: auto;
+    margin: 0 auto;
     border-radius: var(--border-radius);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     transform: translateY(-20px);
     transition: transform 0.3s ease;
+    z-index: 10000;
 }
 
 .messages-modal.show .messages-modal-content {
@@ -161,68 +164,61 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid #e1e8ed;
+    background: #ffffff;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
 }
 
 .messages-modal-header h3 {
     margin: 0;
     font-size: 1.2rem;
-    color: var(--text-color);
+    color: #14171a;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #14171a;
+    cursor: pointer;
+    padding: 0.5rem;
+    line-height: 1;
+    transition: color 0.2s ease;
+}
+
+.close-modal:hover {
+    color: var(--red-accent);
 }
 
 .messages-modal-body {
     padding: 1rem;
+    max-height: 70vh;
+    overflow-y: auto;
+    background: #ffffff;
 }
 
 .messages-modal-footer {
     padding: 1rem;
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid #e1e8ed;
     display: flex;
     justify-content: flex-end;
     gap: 1rem;
+    background: #ffffff;
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
 }
 
-/* Search section within modal */
-.messages-modal .search-container {
-    position: relative;
-    margin-bottom: 1rem;
-}
-
-/* Search input within modal */
-.messages-modal #userSearch {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    background: var(--secondary-bg);
-    color: var(--text-color);
-    font-size: 0.9rem;
-    transition: border-color 0.3s ease;
-}
-
-.messages-modal #userSearch:focus {
-    outline: none;
-    border-color: var(--primary-color);
-}
-
-/* Footer within modal */
-.messages-modal .messages-modal-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-    padding: 1rem;
-    border-top: 1px solid var(--border-color);
-}
-
-/* Next button within modal */
-.messages-modal .next-btn {
+.messages-modal .next-btn,
+.messages-modal .cancel-btn {
     padding: 0.5rem 1rem;
-    background: var(--primary-color);
-    color: white;
-    border: none;
     border-radius: var(--border-radius);
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: all 0.2s ease;
+}
+
+.messages-modal .next-btn {
+    background: var(--red-accent);
+    color: white;
+    border: none;
 }
 
 .messages-modal .next-btn:disabled {
@@ -231,31 +227,52 @@
 }
 
 .messages-modal .next-btn:not(:disabled):hover {
-    background: var(--primary-color-dark);
+    background: var(--red-accent-dark);
 }
 
-/* Suggestions list within modal */
+.messages-modal .cancel-btn {
+    background: transparent;
+    color: #14171a;
+    border: 1px solid #e1e8ed;
+}
+
+.messages-modal .cancel-btn:hover {
+    background: #f5f8fa;
+}
+
+.messages-modal .search-container {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.messages-modal #userSearch {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e1e8ed;
+    border-radius: var(--border-radius);
+    background: #f5f8fa;
+    color: #14171a;
+    font-size: 0.9rem;
+}
+
+.messages-modal #userSearch:focus {
+    outline: none;
+    border-color: var(--red-accent);
+}
+
 .messages-modal .search-results {
     position: absolute;
     top: 100%;
     left: 0;
     right: 0;
-    background: var(--primary-bg);
-    border: 1px solid var(--border-color);
+    background: #ffffff;
+    border: 1px solid #e1e8ed;
     border-radius: var(--border-radius);
     max-height: 200px;
     overflow-y: auto;
-    z-index: 1001;
-}
-
-.messages-modal .user-result {
-    padding: 0.75rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.messages-modal .user-result:hover {
-    background: var(--secondary-bg);
+    z-index: 10001;
+    margin-top: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .messages-modal .selected-users {
@@ -263,6 +280,45 @@
     flex-wrap: wrap;
     gap: 0.5rem;
     margin-top: 1rem;
+    padding: 0.5rem;
+    background: #f5f8fa;
+    border-radius: var(--border-radius);
+    min-height: 50px;
+}
+
+.messages-modal .user-result {
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.messages-modal .user-result:hover {
+    background: #f5f8fa;
+}
+
+.messages-modal .user-result img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.messages-modal .user-result .user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.messages-modal .user-result .username {
+    font-weight: 600;
+    color: #14171a;
+}
+
+.messages-modal .user-result .handle {
+    font-size: 0.8rem;
+    color: #657786;
 }
 
 .messages-modal .selected-user {
@@ -270,18 +326,42 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem;
-    background: var(--secondary-bg);
+    background: #ffffff;
+    border: 1px solid #e1e8ed;
     border-radius: var(--border-radius);
+    font-size: 0.9rem;
+    color: #14171a;
+}
+
+.messages-modal .selected-user img {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
 }
 
 .messages-modal .selected-user .remove-user {
     cursor: pointer;
-    color: var(--text-muted);
-    transition: color 0.3s ease;
+    color: #657786;
+    transition: color 0.2s ease;
+    padding: 0.25rem;
+    line-height: 1;
 }
 
 .messages-modal .selected-user .remove-user:hover {
-    color: var(--danger-color);
+    color: var(--red-accent);
+}
+
+@media (max-width: 768px) {
+    .messages-modal-content {
+        width: 95%;
+        margin: 1rem;
+        max-height: 90vh;
+    }
+
+    .messages-modal-body {
+        max-height: 60vh;
+    }
 }
 
 /* Search section within modal */

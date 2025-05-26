@@ -10,7 +10,8 @@ from .views.interaction_views import (
     get_messages,
     send_message,
     get_thread_messages,
-    start_message_thread
+    start_message_thread,
+    search_users
 )
 from .views.general_views import chat_view
 from .views.api_views import upload_chat_image_api
@@ -87,6 +88,7 @@ urlpatterns = [
     path('api/messages/send/', send_message, name='api_send_message'),
     path('api/messages/thread/<int:thread_id>/', get_thread_messages, name='api_thread_messages'),
     path('api/messages/start/', start_message_thread, name='api_start_message_thread'),
+    path('api/users/search/', search_users, name='api_search_users'),
 
     path('tipster/', include([
         path('tier-setup/', subscription_views.tier_setup, name='tier_setup'),
