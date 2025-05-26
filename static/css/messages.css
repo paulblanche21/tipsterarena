@@ -126,15 +126,13 @@
     display: none;
     position: fixed;
     top: 0;
-    left: 0;
-    width: 100%;
+    left: 360px; /* 350px feed width + 10px margin */
+    width: calc(100% - 360px); /* Subtract feed width and margin */
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
     z-index: 9999;
     opacity: 0;
     transition: opacity 0.3s ease;
-    align-items: center;
-    justify-content: center;
 }
 
 .messages-modal.show {
@@ -143,20 +141,24 @@
 }
 
 .messages-modal-content {
-    position: relative;
+    position: absolute;
     background: #ffffff;
-    width: 90%;
-    max-width: 500px;
-    margin: 0 auto;
-    border-radius: var(--border-radius);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transform: translateY(-20px);
+    width: 100%;
+    right: 0;
+    top: 0;
+    height: 100%;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: -4px 0 6px rgba(0, 0, 0, 0.1);
+    transform: translateX(100%);
     transition: transform 0.3s ease;
     z-index: 10000;
+    display: flex;
+    flex-direction: column;
 }
 
 .messages-modal.show .messages-modal-content {
-    transform: translateY(0);
+    transform: translateX(0);
 }
 
 .messages-modal-header {
@@ -166,7 +168,6 @@
     padding: 1rem;
     border-bottom: 1px solid #e1e8ed;
     background: #ffffff;
-    border-radius: var(--border-radius) var(--border-radius) 0 0;
 }
 
 .messages-modal-header h3 {
@@ -192,7 +193,7 @@
 
 .messages-modal-body {
     padding: 1rem;
-    max-height: 70vh;
+    flex: 1;
     overflow-y: auto;
     background: #ffffff;
 }
@@ -204,7 +205,6 @@
     justify-content: flex-end;
     gap: 1rem;
     background: #ffffff;
-    border-radius: 0 0 var(--border-radius) var(--border-radius);
 }
 
 .messages-modal .next-btn,
@@ -243,6 +243,8 @@
 .messages-modal .search-container {
     position: relative;
     margin-bottom: 1rem;
+    z-index: 10001;
+    background: #ffffff;
 }
 
 .messages-modal #userSearch {
@@ -262,7 +264,7 @@
 
 .messages-modal .search-results {
     position: absolute;
-    top: 100%;
+    top: calc(100% + 5px);
     left: 0;
     right: 0;
     background: #ffffff;
@@ -270,9 +272,9 @@
     border-radius: var(--border-radius);
     max-height: 200px;
     overflow-y: auto;
-    z-index: 10001;
-    margin-top: 0.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 10002;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: block !important;
 }
 
 .messages-modal .selected-users {
@@ -293,6 +295,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    background: #ffffff;
 }
 
 .messages-modal .user-result:hover {
@@ -353,14 +356,13 @@
 }
 
 @media (max-width: 768px) {
-    .messages-modal-content {
-        width: 95%;
-        margin: 1rem;
-        max-height: 90vh;
+    .messages-modal {
+        left: 0;
+        width: 100%;
     }
-
-    .messages-modal-body {
-        max-height: 60vh;
+    
+    .messages-modal-content {
+        width: 100%;
     }
 }
 
