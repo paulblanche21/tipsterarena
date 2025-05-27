@@ -1,8 +1,7 @@
 from django.http import JsonResponse
 from django.db.models import Count
 from core.models import Tip
-from django.core.serializers import serialize
-import json
+
 
 def trending_tips(request):
     limit = int(request.GET.get('limit', 30))

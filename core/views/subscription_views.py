@@ -5,15 +5,14 @@ import json
 import logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 from django.utils import timezone
 from django.db import transaction
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.contrib import messages
-from django.db.models import F, Sum
-from django.contrib.auth import get_user_model
+from django.db.models import F
 from django.core.exceptions import ValidationError
 from datetime import timedelta
 
