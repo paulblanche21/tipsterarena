@@ -379,29 +379,56 @@ function sendMessage() {
 }
 
 function setupEventListeners() {
-    if (!sendMessageBtn || !messageInput) return;
+    console.log('Setting up event listeners...');
 
-    sendMessageBtn.addEventListener('click', sendMessage);
+    if (sendMessageBtn && messageInput) {
+        sendMessageBtn.addEventListener('click', sendMessage);
+        console.log('Send message event listeners attached');
 
-    messageInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        console.log('Message input event listeners attached');
+    }
 
     if (newMessageBtn) {
         newMessageBtn.addEventListener('click', () => showModal('newMessageModal'));
+        console.log('New message button event listener attached');
     }
 
-    // Close modal when clicking outside
-    if (modal) {
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                hideModal('newMessageModal');
+    // Add click event listeners to message cards
+    if (messagesFeedList) {
+        messagesFeedList.addEventListener('click', (e) => {
+            const card = e.target.closest('.card');
+            if (card && card.dataset.threadId) {
+                openThread(card.dataset.threadId);
             }
         });
+        console.log('Message cards event listeners attached');
     }
+
+    // Add hover effects to cards
+    if (messagesFeedList) {
+        messagesFeedList.addEventListener('mouseover', (e) => {
+            const card = e.target.closest('.card');
+            if (card) {
+                card.classList.add('hover');
+            }
+        });
+
+        messagesFeedList.addEventListener('mouseout', (e) => {
+            const card = e.target.closest('.card');
+            if (card) {
+                card.classList.remove('hover');
+            }
+        });
+        console.log('Card hover effects attached');
+    }
+
+    console.log('Event listeners setup completed');
 }
 
 function initializeWebSocket() {
@@ -486,6 +513,17 @@ export function init() {
     messagesFeedList = document.getElementById('messagesFeedList');
     newMessageBtn = document.querySelector('.messages-new');
 
+    // Log initialization status
+    console.log('Elements initialized:', {
+        messagesFeed: !!messagesFeed,
+        messageThread: !!messageThread,
+        messageInput: !!messageInput,
+        sendMessageBtn: !!sendMessageBtn,
+        messagesList: !!messagesList,
+        messagesFeedList: !!messagesFeedList,
+        newMessageBtn: !!newMessageBtn
+    });
+
     // Initialize modals
     initializeModals();
 
@@ -494,6 +532,9 @@ export function init() {
 
     // Load initial messages
     loadMessages();
+
+    // Initialize WebSocket
+    initializeWebSocket();
 
     console.log('Messages page initialized successfully');
 }

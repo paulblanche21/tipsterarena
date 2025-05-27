@@ -36,20 +36,23 @@
     padding: 15px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     gap: 12px;
-    background-color: var(--secondary-bg);
-    color: var(--primary-bg);
+    background-color: white;
+    color: #1c1e21;
 }
 
 .card:hover {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: #f0f2f5;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .card.active {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: #f0f2f5;
+    border-left: 3px solid var(--red-accent);
 }
 
 /* Content within message cards */
@@ -123,42 +126,43 @@
 
 /* Messages modal styles */
 .messages-modal {
-    display: none;
     position: fixed;
     top: 0;
-    left: 360px; /* 350px feed width + 10px margin */
-    width: calc(100% - 360px); /* Subtract feed width and margin */
+    left: 0;
+    width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
     z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .messages-modal.show {
-    display: flex !important;
     opacity: 1;
+    visibility: visible;
 }
 
 .messages-modal-content {
-    position: absolute;
-    background: #ffffff;
+    position: relative;
+    background: white;
     width: 100%;
-    right: 0;
-    top: 0;
-    height: 100%;
-    margin: 0;
-    border-radius: 0;
-    box-shadow: -4px 0 6px rgba(0, 0, 0, 0.1);
-    transform: translateX(100%);
-    transition: transform 0.3s ease;
+    max-width: 500px;
+    margin: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transform: translateY(20px);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
     z-index: 10000;
-    display: flex;
-    flex-direction: column;
 }
 
 .messages-modal.show .messages-modal-content {
-    transform: translateX(0);
+    transform: translateY(0);
+    opacity: 1;
 }
 
 .messages-modal-header {
@@ -167,7 +171,10 @@
     align-items: center;
     padding: 1rem;
     border-bottom: 1px solid #e1e8ed;
-    background: #ffffff;
+    background: white;
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
 .messages-modal-header h3 {
@@ -195,7 +202,7 @@
     padding: 1rem;
     flex: 1;
     overflow-y: auto;
-    background: #ffffff;
+    background: white;
 }
 
 .messages-modal-footer {
@@ -204,7 +211,10 @@
     display: flex;
     justify-content: flex-end;
     gap: 1rem;
-    background: #ffffff;
+    background: white;
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
 }
 
 .messages-modal .next-btn,
@@ -355,17 +365,6 @@
     color: var(--red-accent);
 }
 
-@media (max-width: 768px) {
-    .messages-modal {
-        left: 0;
-        width: 100%;
-    }
-    
-    .messages-modal-content {
-        width: 100%;
-    }
-}
-
 /* Search section within modal */
 .modal-search {
     padding: 15px;             /* Padding */
@@ -488,6 +487,11 @@
         height: 60vh;
         width: 100%;
         max-width: 100%;
+    }
+
+    .messages-modal-content {
+        margin: 10px;
+        max-height: calc(100vh - 20px);
     }
 }
 
@@ -632,28 +636,39 @@
 .messages-icons {
     display: flex;
     gap: 10px;
+    align-items: center;
+    position: relative;
+    z-index: 10;
 }
 
 .messages-settings,
-.messages-new {
+.messages-new,
+.action-btn,
+#sendMessageBtn {
+    position: relative;
+    z-index: 10;
+    cursor: pointer;
+    pointer-events: auto;
     background: var(--red-accent);
     border: none;
     color: white;
-    cursor: pointer;
     padding: 8px;
-    border-radius: 50%;
-    transition: background-color 0.2s;
-    width: 36px;
-    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.2s ease;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
 }
 
 .messages-settings:hover,
-.messages-new:hover {
-    background-color: #e63b31;
+.messages-new:hover,
+.action-btn:hover,
+#sendMessageBtn:hover {
     transform: scale(1.1);
+    background-color: #e63b31;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .messages-list {
@@ -733,12 +748,14 @@
     max-height: 120px;
     font-size: 15px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
 }
 
 #messageInput:focus {
     outline: none;
     border-color: var(--red-accent);
     box-shadow: 0 0 0 2px rgba(255, 59, 48, 0.1);
+    background: white;
 }
 
 #messageInput::placeholder {
@@ -749,52 +766,6 @@
 .message-actions {
     display: flex;
     gap: 8px;
-}
-
-.action-btn {
-    background: none;
-    border: none;
-    color: var(--primary-text);
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 50%;
-    transition: background-color 0.2s;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.action-btn:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-    color: var(--red-accent);
-}
-
-/* Send button */
-#sendMessageBtn {
-    background: var(--red-accent);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-#sendMessageBtn:hover {
-    background-color: #e63b31;
-    transform: scale(1.05);
-}
-
-#sendMessageBtn:disabled {
-    background-color: rgba(0, 0, 0, 0.1);
-    cursor: not-allowed;
-    transform: none;
 }
 
 /* Message cards */
@@ -900,36 +871,6 @@
     }
 }
 
-/* Message buttons */
-.messages-new,
-.messages-settings,
-.action-btn,
-#sendMessageBtn {
-    position: relative;
-    z-index: 10;
-    cursor: pointer;
-    pointer-events: auto;
-    background: var(--red-accent);
-    border: none;
-    color: white;
-    padding: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
-}
-
-.messages-new:hover,
-.messages-settings:hover,
-.action-btn:hover,
-#sendMessageBtn:hover {
-    transform: scale(1.1);
-    background-color: #e63b31;
-}
-
 /* New message button specific styles */
 .new-message-btn {
     background: var(--red-accent);
@@ -997,28 +938,90 @@
 
 .messages-header .messages-settings,
 .messages-header .messages-new {
-    background: var(--red-accent);
-    border: none;
-    color: white;
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    transition: background-color 0.2s;
-}
-
-.messages-header .messages-settings:hover,
-.messages-header .messages-new:hover {
-    background-color: #e63b31;
-    transform: scale(1.1);
+    position: relative;
+    z-index: 10;
+    pointer-events: auto;
 }
 
 /* Make thread header name dark for visibility */
 .message-thread .thread-header-name {
     color: #222;
+}
+
+/* Message settings modal styles */
+.message-settings {
+    padding: 20px;
+    background: white;
+    color: #1c1e21;
+}
+
+.settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e4e6eb;
+}
+
+.settings-header h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1c1e21;
+    margin: 0;
+}
+
+.close-settings {
+    font-size: 24px;
+    color: #65676b;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.close-settings:hover {
+    background-color: #f0f2f5;
+    color: #1c1e21;
+}
+
+.setting-group {
+    margin-bottom: 24px;
+}
+
+.setting-group h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1c1e21;
+    margin: 0 0 8px 0;
+}
+
+.setting-group p {
+    color: #65676b;
+    margin: 0 0 16px 0;
+    font-size: 14px;
+}
+
+.setting-option {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #e4e6eb;
+}
+
+.setting-option:last-child {
+    border-bottom: none;
+}
+
+.setting-option input[type="radio"] {
+    margin-right: 12px;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--red-accent);
+}
+
+.setting-option label {
+    font-size: 15px;
+    color: #1c1e21;
+    cursor: pointer;
 }
