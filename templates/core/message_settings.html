@@ -13,18 +13,81 @@
         <p>Choose who can send you message requests.</p>
         <!-- Option to restrict messages to no one -->
         <div class="setting-option">
-            <input type="radio" id="allowMessagesNoOne" name="allow_messages" value="no_one" {% if user.userprofile.allow_messages == 'no_one' %}checked{% endif %}>
+            <input type="radio" id="allowMessagesNoOne" name="allow_messages" value="no_one" {% if user.userprofile.allow_messages == 'no_one' %}checked{% endif %} onchange="updateMessageSettings(this.value)">
             <label for="allowMessagesNoOne">No one</label>
         </div>
         <!-- Option to allow messages from followers only -->
         <div class="setting-option">
-            <input type="radio" id="allowMessagesFollowers" name="allow_messages" value="followers" {% if user.userprofile.allow_messages == 'followers' %}checked{% endif %}>
+            <input type="radio" id="allowMessagesFollowers" name="allow_messages" value="followers" {% if user.userprofile.allow_messages == 'followers' %}checked{% endif %} onchange="updateMessageSettings(this.value)">
             <label for="allowMessagesFollowers">Followers</label>
         </div>
         <!-- Option to allow messages from everyone -->
         <div class="setting-option">
-            <input type="radio" id="allowMessagesEveryone" name="allow_messages" value="everyone" {% if user.userprofile.allow_messages == 'everyone' %}checked{% endif %}>
+            <input type="radio" id="allowMessagesEveryone" name="allow_messages" value="everyone" {% if user.userprofile.allow_messages == 'everyone' %}checked{% endif %} onchange="updateMessageSettings(this.value)">
             <label for="allowMessagesEveryone">Everyone</label>
         </div>
     </div>
 </div>
+
+<script>
+function updateMessageSettings(setting) {
+    fetch('/api/messages/settings/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            allow_messages: setting
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            const successMessage = document.createElement('div');
+            successMessage.className = 'success-message';
+            successMessage.textContent = 'Settings updated successfully';
+            document.querySelector('.message-settings').appendChild(successMessage);
+            
+            // Remove success message after 3 seconds
+            setTimeout(() => {
+                successMessage.remove();
+            }, 3000);
+        }
+    })
+    .catch(error => {
+        console.error('Error updating message settings:', error);
+        // Show error message
+        const errorMessage = document.createElement('div');
+        errorMessage.className = 'error-message';
+        errorMessage.textContent = 'Failed to update settings. Please try again.';
+        document.querySelector('.message-settings').appendChild(errorMessage);
+        
+        // Remove error message after 3 seconds
+        setTimeout(() => {
+            errorMessage.remove();
+        }, 3000);
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>

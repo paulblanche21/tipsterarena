@@ -6,20 +6,21 @@
     border: none;              /* No border */
     cursor: pointer;           /* Indicate clickability */
     font-size: 16px;           /* Icon size */
-    color: var(--primary-text);            /* Gray color for default state */
+    color: #65676b;            /* More subtle gray color */
     width: 36px;               /* Fixed width for circular button */
     height: 36px;              /* Fixed height for circular button */
     display: flex;             /* Flex layout for centering */
     align-items: center;       /* Center vertically */
     justify-content: center;   /* Center horizontally */
     border-radius: 50%;        /* Circular shape */
-    transition: color 0.2s, background-color 0.2s;  /* Smooth transitions */
+    transition: all 0.2s ease; /* Smooth transitions */
 }
 
 /* Hover state for action buttons */
 .action-btn:hover {
-    color: var(--red-accent);
-    background-color: rgba(255, 255, 255, 0.1);
+    color: #1a1a1a;           /* Darker gray on hover */
+    background-color: #f0f2f5; /* Light gray background */
+    transform: scale(1.05);    /* Slight scale effect */
 }
 
 /* Styles for standard avatar */
@@ -643,7 +644,6 @@
 
 .messages-settings,
 .messages-new,
-.action-btn,
 #sendMessageBtn {
     position: relative;
     z-index: 10;
@@ -664,7 +664,6 @@
 
 .messages-settings:hover,
 .messages-new:hover,
-.action-btn:hover,
 #sendMessageBtn:hover {
     transform: scale(1.1);
     background-color: #e63b31;
@@ -1024,4 +1023,41 @@
     font-size: 15px;
     color: #1c1e21;
     cursor: pointer;
+}
+
+/* Message Settings Modal Styles */
+.success-message,
+.error-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 24px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 1000;
+    animation: slideIn 0.3s ease-out;
+}
+
+.success-message {
+    background-color: #4CAF50;
+    color: white;
+    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
+}
+
+.error-message {
+    background-color: #f44336;
+    color: white;
+    box-shadow: 0 2px 4px rgba(244, 67, 54, 0.2);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }

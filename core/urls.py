@@ -6,12 +6,10 @@ from django.contrib.auth import views as auth_views
 from . import views
 from .views import subscription_views
 from .views.interaction_views import (
-    mark_notification_read,
-    get_messages,
-    send_message,
-    get_thread_messages,
-    start_message_thread,
-    search_users
+    follow_user, messages_view, send_message, get_thread_messages,
+    notifications, message_settings_view, bookmarks, toggle_bookmark,
+    like_comment, share_comment, mark_notification_read, get_messages,
+    start_message_thread, search_users, update_message_settings
 )
 from .views.general_views import chat_view
 from .views.api_views import upload_chat_image_api
@@ -88,6 +86,7 @@ urlpatterns = [
     path('api/messages/send/<int:thread_id>/', send_message, name='api_send_message'),
     path('api/messages/thread/<int:thread_id>/', get_thread_messages, name='api_thread_messages'),
     path('api/messages/start/', start_message_thread, name='api_start_message_thread'),
+    path('api/messages/settings/', update_message_settings, name='api_message_settings'),
     path('api/users/search/', search_users, name='api_search_users'),
 
     path('tipster/', include([
