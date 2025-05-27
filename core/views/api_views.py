@@ -1,4 +1,5 @@
-from django.views.decorators.csrf import csrf_exempt
+"""Views for Tipster Arena API endpoints."""
+
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.core.files.storage import default_storage
@@ -45,7 +46,7 @@ def current_user_api(request):
                 'payment_completed': profile.payment_completed,
             }
         })
-    except Exception as e:
+    except Exception:  # Removed unused 'e' variable
         # Return a valid profile object with default values
         return JsonResponse({
             'success': True,
@@ -108,7 +109,7 @@ def suggested_users_api(request):
                 if profile and profile.avatar:
                     try:
                         avatar_url = profile.avatar.url
-                    except:
+                    except (ValueError, IOError):  # Replaced bare except with specific exceptions
                         avatar_url = settings.STATIC_URL + 'img/default-avatar.png'
                 else:
                     avatar_url = settings.STATIC_URL + 'img/default-avatar.png'
@@ -123,7 +124,7 @@ def suggested_users_api(request):
                     'win_rate': round(win_rate, 1),
                     'followers_count': followers_count
                 })
-            except Exception as e:
+            except Exception:  # Removed unused 'e' variable
                 # Skip users with invalid profiles
                 continue
 

@@ -9,7 +9,7 @@ __all__ = [
     # Tip views
     'post_tip', 'edit_tip', 'delete_tip', 'like_tip',
     'share_tip', 'comment_tip', 'get_tip_comments', 'tip_detail',
-    'tip_list',
+    'tip_list', 'verify_tip',
 
     # Profile views
     'profile', 'profile_edit_view',
@@ -21,21 +21,24 @@ __all__ = [
     'follow_user', 'messages_view', 'send_message',
     'get_thread_messages', 'notifications', 'message_settings_view',
     'bookmarks', 'like_comment', 'share_comment', 'toggle_bookmark',
-    'get_messages', 'start_message_thread',
+    'get_messages', 'start_message_thread', 'search_users',
+    'update_message_settings', 'mark_notification_read',
 
     # API views
     'current_user_api', 'suggested_users_api',
     'trending_tips_api', 'VerifyTipView',
     'BurstRateThrottle', 'SustainedRateThrottle',
+    'upload_chat_image_api',
 
     # General views
     'landing', 'search', 'csp_report',
     'terms_of_service', 'privacy_policy',
-    'cookie_policy', 'accessibility',
+    'cookie_policy', 'accessibility', 'chat_view',
 
     # Subscription views
     'become_tipster', 'tipster_dashboard', 'manage_tiers',
     'subscribe_to_tipster', 'cancel_subscription', 'setup_tiers',
+    'tier_setup', 'stripe_webhook', 'top_tipsters_leaderboard'
 ]
 
 from .auth_views import (
@@ -47,7 +50,7 @@ from .auth_views import (
 from .tip_views import (
     post_tip, edit_tip, delete_tip, like_tip,
     share_tip, comment_tip, get_tip_comments, tip_detail,
-    tip_list
+    tip_list, verify_tip
 )
 
 from .profile_views import (
@@ -62,22 +65,25 @@ from .interaction_views import (
     follow_user, messages_view, send_message,
     get_thread_messages, notifications, message_settings_view,
     bookmarks, like_comment, share_comment, toggle_bookmark,
-    get_messages, start_message_thread
+    get_messages, start_message_thread, search_users,
+    update_message_settings, mark_notification_read
 )
 
 from .api_views import (
     current_user_api, suggested_users_api,
     trending_tips_api, VerifyTipView,
-    BurstRateThrottle, SustainedRateThrottle
+    BurstRateThrottle, SustainedRateThrottle,
+    upload_chat_image_api
 )
 
 from .general_views import (
     landing, search, csp_report,
     terms_of_service, privacy_policy,
-    cookie_policy, accessibility
+    cookie_policy, accessibility, chat_view
 )
 
 from .subscription_views import (
     become_tipster, tipster_dashboard, manage_tiers,
-    subscribe_to_tipster, cancel_subscription, setup_tiers
+    subscribe_to_tipster, cancel_subscription, setup_tiers,
+    tier_setup, stripe_webhook, top_tipsters_leaderboard
 ) 

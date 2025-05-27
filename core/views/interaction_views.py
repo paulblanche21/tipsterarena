@@ -194,7 +194,8 @@ def send_message(request, thread_id=None):
                 "message": message.content,
                 "image_url": message.image.url if message.image else None,
                 "gif_url": message.gif_url,
-                "created_at": message.created_at.isoformat()
+                "created_at": message.created_at.isoformat(),
+                "message_id": message.id
             }
         )
 

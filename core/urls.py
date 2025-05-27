@@ -4,16 +4,7 @@
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from . import views
-from .views import subscription_views
-from .views.interaction_views import (
-    follow_user, messages_view, send_message, get_thread_messages,
-    notifications, message_settings_view, bookmarks, toggle_bookmark,
-    like_comment, share_comment, mark_notification_read, get_messages,
-    start_message_thread, search_users, update_message_settings
-)
-from .views.general_views import chat_view
-from .views.api_views import upload_chat_image_api
-from .views.trending_views import trending_tips
+
 
 # URL patterns for the Tipster Arena core app
 urlpatterns = [
@@ -82,26 +73,26 @@ urlpatterns = [
     path('api/current-user/', views.current_user_api, name='current_user_api'),
     
     # Message API routes
-    path('api/messages/', get_messages, name='api_messages'),
-    path('api/messages/send/<int:thread_id>/', send_message, name='api_send_message'),
-    path('api/messages/thread/<int:thread_id>/', get_thread_messages, name='api_thread_messages'),
-    path('api/messages/start/', start_message_thread, name='api_start_message_thread'),
-    path('api/messages/settings/', update_message_settings, name='api_message_settings'),
-    path('api/users/search/', search_users, name='api_search_users'),
+    path('api/messages/', views.get_messages, name='api_messages'),
+    path('api/messages/send/<int:thread_id>/', views.send_message, name='api_send_message'),
+    path('api/messages/thread/<int:thread_id>/', views.get_thread_messages, name='api_thread_messages'),
+    path('api/messages/start/', views.start_message_thread, name='api_start_message_thread'),
+    path('api/messages/settings/', views.update_message_settings, name='api_message_settings'),
+    path('api/users/search/', views.search_users, name='api_search_users'),
 
     path('tipster/', include([
-        path('tier-setup/', subscription_views.tier_setup, name='tier_setup'),
-        path('setup-tiers/', subscription_views.setup_tiers, name='setup_tiers'),
-        path('dashboard/', subscription_views.tipster_dashboard, name='tipster_dashboard'),
-        path('tiers/', subscription_views.manage_tiers, name='manage_tiers'),
-        path('subscribe/<str:username>/<int:tier_id>/', subscription_views.subscribe_to_tipster, name='subscribe_to_tipster'),
-        path('cancel/<int:subscription_id>/', subscription_views.cancel_subscription, name='cancel_subscription'),
-        path('webhook/', subscription_views.stripe_webhook, name='stripe_webhook'),
+        path('tier-setup/', views.tier_setup, name='tier_setup'),
+        path('setup-tiers/', views.setup_tiers, name='setup_tiers'),
+        path('dashboard/', views.tipster_dashboard, name='tipster_dashboard'),
+        path('tiers/', views.manage_tiers, name='manage_tiers'),
+        path('subscribe/<str:username>/<int:tier_id>/', views.subscribe_to_tipster, name='subscribe_to_tipster'),
+        path('cancel/<int:subscription_id>/', views.cancel_subscription, name='cancel_subscription'),
+        path('webhook/', views.stripe_webhook, name='stripe_webhook'),
     ])),
-    path('top-tipsters/', subscription_views.top_tipsters_leaderboard, name='top_tipsters_leaderboard'),
-    path('api/mark-notification-read/', mark_notification_read, name='mark_notification_read'),
-    path('chat/', chat_view, name='chat'),
-    path('api/upload-chat-image/', upload_chat_image_api, name='upload_chat_image_api'),
+    path('top-tipsters/', views.top_tipsters_leaderboard, name='top_tipsters_leaderboard'),
+    path('api/mark-notification-read/', views.mark_notification_read, name='mark_notification_read'),
+    path('chat/', views.chat_view, name='chat'),
+    path('api/upload-chat-image/', views.upload_chat_image_api, name='upload_chat_image_api'),
 ]
 
 

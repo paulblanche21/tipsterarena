@@ -219,5 +219,6 @@ class DirectMessageConsumer(AsyncWebsocketConsumer):
             "message": event["message"],
             "image_url": event.get("image_url"),
             "gif_url": event.get("gif_url"),
-            "created_at": event.get("created_at")
+            "created_at": event.get("created_at"),
+            "message_id": event.get("message_id")  # Include message ID in the response
         })) 

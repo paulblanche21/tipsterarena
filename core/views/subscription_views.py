@@ -53,8 +53,8 @@ def become_tipster(request):
                 messages.success(request, "Profile updated successfully! Let's set up your subscription tiers.")
                 return redirect('setup_tiers')
                 
-        except Exception as e:
-            logger.error(f"Error in become_tipster: {str(e)}")
+        except Exception:
+            logger.error("Error in become_tipster")
             messages.error(request, "An error occurred. Please try again.")
             
     return render(request, 'core/become_tipster.html', {
@@ -139,8 +139,8 @@ def tipster_dashboard(request):
                 ).count()
             }
         })
-    except Exception as e:
-        logger.error(f"Error in tipster_dashboard: {str(e)}")
+    except Exception:
+        logger.error("Error in tipster_dashboard")
         messages.error(request, "An error occurred while loading the dashboard.")
         return redirect('home')
 
@@ -255,8 +255,8 @@ def manage_tiers(request):
                 tier.save()
                 return JsonResponse({'success': True})
                 
-        except Exception as e:
-            logger.error(f"Error in manage_tiers: {str(e)}")
+        except Exception:
+            logger.error("Error in manage_tiers")
             return JsonResponse({
                 'success': False,
                 'error': "An error occurred while managing tiers"
@@ -422,9 +422,9 @@ def stripe_webhook(request):
         event = stripe.Webhook.construct_event(
             payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
         )
-    except ValueError as e:
+    except ValueError:
         return JsonResponse({'error': 'Invalid payload'}, status=400)
-    except stripe.error.SignatureVerificationError as e:
+    except stripe.error.SignatureVerificationError:
         return JsonResponse({'error': 'Invalid signature'}, status=400)
 
     if event.type == 'customer.subscription.created':

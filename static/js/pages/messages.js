@@ -19,6 +19,9 @@ let currentUser = null;
 // Giphy API Key
 const GIPHY_API_KEY = 'Lpfo7GvcccncunU2gvf0Cy9N3NCzrg35';
 
+// Add initialization flag at the top of the file
+let isInitialized = false;
+
 // Modal functions
 function showModal(modalId) {
     console.log('Showing modal:', modalId);
@@ -322,6 +325,7 @@ function renderThread(data) {
                 content: message.content,
                 gif_url: message.gif_url,
                 timestamp: message.created_at,
+                sender: message.sender,
                 is_sent: message.sender === currentUser?.id
             });
             messagesList.appendChild(messageElement);
@@ -333,7 +337,14 @@ function renderThread(data) {
 
 function createMessageElement(message) {
     const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${message.is_sent ? 'sent' : 'received'}`;
+    // Determine if the message is sent by the current user
+    const isSent = message.is_sent || message.sender === currentUser?.id;
+    messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
+    
+    // Add message ID as data attribute
+    if (message.id) {
+        messageDiv.dataset.messageId = message.id;
+    }
     
     let content = '';
     
@@ -346,7 +357,7 @@ function createMessageElement(message) {
     
     messageDiv.innerHTML = `
         ${content}
-        <small>${formatDate(message.timestamp)}</small>
+        <small>${formatDate(message.timestamp || message.created_at)}</small>
     `;
 
     return messageDiv;
@@ -366,6 +377,11 @@ function sendMessage() {
         gif_url: gifUrl
     };
 
+    // Disable the send button and input while sending
+    const sendBtn = document.getElementById('sendMessageBtn');
+    if (sendBtn) sendBtn.disabled = true;
+    messageInput.disabled = true;
+
     fetch(`/api/messages/send/${currentThread}/`, {
         method: 'POST',
         headers: {
@@ -384,10 +400,14 @@ function sendMessage() {
         if (data.success) {
             messageInput.value = '';
             messageInput.dataset.gifUrl = ''; // Clear the GIF URL
+            
+            // Add the message to the UI only after server confirmation
             const messageElement = createMessageElement({
+                id: data.message_id, // Include message_id
                 content: data.content,
                 gif_url: data.gif_url,
                 timestamp: data.created_at,
+                sender: currentUser?.id,
                 is_sent: true
             });
             messagesList.appendChild(messageElement);
@@ -400,6 +420,12 @@ function sendMessage() {
         errorDiv.className = 'error-message';
         errorDiv.textContent = 'Failed to send message. Please try again.';
         messagesList.appendChild(errorDiv);
+    })
+    .finally(() => {
+        // Re-enable the send button and input
+        if (sendBtn) sendBtn.disabled = false;
+        messageInput.disabled = false;
+        messageInput.focus();
     });
 }
 
@@ -672,17 +698,7 @@ function showGifPicker(textarea, previewDiv) {
                         img.alt = gif.title;
                         img.className = 'msg-gif-result';
                         img.onclick = () => {
-                            // Create a new message element with the GIF
-                            const messageDiv = document.createElement('div');
-                            messageDiv.className = 'message sent';
-                            messageDiv.innerHTML = `
-                                <img src="${gif.images.original.url}" alt="GIF" class="msg-message-image">
-                                <small>${formatDate(new Date())}</small>
-                            `;
-                            messagesList.appendChild(messageDiv);
-                            messagesList.scrollTop = messagesList.scrollHeight;
-
-                            // Send the GIF URL to the server
+                            // Send the GIF URL to the server first
                             if (currentThread) {
                                 fetch(`/api/messages/send/${currentThread}/`, {
                                     method: 'POST',
@@ -697,7 +713,19 @@ function showGifPicker(textarea, previewDiv) {
                                 })
                                 .then(response => response.json())
                                 .then(data => {
-                                    if (!data.success) {
+                                    if (data.success) {
+                                        // Only add the message to the UI after successful server confirmation
+                                        const messageElement = createMessageElement({
+                                            id: data.message_id,
+                                            content: '',
+                                            gif_url: gif.images.original.url,
+                                            timestamp: data.created_at,
+                                            sender: currentUser?.id,
+                                            is_sent: true
+                                        });
+                                        messagesList.appendChild(messageElement);
+                                        messagesList.scrollTop = messagesList.scrollHeight;
+                                    } else {
                                         console.error('Error sending GIF:', data.error);
                                     }
                                 })
@@ -805,39 +833,87 @@ function setupEventListeners() {
     console.log('Event listeners setup completed');
 }
 
+// Modify WebSocket initialization to prevent multiple connections
 function initializeWebSocket() {
+    // If WebSocket is already connected, don't create a new connection
+    if (window.messagesSocket && window.messagesSocket.readyState === WebSocket.OPEN) {
+        console.log('WebSocket already connected, skipping initialization');
+        return;
+    }
+
     const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
     const ws_path = `${ws_scheme}://${window.location.host}/ws/messages/`;
-    const messagesSocket = new WebSocket(ws_path);
+    window.messagesSocket = new WebSocket(ws_path);
 
-    messagesSocket.onopen = function(e) {
+    window.messagesSocket.onopen = function(e) {
         console.log('WebSocket connected for messages');
     };
 
-    messagesSocket.onmessage = function(e) {
+    window.messagesSocket.onmessage = function(e) {
         try {
             const data = JSON.parse(e.data);
-            if (data.type === 'message') {
+            if (data.type === 'direct_message') {
+                // Only add the message if it's not from the current user
+                // This prevents duplicate messages when sending
                 if (currentThread === data.thread_id) {
-                    const messageElement = createMessageElement(data.message);
-                    messagesList.appendChild(messageElement);
-                    messagesList.scrollTop = messagesList.scrollHeight;
+                    // Convert both IDs to strings for comparison
+                    const messageSenderId = String(data.sender);
+                    const currentUserId = String(currentUser?.id);
+                    
+                    // Check if message already exists in the thread
+                    const messageExists = Array.from(messagesList.children).some(
+                        messageElement => messageElement.dataset.messageId === String(data.message_id)
+                    );
+                    
+                    if (messageSenderId !== currentUserId && !messageExists) {
+                        const messageElement = createMessageElement({
+                            id: data.message_id,
+                            content: data.message,
+                            gif_url: data.gif_url,
+                            image_url: data.image_url,
+                            created_at: data.created_at,
+                            is_sent: false
+                        });
+                        messagesList.appendChild(messageElement);
+                        messagesList.scrollTop = messagesList.scrollHeight;
+                    }
                 }
-                loadMessages();
+                // Update the message list without reloading the current thread
+                updateMessageList();
             }
         } catch (error) {
             console.error('Error processing WebSocket message:', error);
         }
     };
 
-    messagesSocket.onclose = function(e) {
+    window.messagesSocket.onclose = function(e) {
         console.log('WebSocket disconnected for messages');
-        setTimeout(initializeWebSocket, 5000);
+        // Only attempt to reconnect if the page is still initialized
+        if (isInitialized) {
+            setTimeout(initializeWebSocket, 5000);
+        }
     };
 
-    messagesSocket.onerror = function(error) {
+    window.messagesSocket.onerror = function(error) {
         console.error('WebSocket error:', error);
     };
+}
+
+// New function to update message list without reloading current thread
+function updateMessageList() {
+    fetch('/api/messages/')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            renderMessagesFeed(data);
+        })
+        .catch(error => {
+            console.error('Error updating message list:', error);
+        });
 }
 
 // Helper functions
@@ -876,6 +952,12 @@ function formatDate(dateString) {
 
 // Initialize
 export function init() {
+    // Prevent multiple initializations
+    if (isInitialized) {
+        console.log('Messages page already initialized, skipping...');
+        return;
+    }
+    
     console.log('Initializing messages page...');
     
     // Initialize elements
@@ -909,6 +991,9 @@ export function init() {
 
     // Initialize WebSocket
     initializeWebSocket();
+
+    // Set initialization flag
+    isInitialized = true;
 
     console.log('Messages page initialized successfully');
 }

@@ -4,18 +4,88 @@ This module is a placeholder that imports all views from their respective module
 The actual view implementations can be found in the views/ directory.
 """
 
-from views.auth_views import *
-from .views.tip_views import *
-from .views.profile_views import *
-from .views.sport_views import *
-from .views.general_views import *
+from .views.auth_views import (
+    login_view,
+    signup_view,
+    kyc_view,
+    profile_setup_view,
+    skip_profile_setup,
+    payment_view,
+    create_checkout_session,
+    payment_success,
+    skip_payment
+)
 
-# Move this to the very end of the file:
-# from .views.interaction_views import mark_notification_read
-# mark_notification_read = mark_notification_read
+from .views.tip_views import (
+    post_tip,
+    edit_tip,
+    delete_tip,
+    like_tip,
+    share_tip,
+    comment_tip,
+    get_tip_comments,
+    tip_detail,
+    tip_list,
+    verify_tip
+)
 
-# ... existing code ...
+from .views.profile_views import (
+    profile,
+    profile_edit_view
+)
 
-# --- At the very end of the file ---
-from .views.interaction_views import mark_notification_read
-mark_notification_read = mark_notification_read
+from .views.sport_views import (
+    sport_view,
+    home
+)
+
+from .views.general_views import (
+    landing,
+    search,
+    csp_report,
+    terms_of_service,
+    privacy_policy,
+    cookie_policy,
+    accessibility,
+    chat_view
+)
+
+from .views.interaction_views import (
+    follow_user,
+    messages_view,
+    send_message,
+    get_thread_messages,
+    notifications,
+    message_settings_view,
+    bookmarks,
+    toggle_bookmark,
+    like_comment,
+    share_comment,
+    mark_notification_read,
+    get_messages,
+    start_message_thread,
+    search_users,
+    update_message_settings
+)
+
+from .views.subscription_views import (
+    become_tipster,
+    setup_tiers,
+    tier_setup,
+    tipster_dashboard,
+    manage_tiers,
+    subscribe_to_tipster,
+    cancel_subscription,
+    stripe_webhook,
+    top_tipsters_leaderboard
+)
+
+from .views.api_views import (
+    current_user_api,
+    upload_chat_image_api,
+    suggested_users_api,
+    trending_tips_api,
+    VerifyTipView,
+    BurstRateThrottle,
+    SustainedRateThrottle
+)

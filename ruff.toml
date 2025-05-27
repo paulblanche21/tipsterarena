@@ -1,0 +1,15 @@
+# Ruff configuration file
+
+# Ignore unused imports (F401) in views.py
+[per-file-ignores]
+"core/views.py" = ["F401"]
+
+# Enable all rules by default
+select = ["ALL"]
+
+# Exclude specific rules
+ignore = [
+    "E501",  # line too long
+    "F403",  # star imports
+]
+
