@@ -153,13 +153,30 @@ def home(request):
             profile = user.userprofile
             avatar_url = profile.avatar.url if profile.avatar else settings.STATIC_URL + 'img/default-avatar.png'
             bio = profile.description or "No bio available"
+            handle = profile.handle or f"@{user.username}"
         except UserProfile.DoesNotExist:
             avatar_url = settings.STATIC_URL + 'img/default-avatar.png'
             bio = "No bio available"
+            handle = f"@{user.username}"
+            
+        # Calculate user stats
+        total_tips = Tip.objects.filter(user=user).count()
+        followers_count = Follow.objects.filter(followed=user).count()
+        
+        # Calculate win rate
+        tips = Tip.objects.filter(user=user, status__in=['win', 'loss'])
+        total_verified_tips = tips.count()
+        wins = tips.filter(status='win').count()
+        win_rate = (wins / total_verified_tips * 100) if total_verified_tips > 0 else 0
+        
         suggested_tipsters.append({
             'username': user.username,
+            'handle': handle,
             'avatar_url': avatar_url,
             'bio': bio,
+            'total_tips': total_tips,
+            'win_rate': round(win_rate, 1),
+            'followers_count': followers_count
         })
 
     context = {
