@@ -318,7 +318,12 @@ function renderThread(data) {
     messagesList.innerHTML = '';
     if (data.messages && Array.isArray(data.messages)) {
         data.messages.forEach(message => {
-            const messageElement = createMessageElement(message);
+            const messageElement = createMessageElement({
+                content: message.content,
+                gif_url: message.gif_url,
+                timestamp: message.created_at,
+                is_sent: message.sender === currentUser?.id
+            });
             messagesList.appendChild(messageElement);
         });
     }
@@ -330,8 +335,17 @@ function createMessageElement(message) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${message.is_sent ? 'sent' : 'received'}`;
     
+    let content = '';
+    
+    // Handle GIF messages
+    if (message.gif_url) {
+        content = `<img src="${message.gif_url}" alt="GIF" class="msg-message-image">`;
+    } else if (message.content) {
+        content = `<p>${message.content}</p>`;
+    }
+    
     messageDiv.innerHTML = `
-        <p>${message.content}</p>
+        ${content}
         <small>${formatDate(message.timestamp)}</small>
     `;
 
@@ -339,10 +353,17 @@ function createMessageElement(message) {
 }
 
 function sendMessage() {
-    if (!currentThread || !messageInput || !messageInput.value.trim()) return;
+    if (!currentThread || !messageInput) return;
+
+    const content = messageInput.value.trim();
+    const gifUrl = messageInput.dataset.gifUrl;
+
+    // Don't send if there's no content and no GIF
+    if (!content && !gifUrl) return;
 
     const message = {
-        content: messageInput.value.trim()
+        content: content,
+        gif_url: gifUrl
     };
 
     fetch(`/api/messages/send/${currentThread}/`, {
@@ -362,10 +383,11 @@ function sendMessage() {
     .then(data => {
         if (data.success) {
             messageInput.value = '';
+            messageInput.dataset.gifUrl = ''; // Clear the GIF URL
             const messageElement = createMessageElement({
                 content: data.content,
-                sender: data.sender,
-                created_at: data.created_at,
+                gif_url: data.gif_url,
+                timestamp: data.created_at,
                 is_sent: true
             });
             messagesList.appendChild(messageElement);
@@ -597,6 +619,110 @@ async function showEmojiPicker(textarea, triggerButton, container = document.bod
     });
 }
 
+// Function to show the GIF picker modal
+function showGifPicker(textarea, previewDiv) {
+    let gifModal = document.getElementById('msg-gif-modal');
+    if (!gifModal) {
+        gifModal = document.createElement('div');
+        gifModal.id = 'msg-gif-modal';
+        gifModal.className = 'msg-gif-modal';
+        gifModal.innerHTML = `
+            <div class="msg-gif-modal-content">
+                <span class="msg-gif-modal-close">×</span>
+                <input type="text" class="msg-gif-search-input" placeholder="Search GIFs...">
+                <div class="msg-gif-results"></div>
+            </div>
+        `;
+        document.body.appendChild(gifModal);
+    }
+
+    gifModal.style.display = 'block';
+    gifModal.classList.add('show');
+
+    const closeBtn = gifModal.querySelector('.msg-gif-modal-close');
+    const searchInput = gifModal.querySelector('.msg-gif-search-input');
+    const resultsDiv = gifModal.querySelector('.msg-gif-results');
+
+    closeBtn.onclick = () => {
+        gifModal.style.display = 'none';
+        gifModal.classList.remove('show');
+    };
+
+    window.onclick = (event) => {
+        if (event.target === gifModal) {
+            gifModal.style.display = 'none';
+            gifModal.classList.remove('show');
+        }
+    };
+
+    searchInput.oninput = debounce((e) => {
+        const query = e.target.value.trim();
+        if (query) {
+            fetch(`https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_API_KEY}&q=${encodeURIComponent(query)}&limit=10`)
+                .then(response => response.json())
+                .then(data => {
+                    resultsDiv.innerHTML = '';
+                    if (data.data.length === 0) {
+                        resultsDiv.innerHTML = '<p>No GIFs found.</p>';
+                        return;
+                    }
+                    data.data.forEach(gif => {
+                        const img = document.createElement('img');
+                        img.src = gif.images.fixed_height.url;
+                        img.alt = gif.title;
+                        img.className = 'msg-gif-result';
+                        img.onclick = () => {
+                            // Create a new message element with the GIF
+                            const messageDiv = document.createElement('div');
+                            messageDiv.className = 'message sent';
+                            messageDiv.innerHTML = `
+                                <img src="${gif.images.original.url}" alt="GIF" class="msg-message-image">
+                                <small>${formatDate(new Date())}</small>
+                            `;
+                            messagesList.appendChild(messageDiv);
+                            messagesList.scrollTop = messagesList.scrollHeight;
+
+                            // Send the GIF URL to the server
+                            if (currentThread) {
+                                fetch(`/api/messages/send/${currentThread}/`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRFToken': getCookie('csrftoken')
+                                    },
+                                    body: JSON.stringify({
+                                        content: '',
+                                        gif_url: gif.images.original.url
+                                    })
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (!data.success) {
+                                        console.error('Error sending GIF:', data.error);
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error sending GIF:', error);
+                                });
+                            }
+
+                            // Close the modal
+                            gifModal.style.display = 'none';
+                            gifModal.classList.remove('show');
+                        };
+                        resultsDiv.appendChild(img);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching GIFs:', error);
+                    resultsDiv.innerHTML = '<p>Error fetching GIFs. Please try again.</p>';
+                });
+        } else {
+            resultsDiv.innerHTML = '';
+        }
+    }, 300);
+}
+
 // Debounce function
 function debounce(func, wait) {
     let timeout;
@@ -635,6 +761,16 @@ function setupEventListeners() {
             showEmojiPicker(messageInput, emojiBtn);
         });
         console.log('Emoji button event listener attached');
+    }
+
+    // Add GIF picker functionality
+    const gifBtn = document.querySelector('.action-btn[title="Add GIF"]');
+    if (gifBtn) {
+        gifBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            showGifPicker(messageInput, document.querySelector('.msg-message-preview'));
+        });
+        console.log('GIF button event listener attached');
     }
 
     // Add click event listeners to message cards
