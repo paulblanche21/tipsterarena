@@ -1061,3 +1061,129 @@
         opacity: 1;
     }
 }
+
+/* Emoji Picker Styles */
+.emoji-picker {
+    position: absolute;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    width: 320px;
+    max-height: 400px;
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+}
+
+.emoji-picker.hidden {
+    display: none;
+}
+
+.emoji-picker-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 12px;
+}
+
+.emoji-picker-close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 20px;
+    color: #65676b;
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.emoji-picker-close:hover {
+    background-color: #f0f2f5;
+    color: #1a1a1a;
+}
+
+.emoji-search {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #e4e6eb;
+    border-radius: 20px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.emoji-search:focus {
+    border-color: var(--red-accent);
+}
+
+.emoji-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 12px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.emoji-tab {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    font-size: 16px;
+}
+
+.emoji-tab:hover {
+    background-color: #f0f2f5;
+}
+
+.emoji-tab.active {
+    background-color: #f0f2f5;
+    color: var(--red-accent);
+}
+
+.emoji-category-title {
+    font-size: 14px;
+    color: #65676b;
+    margin-bottom: 8px;
+    padding: 0 4px;
+}
+
+.emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 4px;
+    overflow-y: auto;
+    padding: 4px;
+    max-height: 240px;
+}
+
+.emoji-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    font-size: 20px;
+}
+
+.emoji-item:hover {
+    background-color: #f0f2f5;
+}
+
+/* Ensure the emoji picker is above other elements */
+.message-input {
+    position: relative;
+    z-index: 1;
+}
+
+.emoji-picker {
+    z-index: 1000;
+}
