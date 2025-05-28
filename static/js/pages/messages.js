@@ -11,6 +11,7 @@ let userSearch;
 let searchResults;
 let selectedUsers;
 let nextBtn;
+let imageInput;
 
 // State
 let currentThread = null;
@@ -351,7 +352,13 @@ function createMessageElement(message) {
     // Handle GIF messages
     if (message.gif_url) {
         content = `<img src="${message.gif_url}" alt="GIF" class="msg-message-image">`;
-    } else if (message.content) {
+    } 
+    // Handle image messages
+    else if (message.image_url) {
+        content = `<img src="${message.image_url}" alt="Image" class="msg-message-image">`;
+    }
+    // Handle text messages
+    else if (message.content) {
         content = `<p>${message.content}</p>`;
     }
     
@@ -368,14 +375,16 @@ function sendMessage() {
 
     const content = messageInput.value.trim();
     const gifUrl = messageInput.dataset.gifUrl;
+    const imageFile = imageInput.files[0];
 
-    // Don't send if there's no content and no GIF
-    if (!content && !gifUrl) return;
+    // Don't send if there's no content, no GIF, and no image
+    if (!content && !gifUrl && !imageFile) return;
 
-    const message = {
-        content: content,
-        gif_url: gifUrl
-    };
+    // Create FormData for multipart/form-data
+    const formData = new FormData();
+    formData.append('content', content);
+    if (gifUrl) formData.append('gif_url', gifUrl);
+    if (imageFile) formData.append('image', imageFile);
 
     // Disable the send button and input while sending
     const sendBtn = document.getElementById('sendMessageBtn');
@@ -385,10 +394,9 @@ function sendMessage() {
     fetch(`/api/messages/send/${currentThread}/`, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
             'X-CSRFToken': getCookie('csrftoken')
         },
-        body: JSON.stringify(message)
+        body: formData
     })
     .then(response => {
         if (!response.ok) {
@@ -400,12 +408,15 @@ function sendMessage() {
         if (data.success) {
             messageInput.value = '';
             messageInput.dataset.gifUrl = ''; // Clear the GIF URL
+            imageInput.value = ''; // Clear the image input
+            document.querySelector('.msg-message-preview').style.display = 'none'; // Hide preview
             
             // Add the message to the UI only after server confirmation
             const messageElement = createMessageElement({
-                id: data.message_id, // Include message_id
+                id: data.message_id,
                 content: data.content,
                 gif_url: data.gif_url,
+                image_url: data.image,
                 timestamp: data.created_at,
                 sender: currentUser?.id,
                 is_sent: true
@@ -763,6 +774,16 @@ function debounce(func, wait) {
 function setupEventListeners() {
     console.log('Setting up event listeners...');
 
+    // Create hidden file input for images
+    imageInput = document.createElement('input');
+    imageInput.type = 'file';
+    imageInput.accept = 'image/*';
+    imageInput.style.display = 'none';
+    document.body.appendChild(imageInput);
+
+    // Add image input change handler
+    imageInput.addEventListener('change', handleImageSelect);
+
     if (sendMessageBtn && messageInput) {
         sendMessageBtn.addEventListener('click', sendMessage);
         console.log('Send message event listeners attached');
@@ -779,6 +800,16 @@ function setupEventListeners() {
     if (newMessageBtn) {
         newMessageBtn.addEventListener('click', () => showModal('newMessageModal'));
         console.log('New message button event listener attached');
+    }
+
+    // Add image picker functionality
+    const imageBtn = document.querySelector('.action-btn[title="Add image"]');
+    if (imageBtn) {
+        imageBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            imageInput.click();
+        });
+        console.log('Image button event listener attached');
     }
 
     // Add emoji picker functionality
@@ -831,6 +862,75 @@ function setupEventListeners() {
     }
 
     console.log('Event listeners setup completed');
+}
+
+// Handle image selection
+function handleImageSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+        alert('Image size should be less than 5MB');
+        return;
+    }
+
+    // Create FormData for multipart/form-data
+    const formData = new FormData();
+    formData.append('content', '');
+    formData.append('image', file);
+
+    // Disable the send button while sending
+    const sendBtn = document.getElementById('sendMessageBtn');
+    if (sendBtn) sendBtn.disabled = true;
+
+    fetch(`/api/messages/send/${currentThread}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Add the message to the UI only after server confirmation
+            const messageElement = createMessageElement({
+                id: data.message_id,
+                content: '',
+                image_url: data.image,
+                timestamp: data.created_at,
+                sender: currentUser?.id,
+                is_sent: true
+            });
+            messagesList.appendChild(messageElement);
+            messagesList.scrollTop = messagesList.scrollHeight;
+        }
+    })
+    .catch(error => {
+        console.error('Error sending image:', error);
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.textContent = 'Failed to send image. Please try again.';
+        messagesList.appendChild(errorDiv);
+    })
+    .finally(() => {
+        // Re-enable the send button
+        if (sendBtn) sendBtn.disabled = false;
+        // Clear the file input
+        imageInput.value = '';
+    });
 }
 
 // Modify WebSocket initialization to prevent multiple connections
