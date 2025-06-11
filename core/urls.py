@@ -5,6 +5,7 @@ from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from . import views
 from .views.home_views import HomeView
+from .views.profile_views import ProfileView, ProfileEditView
 
 
 # URL patterns for the Tipster Arena core app
@@ -17,10 +18,10 @@ urlpatterns = [
 
     # Profile routes
     path('profile/<str:username>/',
-        views.profile,
+        ProfileView.as_view(),
         name='profile'),
     path('profile/<str:username>/edit/',
-        views.profile_edit_view,
+        ProfileEditView.as_view(),
         name='profile_edit'),
 
     # Authentication routes

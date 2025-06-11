@@ -12,7 +12,7 @@ __all__ = [
     'tip_list', 'verify_tip',
 
     # Profile views
-    'profile', 'profile_edit_view',
+    'ProfileView', 'ProfileEditView',
 
     # Sport views
     'SportView',
@@ -60,7 +60,7 @@ from .tip_views import (
 )
 
 from .profile_views import (
-    profile, profile_edit_view
+    ProfileView, ProfileEditView
 )
 
 from .sport_views import (
