@@ -3,26 +3,27 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, F
+from django.views import View
 
 from ..models import Tip, UserProfile, Follow, User
 from django.conf import settings
 
-def sport_view(request, sport):
-    """Render sport-specific page with relevant tips."""
-    valid_sports = [
-        'football', 'golf', 'tennis', 'horse_racing',
-        'american_football', 'baseball', 'basketball', 'boxing', 'cricket',
-        'cycling', 'darts', 'gaelic_games', 'greyhound_racing', 'motor_sport',
-        'rugby_union', 'snooker', 'volleyball'
-    ]
-    if sport not in valid_sports:
-        return render(request, 'core/404.html', status=404)
+class SportView(View):
+    def get(self, request, sport):
+        valid_sports = [
+            'football', 'golf', 'tennis', 'horse_racing',
+            'american_football', 'baseball', 'basketball', 'boxing', 'cricket',
+            'cycling', 'darts', 'gaelic_games', 'greyhound_racing', 'motor_sport',
+            'rugby_union', 'snooker', 'volleyball'
+        ]
+        if sport not in valid_sports:
+            return render(request, 'core/404.html', status=404)
 
-    tips = Tip.objects.filter(sport=sport).order_by('-created_at')[:20]
-    return render(request, 'core/sport.html', {
-        'tips': tips,
-        'sport': sport,
-    })
+        tips = Tip.objects.filter(sport=sport).order_by('-created_at')[:20]
+        return render(request, 'core/sport.html', {
+            'tips': tips,
+            'sport': sport,
+        })
 
 @login_required
 def home(request):

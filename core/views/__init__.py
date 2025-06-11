@@ -8,19 +8,19 @@ __all__ = [
 
     # Tip views
     'post_tip', 'edit_tip', 'delete_tip', 'LikeTipView',
-    'share_tip', 'comment_tip', 'get_tip_comments', 'tip_detail',
+    'comment_tip', 'get_tip_comments', 'tip_detail',
     'tip_list', 'verify_tip',
 
     # Profile views
     'profile', 'profile_edit_view',
 
     # Sport views
-    'sport_view', 'home',
+    'SportView', 'home',
 
     # Interaction views
     'follow_user', 'messages_view', 'send_message',
     'get_thread_messages', 'notifications', 'message_settings_view',
-    'bookmarks', 'like_comment', 'share_comment', 'toggle_bookmark',
+    'bookmarks', 'like_comment', 'share_comment', 'ToggleBookmarkView',
     'get_messages', 'start_message_thread', 'search_users',
     'update_message_settings', 'mark_notification_read',
 
@@ -49,7 +49,7 @@ from .auth_views import (
 
 from .tip_views import (
     post_tip, edit_tip, delete_tip, LikeTipView,
-    share_tip, comment_tip, get_tip_comments, tip_detail,
+    comment_tip, get_tip_comments, tip_detail,
     tip_list, verify_tip
 )
 
@@ -58,13 +58,13 @@ from .profile_views import (
 )
 
 from .sport_views import (
-    sport_view, home
+    SportView, home
 )
 
 from .interaction_views import (
     follow_user, messages_view, send_message,
     get_thread_messages, notifications, message_settings_view,
-    bookmarks, like_comment, share_comment, toggle_bookmark,
+    bookmarks, like_comment, share_comment, ToggleBookmarkView,
     get_messages, start_message_thread, search_users,
     update_message_settings, mark_notification_read
 )

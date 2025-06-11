@@ -12,7 +12,7 @@ urlpatterns = [
     path('', views.landing, name='landing'),
     path('home/', views.home, name='home'),
     path('search/', views.search, name='search'),
-    path('sport/<str:sport>/', views.sport_view, name='sport'),
+    path('sport/<str:sport>/', views.SportView.as_view(), name='sport'),
 
     # Profile routes
     path('profile/<str:username>/',
