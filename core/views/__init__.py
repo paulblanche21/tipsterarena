@@ -18,7 +18,7 @@ __all__ = [
     'SportView', 'home',
 
     # Interaction views
-    'follow_user', 'messages_view', 'send_message',
+    'FollowUserView', 'messages_view', 'send_message',
     'get_thread_messages', 'notifications', 'message_settings_view',
     'bookmarks', 'like_comment', 'share_comment', 'ToggleBookmarkView',
     'get_messages', 'start_message_thread', 'search_users',
@@ -38,7 +38,10 @@ __all__ = [
     # Subscription views
     'become_tipster', 'tipster_dashboard', 'manage_tiers',
     'subscribe_to_tipster', 'cancel_subscription', 'setup_tiers',
-    'tier_setup', 'stripe_webhook', 'top_tipsters_leaderboard'
+    'tier_setup', 'stripe_webhook', 'top_tipsters_leaderboard',
+
+    # New FollowUserView
+    'FollowUserView',
 ]
 
 from .auth_views import (
@@ -62,7 +65,7 @@ from .sport_views import (
 )
 
 from .interaction_views import (
-    follow_user, messages_view, send_message,
+    FollowUserView, messages_view, send_message,
     get_thread_messages, notifications, message_settings_view,
     bookmarks, like_comment, share_comment, ToggleBookmarkView,
     get_messages, start_message_thread, search_users,

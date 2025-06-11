@@ -73,7 +73,7 @@ export function initSuggestedUsersModal() {
                                             <span><strong>${user.followers_count || 0}</strong> Followers</span>
                                         </div>
                                     </div>
-                                    <button class="follow-btn" data-username="${user.username}">Follow</button>
+                                    <button class="follow-btn" data-username="${user.username}" data-is-following="${user.is_following}">${user.is_following ? 'Following' : 'Follow'}</button>
                                 </div>
                             </div>
                         `).join('');

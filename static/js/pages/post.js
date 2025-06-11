@@ -671,25 +671,35 @@ function setupCentralFeedPost() {
                 const tipFeed = document.querySelector('.tip-feed');
                 const newTip = document.createElement('div');
                 newTip.className = 'tip';
-                newTip.dataset.tipId = data.tip.id;
+                const username = data.tip.username || '';
+                const parentUsername = data.tip.parent_username || '';
+                
+                // Only include reply-to section if both usernames are valid and not 'None'
+                const replyToSection = (data.tip.parent_id && parentUsername && parentUsername !== 'None') 
+                    ? `<span class="reply-to">Replying to <a href="/profile/${parentUsername}/">@${parentUsername}</a></span>` 
+                    : '';
+                
+                // Only create profile link if username is valid and not 'None'
+                const profileLink = username && username !== 'None'
+                    ? `<a href="/profile/${username}/" class="tip-username"><strong>${username}</strong></a>`
+                    : `<span class="tip-username"><strong>Unknown User</strong></span>`;
+                
                 newTip.innerHTML = `
-                    <img src="${data.tip.avatar}" alt="${data.tip.username} Avatar" class="tip-avatar">
+                    <img src="${data.tip.avatar}" alt="${username} Avatar" class="tip-avatar">
                     <div class="tip-content">
                         <div class="tip-header">
-                            <a href="/profile/${data.tip.username}/" class="tip-username">
-                                <strong>${data.tip.username}</strong>
-                                <span class="user-handle">${data.tip.handle}</span>
-                            </a>
+                            ${profileLink}
+                            ${replyToSection}
                             ${getSportLabel(data.tip.sport)}
                         </div>
                         <div class="tip-body">
                             <p>${data.tip.text}</p>
                             <div class="tip-meta">
-                                <span>Odds: ${data.tip.odds} (${data.tip.odds_format})</span>
-                                <span>Bet Type: ${data.tip.bet_type}</span>
+                                <span>Odds: ${data.tip.odds || 'N/A'}</span>
+                                <span>Bet Type: ${data.tip.bet_type || 'N/A'}</span>
                                 ${data.tip.each_way === 'yes' ? '<span>Each Way: Yes</span>' : ''}
                                 ${data.tip.confidence ? `<span>Confidence: ${data.tip.confidence} Stars</span>` : ''}
-                                <span>Status: ${data.tip.status}</span>
+                                <span>Status: ${data.tip.status || 'pending'}</span>
                             </div>
                             ${data.tip.image ? `<img src="${data.tip.image}" alt="Tip Image" class="tip-image">` : ''}
                             ${data.tip.gif ? `<img src="${data.tip.gif}" alt="Tip GIF" class="tip-image">` : ''}

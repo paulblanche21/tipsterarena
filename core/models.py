@@ -452,8 +452,8 @@ class UserProfile(models.Model):
         """Return (True, reason) if user can follow another tipster."""
         if self.tier == 'free':
             following_count = self.user.following.count()
-            if following_count >= 10:
-                return False, 'Free tier: Max 10 follows.'
+            if following_count >= 20:
+                return False, 'Free tier: Max 20 follows.'
         return True, ''
 
     def can_comment(self):

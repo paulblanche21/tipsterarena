@@ -12,6 +12,7 @@ window.addEventListener('load', function() {
 
 // Import notifications
 import { setupNotifications } from './notifications.js';
+import { attachFollowButtonListeners } from './follow.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   console.log('DOM loaded, page:', getCurrentPage());
@@ -189,6 +190,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                   `;
                 });
+                // Reattach follow button listeners after adding new buttons
+                attachFollowButtonListeners();
               } else {
                 followList.innerHTML = '<p>No suggested tipsters available.</p>';
               }

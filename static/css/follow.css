@@ -117,21 +117,32 @@
   
   /* Styles for the follow button */
   .follow-btn {
-    background-color: var(--black);
-    color: var(--secondary-bg);
-    border: none;
+    padding: 8px 16px;
     border-radius: 20px;
-    padding: clamp(4px, 1vw, 6px) clamp(10px, 2vw, 16px);
-    font-size: clamp(12px, 3vw, 14px);
-    font-weight: bold;
+    border: none;
+    background: #000000;
+    color: #ffffff;
+    font-weight: 600;
     cursor: pointer;
-    min-width: clamp(60px, 15vw, 80px);
-    text-align: center;
+    transition: all 0.3s ease;
   }
   
-  /* Hover state for follow button */
   .follow-btn:hover {
-    background-color: #333333;
+    background: #333333;
+  }
+
+  .follow-btn.loading {
+    opacity: 0.7;
+    cursor: wait;
+  }
+
+  .follow-btn.followed {
+    background: #666666;
+    color: #ffffff;
+  }
+
+  .follow-btn.followed:hover {
+    background: #444444;
   }
 
 /* Suggested Users Feed */
@@ -428,8 +439,14 @@
 }
 
 .suggested-user-card .follow-btn.followed {
-    background: var(--primary-color);
-    color: white;
+    background: var(--gray-200);
+    color: var(--gray-700);
+    border-color: var(--gray-300);
+}
+
+.suggested-user-card .follow-btn.followed:hover {
+    background: var(--gray-300);
+    color: var(--gray-800);
 }
 
 /* Loading and Error States */
@@ -488,5 +505,60 @@
     .suggested-user-card .user-avatar {
         width: 40px;
         height: 40px;
+    }
+}
+
+/* Toast styles */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+.toast {
+    padding: 12px 24px;
+    margin: 8px;
+    border-radius: 4px;
+    color: white;
+    animation: slideIn 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.toast-success {
+    background-color: var(--success-color, #28a745);
+}
+
+.toast-error {
+    background-color: var(--error-color, #dc3545);
+}
+
+.toast-info {
+    background-color: var(--info-color, #17a2b8);
+}
+
+.toast.fade-out {
+    animation: fadeOut 0.3s ease forwards;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
     }
 }

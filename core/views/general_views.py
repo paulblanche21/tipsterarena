@@ -48,6 +48,9 @@ def search(request):
             'avatar_url': avatar_url,
             'profile_url': f"/profile/{user.username}/",
         })
+        if user.username is None or user.username == 'None' or handle is None or handle == 'None':
+            logger.warning(f"[SEARCH API] Invalid username or handle: username='{user.username}', handle='{handle}'")
+    logger.info(f"[SEARCH API] Returning users: {[u['username'] for u in user_results]}")
 
     tip_results = []
     for tip in tips:

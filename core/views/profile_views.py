@@ -5,6 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.db.models import Q, Sum
+from django.http import Http404
+import logging
 
 from ..models import UserProfile, Tip, Follow
 from ..forms import UserProfileForm
@@ -12,7 +14,20 @@ from ..forms import UserProfileForm
 @login_required
 def profile(request, username):
     """Render user profile page with tips and statistics."""
-    user = get_object_or_404(User, username=username)
+    logger = logging.getLogger(__name__)
+    logger.info(f"[PROFILE VIEW] Incoming username param: '{username}' (type: {type(username)})")
+    # Check for invalid usernames
+    if not username or username == 'None' or username.strip() == '':
+        logger.warning(f"[PROFILE VIEW] Invalid username param: '{username}' - redirecting to home.")
+        return redirect('home')
+        
+    try:
+        user = get_object_or_404(User, username=username)
+        logger.info(f"[PROFILE VIEW] Resolved user: id={user.id}, username='{user.username}'")
+    except Http404:
+        logger.warning(f"[PROFILE VIEW] User not found for username: '{username}' - redirecting to home.")
+        return redirect('home')
+        
     try:
         user_profile = user.userprofile
     except UserProfile.DoesNotExist:

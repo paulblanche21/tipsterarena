@@ -6,15 +6,8 @@ let currentUserData = { avatarUrl: window.default_avatar_url, handle: window.cur
 
 function fetchComments(tipId, list, callback) {
     console.log(`Fetching comments for tipId: ${tipId}`);
-    fetch(`/api/tip/${tipId}/comments/`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include'
-    })
-    .then(response => {
-        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-        return response.json();
-    })
+    fetch(`/api/tips/${tipId}/comments/`)
+    .then(response => response.json())
     .then(data => {
         console.log('Comments data:', data);
         if (!data.success) {
@@ -30,11 +23,26 @@ function fetchComments(tipId, list, callback) {
                 if (comment.parent_id) commentDiv.classList.add('reply-comment');
                 commentDiv.setAttribute('data-comment-id', comment.id);
                 commentDiv.setAttribute('data-parent-id', comment.parent_id || '');
+                
+                // Ensure usernames are properly handled
+                const username = comment.user__username || '';
+                const parentUsername = comment.parent_username || '';
+                
+                // Only include reply-to section if both usernames are valid and not 'None'
+                const replyToSection = (comment.parent_id && parentUsername && parentUsername !== 'None') 
+                    ? `<span class="reply-to">Replying to <a href="/profile/${parentUsername}/">@${parentUsername}</a></span>` 
+                    : '';
+                
+                // Only create profile link if username is valid and not 'None'
+                const profileLink = username && username !== 'None'
+                    ? `<a href="/profile/${username}/" class="comment-username"><strong>${username}</strong></a>`
+                    : `<span class="comment-username"><strong>Unknown User</strong></span>`;
+                
                 commentDiv.innerHTML = `
-                    <img src="${avatarUrl}" alt="${comment.user__username} Avatar" class="comment-avatar" onerror="this.src='${window.default_avatar_url}'">
+                    <img src="${avatarUrl}" alt="${username} Avatar" class="comment-avatar" onerror="this.src='${window.default_avatar_url}'">
                     <div class="comment-content">
-                        <a href="/profile/${comment.user__username}/" class="comment-username"><strong>${comment.user__username}</strong></a>
-                        ${comment.parent_id ? `<span class="reply-to">Replying to <a href="/profile/${comment.parent_username}/">@${comment.parent_username}</a></span>` : ''}
+                        ${profileLink}
+                        ${replyToSection}
                         <p>${comment.content}</p>
                         ${comment.image ? `<img src="${comment.image}" alt="Comment Image" class="comment-image">` : ''}
                         ${comment.gif_url ? `<img src="${comment.gif_url}" alt="Comment GIF" class="comment-image" width="582" height="300">` : ''}
@@ -66,6 +74,7 @@ function fetchComments(tipId, list, callback) {
     .catch(error => {
         console.error('Error fetching comments:', error);
         list.innerHTML = '<p>Error loading comments: ' + error.message + '</p>';
+        if (callback) callback();
     });
 }
 

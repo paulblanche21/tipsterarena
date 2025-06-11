@@ -101,6 +101,7 @@
                             <span class="profile-total-bets"><i class="fas fa-list-ol"></i> Total Bets: {{ total_tips }}</span>
                             <span class="profile-average-odds"><i class="fas fa-calculator"></i> Avg Odds: {{ average_odds|floatformat:2 }}</span>
                             <span class="profile-win-rate"><i class="fas fa-trophy"></i> Win Rate: {{ win_rate|floatformat:1 }}%</span>
+                            <span class="profile-following"><i class="fas fa-user-friends"></i> Following: {{ following_count }}</span>
                             <span class="profile-followers"><i class="fas fa-users"></i> Followers: {{ followers_count }}</span>
                         </div>
                         
@@ -229,12 +230,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Follow stats -->
-        <div class="profile-follow">
-            <span><strong>{{ following_count }}</strong> Following</span>
-            <span><strong>{{ followers_count }}</strong> Followers</span>
         </div>
 
         <!-- Navigation tabs for profile sections -->

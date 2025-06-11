@@ -6,6 +6,9 @@ from django.views.decorators.http import require_POST, require_http_methods
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 import json
+from django.views import View
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.cache import cache
 
 
 from ..models import (
@@ -33,74 +36,141 @@ __all__ = [
     'update_message_settings',
 ]
 
-@login_required
-@require_POST
-def follow_user(request):
-    """Handle following/unfollowing a user."""
-    try:
-        data = json.loads(request.body)
-        username = data.get('username')
-        if not username:
+class FollowUserView(LoginRequiredMixin, View):
+    """Handle following and unfollowing users."""
+    
+    def get(self, request, username):
+        """Get follow status for a user."""
+        try:
+            if not username:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Username is required'
+                }, status=400)
+
+            user_to_check = get_object_or_404(User, username=username)
+            is_following = Follow.objects.filter(
+                follower=request.user,
+                followed=user_to_check
+            ).exists()
+            
+            follower_count = Follow.objects.filter(followed=user_to_check).count()
+            
+            return JsonResponse({
+                'success': True,
+                'is_following': is_following,
+                'follower_count': follower_count
+            })
+            
+        except User.DoesNotExist:
             return JsonResponse({
                 'success': False,
-                'error': 'Username is required'
-            }, status=400)
-
-        # Get user to follow
-        user_to_follow = get_object_or_404(User, username=username)
-
-        # Can't follow yourself
-        if request.user == user_to_follow:
+                'error': 'User not found'
+            }, status=404)
+        except Exception as e:
+            logger.error(f"Error in follow status check: {str(e)}")
             return JsonResponse({
                 'success': False,
-                'error': 'Cannot follow yourself'
-            }, status=400)
+                'error': 'An error occurred while checking follow status'
+            }, status=500)
 
-        # Check if already following
-        follow_exists = Follow.objects.filter(
-            follower=request.user,
-            followed=user_to_follow
-        ).exists()
+    def post(self, request, username):
+        """Handle follow/unfollow action."""
+        try:
+            if not username or not username.strip():
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Username is required'
+                }, status=400)
 
-        if follow_exists:
-            # Unfollow
-            Follow.objects.filter(
+            # Rate limiting check
+            cache_key = f'follow_attempts_{request.user.id}'
+            attempts = cache.get(cache_key, 0)
+            if attempts >= 10:  # Max 10 follow/unfollow actions per minute
+                logger.warning(f"Rate limit exceeded for user {request.user.username}")
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Too many follow actions. Please wait a minute.'
+                }, status=429)
+            cache.set(cache_key, attempts + 1, 60)  # Store for 1 minute
+
+            # Get user to follow
+            user_to_follow = get_object_or_404(User, username=username)
+
+            # Can't follow yourself
+            if request.user == user_to_follow:
+                logger.warning(f"User {request.user.username} attempted to follow themselves")
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Cannot follow yourself'
+                }, status=400)
+
+            # Check follow limit for free tier users
+            if request.user.userprofile.tier == 'free':
+                following_count = Follow.objects.filter(follower=request.user).count()
+                if following_count >= 20:
+                    logger.info(f"Free tier user {request.user.username} hit follow limit")
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'Free tier limit reached. Upgrade to Premium for unlimited follows!'
+                    }, status=403)
+
+            # Check if already following
+            follow_exists = Follow.objects.filter(
                 follower=request.user,
                 followed=user_to_follow
-            ).delete()
-            is_following = False
-            message = 'Successfully unfollowed user'
-        else:
-            # Follow
-            Follow.objects.create(
-                follower=request.user,
-                followed=user_to_follow
-            )
-            is_following = True
-            message = 'Successfully followed user'
+            ).exists()
 
-        return JsonResponse({
-            'success': True,
-            'message': message,
-            'is_following': is_following
-        })
+            if follow_exists:
+                # Unfollow
+                Follow.objects.filter(
+                    follower=request.user,
+                    followed=user_to_follow
+                ).delete()
+                is_following = False
+                message = 'Successfully unfollowed user'
+                logger.info(f"User {request.user.username} unfollowed {username}")
+            else:
+                try:
+                    # Follow
+                    Follow.objects.create(
+                        follower=request.user,
+                        followed=user_to_follow
+                    )
+                    is_following = True
+                    message = 'Successfully followed user'
+                    logger.info(f"User {request.user.username} followed {username}")
+                except Exception as e:
+                    if 'unique constraint' in str(e).lower():
+                        # If we hit a race condition where the follow was created between our check and create
+                        is_following = True
+                        message = 'Already following this user'
+                        logger.info(f"User {request.user.username} already following {username}")
+                    else:
+                        raise  # Re-raise if it's a different error
 
-    except User.DoesNotExist:
-        return JsonResponse({
-            'success': False,
-            'error': 'User not found'
-        }, status=404)
-    except json.JSONDecodeError:
-        return JsonResponse({
-            'success': False,
-            'error': 'Invalid JSON data'
-        }, status=400)
-    except Exception as e:
-        logger.error(f"Error in follow_user view: {str(e)}")
-        return JsonResponse({
-            'success': False,
-            'error': 'An error occurred while processing your request'
-        }, status=500)
+            # Get updated follower count
+            follower_count = Follow.objects.filter(followed=user_to_follow).count()
+
+            return JsonResponse({
+                'success': True,
+                'message': message,
+                'is_following': is_following,
+                'follower_count': follower_count
+            })
+
+        except User.DoesNotExist:
+            logger.error(f"User not found: {username}")
+            return JsonResponse({
+                'success': False,
+                'error': 'User not found'
+            }, status=404)
+        except Exception as e:
+            logger.error(f"Error in follow_user view: {str(e)}")
+            return JsonResponse({
+                'success': False,
+                'error': 'An error occurred while processing your request'
+            }, status=500)
 
 @login_required
 def messages_view(request, thread_id=None):
@@ -288,39 +358,39 @@ def bookmarks(request):
         'bookmarked_tips': bookmarked_tips,
     })
 
-@login_required
-@require_POST
-def toggle_bookmark(request):
+class ToggleBookmarkView(LoginRequiredMixin, View):
     """Handle toggling bookmark status for a tip."""
-    try:
-        data = json.loads(request.body)
-        tip_id = data.get('tip_id')
-        
-        if not tip_id:
-            return JsonResponse({'success': False, 'error': 'Missing tip_id'}, status=400)
+    
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            tip_id = data.get('tip_id')
             
-        tip = get_object_or_404(Tip, id=tip_id)
-        user = request.user
-        
-        if tip.bookmarks.filter(id=user.id).exists():
-            tip.bookmarks.remove(user)
-            return JsonResponse({
-                'success': True,
-                'message': 'Tip unbookmarked',
-                'is_bookmarked': False
-            })
-        else:
-            tip.bookmarks.add(user)
-            return JsonResponse({
-                'success': True,
-                'message': 'Tip bookmarked',
-                'is_bookmarked': True
-            })
-    except json.JSONDecodeError:
-        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
-    except Exception as e:
-        logger.error("Error toggling bookmark: %s", str(e))
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+            if not tip_id:
+                return JsonResponse({'success': False, 'error': 'Missing tip_id'}, status=400)
+                
+            tip = get_object_or_404(Tip, id=tip_id)
+            user = request.user
+            
+            if tip.bookmarks.filter(id=user.id).exists():
+                tip.bookmarks.remove(user)
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Tip unbookmarked',
+                    'is_bookmarked': False
+                })
+            else:
+                tip.bookmarks.add(user)
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Tip bookmarked',
+                    'is_bookmarked': True
+                })
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+        except Exception as e:
+            logger.error("Error toggling bookmark: %s", str(e))
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 @login_required
 @require_POST

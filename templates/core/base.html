@@ -59,6 +59,7 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
+    {% csrf_token %}
     <!-- Mobile Header -->
     <div class="mobile-header">
       <div class="mobile-header-left">
@@ -243,7 +244,9 @@
                                     <a href="/profile/{{ tipster.username }}/" class="follow-username">@{{ tipster.username }}</a>
                                     <p class="follow-bio">{{ tipster.bio|default:"No bio" }}</p>
                                 </div>
-                                <button class="follow-btn" data-username="{{ tipster.username }}">Follow</button>
+                                <button class="follow-btn {% if tipster.is_following %}followed{% endif %}" data-username="{{ tipster.username }}">
+                                    {% if tipster.is_following %}Following{% else %}Follow{% endif %}
+                                </button>
                             </div>
                         {% empty %}
                             <p>No suggested tipsters available.</p>

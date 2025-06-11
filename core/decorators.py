@@ -82,8 +82,8 @@ def check_follow_limit(view_func):
         following_count = request.user.following.count()
         
         if profile.tier == 'free':
-            if following_count >= 10:
-                messages.warning(request, 'Basic tier: Max 10 follows. Upgrade to Premium for unlimited follows!')
+            if following_count >= 20:
+                messages.warning(request, 'Basic tier: Max 20 follows. Upgrade to Premium for unlimited follows!')
                 return redirect('tier_setup')
                 
         return view_func(request, *args, **kwargs)

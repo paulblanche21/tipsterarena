@@ -15,6 +15,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.throttling import UserRateThrottle
 from core.models import Tip, Follow  # Add Tip and Follow models import
 from django.db.models import Q
+import logging
 
 __all__ = [
     'current_user_api',
@@ -80,6 +81,7 @@ def upload_chat_image_api(request):
 @login_required
 def suggested_users_api(request):
     """API endpoint to get suggested users to follow."""
+    logger = logging.getLogger(__name__)
     try:
         limit = int(request.GET.get('limit', 10))
         
@@ -114,6 +116,9 @@ def suggested_users_api(request):
                 else:
                     avatar_url = settings.STATIC_URL + 'img/default-avatar.png'
                 
+                # Check if current user is following this user
+                is_following = Follow.objects.filter(follower=request.user, followed=user).exists()
+                
                 users_data.append({
                     'username': user.username,
                     'handle': profile.handle if profile and profile.handle else f"@{user.username}",
@@ -122,12 +127,15 @@ def suggested_users_api(request):
                     'profile_url': f'/profile/{user.username}/',
                     'total_tips': total_tips,
                     'win_rate': round(win_rate, 1),
-                    'followers_count': followers_count
+                    'followers_count': followers_count,
+                    'is_following': is_following
                 })
-            except Exception:  # Removed unused 'e' variable
-                # Skip users with invalid profiles
+                if user.username is None or user.username == 'None' or (profile and (profile.handle is None or profile.handle == 'None')):
+                    logger.warning(f"[SUGGESTED USERS API] Invalid username or handle: username='{user.username}', handle='{getattr(profile, 'handle', None)}'")
+            except Exception as e:
+                logger.error(f"[SUGGESTED USERS API] Exception for user: {str(e)}")
                 continue
-
+        logger.info(f"[SUGGESTED USERS API] Returning users: {[u['username'] for u in users_data]}")
         return JsonResponse({
             'success': True,
             'users': users_data
@@ -141,6 +149,7 @@ def suggested_users_api(request):
 @login_required
 def trending_tips_api(request):
     """Return a list of trending tips."""
+    logger = logging.getLogger(__name__)
     from core.models import Tip  # Import here to avoid circular imports
     
     # Get tips ordered by popularity (likes + shares + comments)
@@ -157,7 +166,9 @@ def trending_tips_api(request):
             'likes_count': tip.likes.count(),
             'is_liked': tip.likes.filter(id=request.user.id).exists()
         })
-
+        if tip.user.username is None or tip.user.username == 'None':
+            logger.warning(f"[TRENDING TIPS API] Invalid username for tip id={tip.id}: username='{tip.user.username}'")
+    logger.info(f"[TRENDING TIPS API] Returning tips for users: {[t['username'] for t in tips_list]}")
     return JsonResponse({'trending_tips': tips_list})
 
 class VerifyTipView(APIView):

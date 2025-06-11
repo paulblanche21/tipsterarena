@@ -321,49 +321,40 @@
 .profile-stats {
     display: flex;
     flex-wrap: wrap;
-    gap: 15px;
-    margin: 20px 0;
-    padding: 15px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    border: 1px solid #e1e8ed;
+    gap: 1rem;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+    color: var(--text-muted);
 }
 
 .profile-stats span {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    color: #657786;
-    padding: 8px 12px;
-    background-color: white;
-    border-radius: 20px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    gap: 0.5rem;
 }
 
 .profile-stats i {
-    color: #1DA1F2;
+    color: var(--primary-color);
 }
 
-.profile-total-bets,
-.profile-average-odds,
-.profile-win-rate,
-.profile-subscribers {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    background-color: white;
-    border-radius: 20px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+.profile-stats .profile-total-bets i {
+    color: var(--blue-accent);
 }
 
-.profile-win-rate {
-    color: #28a745;
+.profile-stats .profile-average-odds i {
+    color: var(--green-accent);
 }
 
-.profile-win-rate i {
-    color: #28a745;
+.profile-stats .profile-win-rate i {
+    color: var(--gold-accent);
+}
+
+.profile-stats .profile-following i {
+    color: var(--purple-accent);
+}
+
+.profile-stats .profile-followers i {
+    color: var(--red-accent);
 }
 
 /* Subscribe Modal Styles */
