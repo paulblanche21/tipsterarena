@@ -460,8 +460,10 @@ function handleTipClick(e) {
             .then(data => {
                 console.log('Like response:', data);
                 if (data.success) {
-                    const likeCount = action.nextElementSibling;
-                    likeCount.textContent = data.like_count;
+                    const likeCount = action.closest('.tip-action-group').querySelector('.like-count');
+                    if (likeCount) {
+                        likeCount.textContent = data.likes_count;
+                    }
                     action.classList.toggle('liked', data.message === 'Tip liked');
                 } else {
                     showCustomAlert('Error: ' + data.error);

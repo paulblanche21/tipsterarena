@@ -173,7 +173,9 @@ export class TrendingTips {
                     
                     const data = await response.json();
                     if (data.success) {
-                        button.classList.toggle('active');
+                        // Toggle the liked class on the button
+                        button.classList.toggle('liked', data.message === 'Tip liked');
+                        // Update the like count
                         likeCount.textContent = data.likes_count;
                     }
                 } catch (error) {

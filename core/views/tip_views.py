@@ -11,6 +11,8 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Count, Q
 from django.core.exceptions import ValidationError
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views import View
 
 from ..models import Tip, Like, Share, Comment, UserProfile
 from ..badges import award_badges
@@ -259,41 +261,40 @@ def delete_tip(request):
         logger.error("Error deleting tip: %s", str(e))
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
-@login_required
-@require_POST
-def like_tip(request):
+class LikeTipView(LoginRequiredMixin, View):
     """Handle liking and unliking tips."""
-    try:
-        tip_id = request.POST.get('tip_id')
-        if not tip_id:
-            return JsonResponse({'success': False, 'error': 'Missing tip_id'}, status=400)
+    def post(self, request):
+        try:
+            tip_id = request.POST.get('tip_id')
+            if not tip_id:
+                return JsonResponse({'success': False, 'error': 'Missing tip_id'}, status=400)
 
-        tip = get_object_or_404(Tip, id=tip_id)
-        user = request.user
+            tip = get_object_or_404(Tip, id=tip_id)
+            user = request.user
 
-        # Check if like already exists
-        existing_like = Like.objects.filter(user=user, tip=tip).first()
-        if existing_like:
-            existing_like.delete()
+            # Check if like already exists
+            existing_like = Like.objects.filter(user=user, tip=tip).first()
+            if existing_like:
+                existing_like.delete()
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Like removed',
+                    'likes_count': tip.likes.count()
+                })
+            else:
+                # Create new like
+                Like.objects.create(user=user, tip=tip)
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Tip liked',
+                    'likes_count': tip.likes.count()
+                })
+        except Exception as e:
+            logger.error("Error in like_tip view: %s", str(e))
             return JsonResponse({
-                'success': True,
-                'message': 'Like removed',
-                'likes_count': tip.likes.count()
-            })
-        else:
-            # Create new like
-            Like.objects.create(user=user, tip=tip)
-            return JsonResponse({
-                'success': True,
-                'message': 'Tip liked',
-                'likes_count': tip.likes.count()
-            })
-    except Exception as e:
-        logger.error("Error in like_tip view: %s", str(e))
-        return JsonResponse({
-            'success': False,
-            'error': str(e)
-        }, status=500)
+                'success': False,
+                'error': str(e)
+            }, status=500)
 
 @login_required
 @require_POST
