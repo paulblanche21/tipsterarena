@@ -406,29 +406,30 @@ def get_tip_comments(request, tip_id):
         logger.error("Tip not found: tip_id=%s", tip_id)
         return JsonResponse({'success': False, 'error': 'Tip not found'}, status=404)
 
-@login_required
-def tip_detail(request, tip_id):
+class TipDetailView(LoginRequiredMixin, View):
     """Display detailed view of a single tip."""
-    tip = get_object_or_404(Tip, id=tip_id)
-    comments = Comment.objects.filter(tip=tip, parent_comment=None).order_by('-created_at')
     
-    # Get user's interaction status with the tip
-    is_liked = tip.likes.filter(id=request.user.id).exists()
-    is_shared = tip.shares.filter(id=request.user.id).exists()
-    is_bookmarked = tip.bookmarks.filter(id=request.user.id).exists()
-    
-    context = {
-        'tip': tip,
-        'comments': comments,
-        'is_liked': is_liked,
-        'is_shared': is_shared,
-        'is_bookmarked': is_bookmarked,
-        'like_count': tip.likes.count(),
-        'share_count': tip.shares.count(),
-        'comment_count': tip.comments.count(),
-    }
-    
-    return render(request, 'core/tip_detail.html', context)
+    def get(self, request, tip_id):
+        tip = get_object_or_404(Tip, id=tip_id)
+        comments = Comment.objects.filter(tip=tip, parent_comment=None).order_by('-created_at')
+        
+        # Get user's interaction status with the tip
+        is_liked = tip.likes.filter(id=request.user.id).exists()
+        is_shared = tip.shares.filter(id=request.user.id).exists()
+        is_bookmarked = tip.bookmarks.filter(id=request.user.id).exists()
+        
+        context = {
+            'tip': tip,
+            'comments': comments,
+            'is_liked': is_liked,
+            'is_shared': is_shared,
+            'is_bookmarked': is_bookmarked,
+            'like_count': tip.likes.count(),
+            'share_count': tip.shares.count(),
+            'comment_count': tip.comments.count(),
+        }
+        
+        return render(request, 'core/tip_detail.html', context)
 
 @login_required
 def tip_list(request):

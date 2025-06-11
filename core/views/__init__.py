@@ -8,7 +8,7 @@ __all__ = [
 
     # Tip views
     'post_tip', 'edit_tip', 'delete_tip', 'LikeTipView',
-    'comment_tip', 'get_tip_comments', 'tip_detail',
+    'comment_tip', 'get_tip_comments', 'TipDetailView',
     'tip_list', 'verify_tip',
 
     # Profile views
@@ -55,7 +55,7 @@ from .auth_views import (
 
 from .tip_views import (
     post_tip, edit_tip, delete_tip, LikeTipView,
-    comment_tip, get_tip_comments, tip_detail,
+    comment_tip, get_tip_comments, TipDetailView,
     tip_list, verify_tip
 )
 

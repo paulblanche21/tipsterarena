@@ -66,7 +66,7 @@ urlpatterns = [
     path('api/tip/<int:tip_id>/comments/', views.get_tip_comments, name='get_tip_comments'),
     path('api/like-comment/', views.like_comment, name='like_comment'),
     path('api/share-comment/', views.share_comment, name='share_comment'),
-    path('api/tip/<int:tip_id>/', views.tip_detail, name='tip-detail'),
+    path('api/tip/<int:tip_id>/', views.TipDetailView.as_view(), name='tip-detail'),
     path('api/toggle-bookmark/', views.ToggleBookmarkView.as_view(), name='toggle_bookmark'),
     path('api/verify-tip/<int:tip_id>/', views.VerifyTipView.as_view(), name='verify_tip'),
 
