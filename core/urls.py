@@ -59,13 +59,13 @@ urlpatterns = [
     path('api/delete-tip/', views.delete_tip, name='delete_tip'),
     path('api/follow/', views.follow_user, name='follow_user'),
     path('api/like-tip/', views.LikeTipView.as_view(), name='like_tip'),
-    path('api/share-tip/', views.share_tip, name='share_tip'),
+    # path('api/share-tip/', views.ShareTipView.as_view(), name='share_tip'),
     path('api/comment-tip/', views.comment_tip, name='comment_tip'),
     path('api/tip/<int:tip_id>/comments/', views.get_tip_comments, name='get_tip_comments'),
     path('api/like-comment/', views.like_comment, name='like_comment'),
     path('api/share-comment/', views.share_comment, name='share_comment'),
     path('api/tip/<int:tip_id>/', views.tip_detail, name='tip-detail'),
-    path('api/toggle-bookmark/', views.toggle_bookmark, name='toggle_bookmark'),
+    path('api/toggle-bookmark/', views.ToggleBookmarkView.as_view(), name='toggle_bookmark'),
     path('api/verify-tip/<int:tip_id>/', views.VerifyTipView.as_view(), name='verify_tip'),
 
     # API routes for data retrieval
