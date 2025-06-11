@@ -278,7 +278,7 @@ def like_tip(request):
             return JsonResponse({
                 'success': True,
                 'message': 'Like removed',
-                'like_count': tip.likes.count()
+                'likes_count': tip.likes.count()
             })
         else:
             # Create new like
@@ -286,7 +286,7 @@ def like_tip(request):
             return JsonResponse({
                 'success': True,
                 'message': 'Tip liked',
-                'like_count': tip.likes.count()
+                'likes_count': tip.likes.count()
             })
     except Exception as e:
         logger.error("Error in like_tip view: %s", str(e))
