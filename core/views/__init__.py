@@ -15,7 +15,10 @@ __all__ = [
     'profile', 'profile_edit_view',
 
     # Sport views
-    'SportView', 'home',
+    'SportView',
+
+    # Home view
+    'HomeView',
 
     # Interaction views
     'FollowUserView', 'messages_view', 'send_message',
@@ -61,7 +64,11 @@ from .profile_views import (
 )
 
 from .sport_views import (
-    SportView, home
+    SportView
+)
+
+from .home_views import (
+    HomeView
 )
 
 from .interaction_views import (

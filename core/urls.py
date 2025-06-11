@@ -4,13 +4,14 @@
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from . import views
+from .views.home_views import HomeView
 
 
 # URL patterns for the Tipster Arena core app
 urlpatterns = [
     # General routes
     path('', views.landing, name='landing'),
-    path('home/', views.home, name='home'),
+    path('home/', HomeView.as_view(), name='home'),
     path('search/', views.search, name='search'),
     path('sport/<str:sport>/', views.SportView.as_view(), name='sport'),
 
