@@ -7,7 +7,7 @@ __all__ = [
     'payment_success', 'skip_payment',
 
     # Tip views
-    'post_tip', 'EditTipView', 'DeleteTipView', 'LikeTipView',
+    'PostTipView', 'EditTipView', 'DeleteTipView', 'LikeTipView',
     'share_tip', 'comment_tip', 'get_tip_comments', 'TipDetailView',
     'tip_list', 'verify_tip',
 
@@ -54,7 +54,7 @@ from .auth_views import (
 )
 
 from .tip_views import (
-    post_tip, EditTipView, DeleteTipView, LikeTipView,
+    PostTipView, EditTipView, DeleteTipView, LikeTipView,
     share_tip, comment_tip, get_tip_comments, TipDetailView,
     tip_list, verify_tip
 )

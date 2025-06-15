@@ -190,12 +190,187 @@ def post_tip(request):
             })
             
         except Exception as e:
-            logger.error("Unexpected error in post_tip: %s", str(e), exc_info=True)
-            return JsonResponse({
-                'success': False,
-                'error': 'Internal server error'
-            }, status=500)
+            logger.error("Error posting tip: %s", str(e))
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
     return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
+
+class PostTipView(LoginRequiredMixin, View):
+    """Class-based view for posting a new tip."""
+    def post(self, request):
+        try:
+            logger.info("Received POST request to PostTipView")
+            
+            # Get all form data at once
+            form_data = request.POST.dict()
+            files = request.FILES.dict()
+            
+            logger.info("Form data: %s", form_data)
+            logger.info("Files data: %s", files)
+            
+            text = form_data.get('tip_text')
+            audience = form_data.get('audience', 'everyone')
+            sport = form_data.get('sport', 'golf')
+            image = files.get('image')
+            gif_url = form_data.get('gif')
+            location = form_data.get('location')
+            
+            logger.info("Basic fields: text=%s, audience=%s, sport=%s", text, audience, sport)
+            
+            # Handle JSON fields safely
+            try:
+                poll = json.loads(form_data.get('poll', '{}'))
+                if not isinstance(poll, dict):
+                    logger.error("Invalid poll format: %s", form_data.get('poll'))
+                    return JsonResponse({'success': False, 'error': 'Invalid poll format'}, status=400)
+            except json.JSONDecodeError as e:
+                logger.error("JSON decode error for poll: %s", str(e))
+                return JsonResponse({'success': False, 'error': 'Invalid poll JSON'}, status=400)
+                
+            try:
+                emojis = json.loads(form_data.get('emojis', '{}'))
+                if not isinstance(emojis, dict):
+                    logger.error("Invalid emojis format: %s", form_data.get('emojis'))
+                    return JsonResponse({'success': False, 'error': 'Invalid emojis format'}, status=400)
+            except json.JSONDecodeError as e:
+                logger.error("JSON decode error for emojis: %s", str(e))
+                return JsonResponse({'success': False, 'error': 'Invalid emojis JSON'}, status=400)
+
+            # Handle release_schedule as a JSON field
+            try:
+                release_schedule = json.loads(form_data.get('release_schedule', '{}'))
+                if not isinstance(release_schedule, dict):
+                    logger.error("Invalid release_schedule format: %s", form_data.get('release_schedule'))
+                    return JsonResponse({'success': False, 'error': 'Invalid release_schedule format'}, status=400)
+            except json.JSONDecodeError as e:
+                logger.error("JSON decode error for release_schedule: %s", str(e))
+                return JsonResponse({'success': False, 'error': 'Invalid release_schedule JSON'}, status=400)
+
+            # New fields
+            odds_type = form_data.get('odds_type')
+            bet_type = form_data.get('bet_type')
+            each_way = form_data.get('each_way', 'no')
+            confidence = form_data.get('confidence')
+            
+            logger.info("Odds fields: odds_type=%s, bet_type=%s, each_way=%s, confidence=%s", 
+                       odds_type, bet_type, each_way, confidence)
+            
+            if confidence:
+                try:
+                    confidence = int(confidence)
+                except (ValueError, TypeError) as e:
+                    logger.error("Invalid confidence value: %s", str(e))
+                    return JsonResponse({'success': False, 'error': 'Invalid confidence value'}, status=400)
+
+            # Handle odds based on format
+            odds = None
+            logger.info("Odds type: %s", odds_type)
+            
+            # Only process odds if we have both odds_type and actual odds values
+            if odds_type and (
+                (odds_type == 'decimal' and form_data.get('odds-input-decimal', '').strip()) or
+                (odds_type == 'fractional' and form_data.get('odds-numerator', '').strip() and form_data.get('odds-denominator', '').strip())
+            ):
+                if odds_type == 'decimal':
+                    odds_value = form_data.get('odds-input-decimal')
+                    logger.info("Decimal odds value: %s", odds_value)
+                    if odds_value and odds_value.strip():
+                        try:
+                            odds_float = float(odds_value)
+                            if odds_float < 1.0:
+                                logger.error("Decimal odds less than 1.0: %s", odds_value)
+                                return JsonResponse({'success': False, 'error': 'Decimal odds must be greater than or equal to 1.0'}, status=400)
+                            odds = odds_value
+                        except ValueError as e:
+                            logger.error("Invalid decimal odds value: %s", str(e))
+                            return JsonResponse({'success': False, 'error': 'Invalid decimal odds value'}, status=400)
+                elif odds_type == 'fractional':
+                    numerator = form_data.get('odds-numerator')
+                    denominator = form_data.get('odds-denominator')
+                    logger.info("Fractional odds: numerator=%s, denominator=%s", numerator, denominator)
+                    if numerator and denominator and numerator.strip() and denominator.strip():
+                        try:
+                            num = int(numerator)
+                            den = int(denominator)
+                            if den == 0:
+                                logger.error("Zero denominator in fractional odds")
+                                return JsonResponse({'success': False, 'error': 'Denominator cannot be zero'}, status=400)
+                            odds = f"{num}/{den}"
+                        except ValueError as e:
+                            logger.error("Invalid fractional odds values: %s", str(e))
+                            return JsonResponse({'success': False, 'error': 'Invalid fractional odds values'}, status=400)
+                else:
+                    logger.error("Invalid odds type: %s", odds_type)
+                    return JsonResponse({'success': False, 'error': 'Invalid odds type'}, status=400)
+
+            if not text:
+                logger.error("Empty tip text")
+                return JsonResponse({'success': False, 'error': 'Tip text cannot be empty'}, status=400)
+
+            allowed_tags = ['b', 'i']
+            sanitized_text = bleach.clean(text, tags=allowed_tags, strip=True)
+            
+            logger.info("Creating tip with odds=%s, odds_format=%s", odds, odds_type if odds else None)
+            
+            # Create tip with validated data
+            tip = Tip(
+                user=request.user,
+                text=sanitized_text,
+                sport=sport,
+                audience=audience,
+                poll=json.dumps(poll),
+                emojis=json.dumps(emojis),
+                odds=odds,
+                odds_format=odds_type if odds else None,  # Only set odds_format if odds are provided
+                bet_type=bet_type if odds else None,  # Only set bet_type if odds are provided
+                each_way=each_way if odds else 'no',  # Default to 'no' if no odds
+                confidence=confidence,
+                release_schedule=release_schedule
+            )
+            
+            if image:
+                tip.image = image
+            if gif_url:
+                tip.gif_url = gif_url
+            if location:
+                tip.location = location
+                
+            # Validate the model
+            try:
+                tip.full_clean()
+                tip.save()
+                logger.info("Tip saved successfully with ID: %s", tip.id)
+            except ValidationError as e:
+                logger.error("Validation error in PostTipView: %s", str(e))
+                return JsonResponse({
+                    'success': False,
+                    'error': str(e)
+                }, status=400)
+            
+            return JsonResponse({
+                'success': True,
+                'tip': {
+                    'id': tip.id,
+                    'text': tip.text,
+                    'username': tip.user.username,
+                    'handle': tip.user.userprofile.handle,
+                    'avatar': tip.user.userprofile.avatar.url if tip.user.userprofile.avatar else None,
+                    'sport': tip.sport,
+                    'odds': tip.odds,
+                    'odds_format': tip.odds_format,
+                    'bet_type': tip.bet_type,
+                    'each_way': tip.each_way,
+                    'confidence': tip.confidence,
+                    'status': tip.status,
+                    'image': tip.image.url if tip.image else None,
+                    'gif': tip.gif_url,
+                    'created_at': tip.created_at.isoformat(),
+                    'release_schedule': tip.release_schedule
+                }
+            })
+            
+        except Exception as e:
+            logger.error("Error posting tip: %s", str(e))
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 class EditTipView(LoginRequiredMixin, View):
     """Handle editing an existing tip."""

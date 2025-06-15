@@ -2,7 +2,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
-from core.models import Tip, UserProfile
+from core.models import Tip
 import json
 
 class TipViewsTestCase(TestCase):
