@@ -57,8 +57,8 @@ urlpatterns = [
     # API routes for user interactions
     path('api/suggested-users/', views.suggested_users_api, name='suggested_users_api'),
     path('api/post-tip/', views.post_tip, name='api_post_tip'),
-    path('api/edit-tip/', views.edit_tip, name='edit_tip'),
-    path('api/delete-tip/', views.delete_tip, name='delete_tip'),
+    path('api/edit-tip/', views.EditTipView.as_view(), name='edit_tip'),
+    path('api/delete-tip/', views.DeleteTipView.as_view(), name='delete_tip'),
     path('api/follow/<str:username>/', views.FollowUserView.as_view(), name='follow_user'),
     path('api/like-tip/', views.LikeTipView.as_view(), name='like_tip'),
     # path('api/share-tip/', views.ShareTipView.as_view(), name='share_tip'),

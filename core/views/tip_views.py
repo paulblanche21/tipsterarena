@@ -197,69 +197,67 @@ def post_tip(request):
             }, status=500)
     return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
 
-@login_required
-@require_POST
-def edit_tip(request):
+class EditTipView(LoginRequiredMixin, View):
     """Handle editing an existing tip."""
-    try:
-        tip_id = request.POST.get('tip_id')
-        new_text = request.POST.get('text')
+    def post(self, request):
+        try:
+            tip_id = request.POST.get('tip_id')
+            new_text = request.POST.get('text')
 
-        if not tip_id or not new_text:
-            return JsonResponse({'success': False, 'error': 'Missing required fields'}, status=400)
+            if not tip_id or not new_text:
+                return JsonResponse({'success': False, 'error': 'Missing required fields'}, status=400)
 
-        tip = get_object_or_404(Tip, id=tip_id)
+            tip = get_object_or_404(Tip, id=tip_id)
 
-        # Check if user owns the tip
-        if tip.user != request.user:
-            return JsonResponse({'success': False, 'error': 'Not authorized to edit this tip'}, status=403)
+            # Check if user owns the tip
+            if tip.user != request.user:
+                return JsonResponse({'success': False, 'error': 'Not authorized to edit this tip'}, status=403)
 
-        # Sanitize the text
-        allowed_tags = ['b', 'i']
-        sanitized_text = bleach.clean(new_text, tags=allowed_tags, strip=True)
+            # Sanitize the text
+            allowed_tags = ['b', 'i']
+            sanitized_text = bleach.clean(new_text, tags=allowed_tags, strip=True)
 
-        tip.text = sanitized_text
-        tip.save()
+            tip.text = sanitized_text
+            tip.save()
 
-        return JsonResponse({
-            'success': True,
-            'message': 'Tip updated successfully',
-            'tip': {
-                'id': tip.id,
-                'text': tip.text
-            }
-        })
-    except Tip.DoesNotExist:
-        return JsonResponse({'success': False, 'error': 'Tip not found'}, status=404)
-    except Exception as e:
-        logger.error("Error editing tip: %s", str(e))
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+            return JsonResponse({
+                'success': True,
+                'message': 'Tip updated successfully',
+                'tip': {
+                    'id': tip.id,
+                    'text': tip.text
+                }
+            })
+        except Tip.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Tip not found'}, status=404)
+        except Exception as e:
+            logger.error("Error editing tip: %s", str(e))
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
-@login_required
-@require_POST
-def delete_tip(request):
+class DeleteTipView(LoginRequiredMixin, View):
     """Handle deleting a tip."""
-    try:
-        tip_id = request.POST.get('tip_id')
-        if not tip_id:
-            return JsonResponse({'success': False, 'error': 'Missing tip_id'}, status=400)
+    def post(self, request):
+        try:
+            tip_id = request.POST.get('tip_id')
+            if not tip_id:
+                return JsonResponse({'success': False, 'error': 'Missing tip_id'}, status=400)
 
-        tip = get_object_or_404(Tip, id=tip_id)
+            tip = get_object_or_404(Tip, id=tip_id)
 
-        # Check if user owns the tip
-        if tip.user != request.user:
-            return JsonResponse({'success': False, 'error': 'Not authorized to delete this tip'}, status=403)
+            # Check if user owns the tip
+            if tip.user != request.user:
+                return JsonResponse({'success': False, 'error': 'Not authorized to delete this tip'}, status=403)
 
-        tip.delete()
-        return JsonResponse({
-            'success': True,
-            'message': 'Tip deleted successfully'
-        })
-    except Tip.DoesNotExist:
-        return JsonResponse({'success': False, 'error': 'Tip not found'}, status=404)
-    except Exception as e:
-        logger.error("Error deleting tip: %s", str(e))
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+            tip.delete()
+            return JsonResponse({
+                'success': True,
+                'message': 'Tip deleted successfully'
+            })
+        except Tip.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Tip not found'}, status=404)
+        except Exception as e:
+            logger.error("Error deleting tip: %s", str(e))
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 class LikeTipView(LoginRequiredMixin, View):
     """Handle liking and unliking tips."""
