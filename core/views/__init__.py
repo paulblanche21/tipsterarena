@@ -29,7 +29,6 @@ __all__ = [
 
     # Sport views
     'SportView',
-    'SportHomeView',
 
     # Home views
     'HomeView',
@@ -109,7 +108,6 @@ from .profile_views import (
 
 from .sport_views import (
     SportView,
-    HomeView as SportHomeView,
 )
 
 from .home_views import (

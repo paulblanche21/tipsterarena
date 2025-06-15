@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from ..models import User, UserProfile, Tip, Follow
+from ..models import User, UserProfile, Tip, Follow, MessageThread, Message
 
 logger = logging.getLogger(__name__)
 
@@ -130,7 +130,36 @@ class AccessibilityView(View):
     def get(self, request):
         return render(request, 'core/accessibility.html')
 
-class ChatView(View):
-    """Render the chat interface."""
+class ChatView(LoginRequiredMixin, View):
+    """Render the chat interface for authenticated users."""
     def get(self, request):
-        return render(request, 'core/chat.html') 
+        try:
+            # Get user's message threads
+            threads = MessageThread.objects.filter(
+                Q(user1=request.user) | Q(user2=request.user)
+            ).select_related('user1', 'user2').order_by('-updated_at')
+            
+            # Get unread message counts
+            unread_counts = {}
+            for thread in threads:
+                other_user = thread.user2 if thread.user1 == request.user else thread.user1
+                unread_count = Message.objects.filter(
+                    thread=thread,
+                    sender=other_user,
+                    is_read=False
+                ).count()
+                unread_counts[thread.id] = unread_count
+            
+            context = {
+                'threads': threads,
+                'unread_counts': unread_counts
+            }
+            
+            return render(request, 'core/chat.html', context)
+            
+        except Exception as e:
+            logger.error(f"Error in chat view: {str(e)}")
+            return JsonResponse({
+                'success': False,
+                'error': 'An error occurred while loading the chat interface'
+            }, status=500) 

@@ -626,40 +626,6 @@ class SearchUsersView(LoginRequiredMixin, View):
 
         return JsonResponse({'users': users_data})
 
-@login_required
-@require_POST
-def update_message_settings(request):
-    """Update user's message settings."""
-    try:
-        data = json.loads(request.body)
-        setting = data.get('allow_messages')
-        
-        if setting not in ['no_one', 'followers', 'everyone']:
-            return JsonResponse({
-                'success': False,
-                'error': 'Invalid setting value'
-            }, status=400)
-            
-        user_profile = request.user.userprofile
-        user_profile.allow_messages = setting
-        user_profile.save()
-        
-        return JsonResponse({
-            'success': True,
-            'message': 'Message settings updated successfully'
-        })
-    except json.JSONDecodeError:
-        return JsonResponse({
-            'success': False,
-            'error': 'Invalid JSON data'
-        }, status=400)
-    except Exception as e:
-        logger.error(f"Error updating message settings: {str(e)}")
-        return JsonResponse({
-            'success': False,
-            'error': str(e)
-        }, status=500)
-
 class ToggleBookmarkView(LoginRequiredMixin, View):
     """Handle toggling bookmarks for tips."""
     
