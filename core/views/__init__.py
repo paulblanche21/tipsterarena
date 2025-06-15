@@ -34,9 +34,14 @@ __all__ = [
     'upload_chat_image_api',
 
     # General views
-    'landing', 'search', 'csp_report',
-    'terms_of_service', 'privacy_policy',
-    'cookie_policy', 'accessibility', 'chat_view',
+    'LandingView',
+    'SearchView',
+    'CSPReportView',
+    'TermsOfServiceView',
+    'PrivacyPolicyView',
+    'CookiePolicyView',
+    'AccessibilityView',
+    'ChatView',
 
     # Subscription views
     'become_tipster', 'tipster_dashboard', 'manage_tiers',
@@ -87,9 +92,14 @@ from .api_views import (
 )
 
 from .general_views import (
-    landing, search, csp_report,
-    terms_of_service, privacy_policy,
-    cookie_policy, accessibility, chat_view
+    LandingView,
+    SearchView,
+    CSPReportView,
+    TermsOfServiceView,
+    PrivacyPolicyView,
+    CookiePolicyView,
+    AccessibilityView,
+    ChatView,
 )
 
 from .subscription_views import (

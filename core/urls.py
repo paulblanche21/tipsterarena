@@ -6,14 +6,23 @@ from django.contrib.auth import views as auth_views
 from . import views
 from .views.home_views import HomeView
 from .views.profile_views import ProfileView, ProfileEditView
+from .views.general_views import (
+    LandingView,
+    SearchView,
+    TermsOfServiceView,
+    PrivacyPolicyView,
+    CookiePolicyView,
+    AccessibilityView,
+    ChatView,
+)
 
 
 # URL patterns for the Tipster Arena core app
 urlpatterns = [
     # General routes
-    path('', views.landing, name='landing'),
+    path('', LandingView.as_view(), name='landing'),
     path('home/', HomeView.as_view(), name='home'),
-    path('search/', views.search, name='search'),
+    path('search/', SearchView.as_view(), name='search'),
     path('sport/<str:sport>/', views.SportView.as_view(), name='sport'),
 
     # Profile routes
@@ -49,10 +58,10 @@ urlpatterns = [
     path('bookmarks/', views.bookmarks, name='bookmarks'),
 
     # Policy routes
-    path('terms-of-service/', views.terms_of_service, name='terms_of_service'),
-    path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
-    path('cookie-policy/', views.cookie_policy, name='cookie_policy'),
-    path('accessibility/', views.accessibility, name='accessibility'),
+    path('terms-of-service/', TermsOfServiceView.as_view(), name='terms_of_service'),
+    path('privacy-policy/', PrivacyPolicyView.as_view(), name='privacy_policy'),
+    path('cookie-policy/', CookiePolicyView.as_view(), name='cookie_policy'),
+    path('accessibility/', AccessibilityView.as_view(), name='accessibility'),
 
     # API routes for user interactions
     path('api/suggested-users/', views.suggested_users_api, name='suggested_users_api'),
@@ -93,7 +102,7 @@ urlpatterns = [
     ])),
     path('top-tipsters/', views.top_tipsters_leaderboard, name='top_tipsters_leaderboard'),
     path('api/mark-notification-read/', views.mark_notification_read, name='mark_notification_read'),
-    path('chat/', views.chat_view, name='chat'),
+    path('chat/', ChatView.as_view(), name='chat'),
     path('api/upload-chat-image/', views.upload_chat_image_api, name='upload_chat_image_api'),
 ]
 
