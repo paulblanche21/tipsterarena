@@ -534,16 +534,13 @@ class Follow(models.Model):
 class Share(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='shares')
     tip = models.ForeignKey(Tip, on_delete=models.CASCADE, related_name='shares', null=True, blank=True)
-    comment = models.ForeignKey('Comment', on_delete=models.CASCADE, related_name='shares', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'tip', 'comment')
+        unique_together = ('user', 'tip')
 
     def __str__(self):
-        if self.tip:
-            return f"{self.user.username} shared {self.tip.user.username}'s tip"
-        return f"{self.user.username} shared a comment"
+        return f"{self.user.username} shared {self.tip}"
 
 class Comment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
