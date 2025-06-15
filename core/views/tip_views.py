@@ -197,39 +197,35 @@ def post_tip(request):
 class PostTipView(LoginRequiredMixin, View):
     """Class-based view for posting a new tip."""
     def post(self, request):
+        """Handle posting a new tip."""
         try:
-            logger.info("Received POST request to PostTipView")
+            logger.info("Received POST request to post_tip")
+            logger.info("POST data: %s", request.POST)
+            logger.info("FILES data: %s", request.FILES)
             
-            # Get all form data at once
-            form_data = request.POST.dict()
-            files = request.FILES.dict()
-            
-            logger.info("Form data: %s", form_data)
-            logger.info("Files data: %s", files)
-            
-            text = form_data.get('tip_text')
-            audience = form_data.get('audience', 'everyone')
-            sport = form_data.get('sport', 'golf')
-            image = files.get('image')
-            gif_url = form_data.get('gif')
-            location = form_data.get('location')
+            text = request.POST.get('tip_text')
+            audience = request.POST.get('audience', 'everyone')
+            sport = request.POST.get('sport', 'golf')
+            image = request.FILES.get('image')
+            gif_url = request.POST.get('gif')
+            location = request.POST.get('location')
             
             logger.info("Basic fields: text=%s, audience=%s, sport=%s", text, audience, sport)
             
             # Handle JSON fields safely
             try:
-                poll = json.loads(form_data.get('poll', '{}'))
+                poll = json.loads(request.POST.get('poll', '{}'))
                 if not isinstance(poll, dict):
-                    logger.error("Invalid poll format: %s", form_data.get('poll'))
+                    logger.error("Invalid poll format: %s", request.POST.get('poll'))
                     return JsonResponse({'success': False, 'error': 'Invalid poll format'}, status=400)
             except json.JSONDecodeError as e:
                 logger.error("JSON decode error for poll: %s", str(e))
                 return JsonResponse({'success': False, 'error': 'Invalid poll JSON'}, status=400)
                 
             try:
-                emojis = json.loads(form_data.get('emojis', '{}'))
+                emojis = json.loads(request.POST.get('emojis', '{}'))
                 if not isinstance(emojis, dict):
-                    logger.error("Invalid emojis format: %s", form_data.get('emojis'))
+                    logger.error("Invalid emojis format: %s", request.POST.get('emojis'))
                     return JsonResponse({'success': False, 'error': 'Invalid emojis format'}, status=400)
             except json.JSONDecodeError as e:
                 logger.error("JSON decode error for emojis: %s", str(e))
@@ -237,19 +233,19 @@ class PostTipView(LoginRequiredMixin, View):
 
             # Handle release_schedule as a JSON field
             try:
-                release_schedule = json.loads(form_data.get('release_schedule', '{}'))
+                release_schedule = json.loads(request.POST.get('release_schedule', '{}'))
                 if not isinstance(release_schedule, dict):
-                    logger.error("Invalid release_schedule format: %s", form_data.get('release_schedule'))
+                    logger.error("Invalid release_schedule format: %s", request.POST.get('release_schedule'))
                     return JsonResponse({'success': False, 'error': 'Invalid release_schedule format'}, status=400)
             except json.JSONDecodeError as e:
                 logger.error("JSON decode error for release_schedule: %s", str(e))
                 return JsonResponse({'success': False, 'error': 'Invalid release_schedule JSON'}, status=400)
 
             # New fields
-            odds_type = form_data.get('odds_type')
-            bet_type = form_data.get('bet_type')
-            each_way = form_data.get('each_way', 'no')
-            confidence = form_data.get('confidence')
+            odds_type = request.POST.get('odds_type')
+            bet_type = request.POST.get('bet_type')
+            each_way = request.POST.get('each_way', 'no')
+            confidence = request.POST.get('confidence')
             
             logger.info("Odds fields: odds_type=%s, bet_type=%s, each_way=%s, confidence=%s", 
                        odds_type, bet_type, each_way, confidence)
@@ -267,11 +263,11 @@ class PostTipView(LoginRequiredMixin, View):
             
             # Only process odds if we have both odds_type and actual odds values
             if odds_type and (
-                (odds_type == 'decimal' and form_data.get('odds-input-decimal', '').strip()) or
-                (odds_type == 'fractional' and form_data.get('odds-numerator', '').strip() and form_data.get('odds-denominator', '').strip())
+                (odds_type == 'decimal' and request.POST.get('odds-input-decimal', '').strip()) or
+                (odds_type == 'fractional' and request.POST.get('odds-numerator', '').strip() and request.POST.get('odds-denominator', '').strip())
             ):
                 if odds_type == 'decimal':
-                    odds_value = form_data.get('odds-input-decimal')
+                    odds_value = request.POST.get('odds-input-decimal')
                     logger.info("Decimal odds value: %s", odds_value)
                     if odds_value and odds_value.strip():
                         try:
@@ -284,8 +280,8 @@ class PostTipView(LoginRequiredMixin, View):
                             logger.error("Invalid decimal odds value: %s", str(e))
                             return JsonResponse({'success': False, 'error': 'Invalid decimal odds value'}, status=400)
                 elif odds_type == 'fractional':
-                    numerator = form_data.get('odds-numerator')
-                    denominator = form_data.get('odds-denominator')
+                    numerator = request.POST.get('odds-numerator')
+                    denominator = request.POST.get('odds-denominator')
                     logger.info("Fractional odds: numerator=%s, denominator=%s", numerator, denominator)
                     if numerator and denominator and numerator.strip() and denominator.strip():
                         try:
@@ -340,7 +336,7 @@ class PostTipView(LoginRequiredMixin, View):
                 tip.save()
                 logger.info("Tip saved successfully with ID: %s", tip.id)
             except ValidationError as e:
-                logger.error("Validation error in PostTipView: %s", str(e))
+                logger.error("Validation error in post_tip: %s", str(e))
                 return JsonResponse({
                     'success': False,
                     'error': str(e)
@@ -469,115 +465,111 @@ class LikeTipView(LoginRequiredMixin, View):
                 'error': str(e)
             }, status=500)
 
-@login_required
-@require_POST
-def share_tip(request):
-    """Handle sharing and unsharing tips."""
-    tip_id = request.POST.get('tip_id')
-    tip = get_object_or_404(Tip, id=tip_id)
-    user = request.user
+class ShareTipView(LoginRequiredMixin, View):
+    def post(self, request):
+        """Handle sharing a tip."""
+        tip_id = request.POST.get('tip_id')
+        if not tip_id:
+            return JsonResponse({'success': False, 'error': 'Tip ID is required'}, status=400)
+        
+        tip = get_object_or_404(Tip, id=tip_id)
+        Share.objects.create(user=request.user, tip=tip)
+        
+        return JsonResponse({'success': True, 'message': 'Tip shared successfully'})
 
-    share, created = Share.objects.get_or_create(user=user, tip=tip)
-    if created:
-        return JsonResponse({'success': True, 'message': 'Tip shared', 'share_count': tip.shares.count()})
-    else:
-        share.delete()
-        return JsonResponse({'success': True, 'message': 'Share removed', 'share_count': tip.shares.count()})
+class CommentTipView(LoginRequiredMixin, View):
+    def post(self, request):
+        """Handle adding comments to tips."""
+        tip_id = request.POST.get('tip_id')
+        comment_text = request.POST.get('comment_text', '')
+        parent_id = request.POST.get('parent_id')
+        gif_url = request.POST.get('gif', '')
+        logger.info("Received comment_tip request: tip_id=%s, comment_text=%s, parent_id=%s", tip_id, comment_text, parent_id)
 
-@login_required
-@require_POST
-def comment_tip(request):
-    """Handle adding comments to tips."""
-    tip_id = request.POST.get('tip_id')
-    comment_text = request.POST.get('comment_text', '')
-    parent_id = request.POST.get('parent_id')
-    gif_url = request.POST.get('gif', '')
-    logger.info("Received comment_tip request: tip_id=%s, comment_text=%s, parent_id=%s", tip_id, comment_text, parent_id)
+        if not tip_id:
+            logger.error("Missing tip_id: tip_id=%s", tip_id)
+            return JsonResponse({'success': False, 'error': 'Missing tip_id'}, status=400)
 
-    if not tip_id:
-        logger.error("Missing tip_id: tip_id=%s", tip_id)
-        return JsonResponse({'success': False, 'error': 'Missing tip_id'}, status=400)
+        try:
+            tip = Tip.objects.get(id=tip_id)
+            parent_comment = Comment.objects.get(id=parent_id) if parent_id else None
+            comment = Comment.objects.create(
+                user=request.user,
+                tip=tip,
+                content=comment_text,
+                parent_comment=parent_comment,
+                image=request.FILES.get('image'),
+                gif_url=gif_url
+            )
+            logger.info("Comment created successfully for tip_id: %s, comment_id=%s", tip_id, comment.id)
 
-    try:
-        tip = Tip.objects.get(id=tip_id)
-        parent_comment = Comment.objects.get(id=parent_id) if parent_id else None
-        comment = Comment.objects.create(
-            user=request.user,
-            tip=tip,
-            content=comment_text,
-            parent_comment=parent_comment,
-            image=request.FILES.get('image'),
-            gif_url=gif_url
-        )
-        logger.info("Comment created successfully for tip_id: %s, comment_id=%s", tip_id, comment.id)
-
-        avatar_url = (request.user.userprofile.avatar.url
-                      if hasattr(request.user, 'userprofile') and request.user.userprofile.avatar
-                      else settings.STATIC_URL + 'img/default-avatar.png')
-        comment_data = {
-            'id': comment.id,
-            'user__username': request.user.username,
-            'content': comment.content,
-            'created_at': comment.created_at.isoformat(),
-            'avatar_url': avatar_url,
-            'parent_id': parent_id,
-            'parent_username': parent_comment.user.username if parent_comment else None,
-            'like_count': 0,
-            'share_count': 0,
-            'reply_count': 0,
-            'image': comment.image.url if comment.image else None,
-            'gif_url': comment.gif_url if comment.gif_url else None
-        }
-        return JsonResponse({
-            'success': True,
-            'message': 'Comment added',
-            'comment_count': tip.comments.count(),
-            'comment_id': comment.id,
-            'data': comment_data
-        })
-    except Tip.DoesNotExist:
-        logger.error("Tip not found: tip_id=%s", tip_id)
-        return JsonResponse({'success': False, 'error': 'Tip not found'}, status=404)
-    except Comment.DoesNotExist:
-        logger.error("Parent comment not found: parent_id=%s", parent_id)
-        return JsonResponse({'success': False, 'error': 'Parent comment not found'}, status=404)
-    except Exception as e:
-        logger.error("Error creating comment: %s", str(e))
-        return JsonResponse({'success': False, 'error': 'An error occurred while commenting.'}, status=500)
-
-@login_required
-def get_tip_comments(request, tip_id):
-    """Fetch comments for a tip."""
-    logger.info("Fetching comments for tip_id: %s", tip_id)
-    try:
-        tip = Tip.objects.get(id=tip_id)
-        comments = tip.comments.all().order_by('-created_at')
-        comments_data = []
-        for comment in comments:
-            try:
-                profile = comment.user.userprofile
-                avatar_url = profile.avatar.url if profile.avatar else settings.STATIC_URL + 'img/default-avatar.png'
-            except UserProfile.DoesNotExist:
-                avatar_url = settings.STATIC_URL + 'img/default-avatar.png'
-            comments_data.append({
+            avatar_url = (request.user.userprofile.avatar.url
+                          if hasattr(request.user, 'userprofile') and request.user.userprofile.avatar
+                          else settings.STATIC_URL + 'img/default-avatar.png')
+            comment_data = {
                 'id': comment.id,
-                'user__username': comment.user.username,
+                'user__username': request.user.username,
                 'content': comment.content,
                 'created_at': comment.created_at.isoformat(),
-                'like_count': comment.likes.count(),
-                'share_count': comment.shares.count(),
-                'reply_count': comment.replies.count(),
                 'avatar_url': avatar_url,
-                'parent_id': comment.parent_comment.id if comment.parent_comment else None,
-                'parent_username': comment.parent_comment.user.username if comment.parent_comment else None,
+                'parent_id': parent_id,
+                'parent_username': parent_comment.user.username if parent_comment else None,
+                'like_count': 0,
+                'share_count': 0,
+                'reply_count': 0,
                 'image': comment.image.url if comment.image else None,
                 'gif_url': comment.gif_url if comment.gif_url else None
+            }
+            return JsonResponse({
+                'success': True,
+                'message': 'Comment added',
+                'comment_count': tip.comments.count(),
+                'comment_id': comment.id,
+                'data': comment_data
             })
-        logger.info("Found %s comments (including replies)", len(comments_data))
-        return JsonResponse({'success': True, 'comments': comments_data})
-    except Tip.DoesNotExist:
-        logger.error("Tip not found: tip_id=%s", tip_id)
-        return JsonResponse({'success': False, 'error': 'Tip not found'}, status=404)
+        except Tip.DoesNotExist:
+            logger.error("Tip not found: tip_id=%s", tip_id)
+            return JsonResponse({'success': False, 'error': 'Tip not found'}, status=404)
+        except Comment.DoesNotExist:
+            logger.error("Parent comment not found: parent_id=%s", parent_id)
+            return JsonResponse({'success': False, 'error': 'Parent comment not found'}, status=404)
+        except Exception as e:
+            logger.error("Error creating comment: %s", str(e))
+            return JsonResponse({'success': False, 'error': 'An error occurred while commenting.'}, status=500)
+
+class GetTipCommentsView(LoginRequiredMixin, View):
+    def get(self, request, tip_id):
+        """Fetch comments for a tip."""
+        logger.info("Fetching comments for tip_id: %s", tip_id)
+        try:
+            tip = Tip.objects.get(id=tip_id)
+            comments = tip.comments.all().order_by('-created_at')
+            comments_data = []
+            for comment in comments:
+                try:
+                    profile = comment.user.userprofile
+                    avatar_url = profile.avatar.url if profile.avatar else settings.STATIC_URL + 'img/default-avatar.png'
+                except UserProfile.DoesNotExist:
+                    avatar_url = settings.STATIC_URL + 'img/default-avatar.png'
+                comments_data.append({
+                    'id': comment.id,
+                    'user__username': comment.user.username,
+                    'content': comment.content,
+                    'created_at': comment.created_at.isoformat(),
+                    'like_count': comment.likes.count(),
+                    'share_count': comment.shares.count(),
+                    'reply_count': comment.replies.count(),
+                    'avatar_url': avatar_url,
+                    'parent_id': comment.parent_comment.id if comment.parent_comment else None,
+                    'parent_username': comment.parent_comment.user.username if comment.parent_comment else None,
+                    'image': comment.image.url if comment.image else None,
+                    'gif_url': comment.gif_url if comment.gif_url else None
+                })
+            logger.info("Found %s comments (including replies)", len(comments_data))
+            return JsonResponse({'success': True, 'comments': comments_data})
+        except Tip.DoesNotExist:
+            logger.error("Tip not found: tip_id=%s", tip_id)
+            return JsonResponse({'success': False, 'error': 'Tip not found'}, status=404)
 
 class TipDetailView(LoginRequiredMixin, View):
     """Display detailed view of a single tip."""
@@ -604,75 +596,75 @@ class TipDetailView(LoginRequiredMixin, View):
         
         return render(request, 'core/tip_detail.html', context)
 
-@login_required
-def tip_list(request):
-    """Display a list of tips with filtering options."""
-    try:
-        # Get filter parameters
-        sport = request.GET.get('sport')
-        user_id = request.GET.get('user_id')
-        search_query = request.GET.get('search')
-        
-        # Base queryset
-        tips = Tip.objects.select_related('user', 'user__userprofile').prefetch_related(
-            'likes', 'shares', 'comments'
-        ).order_by('-created_at')
-        
-        # Apply filters
-        if sport:
-            tips = tips.filter(sport=sport)
-        if user_id:
-            tips = tips.filter(user_id=user_id)
-        if search_query:
-            tips = tips.filter(
-                Q(text__icontains=search_query) |
-                Q(user__username__icontains=search_query)
+class TipListView(LoginRequiredMixin, View):
+    def get(self, request):
+        """Display a list of tips with filtering options."""
+        try:
+            # Get filter parameters
+            sport = request.GET.get('sport')
+            user_id = request.GET.get('user_id')
+            search_query = request.GET.get('search')
+            
+            # Base queryset
+            tips = Tip.objects.select_related('user', 'user__userprofile').prefetch_related(
+                'likes', 'shares', 'comments'
+            ).order_by('-created_at')
+            
+            # Apply filters
+            if sport:
+                tips = tips.filter(sport=sport)
+            if user_id:
+                tips = tips.filter(user_id=user_id)
+            if search_query:
+                tips = tips.filter(
+                    Q(text__icontains=search_query) |
+                    Q(user__username__icontains=search_query)
+                )
+            
+            # Get interaction counts
+            tips = tips.annotate(
+                like_count=Count('likes'),
+                share_count=Count('shares'),
+                comment_count=Count('comments')
             )
+            
+            context = {
+                'tips': tips,
+                'sport': sport,
+                'user_id': user_id,
+                'search_query': search_query
+            }
+            
+            return render(request, 'core/tip_list.html', context)
+            
+        except Exception as e:
+            logger.error(f"Error in tip_list view: {str(e)}")
+            return JsonResponse(
+                {'error': 'Internal server error', 'detail': str(e)},
+                status=500
+            )
+
+class VerifyTipView(LoginRequiredMixin, View):
+    def post(self, request, tip_id):
+        """Verify a tip's outcome and award badges if applicable."""
+        if not request.user.is_staff:
+            return JsonResponse({'error': 'Unauthorized'}, status=403)
+
+        tip = get_object_or_404(Tip, id=tip_id)
+        status = request.POST.get('status')
         
-        # Get interaction counts
-        tips = tips.annotate(
-            like_count=Count('likes'),
-            share_count=Count('shares'),
-            comment_count=Count('comments')
-        )
-        
-        context = {
-            'tips': tips,
-            'sport': sport,
-            'user_id': user_id,
-            'search_query': search_query
-        }
-        
-        return render(request, 'core/tip_list.html', context)
-        
-    except Exception as e:
-        logger.error(f"Error in tip_list view: {str(e)}")
-        return JsonResponse(
-            {'error': 'Internal server error', 'detail': str(e)},
-            status=500
-        )
+        if status not in ['won', 'lost', 'void']:
+            return JsonResponse({'error': 'Invalid status'}, status=400)
 
-@login_required
-def verify_tip(request, tip_id):
-    """Verify a tip's outcome and award badges if applicable."""
-    if not request.user.is_staff:
-        return JsonResponse({'error': 'Unauthorized'}, status=403)
+        tip.status = status
+        tip.save()
 
-    tip = get_object_or_404(Tip, id=tip_id)
-    status = request.POST.get('status')
-    
-    if status not in ['won', 'lost', 'void']:
-        return JsonResponse({'error': 'Invalid status'}, status=400)
+        # Check and award badges
+        award_badges(tip.user.userprofile)
 
-    tip.status = status
-    tip.save()
-
-    # Check and award badges
-    award_badges(tip.user.userprofile)
-
-    return JsonResponse({
-        'success': True,
-        'message': f'Tip marked as {status}',
-        'tip_id': tip.id,
-        'status': status
-    }) 
+        return JsonResponse({
+            'success': True,
+            'message': f'Tip marked as {status}',
+            'tip_id': tip.id,
+            'status': status
+        }) 
