@@ -34,19 +34,17 @@ urlpatterns = [
         name='profile_edit'),
 
     # Authentication routes
-    path('login/', views.login_view, name='login'),
+    path('login/', views.LoginView.as_view(), name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='landing'), name='logout'),
     path('social-auth/', include('social_django.urls', namespace='social')),
-    path('signup/', views.signup_view, name='signup'),
-    path('kyc/', views.kyc_view, name='kyc'),
-    path('profile-setup/', views.profile_setup_view, name='profile_setup'),
-    path('profile-setup/skip/', views.skip_profile_setup, name='skip_profile_setup'),
-    path('payment/', views.payment_view, name='payment'),
-    path('payment/create-checkout-session/',
-         views.create_checkout_session,
-         name='create_checkout_session'),
-    path('payment/success/', views.payment_success, name='payment_success'),
-    path('payment/skip/', views.skip_payment, name='skip_payment'),
+    path('signup/', views.SignupView.as_view(), name='signup'),
+    path('kyc/', views.KYCView.as_view(), name='kyc'),
+    path('profile-setup/', views.ProfileSetupView.as_view(), name='profile_setup'),
+    path('skip-profile-setup/', views.SkipProfileSetupView.as_view(), name='skip_profile_setup'),
+    path('payment/', views.PaymentView.as_view(), name='payment'),
+    path('create-checkout-session/', views.CreateCheckoutSessionView.as_view(), name='create_checkout_session'),
+    path('payment/success/', views.PaymentSuccessView.as_view(), name='payment_success'),
+    path('skip-payment/', views.SkipPaymentView.as_view(), name='skip_payment'),
 
     # Messaging routes
     path('messages/', views.messages_view, name='messages'),

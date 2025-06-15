@@ -64,32 +64,33 @@
                 submitButton.disabled = false;
                 submitButton.textContent = 'Pay Now';
             } else {
-                fetch('/payment/create-checkout-session/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}',
-                    },
-                    body: JSON.stringify({
-                        plan: plan,
-                        payment_method_id: paymentMethod.id,
-                    }),
-                })
-                .then(response => response.json())
-                .then(data => {
+                try {
+                    const response = await fetch('/payment/create-checkout-session/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}',
+                        },
+                        body: JSON.stringify({
+                            plan: plan,
+                            payment_method_id: paymentMethod.id,
+                        }),
+                    });
+                    
+                    const data = await response.json();
+                    
                     if (data.error) {
                         cardErrors.textContent = data.error;
                         submitButton.disabled = false;
                         submitButton.textContent = 'Pay Now';
                     } else {
-                        stripe.redirectToCheckout({ sessionId: data.session_id });
+                        await stripe.redirectToCheckout({ sessionId: data.session_id });
                     }
-                })
-                .catch(error => {
+                } catch (error) {
                     cardErrors.textContent = 'An error occurred. Please try again.';
                     submitButton.disabled = false;
                     submitButton.textContent = 'Pay Now';
-                });
+                }
             }
         });
     </script>

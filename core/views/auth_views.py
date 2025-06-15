@@ -1,15 +1,15 @@
 """Authentication related views for Tipster Arena."""
 
-import json
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.http import JsonResponse
 from django.conf import settings
 from django.db import transaction
 from django.contrib.auth.models import Group
 from django.core.cache import cache
+from django.views import View
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 from ..forms import CustomUserCreationForm, KYCForm, UserProfileForm
@@ -17,22 +17,25 @@ from ..forms import CustomUserCreationForm, KYCForm, UserProfileForm
 import stripe
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
-def login_view(request):
+class LoginView(View):
     """Handle user authentication and login."""
-    if request.user.is_authenticated:
-        return redirect('home')
+    def get(self, request):
+        if request.user.is_authenticated:
+            return redirect('home')
+        form = AuthenticationForm()
+        return render(request, 'core/login.html', {'form': form})
     
-    # Rate limiting
-    ip = request.META.get('REMOTE_ADDR')
-    cache_key = f'login_attempts_{ip}'
-    attempts = cache.get(cache_key, 0)
-    
-    if attempts >= 5:  # Maximum 5 attempts
-        return JsonResponse({
-            'error': 'Too many login attempts. Please try again later.'
-        }, status=429)
-    
-    if request.method == 'POST':
+    def post(self, request):
+        # Rate limiting
+        ip = request.META.get('REMOTE_ADDR')
+        cache_key = f'login_attempts_{ip}'
+        attempts = cache.get(cache_key, 0)
+        
+        if attempts >= 5:  # Maximum 5 attempts
+            return JsonResponse({
+                'error': 'Too many login attempts. Please try again later.'
+            }, status=429)
+        
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
             username = form.cleaned_data.get('username')
@@ -46,13 +49,15 @@ def login_view(request):
             else:
                 # Increment failed attempts
                 cache.set(cache_key, attempts + 1, 300)  # Store for 5 minutes
-    else:
-        form = AuthenticationForm()
-    return render(request, 'core/login.html', {'form': form})
+        return render(request, 'core/login.html', {'form': form})
 
-def signup_view(request):
+class SignupView(View):
     """Handle user registration and account creation."""
-    if request.method == 'POST':
+    def get(self, request):
+        form = CustomUserCreationForm()
+        return render(request, 'core/signup.html', {'form': form})
+    
+    def post(self, request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             with transaction.atomic():
@@ -74,16 +79,19 @@ def signup_view(request):
                 # Log user in
                 login(request, user)
                 return redirect('kyc')
-    else:
-        form = CustomUserCreationForm()
-    return render(request, 'core/signup.html', {'form': form})
+        return render(request, 'core/signup.html', {'form': form})
 
-@login_required
-def kyc_view(request):
+class KYCView(LoginRequiredMixin, View):
     """Handle KYC (Know Your Customer) verification process."""
-    if request.user.userprofile.kyc_completed:
-        return redirect('profile_setup')
-    if request.method == 'POST':
+    def get(self, request):
+        if request.user.userprofile.kyc_completed:
+            return redirect('profile_setup')
+        form = KYCForm()
+        return render(request, 'core/kyc.html', {'form': form})
+    
+    def post(self, request):
+        if request.user.userprofile.kyc_completed:
+            return redirect('profile_setup')
         form = KYCForm(request.POST)
         if form.is_valid():
             profile = request.user.userprofile
@@ -93,94 +101,112 @@ def kyc_view(request):
             profile.kyc_completed = True
             profile.save()
             return redirect('profile_setup')
-    else:
-        form = KYCForm()
-    return render(request, 'core/kyc.html', {'form': form})
+        return render(request, 'core/kyc.html', {'form': form})
 
-@login_required
-def profile_setup_view(request):
-    """Handle user profile setup and customization."""
-    if request.user.userprofile.profile_completed:
-        return redirect('payment')
-    if request.method == 'POST':
-        form = UserProfileForm(request.POST, request.FILES, instance=request.user.userprofile)
-        if form.is_valid():
-            form.save()
-            request.user.userprofile.profile_completed = True
-            request.user.userprofile.save()
+class ProfileSetupView(LoginRequiredMixin, View):
+    """Handle user profile setup after KYC."""
+    def get(self, request):
+        if not request.user.userprofile.kyc_completed:
+            return redirect('kyc')
+        if request.user.userprofile.profile_completed:
             return redirect('payment')
-    else:
-        form = UserProfileForm(instance=request.user.userprofile)
-    return render(request, 'core/profile_setup.html', {'form': form})
+        form = UserProfileForm()
+        return render(request, 'core/profile_setup.html', {'form': form})
+    
+    def post(self, request):
+        if not request.user.userprofile.kyc_completed:
+            return redirect('kyc')
+        if request.user.userprofile.profile_completed:
+            return redirect('payment')
+        form = UserProfileForm(request.POST, request.FILES)
+        if form.is_valid():
+            profile = request.user.userprofile
+            if 'avatar' in request.FILES:
+                profile.avatar = request.FILES['avatar']
+            if 'banner' in request.FILES:
+                profile.banner = request.FILES['banner']
+            profile.profile_completed = True
+            profile.save()
+            return redirect('payment')
+        return render(request, 'core/profile_setup.html', {'form': form})
 
-@login_required
-def skip_profile_setup(request):
-    """Allow users to skip profile setup and proceed to payment."""
-    if not request.user.userprofile.profile_completed:
-        request.user.userprofile.profile_completed = True
-        request.user.userprofile.save()
-    return redirect('payment')
+class SkipProfileSetupView(LoginRequiredMixin, View):
+    """Allow users to skip profile setup."""
+    def get(self, request):
+        if not request.user.userprofile.kyc_completed:
+            return redirect('kyc')
+        profile = request.user.userprofile
+        profile.profile_completed = True
+        profile.save()
+        return redirect('payment')
+    
+    def post(self, request):
+        if not request.user.userprofile.kyc_completed:
+            return redirect('kyc')
+        profile = request.user.userprofile
+        profile.profile_completed = True
+        profile.save()
+        return redirect('payment')
 
-@login_required
-def payment_view(request):
-    """Handle payment processing and subscription setup."""
-    if request.user.userprofile.payment_completed:
-        return redirect('home')
-    return render(request, 'core/payment.html', {
-        'stripe_publishable_key': settings.STRIPE_PUBLISHABLE_KEY,
-    })
+class PaymentView(LoginRequiredMixin, View):
+    """Handle payment page display."""
+    def get(self, request):
+        if not request.user.userprofile.profile_completed:
+            return redirect('profile_setup')
+        if request.user.userprofile.payment_completed:
+            return redirect('home')
+        return render(request, 'core/payment.html', {
+            'stripe_publishable_key': settings.STRIPE_PUBLISHABLE_KEY
+        })
 
-@login_required
-def create_checkout_session(request):
-    """Create a Stripe checkout session for subscription payment."""
-    if request.method != 'POST':
-        return JsonResponse({'error': 'Invalid request method'}, status=400)
-
-    data = json.loads(request.body)
-    plan = data.get('plan')
-    payment_method_id = data.get('payment_method_id')
-
-    if not plan or not payment_method_id:
-        return JsonResponse({'error': 'Missing plan or payment method'}, status=400)
-
-    try:
-        if not request.user.userprofile.stripe_customer_id:
-            customer = stripe.Customer.create(
-                email=request.user.email,
-                payment_method=payment_method_id,
-                invoice_settings={'default_payment_method': payment_method_id},
+class CreateCheckoutSessionView(LoginRequiredMixin, View):
+    """Create a Stripe checkout session."""
+    def post(self, request):
+        if not request.user.userprofile.profile_completed:
+            return redirect('profile_setup')
+        if request.user.userprofile.payment_completed:
+            return redirect('home')
+        
+        try:
+            checkout_session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=[{
+                    'price': settings.STRIPE_PRICE_ID,
+                    'quantity': 1,
+                }],
+                mode='subscription',
+                success_url=request.build_absolute_uri('/payment/success/'),
+                cancel_url=request.build_absolute_uri('/payment/'),
+                client_reference_id=str(request.user.id),
             )
-            request.user.userprofile.stripe_customer_id = customer.id
-            request.user.userprofile.save()
-        else:
-            customer = stripe.Customer.retrieve(request.user.userprofile.stripe_customer_id)
+            return JsonResponse({'id': checkout_session.id})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
 
-        price_id = settings.STRIPE_MONTHLY_PRICE_ID if plan == 'monthly' else settings.STRIPE_YEARLY_PRICE_ID
-        session = stripe.checkout.Session.create(
-            customer=customer.id,
-            payment_method_types=['card'],
-            subscription_data={
-                'items': [{'price': price_id}],
-            },
-            mode='subscription',
-            success_url=request.build_absolute_uri('/payment/success/'),
-            cancel_url=request.build_absolute_uri('/payment/'),
-        )
-        return JsonResponse({'session_id': session.id})
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
-
-@login_required
-def payment_success(request):
+class PaymentSuccessView(LoginRequiredMixin, View):
     """Handle successful payment completion."""
-    request.user.userprofile.payment_completed = True
-    request.user.userprofile.save()
-    return redirect('home')
+    def get(self, request):
+        if not request.user.userprofile.profile_completed:
+            return redirect('profile_setup')
+        profile = request.user.userprofile
+        profile.payment_completed = True
+        profile.save()
+        return redirect('home')
 
-@login_required
-def skip_payment(request):
-    """Allow users to skip payment and proceed to home page."""
-    if not request.user.userprofile.payment_completed:
-        request.user.userprofile.payment_completed = True
-        request.user.userprofile.save()
-    return redirect('home') 
+class SkipPaymentView(LoginRequiredMixin, View):
+    """Allow users to skip payment (for testing)."""
+    def get(self, request):
+        profile = request.user.userprofile
+        if profile.profile_completed:
+            profile.payment_completed = True
+            profile.save()
+            return redirect('home')
+        return redirect('payment')
+
+    def post(self, request):
+        profile = request.user.userprofile
+        if profile.profile_completed:
+            profile.payment_completed = True
+            profile.save()
+            return redirect('home')
+        return redirect('payment') 

@@ -2,9 +2,15 @@
 
 __all__ = [
     # Auth views
-    'login_view', 'signup_view', 'kyc_view', 'profile_setup_view',
-    'skip_profile_setup', 'payment_view', 'create_checkout_session',
-    'payment_success', 'skip_payment',
+    'LoginView',
+    'SignupView',
+    'KYCView',
+    'ProfileSetupView',
+    'SkipProfileSetupView',
+    'PaymentView',
+    'CreateCheckoutSessionView',
+    'PaymentSuccessView',
+    'SkipPaymentView',
 
     # Tip views
     'PostTipView', 'EditTipView', 'DeleteTipView', 'LikeTipView',
@@ -53,9 +59,15 @@ __all__ = [
 ]
 
 from .auth_views import (
-    login_view, signup_view, kyc_view, profile_setup_view,
-    skip_profile_setup, payment_view, create_checkout_session,
-    payment_success, skip_payment
+    LoginView,
+    SignupView,
+    KYCView,
+    ProfileSetupView,
+    SkipProfileSetupView,
+    PaymentView,
+    CreateCheckoutSessionView,
+    PaymentSuccessView,
+    SkipPaymentView,
 )
 
 from .tip_views import (
