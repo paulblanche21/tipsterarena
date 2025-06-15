@@ -69,15 +69,12 @@ __all__ = [
     'SubscribeToTipsterView',
     'CancelSubscriptionView',
     'TopTipstersLeaderboardView',
-    'stripe_webhook',
+    'StripeWebhookView',
 
     # API views
-    'current_user_api',
-    'upload_chat_image_api',
-    'suggested_users_api',
-    'trending_tips_api',
-
-    # Trending views
+    'CurrentUserView',
+    'UploadChatImageView',
+    'SuggestedUsersView',
     'TrendingTipsView',
 ]
 
@@ -156,14 +153,12 @@ from .subscription_views import (
     SubscribeToTipsterView,
     CancelSubscriptionView,
     TopTipstersLeaderboardView,
-    stripe_webhook,
+    StripeWebhookView,
 )
 
 from .api_views import (
-    current_user_api,
-    upload_chat_image_api,
-    suggested_users_api,
-    trending_tips_api,
+    CurrentUserView,
+    UploadChatImageView,
+    SuggestedUsersView,
+    TrendingTipsView,
 )
-
-from .trending_views import TrendingTipsView 

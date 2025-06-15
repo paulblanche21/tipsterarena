@@ -17,6 +17,7 @@ from django.core.exceptions import ValidationError
 from datetime import timedelta
 from django.views.generic import View
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.utils.decorators import method_decorator
 
 from ..models import TipsterTier, TipsterSubscription, UserProfile, User, Follow
 
@@ -25,6 +26,42 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 
 # Set up logging
 logger = logging.getLogger(__name__)
+
+class CSRFExemptMixin:
+    """Mixin to exempt a view from CSRF verification."""
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+class StripeWebhookView(CSRFExemptMixin, View):
+    """Handle Stripe webhook events."""
+    
+    def post(self, request):
+        """Process incoming webhook events."""
+        payload = request.body
+        sig_header = request.META['HTTP_STRIPE_SIGNATURE']
+
+        try:
+            event = stripe.Webhook.construct_event(
+                payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
+            )
+        except ValueError:
+            return JsonResponse({'error': 'Invalid payload'}, status=400)
+        except stripe.error.SignatureVerificationError:
+            return JsonResponse({'error': 'Invalid signature'}, status=400)
+
+        if event.type == 'customer.subscription.created':
+            handle_subscription_created(event.data.object)
+        elif event.type == 'customer.subscription.updated':
+            handle_subscription_updated(event.data.object)
+        elif event.type == 'customer.subscription.deleted':
+            handle_subscription_deleted(event.data.object)
+        elif event.type == 'invoice.payment_succeeded':
+            handle_payment_succeeded(event.data.object)
+        elif event.type == 'invoice.payment_failed':
+            handle_payment_failed(event.data.object)
+
+        return JsonResponse({'status': 'success'})
 
 class BecomeTipsterView(LoginRequiredMixin, View):
     """Handle step 1 of becoming a pro tipster."""
@@ -359,35 +396,6 @@ class CancelSubscriptionView(LoginRequiredMixin, View):
                 'success': False,
                 'error': "An error occurred while cancelling your subscription"
             }, status=500)
-
-@csrf_exempt
-@require_POST
-def stripe_webhook(request):
-    """Handle Stripe webhook events."""
-    payload = request.body
-    sig_header = request.META['HTTP_STRIPE_SIGNATURE']
-
-    try:
-        event = stripe.Webhook.construct_event(
-            payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
-        )
-    except ValueError:
-        return JsonResponse({'error': 'Invalid payload'}, status=400)
-    except stripe.error.SignatureVerificationError:
-        return JsonResponse({'error': 'Invalid signature'}, status=400)
-
-    if event.type == 'customer.subscription.created':
-        handle_subscription_created(event.data.object)
-    elif event.type == 'customer.subscription.updated':
-        handle_subscription_updated(event.data.object)
-    elif event.type == 'customer.subscription.deleted':
-        handle_subscription_deleted(event.data.object)
-    elif event.type == 'invoice.payment_succeeded':
-        handle_payment_succeeded(event.data.object)
-    elif event.type == 'invoice.payment_failed':
-        handle_payment_failed(event.data.object)
-
-    return JsonResponse({'status': 'success'})
 
 def handle_subscription_created(subscription):
     """Handle new subscription creation."""

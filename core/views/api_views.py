@@ -18,159 +18,143 @@ from django.db.models import Q, Count
 import logging
 
 __all__ = [
-    'current_user_api',
-    'upload_chat_image_api',
-    'suggested_users_api',
-    'trending_tips_api',
+    'CurrentUserView',
+    'UploadChatImageView',
+    'SuggestedUsersView',
     'VerifyTipView',
     'BurstRateThrottle',
     'SustainedRateThrottle',
     'TrendingTipsView'
 ]
 
-@login_required
-def current_user_api(request):
-    """Return current user's information."""
-    user = request.user
-    try:
-        profile = user.userprofile
-        return JsonResponse({
-            'success': True,
-            'avatar_url': profile.avatar.url if profile.avatar else None,
-            'handle': profile.display_name or user.username,
-            'is_admin': user.is_staff,
-            'profile': {
-                'display_name': profile.display_name or user.username,
-                'avatar': profile.avatar.url if profile.avatar else None,
-                'description': profile.description or '',
-                'kyc_completed': profile.kyc_completed,
-                'profile_completed': profile.profile_completed,
-                'payment_completed': profile.payment_completed,
-            }
-        })
-    except Exception:  # Removed unused 'e' variable
-        # Return a valid profile object with default values
-        return JsonResponse({
-            'success': True,
-            'avatar_url': None,
-            'handle': user.username,
-            'is_admin': user.is_staff,
-            'profile': {
-                'display_name': user.username,
-                'avatar': None,
-                'description': '',
-                'kyc_completed': False,
-                'profile_completed': False,
-                'payment_completed': False,
-            }
-        })
-
-@login_required
-def upload_chat_image_api(request):
-    if request.method == 'POST' and request.FILES.get('image'):
-        image = request.FILES['image']
-        # Validate file type
-        if not image.content_type.startswith('image/'):
-            return JsonResponse({'success': False, 'error': 'Invalid file type'}, status=400)
-        # Save to media/chat_images/
-        save_path = os.path.join('chat_images', image.name)
-        path = default_storage.save(save_path, ContentFile(image.read()))
-        image_url = settings.MEDIA_URL + path
-        return JsonResponse({'success': True, 'url': image_url})
-    return HttpResponseBadRequest('Invalid request')
-
-@login_required
-def suggested_users_api(request):
-    """API endpoint to get suggested users to follow."""
-    logger = logging.getLogger(__name__)
-    try:
-        limit = int(request.GET.get('limit', 10))
-        
-        # Get users that the current user is not following
-        following = Follow.objects.filter(follower=request.user).values_list('followed', flat=True)
-        suggested_users = User.objects.exclude(
-            Q(id__in=following) | Q(id=request.user.id)
-        ).select_related('userprofile')[:limit]
-
-        users_data = []
-        for user in suggested_users:
-            try:
-                profile = user.userprofile
-                
-                # Calculate user stats
-                total_tips = Tip.objects.filter(user=user).count()
-                followers_count = Follow.objects.filter(followed=user).count()
-                
-                # Calculate win rate
-                tips = Tip.objects.filter(user=user, status__in=['win', 'loss'])
-                total_verified_tips = tips.count()
-                wins = tips.filter(status='win').count()
-                win_rate = (wins / total_verified_tips * 100) if total_verified_tips > 0 else 0
-                
-                # Ensure avatar_url is always valid
-                avatar_url = None
-                if profile and profile.avatar:
-                    try:
-                        avatar_url = profile.avatar.url
-                    except (ValueError, IOError):  # Replaced bare except with specific exceptions
-                        avatar_url = settings.STATIC_URL + 'img/default-avatar.png'
-                else:
-                    avatar_url = settings.STATIC_URL + 'img/default-avatar.png'
-                
-                # Check if current user is following this user
-                is_following = Follow.objects.filter(follower=request.user, followed=user).exists()
-                
-                users_data.append({
-                    'username': user.username,
-                    'handle': profile.handle if profile and profile.handle else f"@{user.username}",
-                    'bio': profile.description if profile and profile.description else '',
-                    'avatar_url': avatar_url,
-                    'profile_url': f'/profile/{user.username}/',
-                    'total_tips': total_tips,
-                    'win_rate': round(win_rate, 1),
-                    'followers_count': followers_count,
-                    'is_following': is_following
-                })
-                if user.username is None or user.username == 'None' or (profile and (profile.handle is None or profile.handle == 'None')):
-                    logger.warning(f"[SUGGESTED USERS API] Invalid username or handle: username='{user.username}', handle='{getattr(profile, 'handle', None)}'")
-            except Exception as e:
-                logger.error(f"[SUGGESTED USERS API] Exception for user: {str(e)}")
-                continue
-        logger.info(f"[SUGGESTED USERS API] Returning users: {[u['username'] for u in users_data]}")
-        return JsonResponse({
-            'success': True,
-            'users': users_data
-        })
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'error': str(e)
-        }, status=500)
-
-@login_required
-def trending_tips_api(request):
-    """Return a list of trending tips."""
-    logger = logging.getLogger(__name__)
-    from core.models import Tip  # Import here to avoid circular imports
+class CurrentUserView(APIView):
+    """API view for getting current user information."""
+    permission_classes = [IsAuthenticated]
     
-    # Get tips ordered by popularity (likes + shares + comments)
-    trending_tips = Tip.objects.annotate(
-        popularity=models.Count('likes') + models.Count('shares') + models.Count('comments')
-    ).order_by('-popularity', '-created_at')[:10]  # Limit to 10 tips
+    def get(self, request):
+        """Return current user's information."""
+        user = request.user
+        try:
+            profile = user.userprofile
+            return JsonResponse({
+                'success': True,
+                'avatar_url': profile.avatar.url if profile.avatar else None,
+                'handle': profile.display_name or user.username,
+                'is_admin': user.is_staff,
+                'profile': {
+                    'display_name': profile.display_name or user.username,
+                    'avatar': profile.avatar.url if profile.avatar else None,
+                    'description': profile.description or '',
+                    'kyc_completed': profile.kyc_completed,
+                    'profile_completed': profile.profile_completed,
+                    'payment_completed': profile.payment_completed,
+                }
+            })
+        except Exception:  # Removed unused 'e' variable
+            # Return a valid profile object with default values
+            return JsonResponse({
+                'success': True,
+                'avatar_url': None,
+                'handle': user.username,
+                'is_admin': user.is_staff,
+                'profile': {
+                    'display_name': user.username,
+                    'avatar': None,
+                    'description': '',
+                    'kyc_completed': False,
+                    'profile_completed': False,
+                    'payment_completed': False,
+                }
+            })
 
-    tips_list = []
-    for tip in trending_tips:
-        tips_list.append({
-            'id': tip.id,
-            'text': tip.text,
-            'username': tip.user.username,
-            'likes_count': tip.likes.count(),
-            'is_liked': tip.likes.filter(id=request.user.id).exists()
-        })
-        if tip.user.username is None or tip.user.username == 'None':
-            logger.warning(f"[TRENDING TIPS API] Invalid username for tip id={tip.id}: username='{tip.user.username}'")
-    logger.info(f"[TRENDING TIPS API] Returning tips for users: {[t['username'] for t in tips_list]}")
-    return JsonResponse({'trending_tips': tips_list})
+class UploadChatImageView(APIView):
+    """API view for uploading chat images."""
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        """Handle image upload for chat."""
+        if request.FILES.get('image'):
+            image = request.FILES['image']
+            # Validate file type
+            if not image.content_type.startswith('image/'):
+                return JsonResponse({'success': False, 'error': 'Invalid file type'}, status=400)
+            # Save to media/chat_images/
+            save_path = os.path.join('chat_images', image.name)
+            path = default_storage.save(save_path, ContentFile(image.read()))
+            image_url = settings.MEDIA_URL + path
+            return JsonResponse({'success': True, 'url': image_url})
+        return HttpResponseBadRequest('Invalid request')
+
+class SuggestedUsersView(APIView):
+    """API view for getting suggested users to follow."""
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        """Return a list of suggested users to follow."""
+        logger = logging.getLogger(__name__)
+        try:
+            limit = int(request.GET.get('limit', 10))
+            
+            # Get users that the current user is not following
+            following = Follow.objects.filter(follower=request.user).values_list('followed', flat=True)
+            suggested_users = User.objects.exclude(
+                Q(id__in=following) | Q(id=request.user.id)
+            ).select_related('userprofile')[:limit]
+
+            users_data = []
+            for user in suggested_users:
+                try:
+                    profile = user.userprofile
+                    
+                    # Calculate user stats
+                    total_tips = Tip.objects.filter(user=user).count()
+                    followers_count = Follow.objects.filter(followed=user).count()
+                    
+                    # Calculate win rate
+                    tips = Tip.objects.filter(user=user, status__in=['win', 'loss'])
+                    total_verified_tips = tips.count()
+                    wins = tips.filter(status='win').count()
+                    win_rate = (wins / total_verified_tips * 100) if total_verified_tips > 0 else 0
+                    
+                    # Ensure avatar_url is always valid
+                    avatar_url = None
+                    if profile and profile.avatar:
+                        try:
+                            avatar_url = profile.avatar.url
+                        except (ValueError, IOError):  # Replaced bare except with specific exceptions
+                            avatar_url = settings.STATIC_URL + 'img/default-avatar.png'
+                    else:
+                        avatar_url = settings.STATIC_URL + 'img/default-avatar.png'
+                    
+                    # Check if current user is following this user
+                    is_following = Follow.objects.filter(follower=request.user, followed=user).exists()
+                    
+                    users_data.append({
+                        'username': user.username,
+                        'handle': profile.handle if profile and profile.handle else f"@{user.username}",
+                        'bio': profile.description if profile and profile.description else '',
+                        'avatar_url': avatar_url,
+                        'profile_url': f'/profile/{user.username}/',
+                        'total_tips': total_tips,
+                        'win_rate': round(win_rate, 1),
+                        'followers_count': followers_count,
+                        'is_following': is_following
+                    })
+                    if user.username is None or user.username == 'None' or (profile and (profile.handle is None or profile.handle == 'None')):
+                        logger.warning(f"[SUGGESTED USERS API] Invalid username or handle: username='{user.username}', handle='{getattr(profile, 'handle', None)}'")
+                except Exception as e:
+                    logger.error(f"[SUGGESTED USERS API] Exception for user: {str(e)}")
+                    continue
+            logger.info(f"[SUGGESTED USERS API] Returning users: {[u['username'] for u in users_data]}")
+            return JsonResponse({
+                'success': True,
+                'users': users_data
+            })
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=500)
 
 class VerifyTipView(APIView):
     """API view for verifying tips."""
@@ -228,11 +212,19 @@ class SustainedRateThrottle(UserRateThrottle):
     rate = '100/day'
 
 class TrendingTipsView(APIView):
+    """API view for getting trending tips."""
+    permission_classes = [IsAuthenticated]
+    
     def get(self, request):
-        limit = int(request.GET.get('limit', 30))
+        """Return a list of trending tips."""
+        logger = logging.getLogger(__name__)
+        limit = int(request.GET.get('limit', 10))  # Default to 10 like the original function
+        
+        # Get tips ordered by popularity (likes + shares + comments)
         trending_tips = Tip.objects.annotate(
             popularity=Count('likes') + Count('shares') + Count('comments')
         ).order_by('-popularity', '-created_at')[:limit]
+
         tips_list = []
         for tip in trending_tips:
             tips_list.append({
@@ -242,4 +234,8 @@ class TrendingTipsView(APIView):
                 'likes_count': tip.likes.count(),
                 'is_liked': tip.likes.filter(id=request.user.id).exists()
             })
+            if tip.user.username is None or tip.user.username == 'None':
+                logger.warning(f"[TRENDING TIPS API] Invalid username for tip id={tip.id}: username='{tip.user.username}'")
+        
+        logger.info(f"[TRENDING TIPS API] Returning tips for users: {[t['username'] for t in tips_list]}")
         return JsonResponse({'trending_tips': tips_list}) 

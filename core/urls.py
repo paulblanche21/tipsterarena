@@ -23,7 +23,7 @@ from .views.subscription_views import (
     SubscribeToTipsterView,
     CancelSubscriptionView,
     TopTipstersLeaderboardView,
-    stripe_webhook,
+    StripeWebhookView,
 )
 from .views.interaction_views import (
     FollowUserView,
@@ -89,7 +89,7 @@ urlpatterns = [
     path('accessibility/', AccessibilityView.as_view(), name='accessibility'),
 
     # API routes for user interactions
-    path('api/suggested-users/', views.suggested_users_api, name='suggested_users_api'),
+    path('api/suggested-users/', views.SuggestedUsersView.as_view(), name='suggested_users_api'),
     path('api/post-tip/', views.PostTipView.as_view(), name='post_tip'),
     path('api/edit-tip/', views.EditTipView.as_view(), name='edit_tip'),
     path('api/delete-tip/', views.DeleteTipView.as_view(), name='delete_tip'),
@@ -104,7 +104,7 @@ urlpatterns = [
 
     # API routes for data retrieval
     path('api/trending-tips/', views.TrendingTipsView.as_view(), name='trending_tips_api'),
-    path('api/current-user/', views.current_user_api, name='current_user_api'),
+    path('api/current-user/', views.CurrentUserView.as_view(), name='current_user_api'),
     
     # Message API routes
     path('api/messages/', GetMessagesView.as_view(), name='api_messages'),
@@ -122,12 +122,12 @@ urlpatterns = [
         path('tiers/', ManageTiersView.as_view(), name='manage_tiers'),
         path('subscribe/<str:username>/<int:tier_id>/', SubscribeToTipsterView.as_view(), name='subscribe_to_tipster'),
         path('cancel/<int:subscription_id>/', CancelSubscriptionView.as_view(), name='cancel_subscription'),
-        path('webhook/', stripe_webhook, name='stripe_webhook'),
+        path('webhook/', StripeWebhookView.as_view(), name='stripe_webhook'),
     ])),
     path('top-tipsters/', TopTipstersLeaderboardView.as_view(), name='top_tipsters_leaderboard'),
     path('api/mark-notification-read/', MarkNotificationReadView.as_view(), name='mark_notification_read'),
     path('chat/', ChatView.as_view(), name='chat'),
-    path('api/upload-chat-image/', views.upload_chat_image_api, name='upload_chat_image_api'),
+    path('api/upload-chat-image/', views.UploadChatImageView.as_view(), name='upload_chat_image_api'),
 ]
 
 
