@@ -185,22 +185,15 @@ function startNewConversation() {
     .then(data => {
         if (data.success) {
             hideModal('newMessageModal');
-            openThread(data.thread_id);
             // Clear selected users and reset next button
             selectedUsers.innerHTML = '';
             nextBtn.disabled = true;
             
-            // Update thread header with user information
-            const threadHeader = document.querySelector('.thread-header');
-            if (threadHeader && data.user) {
-                const avatarUrl = data.user.avatar || '/static/images/default-avatar.png';
-                const username = data.user.username || 'Unknown User';
-                
-                threadHeader.innerHTML = `
-                    <img src="${avatarUrl}" alt="Avatar" class="avatar">
-                    <h3 class="thread-header-name">${username}</h3>
-                `;
-            }
+            // Reload the messages feed to show the new thread
+            loadMessages().then(() => {
+                // After reloading, open the new thread
+                openThread(data.thread_id);
+            });
         }
     })
     .catch(error => console.error('Error starting conversation:', error));
@@ -208,7 +201,7 @@ function startNewConversation() {
 
 // Message handling functions
 function loadMessages() {
-    fetch('/api/messages/')
+    return fetch('/api/messages/')
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -217,6 +210,7 @@ function loadMessages() {
         })
         .then(data => {
             renderMessagesFeed(data);
+            return data;
         })
         .catch(error => {
             console.error('Error loading messages:', error);
@@ -228,6 +222,7 @@ function loadMessages() {
                     </div>
                 `;
             }
+            throw error;
         });
 }
 

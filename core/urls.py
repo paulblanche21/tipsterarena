@@ -25,6 +25,23 @@ from .views.subscription_views import (
     TopTipstersLeaderboardView,
     stripe_webhook,
 )
+from .views.interaction_views import (
+    FollowUserView,
+    MessagesView,
+    SendMessageView,
+    GetThreadMessagesView,
+    NotificationsView,
+    MessageSettingsView,
+    BookmarksView,
+    ToggleBookmarkView,
+    LikeCommentView,
+    ShareCommentView,
+    MarkNotificationReadView,
+    GetMessagesView,
+    StartMessageThreadView,
+    SearchUsersView,
+    UpdateMessageSettingsView,
+)
 
 
 # URL patterns for the Tipster Arena core app
@@ -57,13 +74,13 @@ urlpatterns = [
     path('skip-payment/', views.SkipPaymentView.as_view(), name='skip_payment'),
 
     # Messaging routes
-    path('messages/', views.MessagesView.as_view(), name='messages'),
-    path('messages/<int:thread_id>/', views.MessagesView.as_view(), name='message_thread'),
-    path('messages/settings/', views.MessageSettingsView.as_view(), name='message_settings'),
+    path('messages/', MessagesView.as_view(), name='messages'),
+    path('messages/<int:thread_id>/', MessagesView.as_view(), name='message_thread'),
+    path('messages/settings/', MessageSettingsView.as_view(), name='message_settings'),
 
     # Social interaction routes
-    path('notifications/', views.notifications, name='notifications'),
-    path('bookmarks/', views.bookmarks, name='bookmarks'),
+    path('notifications/', NotificationsView.as_view(), name='notifications'),
+    path('bookmarks/', BookmarksView.as_view(), name='bookmarks'),
 
     # Policy routes
     path('terms-of-service/', TermsOfServiceView.as_view(), name='terms_of_service'),
@@ -76,25 +93,26 @@ urlpatterns = [
     path('api/post-tip/', views.PostTipView.as_view(), name='post_tip'),
     path('api/edit-tip/', views.EditTipView.as_view(), name='edit_tip'),
     path('api/delete-tip/', views.DeleteTipView.as_view(), name='delete_tip'),
-    path('api/follow/<str:username>/', views.FollowUserView.as_view(), name='follow_user'),
+    path('api/follow/<str:username>/', FollowUserView.as_view(), name='follow_user'),
     path('api/like-tip/', views.LikeTipView.as_view(), name='like_tip'),
     path('api/share-tip/', views.ShareTipView.as_view(), name='share_tip'),
     path('api/comment-tip/', views.CommentTipView.as_view(), name='comment_tip'),
     path('api/tip/<int:tip_id>/comments/', views.GetTipCommentsView.as_view(), name='get_tip_comments'),
     path('api/tip-list/', views.TipListView.as_view(), name='tip_list'),
     path('api/verify-tip/<int:tip_id>/', views.VerifyTipView.as_view(), name='verify_tip'),
+    path('api/toggle-bookmark/', ToggleBookmarkView.as_view(), name='toggle_bookmark'),
 
     # API routes for data retrieval
     path('api/trending-tips/', views.TrendingTipsView.as_view(), name='trending_tips_api'),
     path('api/current-user/', views.current_user_api, name='current_user_api'),
     
     # Message API routes
-    path('api/messages/', views.get_messages, name='api_messages'),
-    path('api/messages/send/<int:thread_id>/', views.send_message, name='api_send_message'),
-    path('api/messages/thread/<int:thread_id>/', views.get_thread_messages, name='api_thread_messages'),
-    path('api/messages/start/', views.start_message_thread, name='api_start_message_thread'),
-    path('api/messages/settings/', views.update_message_settings, name='api_message_settings'),
-    path('api/users/search/', views.SearchUsersView.as_view(), name='api_search_users'),
+    path('api/messages/', GetMessagesView.as_view(), name='api_messages'),
+    path('api/messages/send/<int:thread_id>/', SendMessageView.as_view(), name='api_send_message'),
+    path('api/messages/thread/<int:thread_id>/', GetThreadMessagesView.as_view(), name='api_thread_messages'),
+    path('api/messages/start/', StartMessageThreadView.as_view(), name='api_start_message_thread'),
+    path('api/messages/settings/', UpdateMessageSettingsView.as_view(), name='api_message_settings'),
+    path('api/users/search/', SearchUsersView.as_view(), name='api_search_users'),
 
     # Tipster routes
     path('tipster/', include([
@@ -107,7 +125,7 @@ urlpatterns = [
         path('webhook/', stripe_webhook, name='stripe_webhook'),
     ])),
     path('top-tipsters/', TopTipstersLeaderboardView.as_view(), name='top_tipsters_leaderboard'),
-    path('api/mark-notification-read/', views.mark_notification_read, name='mark_notification_read'),
+    path('api/mark-notification-read/', MarkNotificationReadView.as_view(), name='mark_notification_read'),
     path('chat/', ChatView.as_view(), name='chat'),
     path('api/upload-chat-image/', views.upload_chat_image_api, name='upload_chat_image_api'),
 ]

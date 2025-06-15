@@ -1,4 +1,4 @@
-"""Views for Tipster Arena."""
+"""Views for the Tipster Arena application."""
 
 __all__ = [
     # Auth views
@@ -13,31 +13,43 @@ __all__ = [
     'SkipPaymentView',
 
     # Tip views
-    'PostTipView', 'EditTipView', 'DeleteTipView', 'LikeTipView',
-    'ShareTipView', 'CommentTipView', 'GetTipCommentsView', 'TipDetailView',
-    'TipListView', 'VerifyTipView',
+    'PostTipView',
+    'EditTipView',
+    'DeleteTipView',
+    'LikeTipView',
+    'ShareTipView',
+    'CommentTipView',
+    'GetTipCommentsView',
+    'TipListView',
+    'VerifyTipView',
 
     # Profile views
-    'ProfileView', 'ProfileEditView',
+    'ProfileView',
+    'ProfileEditView',
 
     # Sport views
     'SportView',
+    'SportHomeView',
 
-    # Home view
+    # Home views
     'HomeView',
 
     # Interaction views
-    'FollowUserView', 'MessagesView', 'send_message',
-    'get_thread_messages', 'notifications', 'MessageSettingsView',
-    'bookmarks', 'like_comment', 'share_comment', 'ToggleBookmarkView',
-    'get_messages', 'start_message_thread', 'SearchUsersView',
-    'update_message_settings', 'mark_notification_read',
-
-    # API views
-    'current_user_api', 'suggested_users_api',
-    'trending_tips_api', 'VerifyTipView',
-    'BurstRateThrottle', 'SustainedRateThrottle',
-    'upload_chat_image_api', 'TrendingTipsView',
+    'FollowUserView',
+    'MessagesView',
+    'SendMessageView',
+    'GetThreadMessagesView',
+    'NotificationsView',
+    'MessageSettingsView',
+    'BookmarksView',
+    'ToggleBookmarkView',
+    'LikeCommentView',
+    'ShareCommentView',
+    'MarkNotificationReadView',
+    'GetMessagesView',
+    'StartMessageThreadView',
+    'SearchUsersView',
+    'UpdateMessageSettingsView',
 
     # General views
     'LandingView',
@@ -58,6 +70,15 @@ __all__ = [
     'CancelSubscriptionView',
     'TopTipstersLeaderboardView',
     'stripe_webhook',
+
+    # API views
+    'current_user_api',
+    'upload_chat_image_api',
+    'suggested_users_api',
+    'trending_tips_api',
+
+    # Trending views
+    'TrendingTipsView',
 ]
 
 from .auth_views import (
@@ -73,9 +94,15 @@ from .auth_views import (
 )
 
 from .tip_views import (
-    PostTipView, EditTipView, DeleteTipView, LikeTipView,
-    ShareTipView, CommentTipView, GetTipCommentsView, TipDetailView,
-    TipListView, VerifyTipView
+    PostTipView,
+    EditTipView,
+    DeleteTipView,
+    LikeTipView,
+    ShareTipView,
+    CommentTipView,
+    GetTipCommentsView,
+    TipListView,
+    VerifyTipView,
 )
 
 from .profile_views import (
@@ -85,6 +112,7 @@ from .profile_views import (
 
 from .sport_views import (
     SportView,
+    HomeView as SportHomeView,
 )
 
 from .home_views import (
@@ -94,24 +122,25 @@ from .home_views import (
 from .interaction_views import (
     FollowUserView,
     MessagesView,
+    SendMessageView,
+    GetThreadMessagesView,
+    NotificationsView,
     MessageSettingsView,
-    SearchUsersView,
-    notifications,
-    send_message,
-    get_thread_messages,
-    bookmarks,
-    like_comment,
-    share_comment,
+    BookmarksView,
     ToggleBookmarkView,
-    get_messages,
-    start_message_thread,
-    update_message_settings,
-    mark_notification_read,
+    LikeCommentView,
+    ShareCommentView,
+    MarkNotificationReadView,
+    GetMessagesView,
+    StartMessageThreadView,
+    SearchUsersView,
+    UpdateMessageSettingsView,
 )
 
 from .general_views import (
     LandingView,
     SearchView,
+    CSPReportView,
     TermsOfServiceView,
     PrivacyPolicyView,
     CookiePolicyView,
@@ -132,11 +161,9 @@ from .subscription_views import (
 
 from .api_views import (
     current_user_api,
+    upload_chat_image_api,
     suggested_users_api,
     trending_tips_api,
-    VerifyTipView,
-    BurstRateThrottle,
-    SustainedRateThrottle,
-    upload_chat_image_api,
-    TrendingTipsView
-) 
+)
+
+from .trending_views import TrendingTipsView 

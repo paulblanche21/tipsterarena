@@ -17,16 +17,16 @@ from .views.auth_views import (
 )
 
 from .views.tip_views import (
-    post_tip,
-    edit_tip,
-    delete_tip,
-    like_tip,
-    share_tip,
-    comment_tip,
-    get_tip_comments,
-    tip_detail,
-    tip_list,
-    verify_tip
+    PostTipView,
+    EditTipView,
+    DeleteTipView,
+    LikeTipView,
+    ShareTipView,
+    CommentTipView,
+    GetTipCommentsView,
+    TipDetailView,
+    TipListView,
+    VerifyTipView
 )
 
 from .views.profile_views import (
