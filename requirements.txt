@@ -1,5 +1,5 @@
 # Django and core dependencies
-Django==5.2.1
+Django==5.2.2
 channels==4.0.0
 channels-redis==4.2.0
 daphne==4.1.0
@@ -75,7 +75,7 @@ python-decouple==3.8
 python3-openid==3.2.0
 pytz==2024.1
 rcssmin==1.1.2
-requests==2.32.3
+requests==2.32.4
 requests-oauthlib==2.0.0
 rjsmin==1.2.2
 ruff==0.11.6
@@ -105,3 +105,7 @@ pylint-django==2.5.3
 django-debug-toolbar==4.2.0
 django-extensions==3.2.3
 watchdog==3.0.0
+
+# New dependencies
+flask==3.1.1
+flask-cors==6.0.0
