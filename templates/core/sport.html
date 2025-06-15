@@ -208,6 +208,13 @@
                             <a href="#" class="tip-action tip-action-engagement"><i class="fas fa-users"></i></a>
                             <span class="tip-action-count">{{ tip.engagement|default:"0" }}</span>
                         </div>
+                        <div class="tip-action-group">
+                            <a href="#" class="tip-action tip-action-bookmark" data-action="bookmark"><i class="fas fa-bookmark"></i></a>
+                            <span class="tip-action-count bookmark-count">{{ tip.bookmarks.count }}</span>
+                        </div>
+                        <div class="tip-action-group">
+                            <a href="#" class="tip-action tip-action-share-link" data-action="share-link"><i class="fas fa-arrow-up"></i></a>
+                        </div>
                     </div>
                 </div>
             </div>
