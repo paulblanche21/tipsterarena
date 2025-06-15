@@ -84,7 +84,7 @@
                         submitButton.disabled = false;
                         submitButton.textContent = 'Pay Now';
                     } else {
-                        await stripe.redirectToCheckout({ sessionId: data.session_id });
+                        await stripe.redirectToCheckout({ sessionId: data.id });
                     }
                 } catch (error) {
                     cardErrors.textContent = 'An error occurred. Please try again.';

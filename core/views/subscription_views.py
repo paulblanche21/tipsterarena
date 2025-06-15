@@ -15,6 +15,8 @@ from django.contrib import messages
 from django.db.models import F
 from django.core.exceptions import ValidationError
 from datetime import timedelta
+from django.views.generic import View
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from ..models import TipsterTier, TipsterSubscription, UserProfile, User
 
@@ -99,10 +101,10 @@ def setup_tiers(request):
 
     return render(request, 'core/tier_setup.html')
 
-@login_required
-def tier_setup(request):
+class TierSetupView(LoginRequiredMixin, View):
     """Display the tier setup page with Free and Premium options."""
-    return render(request, 'core/tier_setup.html')
+    def get(self, request):
+        return render(request, 'core/tier_setup.html')
 
 @login_required
 def tipster_dashboard(request):

@@ -10,12 +10,15 @@ from django.contrib.auth.models import Group
 from django.core.cache import cache
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
-
+import logging
 
 from ..forms import CustomUserCreationForm, KYCForm, UserProfileForm
 
 import stripe
 stripe.api_key = settings.STRIPE_SECRET_KEY
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 class LoginView(View):
     """Handle user authentication and login."""
@@ -168,6 +171,7 @@ class CreateCheckoutSessionView(LoginRequiredMixin, View):
             return redirect('home')
         
         try:
+            logger.info(f"Creating checkout session for user {request.user.username}")
             checkout_session = stripe.checkout.Session.create(
                 payment_method_types=['card'],
                 line_items=[{
@@ -179,8 +183,10 @@ class CreateCheckoutSessionView(LoginRequiredMixin, View):
                 cancel_url=request.build_absolute_uri('/payment/'),
                 client_reference_id=str(request.user.id),
             )
+            logger.info(f"Checkout session created successfully: {checkout_session.id}")
             return JsonResponse({'id': checkout_session.id})
         except Exception as e:
+            logger.error(f"Error creating checkout session: {str(e)}")
             return JsonResponse({'error': str(e)}, status=400)
 
 class PaymentSuccessView(LoginRequiredMixin, View):
@@ -188,10 +194,16 @@ class PaymentSuccessView(LoginRequiredMixin, View):
     def get(self, request):
         if not request.user.userprofile.profile_completed:
             return redirect('profile_setup')
-        profile = request.user.userprofile
-        profile.payment_completed = True
-        profile.save()
-        return redirect('home')
+        try:
+            logger.info(f"Processing payment success for user {request.user.username}")
+            profile = request.user.userprofile
+            profile.payment_completed = True
+            profile.save()
+            logger.info(f"Payment completed successfully for user {request.user.username}")
+            return redirect('home')
+        except Exception as e:
+            logger.error(f"Error processing payment success: {str(e)}")
+            return redirect('payment')
 
 class SkipPaymentView(LoginRequiredMixin, View):
     """Allow users to skip payment (for testing)."""

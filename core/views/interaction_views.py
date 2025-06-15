@@ -172,42 +172,42 @@ class FollowUserView(LoginRequiredMixin, View):
                 'error': 'An error occurred while processing your request'
             }, status=500)
 
-@login_required
-def messages_view(request, thread_id=None):
+class MessagesView(LoginRequiredMixin, View):
     """Display message threads and individual thread messages."""
-    user = request.user
-    message_threads = (MessageThread.objects.filter(participants=user)
-                      .order_by('-updated_at')[:20]
-                      .prefetch_related('participants__userprofile'))
+    def get(self, request, thread_id=None):
+        user = request.user
+        message_threads = (MessageThread.objects.filter(participants=user)
+                          .order_by('-updated_at')[:20]
+                          .prefetch_related('participants__userprofile'))
 
-    threads_with_participants = []
-    for thread in message_threads:
-        other_participant = thread.participants.exclude(id=user.id).first()
-        last_message = thread.messages.last()
-        follower_count = other_participant.followers.count() if other_participant else 0
-        followed_by = Follow.objects.filter(followed=other_participant).exclude(follower=user).order_by('?')[:3]
-        followed_by_names = [f.follower.username for f in followed_by]
-        threads_with_participants.append({
-            'thread': thread,
-            'other_participant': other_participant,
-            'last_message': last_message,
-            'follower_count': follower_count,
-            'followed_by': followed_by_names,
-        })
+        threads_with_participants = []
+        for thread in message_threads:
+            other_participant = thread.participants.exclude(id=user.id).first()
+            last_message = thread.messages.last()
+            follower_count = other_participant.followers.count() if other_participant else 0
+            followed_by = Follow.objects.filter(followed=other_participant).exclude(follower=user).order_by('?')[:3]
+            followed_by_names = [f.follower.username for f in followed_by]
+            threads_with_participants.append({
+                'thread': thread,
+                'other_participant': other_participant,
+                'last_message': last_message,
+                'follower_count': follower_count,
+                'followed_by': followed_by_names,
+            })
 
-    selected_thread = None
-    messages = []
-    if thread_id:
-        selected_thread = get_object_or_404(MessageThread, id=thread_id, participants=user)
-        selected_thread.other_participant = selected_thread.participants.exclude(id=user.id).first()
-        messages = selected_thread.messages.all().order_by('created_at')
+        selected_thread = None
+        messages = []
+        if thread_id:
+            selected_thread = get_object_or_404(MessageThread, id=thread_id, participants=user)
+            selected_thread.other_participant = selected_thread.participants.exclude(id=user.id).first()
+            messages = selected_thread.messages.all().order_by('created_at')
 
-    context = {
-        'message_threads': threads_with_participants,
-        'selected_thread': selected_thread,
-        'messages': messages,
-    }
-    return render(request, 'core/messages.html', context)
+        context = {
+            'message_threads': threads_with_participants,
+            'selected_thread': selected_thread,
+            'messages': messages,
+        }
+        return render(request, 'core/messages.html', context)
 
 @login_required
 def send_message(request, thread_id=None):
@@ -337,16 +337,16 @@ def notifications(request):
         'share_notifications': share_notifications,
     })
 
-@login_required
-def message_settings_view(request):
+class MessageSettingsView(LoginRequiredMixin, View):
     """Render message notification settings page."""
-    user = request.user
-    if not hasattr(user, 'userprofile'):
-        UserProfile.objects.get_or_create(user=user)
+    def get(self, request):
+        user = request.user
+        if not hasattr(user, 'userprofile'):
+            UserProfile.objects.get_or_create(user=user)
 
-    return render(request, 'core/message_settings.html', {
-        'user': user,
-    })
+        return render(request, 'core/message_settings.html', {
+            'user': user,
+        })
 
 @login_required
 def bookmarks(request):
@@ -517,27 +517,26 @@ def start_message_thread(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
-@login_required
-@require_http_methods(["GET"])
-def search_users(request):
+class SearchUsersView(LoginRequiredMixin, View):
     """Search for users by username."""
-    query = request.GET.get('q', '').strip()
-    if not query or len(query) < 2:
-        return JsonResponse({'users': []})
+    def get(self, request):
+        query = request.GET.get('q', '').strip()
+        if not query or len(query) < 2:
+            return JsonResponse({'users': []})
 
-    users = User.objects.filter(
-        username__icontains=query
-    ).exclude(
-        id=request.user.id
-    ).select_related('userprofile')[:10]
+        users = User.objects.filter(
+            username__icontains=query
+        ).exclude(
+            id=request.user.id
+        ).select_related('userprofile')[:10]
 
-    users_data = [{
-        'id': user.id,
-        'username': user.username,
-        'avatar': user.userprofile.avatar.url if hasattr(user, 'userprofile') and user.userprofile.avatar else None,
-    } for user in users]
+        users_data = [{
+            'id': user.id,
+            'username': user.username,
+            'avatar': user.userprofile.avatar.url if hasattr(user, 'userprofile') and user.userprofile.avatar else None,
+        } for user in users]
 
-    return JsonResponse({'users': users_data})
+        return JsonResponse({'users': users_data})
 
 @login_required
 @require_POST

@@ -27,10 +27,10 @@ __all__ = [
     'HomeView',
 
     # Interaction views
-    'FollowUserView', 'messages_view', 'send_message',
-    'get_thread_messages', 'notifications', 'message_settings_view',
+    'FollowUserView', 'MessagesView', 'send_message',
+    'get_thread_messages', 'notifications', 'MessageSettingsView',
     'bookmarks', 'like_comment', 'share_comment', 'ToggleBookmarkView',
-    'get_messages', 'start_message_thread', 'search_users',
+    'get_messages', 'start_message_thread', 'SearchUsersView',
     'update_message_settings', 'mark_notification_read',
 
     # API views
@@ -52,7 +52,7 @@ __all__ = [
     # Subscription views
     'become_tipster', 'tipster_dashboard', 'manage_tiers',
     'subscribe_to_tipster', 'cancel_subscription', 'setup_tiers',
-    'tier_setup', 'stripe_webhook', 'top_tipsters_leaderboard',
+    'TierSetupView', 'stripe_webhook', 'top_tipsters_leaderboard',
 
     # New FollowUserView
     'FollowUserView',
@@ -77,36 +77,39 @@ from .tip_views import (
 )
 
 from .profile_views import (
-    ProfileView, ProfileEditView
+    ProfileView,
+    ProfileEditView,
 )
 
 from .sport_views import (
-    SportView
+    SportView,
 )
 
 from .home_views import (
-    HomeView
+    HomeView,
 )
 
 from .interaction_views import (
-    FollowUserView, messages_view, send_message,
-    get_thread_messages, notifications, message_settings_view,
-    bookmarks, like_comment, share_comment, ToggleBookmarkView,
-    get_messages, start_message_thread, search_users,
-    update_message_settings, mark_notification_read
-)
-
-from .api_views import (
-    current_user_api, suggested_users_api,
-    trending_tips_api, VerifyTipView,
-    BurstRateThrottle, SustainedRateThrottle,
-    upload_chat_image_api
+    FollowUserView,
+    MessagesView,
+    MessageSettingsView,
+    SearchUsersView,
+    notifications,
+    send_message,
+    get_thread_messages,
+    bookmarks,
+    like_comment,
+    share_comment,
+    ToggleBookmarkView,
+    get_messages,
+    start_message_thread,
+    update_message_settings,
+    mark_notification_read,
 )
 
 from .general_views import (
     LandingView,
     SearchView,
-    CSPReportView,
     TermsOfServiceView,
     PrivacyPolicyView,
     CookiePolicyView,
@@ -114,8 +117,6 @@ from .general_views import (
     ChatView,
 )
 
-from .subscription_views import (
-    become_tipster, tipster_dashboard, manage_tiers,
-    subscribe_to_tipster, cancel_subscription, setup_tiers,
-    tier_setup, stripe_webhook, top_tipsters_leaderboard
-) 
+from .subscription_views import become_tipster, tipster_dashboard, manage_tiers, subscribe_to_tipster, cancel_subscription, setup_tiers, TierSetupView, stripe_webhook, top_tipsters_leaderboard
+
+from .api_views import current_user_api, suggested_users_api, trending_tips_api, VerifyTipView, BurstRateThrottle, SustainedRateThrottle, upload_chat_image_api 

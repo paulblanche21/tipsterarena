@@ -47,9 +47,9 @@ urlpatterns = [
     path('skip-payment/', views.SkipPaymentView.as_view(), name='skip_payment'),
 
     # Messaging routes
-    path('messages/', views.messages_view, name='messages'),
-    path('messages/<int:thread_id>/', views.messages_view, name='message_thread'),
-    path('messages/settings/', views.message_settings_view, name='message_settings'),
+    path('messages/', views.MessagesView.as_view(), name='messages'),
+    path('messages/<int:thread_id>/', views.MessagesView.as_view(), name='message_thread'),
+    path('messages/settings/', views.MessageSettingsView.as_view(), name='message_settings'),
 
     # Social interaction routes
     path('notifications/', views.notifications, name='notifications'),
@@ -87,10 +87,10 @@ urlpatterns = [
     path('api/messages/thread/<int:thread_id>/', views.get_thread_messages, name='api_thread_messages'),
     path('api/messages/start/', views.start_message_thread, name='api_start_message_thread'),
     path('api/messages/settings/', views.update_message_settings, name='api_message_settings'),
-    path('api/users/search/', views.search_users, name='api_search_users'),
+    path('api/users/search/', views.SearchUsersView.as_view(), name='api_search_users'),
 
     path('tipster/', include([
-        path('tier-setup/', views.tier_setup, name='tier_setup'),
+        path('tier-setup/', views.TierSetupView.as_view(), name='tier_setup'),
         path('setup-tiers/', views.setup_tiers, name='setup_tiers'),
         path('dashboard/', views.tipster_dashboard, name='tipster_dashboard'),
         path('tiers/', views.manage_tiers, name='manage_tiers'),
