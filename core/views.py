@@ -71,7 +71,6 @@ from .views.interaction_views import (
 from .views.subscription_views import (
     become_tipster,
     setup_tiers,
-    tier_setup,
     tipster_dashboard,
     manage_tiers,
     subscribe_to_tipster,

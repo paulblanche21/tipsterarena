@@ -15,6 +15,16 @@ from .views.general_views import (
     AccessibilityView,
     ChatView,
 )
+from .views.subscription_views import (
+    BecomeTipsterView,
+    SetupTiersView,
+    TipsterDashboardView,
+    ManageTiersView,
+    SubscribeToTipsterView,
+    CancelSubscriptionView,
+    TopTipstersLeaderboardView,
+    stripe_webhook,
+)
 
 
 # URL patterns for the Tipster Arena core app
@@ -86,16 +96,17 @@ urlpatterns = [
     path('api/messages/settings/', views.update_message_settings, name='api_message_settings'),
     path('api/users/search/', views.SearchUsersView.as_view(), name='api_search_users'),
 
+    # Tipster routes
     path('tipster/', include([
-        path('tier-setup/', views.TierSetupView.as_view(), name='tier_setup'),
-        path('setup-tiers/', views.setup_tiers, name='setup_tiers'),
-        path('dashboard/', views.tipster_dashboard, name='tipster_dashboard'),
-        path('tiers/', views.manage_tiers, name='manage_tiers'),
-        path('subscribe/<str:username>/<int:tier_id>/', views.subscribe_to_tipster, name='subscribe_to_tipster'),
-        path('cancel/<int:subscription_id>/', views.cancel_subscription, name='cancel_subscription'),
-        path('webhook/', views.stripe_webhook, name='stripe_webhook'),
+        path('become/', BecomeTipsterView.as_view(), name='become_tipster'),
+        path('setup-tiers/', SetupTiersView.as_view(), name='setup_tiers'),
+        path('dashboard/', TipsterDashboardView.as_view(), name='tipster_dashboard'),
+        path('tiers/', ManageTiersView.as_view(), name='manage_tiers'),
+        path('subscribe/<str:username>/<int:tier_id>/', SubscribeToTipsterView.as_view(), name='subscribe_to_tipster'),
+        path('cancel/<int:subscription_id>/', CancelSubscriptionView.as_view(), name='cancel_subscription'),
+        path('webhook/', stripe_webhook, name='stripe_webhook'),
     ])),
-    path('top-tipsters/', views.top_tipsters_leaderboard, name='top_tipsters_leaderboard'),
+    path('top-tipsters/', TopTipstersLeaderboardView.as_view(), name='top_tipsters_leaderboard'),
     path('api/mark-notification-read/', views.mark_notification_read, name='mark_notification_read'),
     path('chat/', ChatView.as_view(), name='chat'),
     path('api/upload-chat-image/', views.upload_chat_image_api, name='upload_chat_image_api'),

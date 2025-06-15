@@ -12,13 +12,13 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.contrib import messages
-from django.db.models import F
+from django.db.models import F, Count, Q
 from django.core.exceptions import ValidationError
 from datetime import timedelta
 from django.views.generic import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from ..models import TipsterTier, TipsterSubscription, UserProfile, User
+from ..models import TipsterTier, TipsterSubscription, UserProfile, User, Follow
 
 # Configure Stripe
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -26,17 +26,23 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 # Set up logging
 logger = logging.getLogger(__name__)
 
-@login_required
-def become_tipster(request):
+class BecomeTipsterView(LoginRequiredMixin, View):
     """Handle step 1 of becoming a pro tipster."""
-    profile = request.user.userprofile
     
-    # Check if already a tipster
-    if profile.is_tipster:
-        messages.info(request, "You are already a pro tipster!")
-        return redirect('tipster_dashboard')
+    def get(self, request):
+        profile = request.user.userprofile
+        return render(request, 'core/become_tipster.html', {
+            'profile': profile
+        })
     
-    if request.method == 'POST':
+    def post(self, request):
+        profile = request.user.userprofile
+        
+        # Check if already a tipster
+        if profile.is_tipster:
+            messages.info(request, "You are already a pro tipster!")
+            return redirect('tipster_dashboard')
+        
         try:
             with transaction.atomic():
                 profile.is_tipster = True
@@ -58,17 +64,18 @@ def become_tipster(request):
         except Exception:
             logger.error("Error in become_tipster")
             messages.error(request, "An error occurred. Please try again.")
-            
-    return render(request, 'core/become_tipster.html', {
-        'profile': profile
-    })
+            return render(request, 'core/become_tipster.html', {'profile': profile})
 
-@login_required
-def setup_tiers(request):
+class SetupTiersView(LoginRequiredMixin, View):
     """Onboarding: Handle tier selection (Free, Basic, Premium) and trial activation."""
-    user_profile = request.user.userprofile
-    if request.method == 'POST':
+    
+    def get(self, request):
+        return render(request, 'core/tier_setup.html')
+    
+    def post(self, request):
+        user_profile = request.user.userprofile
         selected_tier = request.POST.get('tier')
+        
         if selected_tier not in ['free', 'basic', 'premium']:
             messages.error(request, "Invalid tier selection.")
             return render(request, 'core/tier_setup.html')
@@ -99,63 +106,65 @@ def setup_tiers(request):
             messages.success(request, "You are now on the Free plan.")
             return redirect('home')
 
-    return render(request, 'core/tier_setup.html')
-
-class TierSetupView(LoginRequiredMixin, View):
-    """Display the tier setup page with Free and Premium options."""
-    def get(self, request):
-        return render(request, 'core/tier_setup.html')
-
-@login_required
-def tipster_dashboard(request):
+class TipsterDashboardView(LoginRequiredMixin, View):
     """Dashboard for tipsters to manage their tiers and subscribers."""
-    if not request.user.userprofile.is_tipster:
-        messages.error(request, "You must be a tipster to access this page")
-        return redirect('become_tipster')
-        
-    try:
-        tiers = TipsterTier.objects.filter(tipster=request.user)
-        subscriptions = TipsterSubscription.objects.filter(
-            tier__tipster=request.user,
-            status='active'
-        ).select_related('subscriber', 'tier')
-        
-        # Calculate statistics
-        total_subscribers = request.user.userprofile.total_subscribers
-        total_revenue = request.user.userprofile.subscription_revenue
-        
-        return render(request, 'core/tipster_dashboard.html', {
-            'tiers': tiers,
-            'subscriptions': subscriptions,
-            'total_subscribers': total_subscribers,
-            'total_revenue': total_revenue,
-            'subscription_stats': {
-                'active': subscriptions.count(),
-                'cancelled': TipsterSubscription.objects.filter(
-                    tier__tipster=request.user,
-                    status='cancelled'
-                ).count(),
-                'expired': TipsterSubscription.objects.filter(
-                    tier__tipster=request.user,
-                    status='expired'
-                ).count()
-            }
-        })
-    except Exception:
-        logger.error("Error in tipster_dashboard")
-        messages.error(request, "An error occurred while loading the dashboard.")
-        return redirect('home')
+    
+    def get(self, request):
+        if not request.user.userprofile.is_tipster:
+            messages.error(request, "You must be a tipster to access this page")
+            return redirect('become_tipster')
+            
+        try:
+            tiers = TipsterTier.objects.filter(tipster=request.user)
+            subscriptions = TipsterSubscription.objects.filter(
+                tier__tipster=request.user,
+                status='active'
+            ).select_related('subscriber', 'tier')
+            
+            # Calculate statistics
+            total_subscribers = request.user.userprofile.total_subscribers
+            total_revenue = request.user.userprofile.subscription_revenue
+            
+            return render(request, 'core/tipster_dashboard.html', {
+                'tiers': tiers,
+                'subscriptions': subscriptions,
+                'total_subscribers': total_subscribers,
+                'total_revenue': total_revenue,
+                'subscription_stats': {
+                    'active': subscriptions.count(),
+                    'cancelled': TipsterSubscription.objects.filter(
+                        tier__tipster=request.user,
+                        status='cancelled'
+                    ).count(),
+                    'expired': TipsterSubscription.objects.filter(
+                        tier__tipster=request.user,
+                        status='expired'
+                    ).count()
+                }
+            })
+        except Exception:
+            logger.error("Error in tipster_dashboard")
+            messages.error(request, "An error occurred while loading the dashboard.")
+            return redirect('home')
 
-@login_required
-def manage_tiers(request):
+class ManageTiersView(LoginRequiredMixin, View):
     """Handle CRUD operations for subscription tiers."""
-    if not request.user.userprofile.is_tipster:
-        return JsonResponse({
-            'success': False,
-            'error': "You must be a tipster to manage tiers"
-        }, status=403)
-        
-    if request.method == 'POST':
+    
+    def get(self, request):
+        if not request.user.userprofile.is_tipster:
+            return JsonResponse({
+                'success': False,
+                'error': "You must be a tipster to manage tiers"
+            }, status=403)
+        return render(request, 'core/manage_tiers.html')
+    
+    def post(self, request):
+        if not request.user.userprofile.is_tipster:
+            return JsonResponse({
+                'success': False,
+                'error': "You must be a tipster to manage tiers"
+            }, status=403)
+            
         try:
             data = json.loads(request.body) if request.body else request.POST
             tier_id = data.get('tier_id')
@@ -200,28 +209,29 @@ def manage_tiers(request):
                     features=features,
                     max_subscribers=max_subscribers
                 )
-                
-                # Validate the model
-                try:
-                    tier.full_clean()
-                    tier.save()
-                except ValidationError as e:
-                    return JsonResponse({
-                        'success': False,
-                        'error': str(e)
-                    })
+                tier.save()
                 
                 return JsonResponse({
                     'success': True,
-                    'tier_id': tier.id
+                    'message': 'Tier created successfully',
+                    'tier': {
+                        'id': tier.id,
+                        'name': tier.name,
+                        'price': tier.price,
+                        'description': tier.description,
+                        'features': tier.features,
+                        'max_subscribers': tier.max_subscribers
+                    }
                 })
-                
+            
             elif action == 'update':
                 tier = get_object_or_404(TipsterTier, id=tier_id, tipster=request.user)
+                # Update tier fields
+                tier.name = data.get('name', tier.name)
+                tier.description = data.get('description', tier.description)
+                tier.features = data.get('features', tier.features)
+                tier.max_subscribers = data.get('max_subscribers', tier.max_subscribers)
                 
-                # Update fields if provided
-                if 'name' in data:
-                    tier.name = data['name']
                 if 'price' in data:
                     try:
                         price = float(data['price'])
@@ -233,185 +243,122 @@ def manage_tiers(request):
                             'success': False,
                             'error': "Invalid price value"
                         })
-                if 'description' in data:
-                    tier.description = data['description']
-                if 'features' in data:
-                    tier.features = data['features']
-                if 'max_subscribers' in data:
-                    tier.max_subscribers = data['max_subscribers']
                 
                 tier.save()
-                return JsonResponse({'success': True})
-                
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Tier updated successfully'
+                })
+            
             elif action == 'delete':
                 tier = get_object_or_404(TipsterTier, id=tier_id, tipster=request.user)
-                
-                # Check if tier has active subscriptions
-                if tier.subscriptions.filter(status='active').exists():
-                    return JsonResponse({
-                        'success': False,
-                        'error': "Cannot delete tier with active subscriptions"
-                    })
-                
-                tier.is_active = False
-                tier.save()
-                return JsonResponse({'success': True})
-                
-        except Exception:
-            logger.error("Error in manage_tiers")
-            return JsonResponse({
-                'success': False,
-                'error': "An error occurred while managing tiers"
-            })
+                tier.delete()
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Tier deleted successfully'
+                })
             
-    return JsonResponse({
-        'success': False,
-        'error': "Invalid request method"
-    })
-
-@login_required
-def subscribe_to_tipster(request, username, tier_id):
-    """Handle subscription to a tipster's tier."""
-    try:
-        tipster = get_object_or_404(User, username=username)
-        tier = get_object_or_404(TipsterTier, id=tier_id, tipster=tipster, is_active=True)
-        
-        # Check if user is trying to subscribe to themselves
-        if request.user == tipster:
-            return JsonResponse({
-                'success': False,
-                'error': "You cannot subscribe to your own tier"
-            })
-        
-        # Check if tier is full
-        if tier.is_full():
-            return JsonResponse({
-                'success': False,
-                'error': "This tier has reached its subscriber limit"
-            })
-        
-        # Check for existing subscription
-        existing_sub = TipsterSubscription.objects.filter(
-            subscriber=request.user,
-            tier__tipster=tipster,
-            status='active'
-        ).first()
-        
-        if existing_sub:
-            return JsonResponse({
-                'success': False,
-                'error': "You already have an active subscription to this tipster"
-            })
-        
-        try:
-            # Create or get Stripe customer
-            if not request.user.userprofile.stripe_customer_id:
-                customer = stripe.Customer.create(
-                    email=request.user.email,
-                    metadata={
-                        'user_id': request.user.id,
-                        'username': request.user.username
-                    }
-                )
-                request.user.userprofile.stripe_customer_id = customer.id
-                request.user.userprofile.save()
             else:
-                customer = stripe.Customer.retrieve(request.user.userprofile.stripe_customer_id)
-            
-            # Create Stripe subscription
-            stripe_subscription = stripe.Subscription.create(
-                customer=customer.id,
-                items=[{'price': tier.stripe_price_id}],
-                payment_behavior='default_incomplete',
-                expand=['latest_invoice.payment_intent'],
-                metadata={
-                    'tier_id': tier.id,
-                    'tipster_username': tipster.username
-                }
-            )
-            
-            # Create subscription record
-            with transaction.atomic():
-                # Check again within transaction to prevent race conditions
-                if TipsterSubscription.objects.filter(
-                    subscriber=request.user,
-                    tier__tipster=tipster,
-                    status='active'
-                ).exists():
-                    return JsonResponse({
-                        'success': False,
-                        'error': "You already have an active subscription to this tipster"
-                    })
-
-                # Verify tier is still available
-                if TipsterTier.objects.filter(
-                    id=tier.id,
-                    is_active=True
-                ).exclude(
-                    max_subscribers__isnull=False,
-                    subscriptions__status='active',
-                    subscriptions__count__gte=F('max_subscribers')
-                ).exists():
-                    subscription = TipsterSubscription.objects.create(
-                        subscriber=request.user,
-                        tier=tier,
-                        status='incomplete',
-                        end_date=timezone.now() + timezone.timedelta(days=30),
-                        stripe_subscription_id=stripe_subscription.id,
-                        stripe_customer_id=customer.id
-                    )
-                    return JsonResponse({
-                        'success': True,
-                        'subscription_id': subscription.id,
-                        'client_secret': stripe_subscription.latest_invoice.payment_intent.client_secret
-                    })
-                else:
-                    # Cancel the Stripe subscription since we couldn't create the local subscription
-                    stripe.Subscription.delete(stripe_subscription.id)
-                    return JsonResponse({
-                        'success': False,
-                        'error': "This tier is no longer available"
-                    })
-            
-        except stripe.error.StripeError as e:
-            logger.error(f"Stripe error in subscribe_to_tipster: {str(e)}")
-            return JsonResponse({
-                'success': False,
-                'error': "Payment processing error. Please try again."
-            })
-            
-    except Exception as e:
-        logger.error(f"Error in subscribe_to_tipster: {str(e)}")
-        return JsonResponse({
-            'success': False,
-            'error': "An error occurred while processing your subscription"
-        })
-
-@login_required
-def cancel_subscription(request):
-    """Cancel Premium subscription."""
-    if request.method == 'POST':
-        try:
-            # Get active subscription
-            subscriptions = stripe.Subscription.list(
-                customer=request.user.userprofile.stripe_customer_id,
-                status='active'
-            )
-            
-            if subscriptions.data:
-                # Cancel at period end
-                stripe.Subscription.modify(
-                    subscriptions.data[0].id,
-                    cancel_at_period_end=True
-                )
-                messages.success(request, 'Your subscription will be cancelled at the end of the billing period.')
-            else:
-                messages.error(request, 'No active subscription found.')
+                return JsonResponse({
+                    'success': False,
+                    'error': "Invalid action"
+                }, status=400)
                 
         except Exception as e:
-            messages.error(request, f'Error cancelling subscription: {str(e)}')
+            logger.error(f"Error in manage_tiers: {str(e)}")
+            return JsonResponse({
+                'success': False,
+                'error': "An error occurred while processing your request"
+            }, status=500)
+
+class SubscribeToTipsterView(LoginRequiredMixin, View):
+    """Handle subscribing to a tipster's tier."""
+    
+    def post(self, request, username, tier_id):
+        try:
+            tipster = get_object_or_404(User, username=username)
+            tier = get_object_or_404(TipsterTier, id=tier_id, tipster=tipster)
             
-    return redirect('profile', username=request.user.username)
+            # Check if already subscribed
+            existing_sub = TipsterSubscription.objects.filter(
+                subscriber=request.user,
+                tier=tier,
+                status='active'
+            ).first()
+            
+            if existing_sub:
+                return JsonResponse({
+                    'success': False,
+                    'error': "You are already subscribed to this tier"
+                })
+            
+            # Check if tier has reached max subscribers
+            if tier.max_subscribers and tier.subscriptions.filter(status='active').count() >= tier.max_subscribers:
+                return JsonResponse({
+                    'success': False,
+                    'error': "This tier has reached its maximum number of subscribers"
+                })
+            
+            # Create subscription
+            subscription = TipsterSubscription.objects.create(
+                subscriber=request.user,
+                tier=tier,
+                status='active',
+                start_date=timezone.now()
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Successfully subscribed to tipster',
+                'subscription': {
+                    'id': subscription.id,
+                    'tier_name': tier.name,
+                    'price': tier.price,
+                    'start_date': subscription.start_date.isoformat()
+                }
+            })
+            
+        except Exception as e:
+            logger.error(f"Error in subscribe_to_tipster: {str(e)}")
+            return JsonResponse({
+                'success': False,
+                'error': "An error occurred while processing your subscription"
+            }, status=500)
+
+class CancelSubscriptionView(LoginRequiredMixin, View):
+    """Handle cancellation of a subscription."""
+    
+    def post(self, request):
+        try:
+            subscription_id = request.POST.get('subscription_id')
+            if not subscription_id:
+                return JsonResponse({
+                    'success': False,
+                    'error': "Subscription ID is required"
+                }, status=400)
+            
+            subscription = get_object_or_404(
+                TipsterSubscription,
+                id=subscription_id,
+                subscriber=request.user
+            )
+            
+            # Update subscription status
+            subscription.status = 'cancelled'
+            subscription.end_date = timezone.now()
+            subscription.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Subscription cancelled successfully'
+            })
+            
+        except Exception as e:
+            logger.error(f"Error in cancel_subscription: {str(e)}")
+            return JsonResponse({
+                'success': False,
+                'error': "An error occurred while cancelling your subscription"
+            }, status=500)
 
 @csrf_exempt
 @require_POST
@@ -511,18 +458,39 @@ def handle_payment_failed(invoice):
     except User.DoesNotExist:
         pass
 
-@login_required
-def top_tipsters_leaderboard(request):
+class TopTipstersLeaderboardView(LoginRequiredMixin, View):
     """Display the top tipsters leaderboard."""
-    if not request.user.userprofile.tier == 'premium':
-        messages.warning(request, 'Premium subscription required to view Top Tipsters.')
-        return redirect('tier_setup')
-        
-    top_tipsters = UserProfile.objects.filter(
-        is_tipster=True,
-        is_top_tipster=True
-    ).order_by('-win_rate', '-total_tips')[:10]
     
-    return render(request, 'core/top_tipsters_leaderboard.html', {
-        'top_tipsters': top_tipsters
-    }) 
+    def get(self, request):
+        try:
+            # Get top tipsters based on win rate and number of tips
+            top_tipsters = User.objects.filter(
+                userprofile__is_tipster=True
+            ).annotate(
+                total_tips=Count('tip'),
+                win_rate=Count('tip', filter=Q(tip__status='win')) * 100.0 / 
+                        Count('tip', filter=Q(tip__status__in=['win', 'loss']))
+            ).filter(
+                total_tips__gte=10  # Minimum 10 tips to be considered
+            ).order_by('-win_rate', '-total_tips')[:10]
+            
+            tipsters_data = []
+            for tipster in top_tipsters:
+                profile = tipster.userprofile
+                tipsters_data.append({
+                    'username': tipster.username,
+                    'handle': profile.handle or tipster.username,
+                    'avatar_url': profile.avatar.url if profile.avatar else None,
+                    'total_tips': tipster.total_tips,
+                    'win_rate': round(tipster.win_rate, 1) if tipster.win_rate else 0,
+                    'followers_count': Follow.objects.filter(followed=tipster).count()
+                })
+            
+            return render(request, 'core/top_tipsters.html', {
+                'tipsters': tipsters_data
+            })
+            
+        except Exception as e:
+            logger.error(f"Error in top_tipsters_leaderboard: {str(e)}")
+            messages.error(request, "An error occurred while loading the leaderboard.")
+            return redirect('home') 

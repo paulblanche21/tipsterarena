@@ -66,7 +66,7 @@ def check_daily_tip_limit(view_func):
         if profile.tier == 'free':
             if tips_today >= 2:
                 messages.warning(request, 'Basic tier: Max 2 tips per day. Upgrade to Premium for unlimited tips!')
-                return redirect('tier_setup')
+                return redirect('setup_tiers')
                 
         return view_func(request, *args, **kwargs)
     return wrapper
@@ -84,7 +84,7 @@ def check_follow_limit(view_func):
         if profile.tier == 'free':
             if following_count >= 20:
                 messages.warning(request, 'Basic tier: Max 20 follows. Upgrade to Premium for unlimited follows!')
-                return redirect('tier_setup')
+                return redirect('setup_tiers')
                 
         return view_func(request, *args, **kwargs)
     return wrapper
@@ -99,7 +99,7 @@ def premium_required(view_func):
             
         if request.user.userprofile.tier != 'premium':
             messages.warning(request, 'This feature is only available to Premium users. Upgrade now to access!')
-            return redirect('tier_setup')
+            return redirect('setup_tiers')
             
         return view_func(request, *args, **kwargs)
     return wrapper

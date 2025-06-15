@@ -27,7 +27,11 @@
                 </ul>
             </div>
             <div class="tier-action">
-                <a href="{% url 'home' %}" class="btn-secondary">Continue with Basic</a>
+                <form method="post" action="{% url 'setup_tiers' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="tier" value="free">
+                    <button type="submit" class="btn-secondary">Continue with Basic</button>
+                </form>
             </div>
         </div>
 
@@ -50,7 +54,11 @@
                 </ul>
             </div>
             <div class="tier-action">
-                <a href="{% url 'payment' %}" class="btn-primary">Upgrade to Premium</a>
+                <form method="post" action="{% url 'setup_tiers' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="tier" value="premium">
+                    <button type="submit" class="btn-primary">Upgrade to Premium</button>
+                </form>
             </div>
         </div>
     </div>

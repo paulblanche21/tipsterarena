@@ -50,12 +50,14 @@ __all__ = [
     'ChatView',
 
     # Subscription views
-    'become_tipster', 'tipster_dashboard', 'manage_tiers',
-    'subscribe_to_tipster', 'cancel_subscription', 'setup_tiers',
-    'TierSetupView', 'stripe_webhook', 'top_tipsters_leaderboard',
-
-    # New FollowUserView
-    'FollowUserView',
+    'BecomeTipsterView',
+    'SetupTiersView',
+    'TipsterDashboardView',
+    'ManageTiersView',
+    'SubscribeToTipsterView',
+    'CancelSubscriptionView',
+    'TopTipstersLeaderboardView',
+    'stripe_webhook',
 ]
 
 from .auth_views import (
@@ -117,6 +119,24 @@ from .general_views import (
     ChatView,
 )
 
-from .subscription_views import become_tipster, tipster_dashboard, manage_tiers, subscribe_to_tipster, cancel_subscription, setup_tiers, TierSetupView, stripe_webhook, top_tipsters_leaderboard
+from .subscription_views import (
+    BecomeTipsterView,
+    SetupTiersView,
+    TipsterDashboardView,
+    ManageTiersView,
+    SubscribeToTipsterView,
+    CancelSubscriptionView,
+    TopTipstersLeaderboardView,
+    stripe_webhook,
+)
 
-from .api_views import current_user_api, suggested_users_api, trending_tips_api, VerifyTipView, BurstRateThrottle, SustainedRateThrottle, upload_chat_image_api, TrendingTipsView 
+from .api_views import (
+    current_user_api,
+    suggested_users_api,
+    trending_tips_api,
+    VerifyTipView,
+    BurstRateThrottle,
+    SustainedRateThrottle,
+    upload_chat_image_api,
+    TrendingTipsView
+) 
