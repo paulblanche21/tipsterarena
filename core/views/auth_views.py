@@ -10,9 +10,14 @@ from django.contrib.auth.models import Group
 from django.core.cache import cache
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.crypto import get_random_string
 import logging
+from django.contrib import messages
 
 from ..forms import CustomUserCreationForm, KYCForm, UserProfileForm
+from ..models import EmailVerificationToken
 
 import stripe
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -79,10 +84,76 @@ class SignupView(View):
                 basic_group, _ = Group.objects.get_or_create(name='Basic Users')
                 user.groups.add(basic_group)
                 
+                # Create and send verification email
+                token = get_random_string(length=32)
+                EmailVerificationToken.objects.create(user=user, token=token)
+                
+                verification_url = request.build_absolute_uri(
+                    f'/verify-email/{token}/'
+                )
+                
+                # Send verification email
+                subject = 'Verify your Tipster Arena account'
+                html_message = render_to_string('core/email/verify_email.html', {
+                    'user': user,
+                    'verification_url': verification_url,
+                })
+                plain_message = f'Please verify your account by clicking this link: {verification_url}'
+                
+                try:
+                    send_mail(
+                        subject,
+                        plain_message,
+                        settings.DEFAULT_FROM_EMAIL,
+                        [user.email],
+                        html_message=html_message,
+                        fail_silently=False,
+                    )
+                    logger.info(f"Verification email sent to {user.email}")
+                except Exception as e:
+                    logger.error(f"Failed to send verification email to {user.email}: {str(e)}")
+                    messages.warning(request, "Account created but verification email could not be sent. Please contact support.")
+                
                 # Log user in
                 login(request, user)
+                messages.info(request, "Please check your email to verify your account.")
                 return redirect('kyc')
         return render(request, 'core/signup.html', {'form': form})
+
+class EmailVerificationView(View):
+    """Handle email verification."""
+    def get(self, request, token):
+        try:
+            verification = EmailVerificationToken.objects.get(
+                token=token,
+                is_used=False
+            )
+            
+            # Mark token as used
+            verification.is_used = True
+            verification.save()
+            
+            # Update user profile
+            user = verification.user
+            user.userprofile.email_verified = True
+            user.userprofile.save()
+            
+            messages.success(request, "Your email has been verified successfully!")
+            logger.info(f"Email verified for user {user.username}")
+            
+            if request.user.is_authenticated:
+                return redirect('home')
+            else:
+                return redirect('login')
+                
+        except EmailVerificationToken.DoesNotExist:
+            messages.error(request, "Invalid or expired verification link.")
+            logger.warning(f"Invalid verification attempt with token: {token}")
+            return redirect('login')
+        except Exception as e:
+            messages.error(request, "An error occurred during verification.")
+            logger.error(f"Error during email verification: {str(e)}")
+            return redirect('login')
 
 class KYCView(LoginRequiredMixin, View):
     """Handle KYC (Know Your Customer) verification process."""

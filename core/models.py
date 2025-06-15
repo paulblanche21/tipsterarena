@@ -770,3 +770,18 @@ class TipsterSubscription(models.Model):
         self.next_payment_date = self.end_date
         self.save()
         return True
+
+class EmailVerificationToken(models.Model):
+    """Model for storing email verification tokens."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    token = models.CharField(max_length=100, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_used = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Verification token for {self.user.username}"
+
+    class Meta:
+        verbose_name = "Email Verification Token"
+        verbose_name_plural = "Email Verification Tokens"
+        ordering = ['-created_at']

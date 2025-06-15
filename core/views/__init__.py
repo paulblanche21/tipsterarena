@@ -1,82 +1,5 @@
 """Views for the Tipster Arena application."""
 
-__all__ = [
-    # Auth views
-    'LoginView',
-    'SignupView',
-    'KYCView',
-    'ProfileSetupView',
-    'SkipProfileSetupView',
-    'PaymentView',
-    'CreateCheckoutSessionView',
-    'PaymentSuccessView',
-    'SkipPaymentView',
-
-    # Tip views
-    'PostTipView',
-    'EditTipView',
-    'DeleteTipView',
-    'LikeTipView',
-    'ShareTipView',
-    'CommentTipView',
-    'GetTipCommentsView',
-    'TipListView',
-    'VerifyTipView',
-
-    # Profile views
-    'ProfileView',
-    'ProfileEditView',
-
-    # Sport views
-    'SportView',
-
-    # Home views
-    'HomeView',
-
-    # Interaction views
-    'FollowUserView',
-    'MessagesView',
-    'SendMessageView',
-    'GetThreadMessagesView',
-    'NotificationsView',
-    'MessageSettingsView',
-    'BookmarksView',
-    'ToggleBookmarkView',
-    'LikeCommentView',
-    'ShareCommentView',
-    'MarkNotificationReadView',
-    'GetMessagesView',
-    'StartMessageThreadView',
-    'SearchUsersView',
-    'UpdateMessageSettingsView',
-
-    # General views
-    'LandingView',
-    'SearchView',
-    'CSPReportView',
-    'TermsOfServiceView',
-    'PrivacyPolicyView',
-    'CookiePolicyView',
-    'AccessibilityView',
-    'ChatView',
-
-    # Subscription views
-    'BecomeTipsterView',
-    'SetupTiersView',
-    'TipsterDashboardView',
-    'ManageTiersView',
-    'SubscribeToTipsterView',
-    'CancelSubscriptionView',
-    'TopTipstersLeaderboardView',
-    'StripeWebhookView',
-
-    # API views
-    'CurrentUserView',
-    'UploadChatImageView',
-    'SuggestedUsersView',
-    'TrendingTipsView',
-]
-
 from .auth_views import (
     LoginView,
     SignupView,
@@ -87,6 +10,7 @@ from .auth_views import (
     CreateCheckoutSessionView,
     PaymentSuccessView,
     SkipPaymentView,
+    EmailVerificationView,
 )
 
 from .tip_views import (
@@ -160,3 +84,81 @@ from .api_views import (
     SuggestedUsersView,
     TrendingTipsView,
 )
+
+__all__ = [
+    # Auth views
+    'LoginView',
+    'SignupView',
+    'KYCView',
+    'ProfileSetupView',
+    'SkipProfileSetupView',
+    'PaymentView',
+    'CreateCheckoutSessionView',
+    'PaymentSuccessView',
+    'SkipPaymentView',
+    'EmailVerificationView',
+
+    # Tip views
+    'PostTipView',
+    'EditTipView',
+    'DeleteTipView',
+    'LikeTipView',
+    'ShareTipView',
+    'CommentTipView',
+    'GetTipCommentsView',
+    'TipListView',
+    'VerifyTipView',
+
+    # Profile views
+    'ProfileView',
+    'ProfileEditView',
+
+    # Sport views
+    'SportView',
+
+    # Home views
+    'HomeView',
+
+    # Interaction views
+    'FollowUserView',
+    'MessagesView',
+    'SendMessageView',
+    'GetThreadMessagesView',
+    'NotificationsView',
+    'MessageSettingsView',
+    'BookmarksView',
+    'ToggleBookmarkView',
+    'LikeCommentView',
+    'ShareCommentView',
+    'MarkNotificationReadView',
+    'GetMessagesView',
+    'StartMessageThreadView',
+    'SearchUsersView',
+    'UpdateMessageSettingsView',
+
+    # General views
+    'LandingView',
+    'SearchView',
+    'CSPReportView',
+    'TermsOfServiceView',
+    'PrivacyPolicyView',
+    'CookiePolicyView',
+    'AccessibilityView',
+    'ChatView',
+
+    # Subscription views
+    'BecomeTipsterView',
+    'SetupTiersView',
+    'TipsterDashboardView',
+    'ManageTiersView',
+    'SubscribeToTipsterView',
+    'CancelSubscriptionView',
+    'TopTipstersLeaderboardView',
+    'StripeWebhookView',
+
+    # API views
+    'CurrentUserView',
+    'UploadChatImageView',
+    'SuggestedUsersView',
+    'TrendingTipsView',
+]
