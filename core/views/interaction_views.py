@@ -19,21 +19,21 @@ from ..models import (
 logger = logging.getLogger(__name__)
 
 __all__ = [
-    'follow_user',
-    'messages_view',
-    'send_message',
-    'get_thread_messages',
-    'notifications',
-    'message_settings_view',
-    'bookmarks',
-    'toggle_bookmark',
-    'like_comment',
-    'share_comment',
-    'mark_notification_read',
-    'get_messages',
-    'start_message_thread',
-    'search_users',
-    'update_message_settings',
+    'FollowUserView',
+    'MessagesView',
+    'SendMessageView',
+    'GetThreadMessagesView',
+    'NotificationsView',
+    'MessageSettingsView',
+    'BookmarksView',
+    'ToggleBookmarkView',
+    'LikeCommentView',
+    'ShareCommentView',
+    'MarkNotificationReadView',
+    'GetMessagesView',
+    'StartMessageThreadView',
+    'SearchUsersView',
+    'UpdateMessageSettingsView',
 ]
 
 class FollowUserView(LoginRequiredMixin, View):
@@ -331,26 +331,11 @@ class NotificationsView(LoginRequiredMixin, View):
     def get(self, request):
         try:
             notifications = Notification.objects.filter(
-                recipient=request.user
+                user=request.user
             ).order_by('-created_at')[:50]
             
-            notifications_data = []
-            for notification in notifications:
-                notifications_data.append({
-                    'id': notification.id,
-                    'type': notification.notification_type,
-                    'content': notification.content,
-                    'created_at': notification.created_at.isoformat(),
-                    'is_read': notification.is_read,
-                    'sender': {
-                        'username': notification.sender.username,
-                        'avatar_url': notification.sender.userprofile.avatar.url if notification.sender.userprofile.avatar else None
-                    } if notification.sender else None
-                })
-            
-            return JsonResponse({
-                'success': True,
-                'notifications': notifications_data
+            return render(request, 'core/notifications.html', {
+                'notifications': notifications
             })
             
         except Exception as e:
@@ -474,9 +459,9 @@ class MarkNotificationReadView(LoginRequiredMixin, View):
 
             notifications = Notification.objects.filter(
                 id__in=notification_ids,
-                recipient=request.user
+                user=request.user
             )
-            notifications.update(is_read=True)
+            notifications.update(read=True)
 
             return JsonResponse({
                 'success': True,
@@ -589,53 +574,25 @@ class StartMessageThreadView(LoginRequiredMixin, View):
             }, status=500)
 
 class UpdateMessageSettingsView(LoginRequiredMixin, View):
-    """Update user's message settings."""
+    """Update user's message notification settings."""
     def post(self, request):
         try:
-            # Try to get data from JSON first
-            if request.content_type == 'application/json':
-                settings_data = json.loads(request.body)
-            else:
-                # Fall back to form data
-                settings_data = {
-                    'message_notifications': request.POST.get('message_notifications'),
-                    'message_sound': request.POST.get('message_sound'),
-                    'message_vibration': request.POST.get('message_vibration'),
-                    'message_email': request.POST.get('message_email'),
-                    'message_push': request.POST.get('message_push'),
-                    'message_desktop': request.POST.get('message_desktop'),
-                    'message_mobile': request.POST.get('message_mobile'),
-                    'message_web': request.POST.get('message_web'),
-                    'message_app': request.POST.get('message_app'),
-                    'message_browser': request.POST.get('message_browser'),
-                }
-
-            profile = request.user.userprofile
-
-            # Update message settings
-            for key, value in settings_data.items():
-                if hasattr(profile, key):
-                    setattr(profile, key, value)
-
-            profile.save()
-
+            data = json.loads(request.body)
+            user = request.user
+            
+            if not hasattr(user, 'userprofile'):
+                UserProfile.objects.get_or_create(user=user)
+            
+            # Update notification settings
+            user.userprofile.email_notifications = data.get('email_notifications', True)
+            user.userprofile.push_notifications = data.get('push_notifications', True)
+            user.userprofile.save()
+            
             return JsonResponse({
                 'success': True,
-                'message': 'Message settings updated successfully',
-                'settings': {
-                    'message_notifications': profile.message_notifications,
-                    'message_sound': profile.message_sound,
-                    'message_vibration': profile.message_vibration,
-                    'message_email': profile.message_email,
-                    'message_push': profile.message_push,
-                    'message_desktop': profile.message_desktop,
-                    'message_mobile': profile.message_mobile,
-                    'message_web': profile.message_web,
-                    'message_app': profile.message_app,
-                    'message_browser': profile.message_browser,
-                }
+                'message': 'Message settings updated successfully'
             })
-
+            
         except json.JSONDecodeError:
             return JsonResponse({
                 'success': False,
