@@ -14,7 +14,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.throttling import UserRateThrottle
 from core.models import Tip, Follow  # Add Tip and Follow models import
-from django.db.models import Q
+from django.db.models import Q, Count
 import logging
 
 __all__ = [
@@ -24,7 +24,8 @@ __all__ = [
     'trending_tips_api',
     'VerifyTipView',
     'BurstRateThrottle',
-    'SustainedRateThrottle'
+    'SustainedRateThrottle',
+    'TrendingTipsView'
 ]
 
 @login_required
@@ -224,4 +225,21 @@ class BurstRateThrottle(UserRateThrottle):
 
 class SustainedRateThrottle(UserRateThrottle):
     """Throttle for sustained requests."""
-    rate = '100/day' 
+    rate = '100/day'
+
+class TrendingTipsView(APIView):
+    def get(self, request):
+        limit = int(request.GET.get('limit', 30))
+        trending_tips = Tip.objects.annotate(
+            popularity=Count('likes') + Count('shares') + Count('comments')
+        ).order_by('-popularity', '-created_at')[:limit]
+        tips_list = []
+        for tip in trending_tips:
+            tips_list.append({
+                'id': tip.id,
+                'text': tip.text,
+                'username': tip.user.username,
+                'likes_count': tip.likes.count(),
+                'is_liked': tip.likes.filter(id=request.user.id).exists()
+            })
+        return JsonResponse({'trending_tips': tips_list}) 

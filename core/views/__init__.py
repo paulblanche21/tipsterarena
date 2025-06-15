@@ -37,7 +37,7 @@ __all__ = [
     'current_user_api', 'suggested_users_api',
     'trending_tips_api', 'VerifyTipView',
     'BurstRateThrottle', 'SustainedRateThrottle',
-    'upload_chat_image_api',
+    'upload_chat_image_api', 'TrendingTipsView',
 
     # General views
     'LandingView',
@@ -119,4 +119,4 @@ from .general_views import (
 
 from .subscription_views import become_tipster, tipster_dashboard, manage_tiers, subscribe_to_tipster, cancel_subscription, setup_tiers, TierSetupView, stripe_webhook, top_tipsters_leaderboard
 
-from .api_views import current_user_api, suggested_users_api, trending_tips_api, VerifyTipView, BurstRateThrottle, SustainedRateThrottle, upload_chat_image_api 
+from .api_views import current_user_api, suggested_users_api, trending_tips_api, VerifyTipView, BurstRateThrottle, SustainedRateThrottle, upload_chat_image_api, TrendingTipsView 

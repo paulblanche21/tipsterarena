@@ -78,7 +78,7 @@ urlpatterns = [
     path('api/verify-tip/<int:tip_id>/', views.VerifyTipView.as_view(), name='verify_tip'),
 
     # API routes for data retrieval
-    path('api/trending-tips/', views.trending_tips_api, name='trending_tips_api'),
+    path('api/trending-tips/', views.TrendingTipsView.as_view(), name='trending_tips_api'),
     path('api/current-user/', views.current_user_api, name='current_user_api'),
     
     # Message API routes
