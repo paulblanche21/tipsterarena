@@ -785,3 +785,15 @@ class EmailVerificationToken(models.Model):
         verbose_name = "Email Verification Token"
         verbose_name_plural = "Email Verification Tokens"
         ordering = ['-created_at']
+
+class ChatMessage(models.Model):
+    """Model for public chat room messages."""
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    image = models.ImageField(upload_to='chat_images/', blank=True, null=True)
+    gif_url = models.URLField(blank=True, null=True)
+    emoji = models.CharField(max_length=10, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.sender.username if self.sender else 'Anonymous'}: {self.content[:20]}"

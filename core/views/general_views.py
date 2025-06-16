@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from ..models import User, UserProfile, Tip, Follow, MessageThread, Message
+from ..models import User, UserProfile, Tip, Follow, MessageThread, Message, ChatMessage
 
 logger = logging.getLogger(__name__)
 
@@ -134,25 +134,13 @@ class ChatView(LoginRequiredMixin, View):
     """Render the chat interface for authenticated users."""
     def get(self, request):
         try:
-            # Get user's message threads
-            threads = MessageThread.objects.filter(
-                Q(user1=request.user) | Q(user2=request.user)
-            ).select_related('user1', 'user2').order_by('-updated_at')
-            
-            # Get unread message counts
-            unread_counts = {}
-            for thread in threads:
-                other_user = thread.user2 if thread.user1 == request.user else thread.user1
-                unread_count = Message.objects.filter(
-                    thread=thread,
-                    sender=other_user,
-                    is_read=False
-                ).count()
-                unread_counts[thread.id] = unread_count
+            # Get recent chat messages
+            messages = ChatMessage.objects.select_related('sender').order_by('-created_at')[:50]
             
             context = {
-                'threads': threads,
-                'unread_counts': unread_counts
+                'messages': messages,
+                'current_user': request.user,
+                'current_user_avatar': request.user.userprofile.avatar.url if hasattr(request.user, 'userprofile') and request.user.userprofile.avatar else None
             }
             
             return render(request, 'core/chat.html', context)
