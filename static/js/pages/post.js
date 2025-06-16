@@ -724,13 +724,18 @@ function setupCentralFeedPost() {
 
 // Function to setup the post modal
 function setupPostModal() {
+    console.log('Setting up post modal...');
     const postTipBtn = document.querySelector('.nav-post-btn[data-toggle="post-modal"]');
     const postModal = document.getElementById('post-modal');
+    console.log('Post tip button:', postTipBtn);
+    console.log('Post modal:', postModal);
 
     if (postTipBtn && postModal) {
         postTipBtn.addEventListener('click', function (e) {
+            console.log('Post tip button clicked');
             e.preventDefault();
             postModal.style.display = postModal.style.display === 'block' ? 'none' : 'block';
+            console.log('Post modal display:', postModal.style.display);
 
             const modalSubmitBtn = postModal.querySelector('#submit-post');
             const modalInput = postModal.querySelector('.post-input');
