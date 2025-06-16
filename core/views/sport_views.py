@@ -2,8 +2,7 @@
 
 from django.shortcuts import render
 from django.views import View
-
-
+from core.models import Tip
 
 class SportView(View):
     def get(self, request, sport):
