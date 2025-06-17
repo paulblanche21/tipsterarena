@@ -13,6 +13,9 @@ function escapeHtml(text) {
 const wsScheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
 const wsPath = `${wsScheme}://${window.location.host}/ws/chat/`;
 let socket = null;
+let reconnectAttempts = 0;
+const MAX_RECONNECT_ATTEMPTS = 5;
+const RECONNECT_DELAY = 2000;
 
 function connectWebSocket() {
     console.log('Attempting to connect to WebSocket...');
@@ -20,6 +23,7 @@ function connectWebSocket() {
 
     socket.onopen = function() {
         console.log('Chat WebSocket connected successfully');
+        reconnectAttempts = 0;
         // Request initial user list
         socket.send(JSON.stringify({ type: 'request_user_list' }));
     };
@@ -46,13 +50,29 @@ function connectWebSocket() {
 
     socket.onclose = function(event) {
         console.log('Chat WebSocket closed:', event.code, event.reason);
-        console.log('Reconnecting in 2s...');
-        setTimeout(connectWebSocket, 2000);
+        if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+            reconnectAttempts++;
+            console.log(`Reconnecting in ${RECONNECT_DELAY/1000}s... (Attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`);
+            setTimeout(connectWebSocket, RECONNECT_DELAY);
+        } else {
+            console.error('Max reconnection attempts reached');
+            showError('Connection lost. Please refresh the page to reconnect.');
+        }
     };
 
     socket.onerror = function(error) {
         console.error('WebSocket error:', error);
+        showError('Connection error. Please check your internet connection.');
     };
+}
+
+// Error handling
+function showError(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'chat-error';
+    errorDiv.textContent = message;
+    document.querySelector('.chat-container').insertBefore(errorDiv, document.querySelector('.chat-messages'));
+    setTimeout(() => errorDiv.remove(), 5000);
 }
 
 // Connect when the page loads
@@ -145,9 +165,9 @@ function updateOnlineUsers(users) {
         li.className = 'online-user-item';
         // Use flexbox for alignment, and avoid nested <strong> in <span>
         li.innerHTML = `
-            <img src="${avatarUrl}" alt="Avatar" class="user-avatar" onerror="this.src='${window.default_avatar_url}'">
+            <img src="${avatarUrl}" alt="Avatar" class="user-avatar" onerror="this.src='${window.chatData.defaultAvatarUrl}'">
             <div class="user-info-flex">
-                <span class="user-name">${username === window.currentUsername ? '(You)' : username}</span>
+                <span class="user-name">${username === window.chatData.currentUsername ? '(You)' : username}</span>
             </div>
             <span class="user-status"></span>
         `;
@@ -160,69 +180,82 @@ chatForm.addEventListener('submit', async function(e) {
     e.preventDefault();
     const message = chatInput.value.trim();
     if (!message && !selectedGifUrl && !selectedImageFile) return;
-    let payload = {
-        type: 'chat_message',
-        message: message,
-        username: window.currentUsername || 'Anonymous',
-        avatar_url: window.currentAvatarUrl || window.default_avatar_url,
-    };
-    if (selectedGifUrl) {
-        payload.gif_url = selectedGifUrl;
-    }
-    if (selectedImageFile) {
-        // Upload image to backend
-        const formData = new FormData();
-        formData.append('image', selectedImageFile);
-        try {
-            chatForm.querySelector('.chat-send-btn').disabled = true;
+    
+    const sendButton = chatForm.querySelector('.chat-send-btn');
+    sendButton.disabled = true;
+    
+    try {
+        let payload = {
+            type: 'chat_message',
+            message: message,
+            username: window.chatData.currentUsername || 'Anonymous',
+            avatar_url: window.chatData.currentAvatarUrl || window.chatData.defaultAvatarUrl,
+        };
+        
+        if (selectedGifUrl) {
+            payload.gif_url = selectedGifUrl;
+        }
+        
+        if (selectedImageFile) {
+            // Upload image to backend
+            const formData = new FormData();
+            formData.append('image', selectedImageFile);
+            
             const resp = await fetch('/api/upload-chat-image/', {
                 method: 'POST',
                 body: formData,
                 credentials: 'same-origin',
             });
+            
             const data = await resp.json();
             if (data.success && data.url) {
                 payload.image_url = data.url;
             } else {
-                alert('Image upload failed: ' + (data.error || 'Unknown error'));
-                chatForm.querySelector('.chat-send-btn').disabled = false;
-                return;
+                throw new Error(data.error || 'Image upload failed');
             }
-        } catch (err) {
-            alert('Image upload failed.');
-            chatForm.querySelector('.chat-send-btn').disabled = false;
-            return;
         }
+        
+        socket.send(JSON.stringify(payload));
+        
+        // Clear form
+        chatInput.value = '';
+        selectedGifUrl = '';
+        selectedImageFile = null;
+        chatPreviewDiv.style.display = 'none';
+        chatPreviewDiv.querySelector('.preview-media').src = '';
+        imageInput.value = '';
+        
+    } catch (err) {
+        console.error('Error sending message:', err);
+        showError('Failed to send message. Please try again.');
+    } finally {
+        sendButton.disabled = false;
     }
-    socket.send(JSON.stringify(payload));
-    chatInput.value = '';
-    selectedGifUrl = '';
-    selectedImageFile = null;
-    chatPreviewDiv.style.display = 'none';
-    chatPreviewDiv.querySelector('.preview-media').src = '';
-    chatForm.querySelector('.chat-send-btn').disabled = false;
-    imageInput.value = '';
 });
 
 // Add message to chat feed
 function addMessageToFeed(username, message, imageUrl = null, gifUrl = null, emoji = null, avatarUrl = null) {
     const msgDiv = document.createElement('div');
     msgDiv.className = 'chat-message';
-    msgDiv.style.marginBottom = '16px';
-    const avatar = avatarUrl || window.default_avatar_url;
+    
+    const now = new Date();
+    const timeString = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    
+    const avatar = avatarUrl || window.chatData.defaultAvatarUrl;
     msgDiv.innerHTML = `
-        <img src="${avatar}" alt="Avatar" style="width:32px;height:32px;border-radius:50%;object-fit:cover;display:inline-block;vertical-align:middle;margin-right:10px;" onerror="this.src=window.default_avatar_url;">
-        <span style="font-weight: bold;vertical-align:middle;">${escapeHtml(username)}:</span> ${escapeHtml(message)}
+        <img src="${avatar}" alt="Avatar" class="message-avatar" onerror="this.src='${window.chatData.defaultAvatarUrl}'">
+        <div class="message-content">
+            <div class="message-header">
+                <span class="message-username">${escapeHtml(username)}</span>
+                <span class="message-time">${timeString}</span>
+            </div>
+            <div class="message-text">${escapeHtml(message)}</div>
+            ${imageUrl ? `<img src="${imageUrl}" alt="Image" class="message-media">` : ''}
+            ${gifUrl ? `<img src="${gifUrl}" alt="GIF" class="message-media">` : ''}
+            ${emoji ? `<span class="message-emoji">${emoji}</span>` : ''}
+        </div>
     `;
-    if (imageUrl) {
-        msgDiv.innerHTML += `<br><img src="${imageUrl}" alt="Image" style="max-width: 200px; max-height: 200px; border-radius: 8px; margin-top: 8px;">`;
-    }
-    if (gifUrl) {
-        msgDiv.innerHTML += `<br><img src="${gifUrl}" alt="GIF" style="max-width: 200px; max-height: 200px; border-radius: 8px; margin-top: 8px;">`;
-    }
-    if (emoji) {
-        msgDiv.innerHTML += ` <span>${emoji}</span>`;
-    }
+    
     chatMessages.appendChild(msgDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 } 
