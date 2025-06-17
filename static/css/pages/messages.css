@@ -1,1 +1,106 @@
- 
+/* Message search results styling */
+.messages-modal .search-result-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    color: #1a1a1a !important;
+}
+
+.messages-modal .search-result-item:hover {
+    background-color: #f5f5f5;
+}
+
+.messages-modal .search-result-item .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 12px;
+    object-fit: cover;
+}
+
+.messages-modal .search-result-item .user-info {
+    display: flex;
+    flex-direction: column;
+    color: #1a1a1a !important;
+}
+
+.messages-modal .search-result-item .message-username {
+    color: #1a1a1a !important;
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 2px;
+}
+
+.messages-modal .search-result-item .message-handle {
+    color: #666 !important;
+    font-size: 13px;
+}
+
+/* Selected users styling */
+.messages-modal .selected-users {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px;
+    border-top: 1px solid #eee;
+    color: #1a1a1a !important;
+}
+
+.messages-modal .selected-user {
+    display: flex;
+    align-items: center;
+    background-color: #f0f2f5;
+    padding: 6px 12px;
+    border-radius: 20px;
+    gap: 8px;
+    color: #1a1a1a !important;
+}
+
+.messages-modal .selected-user .avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.messages-modal .selected-user .message-username {
+    color: #1a1a1a !important;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.messages-modal .selected-user .remove-user {
+    background: none;
+    border: none;
+    color: #666 !important;
+    cursor: pointer;
+    padding: 0 4px;
+    font-size: 16px;
+}
+
+.messages-modal .selected-user .remove-user:hover {
+    color: #ff4444 !important;
+}
+
+/* Search results container */
+.messages-modal .search-results {
+    max-height: 300px;
+    overflow-y: auto;
+    border-top: 1px solid #eee;
+    color: #1a1a1a !important;
+}
+
+.messages-modal .no-results,
+.messages-modal .error {
+    padding: 15px;
+    text-align: center;
+    color: #666 !important;
+    font-size: 14px;
+}
+
+.messages-modal .error {
+    color: #ff4444 !important;
+} 

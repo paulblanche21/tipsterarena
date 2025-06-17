@@ -1,4 +1,4 @@
-// Elements
+// DOM Elements
 let messagesFeed;
 let messageThread;
 let messageInput;
@@ -6,96 +6,68 @@ let sendMessageBtn;
 let messagesList;
 let messagesFeedList;
 let newMessageBtn;
-let modal;
+let imageBtn;
+let emojiBtn;
+let gifBtn;
 let userSearch;
 let searchResults;
-let selectedUsers;
+let selectedUsersContainer;
 let nextBtn;
 let imageInput;
+let newMessageModal;
+let settingsModal;
+let messageSocket = null;
 
 // State
 let currentThread = null;
 let currentUser = null;
+let isInitialized = false;
+let searchTimeout = null;
 
 // Giphy API Key
 const GIPHY_API_KEY = 'Lpfo7GvcccncunU2gvf0Cy9N3NCzrg35';
 
-// Add initialization flag at the top of the file
-let isInitialized = false;
-
 // Modal functions
 function showModal(modalId) {
-    console.log('Showing modal:', modalId);
     const modal = document.getElementById(modalId);
-    if (modal) {
-        // Remove any existing modal classes first
-        modal.classList.remove('modal');
-        // Ensure the modal has the correct base class
-        if (!modal.classList.contains('messages-modal')) {
-            modal.classList.add('messages-modal');
-        }
-        // Then add the show class
-        modal.classList.add('show');
-        document.body.style.overflow = 'hidden';
-        console.log('Modal classes after show:', modal.className);
-    } else {
-        console.error('Modal element not found:', modalId);
+    if (!modal) {
+        console.error(`Modal with id ${modalId} not found`);
+        return;
     }
+    modal.classList.add('show');
+    console.log(`Showing modal: ${modalId}`);
+    console.log('Modal classes after show:', modal.className);
 }
 
 function hideModal(modalId) {
-    console.log('Hiding modal:', modalId);
     const modal = document.getElementById(modalId);
-    if (modal) {
-        // Remove the show class first
-        modal.classList.remove('show');
-        // Keep only the messages-modal class
-        modal.classList.remove('modal');
-        document.body.style.overflow = '';
-        console.log('Modal classes after hide:', modal.className);
-    } else {
-        console.error('Modal element not found:', modalId);
+    if (!modal) {
+        console.error(`Modal with id ${modalId} not found`);
+        return;
     }
+    modal.classList.remove('show');
+    console.log(`Hiding modal: ${modalId}`);
 }
 
 // Initialize modal elements
 function initializeModals() {
     console.log('Initializing modals...');
-    modal = document.getElementById('newMessageModal');
-    userSearch = document.getElementById('userSearch');
-    searchResults = document.getElementById('searchResults');
-    selectedUsers = document.getElementById('selectedUsers');
-    nextBtn = document.querySelector('.next-btn');
-
-    if (!modal || !userSearch || !searchResults || !selectedUsers || !nextBtn) {
-        console.error('Missing modal elements:', {
-            modal: !!modal,
-            userSearch: !!userSearch,
-            searchResults: !!searchResults,
-            selectedUsers: !!selectedUsers,
-            nextBtn: !!nextBtn
-        });
-        return;
-    }
-
-    // Ensure modal has only the correct class
-    modal.classList.remove('modal');
-    if (!modal.classList.contains('messages-modal')) {
-        modal.classList.add('messages-modal');
-    }
-
-    // Add event listeners for modal
-    const closeButtons = modal.querySelectorAll('.close-modal, .cancel-btn');
-    closeButtons.forEach(button => {
-        button.addEventListener('click', () => hideModal('newMessageModal'));
-    });
-
-    // Close modal when clicking outside
-    modal.addEventListener('click', (event) => {
-        if (event.target === modal) {
-            hideModal('newMessageModal');
+    
+    // Initialize new message modal
+    if (newMessageModal) {
+        const closeBtn = newMessageModal.querySelector('.close-modal');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => hideModal('newMessageModal'));
         }
-    });
+    }
+
+    // Initialize settings modal
+    if (settingsModal) {
+        const closeBtn = settingsModal.querySelector('.close-settings');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => hideModal('settingsModal'));
+        }
+    }
 
     // Initialize search functionality
     if (userSearch) {
@@ -107,101 +79,229 @@ function initializeModals() {
     console.log('Modal elements initialized successfully');
 }
 
+// Initialize elements
+function initializeElements() {
+    messagesFeed = document.querySelector('.messages-feed');
+    messageThread = document.querySelector('.message-thread');
+    messageInput = document.getElementById('messageInput');
+    sendMessageBtn = document.getElementById('sendMessageBtn');
+    messagesList = document.getElementById('messagesList');
+    messagesFeedList = document.getElementById('messagesFeedList');
+    newMessageBtn = document.querySelector('.messages-new');
+    imageBtn = document.querySelector('.action-btn[title="Add image"]');
+    emojiBtn = document.querySelector('.action-btn[title="Add emoji"]');
+    gifBtn = document.querySelector('.action-btn[title="Add GIF"]');
+    userSearch = document.getElementById('userSearch');
+    searchResults = document.getElementById('searchResults');
+    selectedUsersContainer = document.getElementById('selectedUsers');
+    nextBtn = document.querySelector('.next-btn');
+    newMessageModal = document.getElementById('newMessageModal');
+    settingsModal = document.getElementById('settingsModal');
+    
+    imageInput = document.createElement('input');
+    imageInput.type = 'file';
+    imageInput.accept = 'image/*';
+    imageInput.style.display = 'none';
+    document.body.appendChild(imageInput);
+
+    return {
+        messagesFeed: !!messagesFeed,
+        messageThread: !!messageThread,
+        messageInput: !!messageInput,
+        sendMessageBtn: !!sendMessageBtn,
+        messagesList: !!messagesList,
+        messagesFeedList: !!messagesFeedList,
+        newMessageBtn: !!newMessageBtn,
+        imageBtn: !!imageBtn,
+        emojiBtn: !!emojiBtn,
+        gifBtn: !!gifBtn,
+        userSearch: !!userSearch,
+        searchResults: !!searchResults,
+        selectedUsersContainer: !!selectedUsersContainer,
+        nextBtn: !!nextBtn,
+        newMessageModal: !!newMessageModal,
+        settingsModal: !!settingsModal
+    };
+}
+
 // Search functions
 function searchUsers(query) {
-    if (query.length < 2) {
+    if (!searchResults) {
+        console.error('Search results container not found');
+        return;
+    }
+
+    if (!query || query.length < 2) {
         searchResults.innerHTML = '';
         return;
     }
 
-    fetch(`/api/users/search/?q=${encodeURIComponent(query)}`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            searchResults.innerHTML = '';
-            if (data.users && data.users.length > 0) {
-                data.users.forEach(user => {
-                    const userElement = document.createElement('div');
-                    userElement.className = 'user-result';
-                    userElement.innerHTML = `
-                        <img src="${user.avatar || '/static/images/default-avatar.png'}" alt="${user.username}">
-                        <div class="user-info">
-                            <span class="username">${user.username}</span>
-                            <span class="handle">@${user.username}</span>
-                        </div>
-                    `;
-                    userElement.addEventListener('click', () => selectUser(user));
-                    searchResults.appendChild(userElement);
-                });
-            } else {
-                searchResults.innerHTML = '<div class="no-results">No users found</div>';
-            }
-        })
-        .catch(error => {
-            console.error('Error searching users:', error);
-            searchResults.innerHTML = '<div class="error-message">Error searching users. Please try again.</div>';
-        });
+    // Clear any existing timeout
+    if (searchTimeout) {
+        clearTimeout(searchTimeout);
+    }
+
+    // Set a new timeout to debounce the search
+    searchTimeout = setTimeout(() => {
+        fetch(`/api/search-users/?q=${encodeURIComponent(query)}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                searchResults.innerHTML = '';
+                if (data.users && data.users.length > 0) {
+                    data.users.forEach(user => {
+                        const userElement = document.createElement('div');
+                        userElement.className = 'search-result-item';
+                        userElement.innerHTML = renderSearchResult(user);
+                        userElement.onclick = () => selectUser(user);
+                        searchResults.appendChild(userElement);
+                    });
+                } else {
+                    searchResults.innerHTML = '<div class="no-results">No users found</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error searching users:', error);
+                if (searchResults) {
+                    searchResults.innerHTML = '<div class="error">Error searching users</div>';
+                }
+            });
+    }, 300); // Wait 300ms after the user stops typing before searching
+}
+
+function renderSearchResult(user) {
+    return `
+        <div class="search-result-item" data-user-id="${user.id}">
+            <img src="${user.avatar || '/static/img/default-avatar.png'}" alt="Avatar" class="avatar">
+            <div class="user-info">
+                <span class="message-username">${user.username}</span>
+                <span class="message-handle">@${user.handle || user.username}</span>
+            </div>
+        </div>
+    `;
 }
 
 function selectUser(user) {
-    const selectedUser = document.createElement('div');
-    selectedUser.className = 'selected-user';
-    selectedUser.dataset.userId = user.id;
-    selectedUser.innerHTML = `
-        <img src="${user.avatar || '/static/images/default-avatar.png'}" alt="${user.username}">
-        <span>${user.username}</span>
-        <button class="remove-user">&times;</button>
-    `;
+    // Check if user is already selected
+    const existingUser = selectedUsersContainer.querySelector(`[data-user-id="${user.id}"]`);
+    if (existingUser) {
+        existingUser.remove();
+    } else {
+        const userElement = document.createElement('div');
+        userElement.className = 'selected-user';
+        userElement.dataset.userId = user.id;
+        userElement.innerHTML = renderSelectedUser(user);
+        selectedUsersContainer.appendChild(userElement);
+    }
     
-    selectedUser.querySelector('.remove-user').addEventListener('click', () => {
-        selectedUser.remove();
-        nextBtn.disabled = selectedUsers.children.length === 0;
-    });
-    
-    selectedUsers.appendChild(selectedUser);
-    nextBtn.disabled = false;
-    userSearch.value = '';
-    searchResults.innerHTML = '';
+    // Enable/disable next button based on selection
+    nextBtn.disabled = selectedUsersContainer.children.length === 0;
 }
 
-function startNewConversation() {
-    const userIds = Array.from(selectedUsers.children).map(el => el.dataset.userId);
-    
-    fetch('/api/messages/start/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken')
-        },
-        body: JSON.stringify({
-            user_ids: userIds
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            hideModal('newMessageModal');
-            // Clear selected users and reset next button
-            selectedUsers.innerHTML = '';
-            nextBtn.disabled = true;
-            
-            // Reload the messages feed to show the new thread
-            loadMessages().then(() => {
-                // After reloading, open the new thread
-                openThread(data.thread_id);
-            });
+function renderSelectedUser(user) {
+    return `
+        <div class="selected-user" data-user-id="${user.id}">
+            <img src="${user.avatar || '/static/img/default-avatar.png'}" alt="Avatar" class="avatar">
+            <span class="message-username">${user.username}</span>
+            <button class="remove-user" onclick="removeSelectedUser(${user.id})">&times;</button>
+        </div>
+    `;
+}
+
+function removeUser(userId) {
+    const userElement = selectedUsersContainer.querySelector(`[data-user-id="${userId}"]`);
+    if (userElement) {
+        userElement.remove();
+    }
+    nextBtn.disabled = selectedUsersContainer.children.length === 0;
+}
+
+async function startNewConversation() {
+    const selectedUsers = Array.from(document.querySelectorAll('.selected-user')).map(el => el.dataset.userId);
+    if (selectedUsers.length === 0) {
+        alert('Please select at least one user to start a conversation');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/start-thread/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                user_ids: selectedUsers
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-    })
-    .catch(error => console.error('Error starting conversation:', error));
+
+        const data = await response.json();
+        if (data.success) {
+            // Hide the modal
+            hideModal('newMessageModal');
+            
+            // Clear selected users
+            const selectedUsersContainer = document.getElementById('selectedUsers');
+            if (selectedUsersContainer) {
+                selectedUsersContainer.innerHTML = '';
+            }
+            
+            // Clear search input
+            const searchInput = document.getElementById('userSearch');
+            if (searchInput) {
+                searchInput.value = '';
+            }
+            
+            // Clear search results
+            const searchResults = document.getElementById('searchResults');
+            if (searchResults) {
+                searchResults.innerHTML = '';
+            }
+
+            // Update the message thread view
+            const messageThread = document.querySelector('.message-thread');
+            const threadHeader = messageThread.querySelector('.thread-header');
+            const messagesList = document.getElementById('messagesList');
+            const sendButton = document.getElementById('sendMessageBtn');
+
+            if (threadHeader && data.user) {
+                threadHeader.innerHTML = `
+                    <img src="${data.user.avatar || '/static/img/default-avatar.png'}" alt="Avatar" class="avatar">
+                    <h3 class="thread-header-name">${data.user.username}</h3>
+                `;
+            }
+
+            // Set the thread ID on the send button
+            if (sendButton) {
+                sendButton.dataset.threadId = data.thread_id;
+            }
+
+            // Clear and load messages
+            if (messagesList) {
+                messagesList.innerHTML = '';
+                await loadThread(data.thread_id);
+            }
+
+            // Update the messages feed
+            await loadMessages();
+        }
+    } catch (error) {
+        console.error('Error starting conversation:', error);
+        alert('Failed to start conversation. Please try again.');
+    }
 }
 
 // Message handling functions
 function loadMessages() {
-    return fetch('/api/messages/')
+    fetch('/api/get-messages/')
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -209,20 +309,19 @@ function loadMessages() {
             return response.json();
         })
         .then(data => {
-            renderMessagesFeed(data);
-            return data;
+            messagesFeedList.innerHTML = '';
+            if (data.length > 0) {
+                data.forEach(message => {
+                    const messageElement = createMessageElement(message);
+                    messagesFeedList.appendChild(messageElement);
+                });
+            } else {
+                messagesFeedList.innerHTML = '<div class="empty-state">No messages yet. Start a conversation!</div>';
+            }
         })
         .catch(error => {
             console.error('Error loading messages:', error);
-            if (messagesFeedList) {
-                messagesFeedList.innerHTML = `
-                    <div class="error-message">
-                        <p>Unable to load messages. Please try again later.</p>
-                        <button class="retry-btn" onclick="loadMessages()">Retry</button>
-                    </div>
-                `;
-            }
-            throw error;
+            messagesFeedList.innerHTML = '<div class="error">Error loading messages</div>';
         });
 }
 
@@ -266,7 +365,7 @@ function createMessageCard(message) {
     return card;
 }
 
-function openThread(threadId) {
+async function openThread(threadId) {
     if (!threadId) return;
     
     currentThread = threadId;
@@ -275,60 +374,41 @@ function openThread(threadId) {
         card.classList.toggle('active', card.dataset.threadId === threadId);
     });
 
-    fetch(`/api/messages/thread/${threadId}/`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+    try {
+        const response = await fetch(`/api/thread-messages/${threadId}/`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        
+        if (data.success) {
+            const messagesList = document.getElementById('messagesList');
+            if (!messagesList) {
+                console.error('Messages list container not found');
+                return;
             }
-            return response.json();
-        })
-        .then(data => {
-            renderThread(data);
-            // Update thread header with user information
-            const threadHeader = document.querySelector('.thread-header');
-            if (threadHeader) {
-                const avatarUrl = data.user?.avatar || '/static/images/default-avatar.png';
-                const username = data.user?.username || 'Unknown User';
-                
-                threadHeader.innerHTML = `
-                    <img src="${avatarUrl}" alt="Avatar" class="avatar">
-                    <h3 class="thread-header-name">${username}</h3>
+            
+            messagesList.innerHTML = '';
+            data.messages.forEach(message => {
+                const messageElement = document.createElement('div');
+                messageElement.className = `message ${message.sender.username === currentUser ? 'sent' : 'received'}`;
+                messageElement.innerHTML = `
+                    <p>${message.content}</p>
+                    <small>${new Date(message.created_at).toLocaleString()}</small>
                 `;
-            }
-        })
-        .catch(error => {
-            console.error('Error loading thread:', error);
-            if (messagesList) {
-                messagesList.innerHTML = `
-                    <div class="error-message">
-                        <p>Unable to load conversation. Please try again later.</p>
-                        <button class="retry-btn" onclick="openThread('${threadId}')">Retry</button>
-                    </div>
-                `;
-            }
-        });
-}
-
-function renderThread(data) {
-    if (!messagesList) return;
-    
-    currentUser = data.user;
-    
-    messagesList.innerHTML = '';
-    if (data.messages && Array.isArray(data.messages)) {
-        data.messages.forEach(message => {
-            const messageElement = createMessageElement({
-                content: message.content,
-                gif_url: message.gif_url,
-                timestamp: message.created_at,
-                sender: message.sender,
-                is_sent: message.sender === currentUser?.id
+                messagesList.appendChild(messageElement);
             });
-            messagesList.appendChild(messageElement);
-        });
+            
+            // Scroll to bottom
+            messagesList.scrollTop = messagesList.scrollHeight;
+        }
+    } catch (error) {
+        console.error('Error loading messages:', error);
+        const messagesList = document.getElementById('messagesList');
+        if (messagesList) {
+            messagesList.innerHTML = '<div class="error">Error loading messages. Please try again.</div>';
+        }
     }
-
-    messagesList.scrollTop = messagesList.scrollHeight;
 }
 
 function createMessageElement(message) {
@@ -365,74 +445,65 @@ function createMessageElement(message) {
     return messageDiv;
 }
 
-function sendMessage() {
-    if (!currentThread || !messageInput) return;
+async function sendMessage() {
+    const messageInput = document.getElementById('messageInput');
+    const sendButton = document.getElementById('sendMessageBtn');
+    const threadId = sendButton?.dataset.threadId;
+    
+    if (!messageInput || !sendButton || !threadId) {
+        console.error('Required elements not found for sending message:', {
+            messageInput: !!messageInput,
+            sendButton: !!sendButton,
+            threadId: threadId
+        });
+        return;
+    }
 
     const content = messageInput.value.trim();
-    const gifUrl = messageInput.dataset.gifUrl;
-    const imageFile = imageInput.files[0];
+    if (!content) return;
 
-    // Don't send if there's no content, no GIF, and no image
-    if (!content && !gifUrl && !imageFile) return;
+    try {
+        const formData = new FormData();
+        formData.append('content', content);
+        formData.append('thread_id', threadId);
 
-    // Create FormData for multipart/form-data
-    const formData = new FormData();
-    formData.append('content', content);
-    if (gifUrl) formData.append('gif_url', gifUrl);
-    if (imageFile) formData.append('image', imageFile);
+        const response = await fetch('/api/send-message/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
 
-    // Disable the send button and input while sending
-    const sendBtn = document.getElementById('sendMessageBtn');
-    if (sendBtn) sendBtn.disabled = true;
-    messageInput.disabled = true;
-
-    fetch(`/api/messages/send/${currentThread}/`, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': getCookie('csrftoken')
-        },
-        body: formData
-    })
-    .then(response => {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        return response.json();
-    })
-    .then(data => {
+
+        const data = await response.json();
         if (data.success) {
             messageInput.value = '';
-            messageInput.dataset.gifUrl = ''; // Clear the GIF URL
-            imageInput.value = ''; // Clear the image input
-            document.querySelector('.msg-message-preview').style.display = 'none'; // Hide preview
-            
-            // Add the message to the UI only after server confirmation
-            const messageElement = createMessageElement({
-                id: data.message_id,
-                content: data.content,
-                gif_url: data.gif_url,
-                image_url: data.image,
-                timestamp: data.created_at,
-                sender: currentUser?.id,
-                is_sent: true
-            });
-            messagesList.appendChild(messageElement);
-            messagesList.scrollTop = messagesList.scrollHeight;
+            const messagesList = document.getElementById('messagesList');
+            if (messagesList) {
+                const messageElement = document.createElement('div');
+                messageElement.className = 'message sent';
+                messageElement.innerHTML = `
+                    <p>${content}</p>
+                    <small>${new Date().toLocaleString()}</small>
+                `;
+                messagesList.appendChild(messageElement);
+                messagesList.scrollTop = messagesList.scrollHeight;
+            }
         }
-    })
-    .catch(error => {
+    } catch (error) {
         console.error('Error sending message:', error);
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'error-message';
-        errorDiv.textContent = 'Failed to send message. Please try again.';
-        messagesList.appendChild(errorDiv);
-    })
-    .finally(() => {
-        // Re-enable the send button and input
-        if (sendBtn) sendBtn.disabled = false;
-        messageInput.disabled = false;
-        messageInput.focus();
-    });
+        const messagesList = document.getElementById('messagesList');
+        if (messagesList) {
+            const errorElement = document.createElement('div');
+            errorElement.className = 'error';
+            errorElement.textContent = 'Error sending message. Please try again.';
+            messagesList.appendChild(errorElement);
+        }
+    }
 }
 
 // Function to show the emoji picker
@@ -769,13 +840,6 @@ function debounce(func, wait) {
 function setupEventListeners() {
     console.log('Setting up event listeners...');
 
-    // Create hidden file input for images
-    imageInput = document.createElement('input');
-    imageInput.type = 'file';
-    imageInput.accept = 'image/*';
-    imageInput.style.display = 'none';
-    document.body.appendChild(imageInput);
-
     // Add image input change handler
     imageInput.addEventListener('change', handleImageSelect);
 
@@ -798,7 +862,6 @@ function setupEventListeners() {
     }
 
     // Add image picker functionality
-    const imageBtn = document.querySelector('.action-btn[title="Add image"]');
     if (imageBtn) {
         imageBtn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -808,7 +871,6 @@ function setupEventListeners() {
     }
 
     // Add emoji picker functionality
-    const emojiBtn = document.querySelector('.action-btn[title="Add emoji"]');
     if (emojiBtn) {
         emojiBtn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -818,7 +880,6 @@ function setupEventListeners() {
     }
 
     // Add GIF picker functionality
-    const gifBtn = document.querySelector('.action-btn[title="Add GIF"]');
     if (gifBtn) {
         gifBtn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -885,7 +946,7 @@ function handleImageSelect(e) {
     const sendBtn = document.getElementById('sendMessageBtn');
     if (sendBtn) sendBtn.disabled = true;
 
-    fetch(`/api/messages/send/${currentThread}/`, {
+    fetch('/api/send-message/', {
         method: 'POST',
         headers: {
             'X-CSRFToken': getCookie('csrftoken')
@@ -928,87 +989,94 @@ function handleImageSelect(e) {
     });
 }
 
-// Modify WebSocket initialization to prevent multiple connections
-function initializeWebSocket() {
-    // If WebSocket is already connected, don't create a new connection
-    if (window.messagesSocket && window.messagesSocket.readyState === WebSocket.OPEN) {
-        console.log('WebSocket already connected, skipping initialization');
-        return;
+// WebSocket functionality
+function setupWebSocket() {
+    // Close existing connection if any
+    if (messageSocket) {
+        messageSocket.close();
     }
 
-    const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
-    const ws_path = `${ws_scheme}://${window.location.host}/ws/messages/`;
-    window.messagesSocket = new WebSocket(ws_path);
+    // Create new WebSocket connection
+    const wsScheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const wsPath = currentThread 
+        ? `${wsScheme}://${window.location.host}/ws/messages/${currentThread}/`
+        : `${wsScheme}://${window.location.host}/ws/messages/`;
+    
+    messageSocket = new WebSocket(wsPath);
 
-    window.messagesSocket.onopen = function(e) {
+    messageSocket.onopen = function(e) {
         console.log('WebSocket connected for messages');
     };
 
-    window.messagesSocket.onmessage = function(e) {
-        try {
-            const data = JSON.parse(e.data);
-            if (data.type === 'direct_message') {
-                // Only add the message if it's not from the current user
-                // This prevents duplicate messages when sending
-                if (currentThread === data.thread_id) {
-                    // Convert both IDs to strings for comparison
-                    const messageSenderId = String(data.sender);
-                    const currentUserId = String(currentUser?.id);
-                    
-                    // Check if message already exists in the thread
-                    const messageExists = Array.from(messagesList.children).some(
-                        messageElement => messageElement.dataset.messageId === String(data.message_id)
-                    );
-                    
-                    if (messageSenderId !== currentUserId && !messageExists) {
-                        const messageElement = createMessageElement({
-                            id: data.message_id,
-                            content: data.message,
-                            gif_url: data.gif_url,
-                            image_url: data.image_url,
-                            created_at: data.created_at,
-                            is_sent: false
-                        });
-                        messagesList.appendChild(messageElement);
-                        messagesList.scrollTop = messagesList.scrollHeight;
-                    }
-                }
-                // Update the message list without reloading the current thread
-                updateMessageList();
-            }
-        } catch (error) {
-            console.error('Error processing WebSocket message:', error);
+    messageSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        if (data.type === 'direct_message') {
+            // Add message to the UI
+            const messageElement = createMessageElement({
+                id: data.message_id,
+                content: data.message,
+                gif_url: data.gif_url,
+                image_url: data.image_url,
+                timestamp: data.created_at,
+                sender: data.sender,
+                is_sent: false
+            });
+            messagesList.appendChild(messageElement);
+            messagesList.scrollTop = messagesList.scrollHeight;
+            
+            // Update message list
+            updateMessageList();
         }
     };
 
-    window.messagesSocket.onclose = function(e) {
+    messageSocket.onclose = function(e) {
         console.log('WebSocket disconnected for messages');
-        // Only attempt to reconnect if the page is still initialized
-        if (isInitialized) {
-            setTimeout(initializeWebSocket, 5000);
-        }
+        // Try to reconnect after 5 seconds
+        setTimeout(setupWebSocket, 5000);
     };
 
-    window.messagesSocket.onerror = function(error) {
-        console.error('WebSocket error:', error);
+    messageSocket.onerror = function(e) {
+        console.error('WebSocket error:', e);
     };
 }
 
-// New function to update message list without reloading current thread
-function updateMessageList() {
-    fetch('/api/messages/')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+// Update WebSocket connection when thread changes
+async function loadThread(threadId) {
+    try {
+        const response = await fetch(`/messages/${threadId}/`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        
+        if (data.success) {
+            const messagesList = document.getElementById('messagesList');
+            if (!messagesList) {
+                console.error('Messages list container not found');
+                return;
             }
-            return response.json();
-        })
-        .then(data => {
-            renderMessagesFeed(data);
-        })
-        .catch(error => {
-            console.error('Error updating message list:', error);
-        });
+            
+            messagesList.innerHTML = '';
+            data.messages.forEach(message => {
+                const messageElement = document.createElement('div');
+                messageElement.className = `message ${message.sender.username === currentUser ? 'sent' : 'received'}`;
+                messageElement.innerHTML = `
+                    <p>${message.content}</p>
+                    <small>${new Date(message.created_at).toLocaleString()}</small>
+                `;
+                messagesList.appendChild(messageElement);
+            });
+            
+            // Scroll to bottom
+            messagesList.scrollTop = messagesList.scrollHeight;
+        }
+    } catch (error) {
+        console.error('Error loading messages:', error);
+        const messagesList = document.getElementById('messagesList');
+        if (messagesList) {
+            messagesList.innerHTML = '<div class="error">Error loading messages. Please try again.</div>';
+        }
+    }
 }
 
 // Helper functions
@@ -1045,56 +1113,39 @@ function formatDate(dateString) {
     return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
 }
 
-// Initialize
+// Initialize function
 export function init() {
-    // Prevent multiple initializations
     if (isInitialized) {
         console.log('Messages page already initialized, skipping...');
         return;
     }
-    
-    console.log('Initializing messages page...');
-    
-    // Initialize elements
-    messagesFeed = document.querySelector('.messages-feed');
-    messageThread = document.querySelector('.message-thread');
-    messageInput = document.getElementById('messageInput');
-    sendMessageBtn = document.getElementById('sendMessageBtn');
-    messagesList = document.getElementById('messagesList');
-    messagesFeedList = document.getElementById('messagesFeedList');
-    newMessageBtn = document.querySelector('.messages-new');
 
-    // Log initialization status
-    console.log('Elements initialized:', {
-        messagesFeed: !!messagesFeed,
-        messageThread: !!messageThread,
-        messageInput: !!messageInput,
-        sendMessageBtn: !!sendMessageBtn,
-        messagesList: !!messagesList,
-        messagesFeedList: !!messagesFeedList,
-        newMessageBtn: !!newMessageBtn
-    });
-
-    // Initialize modals
-    initializeModals();
-
-    // Setup event listeners
-    setupEventListeners();
-
-    // Load initial messages
-    loadMessages();
-
-    // Initialize WebSocket
-    initializeWebSocket();
-
-    // Set initialization flag
-    isInitialized = true;
-
-    console.log('Messages page initialized successfully');
+    try {
+        console.log('Initializing messages page...');
+        const elements = initializeElements();
+        console.log('Elements initialized:', elements);
+        
+        if (elements.messagesFeed && elements.messageThread) {
+            initializeModals();
+            setupEventListeners();
+            setupWebSocket();
+            loadMessages();
+            isInitialized = true;
+            console.log('Messages page initialized successfully');
+        } else {
+            console.error('Required elements not found:', elements);
+        }
+    } catch (error) {
+        console.error('Failed to initialize messages page:', error);
+    }
 }
 
-// Make functions available globally for onclick handlers
+// Make functions available globally
 window.showModal = showModal;
 window.hideModal = hideModal;
 window.searchUsers = searchUsers;
-window.startNewConversation = startNewConversation; 
+window.selectUser = selectUser;
+window.removeUser = removeUser;
+window.startNewConversation = startNewConversation;
+window.setupWebSocket = setupWebSocket;
+window.loadThread = loadThread; 

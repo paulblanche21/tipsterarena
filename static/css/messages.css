@@ -323,6 +323,7 @@
 .messages-modal .user-result .user-info {
     display: flex;
     flex-direction: column;
+    color: black;
 }
 
 .messages-modal .user-result .username {

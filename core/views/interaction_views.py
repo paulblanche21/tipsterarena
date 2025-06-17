@@ -211,13 +211,21 @@ class MessagesView(LoginRequiredMixin, View):
 
 class SendMessageView(LoginRequiredMixin, View):
     """Handle sending messages in a thread."""
-    def post(self, request, thread_id=None):
+    def post(self, request):
         try:
             content = request.POST.get('content', '').strip()
+            thread_id = request.POST.get('thread_id')
+            
             if not content:
                 return JsonResponse({
                     'success': False,
                     'error': 'Message content is required'
+                }, status=400)
+
+            if not thread_id:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Thread ID is required'
                 }, status=400)
 
             # Rate limiting
@@ -231,39 +239,9 @@ class SendMessageView(LoginRequiredMixin, View):
                 }, status=429)
             cache.set(cache_key, attempts + 1, 60)  # Store for 1 minute
 
-            if thread_id:
-                # Existing thread
-                thread = get_object_or_404(MessageThread, id=thread_id, participants=request.user)
-                other_participant = thread.participants.exclude(id=request.user.id).first()
-            else:
-                # New thread
-                recipient_username = request.POST.get('recipient')
-                if not recipient_username:
-                    return JsonResponse({
-                        'success': False,
-                        'error': 'Recipient is required for new threads'
-                    }, status=400)
-
-                recipient = get_object_or_404(User, username=recipient_username)
-                if recipient == request.user:
-                    return JsonResponse({
-                        'success': False,
-                        'error': 'Cannot send message to yourself'
-                    }, status=400)
-
-                # Check if thread already exists
-                existing_thread = MessageThread.objects.filter(
-                    participants=request.user
-                ).filter(
-                    participants=recipient
-                ).first()
-
-                if existing_thread:
-                    thread = existing_thread
-                else:
-                    thread = MessageThread.objects.create()
-                    thread.participants.add(request.user, recipient)
-                other_participant = recipient
+            # Get thread
+            thread = get_object_or_404(MessageThread, id=thread_id, participants=request.user)
+            other_participant = thread.participants.exclude(id=request.user.id).first()
 
             # Create message
             message = Message.objects.create(
