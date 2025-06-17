@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SITE_URL = 'http://localhost:8000'  # For development; adjust for production
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-or8ih)*8^-c_@9h4r&sojeg#*5841-k%f9s+$${tj}##9n=&thm)4')  # Replace with a secure key in production
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-or8ih)*8^-c_@9h4r&sojeg#*5841-k%f9s+##9n=&thm)4')  # Replace with a secure key in production
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True  # Set to False in production for security

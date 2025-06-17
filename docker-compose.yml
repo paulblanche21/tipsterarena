@@ -79,6 +79,7 @@ services:
       NODE_ENV: "development"
       PYTHONUNBUFFERED: "1"
       DJANGO_AUTO_RELOAD: "True"
+      DJANGO_SECRET_KEY: "django-insecure-or8ih)*8^-c_@9h4r&sojeg#*5841-k%f9s+##9n=&thm)4"
     deploy:
       resources:
         limits:
