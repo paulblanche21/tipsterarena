@@ -134,13 +134,29 @@ class ChatView(LoginRequiredMixin, View):
     """Render the chat interface for authenticated users."""
     def get(self, request):
         try:
-            # Get recent chat messages
-            messages = ChatMessage.objects.select_related('sender').order_by('-created_at')[:50]
+            # Get recent chat messages with sender info
+            messages = (ChatMessage.objects
+                       .select_related('sender', 'sender__userprofile')
+                       .order_by('-created_at')[:50])
+            
+            # Format messages for template
+            formatted_messages = []
+            for msg in messages:
+                formatted_messages.append({
+                    'username': msg.sender.username if msg.sender else 'Anonymous',
+                    'content': msg.content,
+                    'created_at': msg.created_at,
+                    'image_url': msg.image.url if msg.image else None,
+                    'gif_url': msg.gif_url,
+                    'emoji': msg.emoji,
+                    'avatar_url': msg.sender.userprofile.avatar.url if msg.sender and msg.sender.userprofile.avatar else None
+                })
             
             context = {
-                'messages': messages,
+                'messages': formatted_messages,
                 'current_user': request.user,
-                'current_user_avatar': request.user.userprofile.avatar.url if hasattr(request.user, 'userprofile') and request.user.userprofile.avatar else None
+                'current_user_avatar': request.user.userprofile.avatar.url if hasattr(request.user, 'userprofile') and request.user.userprofile.avatar else None,
+                'default_avatar_url': settings.STATIC_URL + 'img/default-avatar.png'
             }
             
             return render(request, 'core/chat.html', context)

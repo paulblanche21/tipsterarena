@@ -706,7 +706,7 @@ function setupCentralFeedPost() {
                                 <span>Status: ${data.tip.status || 'pending'}</span>
                             </div>
                             ${data.tip.image ? `<img src="${data.tip.image}" alt="Tip Image" class="tip-image">` : ''}
-                            ${data.tip.gif ? `<img src="${data.tip.gif}" alt="Tip GIF" class="tip-image">` : ''}
+                            ${data.tip.gif ? `<img src="${data.tip.gif}" alt="Tip GIF" class="tip-image tip-gif">` : ''}
                         </div>
                         <small class="tip-timestamp">${new Date(data.tip.created_at).toLocaleString()}</small>
                     </div>

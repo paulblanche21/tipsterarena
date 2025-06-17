@@ -73,7 +73,7 @@
                                 <img src="{{ tip.image.url }}" alt="Tip Image" class="tip-image">
                             {% endif %}
                             {% if tip.gif_url %}
-                                <img src="{{ tip.gif_url }}" alt="Tip GIF" class="tip-image">
+                                <img src="{{ tip.gif_url }}" alt="Tip GIF" class="tip-image tip-gif" style="max-width: 582px; max-height: 400px; width: auto; height: auto; object-fit: contain;">
                             {% endif %}
                         </div>
                         <small class="tip-timestamp">{{ tip.created_at|date:"F j, Y, g:i a" }}</small>

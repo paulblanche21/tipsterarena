@@ -16,7 +16,27 @@
                 <span class="online-count">0 online</span>
             </div>
             <div class="chat-messages">
-                <!-- Chat messages will be dynamically added here -->
+                {% for message in messages %}
+                <div class="chat-message">
+                    <img src="{{ message.avatar_url|default:default_avatar_url }}" alt="Avatar" class="message-avatar" onerror="this.src='{{ default_avatar_url }}'">
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span class="message-username">{{ message.username }}</span>
+                            <span class="message-time">{{ message.created_at|date:"g:i A" }}</span>
+                        </div>
+                        <div class="message-text">{{ message.content }}</div>
+                        {% if message.image_url %}
+                            <img src="{{ message.image_url }}" alt="Image" class="message-media">
+                        {% endif %}
+                        {% if message.gif_url %}
+                            <img src="{{ message.gif_url }}" alt="GIF" class="message-media">
+                        {% endif %}
+                        {% if message.emoji %}
+                            <span class="message-emoji">{{ message.emoji }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
             </div>
             <div class="chat-input-container">
                 <div class="chat-actions">
@@ -57,5 +77,13 @@
 {% endblock %}
 
 {% block extra_js %}
+    <script>
+        // Pass initial data to JavaScript
+        window.chatData = {
+            currentUsername: '{{ request.user.username }}',
+            currentAvatarUrl: '{{ current_user_avatar|default:default_avatar_url }}',
+            defaultAvatarUrl: '{{ default_avatar_url }}'
+        };
+    </script>
     <script type="module" src="{% static 'js/pages/chat.js' %}"></script>
 {% endblock %} 
