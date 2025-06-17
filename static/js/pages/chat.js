@@ -24,7 +24,7 @@ function connectWebSocket() {
     socket.onopen = function() {
         console.log('Chat WebSocket connected successfully');
         reconnectAttempts = 0;
-        // Request initial user list
+        // Request initial user list immediately after connection
         socket.send(JSON.stringify({ type: 'request_user_list' }));
     };
 
@@ -79,6 +79,14 @@ function showError(message) {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Page loaded, connecting to WebSocket...');
     connectWebSocket();
+    
+    // Request user list again after a short delay to ensure connection is established
+    setTimeout(() => {
+        if (socket && socket.readyState === WebSocket.OPEN) {
+            console.log('Requesting user list after delay...');
+            socket.send(JSON.stringify({ type: 'request_user_list' }));
+        }
+    }, 1000);
 });
 
 // DOM Elements
@@ -165,7 +173,7 @@ function updateOnlineUsers(users) {
         li.className = 'online-user-item';
         // Use flexbox for alignment, and avoid nested <strong> in <span>
         li.innerHTML = `
-            <img src="${avatarUrl}" alt="Avatar" class="user-avatar" onerror="this.src='${window.chatData.defaultAvatarUrl}'">
+            <img src="${avatarUrl}" alt="Avatar" class="online-user-avatar" onerror="this.src='${window.chatData.defaultAvatarUrl}'">
             <div class="user-info-flex">
                 <span class="user-name">${username === window.chatData.currentUsername ? '(You)' : username}</span>
             </div>

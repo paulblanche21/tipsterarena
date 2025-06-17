@@ -71,7 +71,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             # Store user info with username as key
             ChatConsumer.online_users[self.user.username] = self.get_avatar_url()
             await self.accept()
-            # Broadcast join
+            # Broadcast updated user list to all clients
             await self.channel_layer.group_send(
                 self.group_name,
                 {
@@ -86,7 +86,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             if self.user.username in ChatConsumer.online_users:
                 del ChatConsumer.online_users[self.user.username]
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
-            # Broadcast leave
+            # Broadcast updated user list to all clients
             await self.channel_layer.group_send(
                 self.group_name,
                 {
