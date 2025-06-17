@@ -1,6 +1,9 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
+from channels_redis.core import RedisChannelLayer
+from django.conf import settings
+import redis.asyncio as redis
 
 
 class NotificationConsumer(AsyncWebsocketConsumer):
@@ -59,8 +62,6 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps(event["data"]))
 
 class ChatConsumer(AsyncWebsocketConsumer):
-    online_users = {}  # Changed from set to dict
-
     async def connect(self):
         self.user = self.scope["user"]
         self.group_name = "chatroom"
@@ -68,30 +69,33 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.close()
         else:
             await self.channel_layer.group_add(self.group_name, self.channel_name)
-            # Store user info with username as key
-            ChatConsumer.online_users[self.user.username] = self.get_avatar_url()
+            # Store user info in Redis
+            redis_client = redis.from_url(settings.REDIS_URL)
+            await redis_client.hset('chat_online_users', self.user.username, self.get_avatar_url())
             await self.accept()
             # Broadcast updated user list to all clients
+            online_users = await redis_client.hgetall('chat_online_users')
             await self.channel_layer.group_send(
                 self.group_name,
                 {
                     "type": "user_list_update",
-                    "users": [(username, avatar_url) for username, avatar_url in ChatConsumer.online_users.items()],
+                    "users": [(username.decode(), avatar_url.decode()) for username, avatar_url in online_users.items()],
                 },
             )
 
     async def disconnect(self, close_code):
         if not self.user.is_anonymous:
-            # Remove user by username
-            if self.user.username in ChatConsumer.online_users:
-                del ChatConsumer.online_users[self.user.username]
+            # Remove user from Redis
+            redis_client = redis.from_url(settings.REDIS_URL)
+            await redis_client.hdel('chat_online_users', self.user.username)
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
             # Broadcast updated user list to all clients
+            online_users = await redis_client.hgetall('chat_online_users')
             await self.channel_layer.group_send(
                 self.group_name,
                 {
                     "type": "user_list_update",
-                    "users": [(username, avatar_url) for username, avatar_url in ChatConsumer.online_users.items()],
+                    "users": [(username.decode(), avatar_url.decode()) for username, avatar_url in online_users.items()],
                 },
             )
 
@@ -116,10 +120,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     },
                 )
             elif data.get("type") == "request_user_list":
-                # Send current user list to the requesting client
+                # Get current user list from Redis
+                redis_client = redis.from_url(settings.REDIS_URL)
+                online_users = await redis_client.hgetall('chat_online_users')
                 await self.send(text_data=json.dumps({
                     "type": "user_list",
-                    "users": [(username, avatar_url) for username, avatar_url in ChatConsumer.online_users.items()],
+                    "users": [(username.decode(), avatar_url.decode()) for username, avatar_url in online_users.items()],
                 }))
         except json.JSONDecodeError:
             print("Error decoding JSON message")

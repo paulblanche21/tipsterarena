@@ -312,3 +312,5 @@ SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 SESSION_SAVE_EVERY_REQUEST = True  # Extend session on each request
+
+REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
