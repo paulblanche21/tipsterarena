@@ -1,14 +1,15 @@
 .chat-main-layout {
-    min-height: 80vh;
-    padding: 0;
+    min-height: 100vh;
+    padding: var(--margin-small);
     display: flex;
     justify-content: center;
-    align-items: flex-start;
+    align-items: stretch;
+    gap: var(--margin-small);
+    position: relative;
 }
 
 .chat-feed-card {
     width: var(--content-width);
-    margin: var(--margin-small) auto var(--margin-small) auto;
     background-color: var(--secondary-bg);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
@@ -19,8 +20,9 @@
     display: flex;
     flex-direction: column;
     height: calc(100vh - 2 * var(--margin-small));
-    min-height: 400px;
-    max-height: 100vh;
+    position: sticky;
+    top: var(--margin-small);
+    flex-shrink: 0;
 }
 
 .chat-container {
@@ -49,6 +51,7 @@
     border-top-left-radius: var(--border-radius);
     border-top-right-radius: var(--border-radius);
     min-height: 56px;
+    flex-shrink: 0;
 }
 
 .chat-header .online-count {
@@ -58,14 +61,13 @@
 }
 
 .chat-messages {
-    flex: 1 1 auto;
+    flex: 1;
     padding: 24px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 16px;
     min-height: 0;
-    max-height: none;
 }
 
 .chat-message {
@@ -157,6 +159,7 @@
     padding: 16px;
     border-top: 1px solid var(--border-color);
     background: var(--secondary-bg);
+    flex-shrink: 0;
 }
 
 .chat-input-form {
@@ -256,14 +259,16 @@
 
 /* Online Users Sidebar Styles */
 .sidebar-scrollable {
-    height: 100vh;
+    height: calc(100vh - 2 * var(--margin-small));
     display: flex;
     flex-direction: column;
     margin-top: var(--margin-small);
+    position: sticky;
+    top: var(--margin-small);
 }
 
 .online-users-container {
-    flex: 1 1 auto;
+    flex: 1;
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -286,10 +291,11 @@
     border-top-left-radius: var(--border-radius);
     border-top-right-radius: var(--border-radius);
     min-height: 56px;
+    flex-shrink: 0;
 }
 
 .online-users-list {
-    flex: 1 1 auto;
+    flex: 1;
     list-style: none;
     margin: 0;
     padding: 16px;
@@ -356,19 +362,24 @@
 
 @media (max-width: 768px) {
     .chat-main-layout {
-        padding: 10px 0;
+        padding: 10px;
+        flex-direction: column;
+        min-height: auto;
     }
+    
     .chat-feed-card {
         width: 100%;
-        max-width: 100%;
         height: auto;
-        min-height: unset;
-        max-height: unset;
-        margin: var(--margin-small) 0;
+        min-height: 400px;
+        position: relative;
+        top: 0;
     }
+    
     .sidebar-scrollable,
     .online-users-container {
         height: auto;
         margin: 0;
+        position: relative;
+        top: 0;
     }
 } 

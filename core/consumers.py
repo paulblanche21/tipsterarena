@@ -73,6 +73,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
             redis_client = redis.from_url(settings.REDIS_URL)
             await redis_client.hset('chat_online_users', self.user.username, self.get_avatar_url())
             await self.accept()
+            
+            # Send recent messages to the newly connected user
+            recent_messages = await self.get_recent_messages()
+            await self.send(text_data=json.dumps({
+                "type": "chat_history",
+                "messages": recent_messages
+            }))
+            
             # Broadcast updated user list to all clients
             online_users = await redis_client.hgetall('chat_online_users')
             await self.channel_layer.group_send(
@@ -82,6 +90,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "users": [(username.decode(), avatar_url.decode()) for username, avatar_url in online_users.items()],
                 },
             )
+
+    @database_sync_to_async
+    def get_recent_messages(self):
+        from core.models import ChatMessage
+        messages = ChatMessage.objects.select_related('sender', 'sender__userprofile').order_by('-created_at')[:50]
+        return [{
+            'username': msg.sender.username if msg.sender else 'Anonymous',
+            'message': msg.content,
+            'image_url': msg.image.url if msg.image else None,
+            'gif_url': msg.gif_url,
+            'emoji': msg.emoji,
+            'avatar_url': msg.sender.userprofile.avatar.url if msg.sender and msg.sender.userprofile.avatar else None,
+            'created_at': msg.created_at.isoformat()
+        } for msg in messages]
 
     async def disconnect(self, close_code):
         if not self.user.is_anonymous:
@@ -108,6 +130,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 avatar_url = data.get("avatar_url", "")
                 image_url = data.get("image_url", None)
                 gif_url = data.get("gif_url", None)
+                
+                # Save message to database
+                await self.save_message(message, image_url, gif_url)
+                
                 await self.channel_layer.group_send(
                     self.group_name,
                     {
@@ -131,6 +157,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
             print("Error decoding JSON message")
         except Exception as e:
             print(f"Error in receive: {str(e)}")
+
+    @database_sync_to_async
+    def save_message(self, content, image_url=None, gif_url=None):
+        from core.models import ChatMessage
+        ChatMessage.objects.create(
+            sender=self.user,
+            content=content,
+            image=image_url,
+            gif_url=gif_url
+        )
 
     async def chat_message_broadcast(self, event):
         await self.send(text_data=json.dumps({

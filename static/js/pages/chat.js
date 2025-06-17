@@ -34,6 +34,21 @@ function connectWebSocket() {
             console.log('Received WebSocket message:', data.type);
             if (data.type === 'chat_message') {
                 addMessageToFeed(data.username, data.message, data.image_url, data.gif_url, data.emoji, data.avatar_url);
+            } else if (data.type === 'chat_history') {
+                // Clear existing messages
+                chatMessages.innerHTML = '';
+                // Add messages in reverse order (oldest first)
+                data.messages.reverse().forEach(msg => {
+                    addMessageToFeed(
+                        msg.username,
+                        msg.message,
+                        msg.image_url,
+                        msg.gif_url,
+                        msg.emoji,
+                        msg.avatar_url,
+                        msg.created_at
+                    );
+                });
             } else if (data.type === 'user_list') {
                 console.log('Updating user list with:', data.users);
                 updateOnlineUsers(data.users);
@@ -242,12 +257,14 @@ chatForm.addEventListener('submit', async function(e) {
 });
 
 // Add message to chat feed
-function addMessageToFeed(username, message, imageUrl = null, gifUrl = null, emoji = null, avatarUrl = null) {
+function addMessageToFeed(username, message, imageUrl = null, gifUrl = null, emoji = null, avatarUrl = null, timestamp = null) {
     const msgDiv = document.createElement('div');
     msgDiv.className = 'chat-message';
     
-    const now = new Date();
-    const timeString = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    // Use provided timestamp or current time
+    const timeString = timestamp ? 
+        new Date(timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) :
+        new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
     
     const avatar = avatarUrl || window.chatData.defaultAvatarUrl;
     msgDiv.innerHTML = `
