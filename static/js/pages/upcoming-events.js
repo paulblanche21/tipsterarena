@@ -122,6 +122,11 @@ export class UpcomingEvents {
         clickedButton.classList.add('active');
         
         const selectedSport = this.sportSelector.value;
+        if (!selectedSport || selectedSport.toLowerCase() === 'none') {
+            console.warn('Invalid sport selected');
+            return;
+        }
+        
         const category = clickedButton.dataset.category;
         const url = UpcomingEvents.sportUrls[selectedSport][category];
         

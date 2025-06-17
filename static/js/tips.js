@@ -497,7 +497,9 @@ function handleTipClick(e) {
                 console.log('Share response:', data);
                 if (data.success) {
                     const shareCount = action.nextElementSibling;
-                    shareCount.textContent = data.share_count;
+                    if (data.share_count !== undefined) {
+                        shareCount.textContent = data.share_count;
+                    }
                     action.classList.toggle('shared', data.message === 'Tip shared');
                 } else {
                     showCustomAlert('Error: ' + data.error);

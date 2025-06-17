@@ -12,7 +12,9 @@ class SportView(View):
             'cycling', 'darts', 'gaelic_games', 'greyhound_racing', 'motor_sport',
             'rugby_union', 'snooker', 'volleyball'
         ]
-        if sport not in valid_sports:
+        
+        # Check if sport is None, empty, or not in valid_sports
+        if not sport or sport.lower() == 'none' or sport not in valid_sports:
             return render(request, 'core/404.html', status=404)
 
         tips = Tip.objects.filter(sport=sport).order_by('-created_at')[:20]

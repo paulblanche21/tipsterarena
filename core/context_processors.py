@@ -66,7 +66,7 @@ def suggested_tipsters(request):
                 'username': user.username,
                 'handle': profile.handle or user.username,
                 'bio': profile.description or '',
-                'avatar_url': profile.avatar.url if profile.avatar else None,
+                'avatar_url': profile.avatar.url if profile.avatar else '/static/img/default-avatar.png',
                 'profile_url': f'/profile/{user.username}/'
             })
         except Exception:

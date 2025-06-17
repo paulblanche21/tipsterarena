@@ -26,7 +26,7 @@
                         <option value="everyone">Everyone</option>
                         <option value="followers">Followers</option>
                     </select>
-                    <input type="hidden" class="post-sport" value="{{ sport }}">
+                    <input type="hidden" class="post-sport" value="{{ sport|default:'' }}">
                 </div>
             </div>
             <textarea placeholder="Post a Tip (e.g., Player X to win)..." class="post-input" maxlength="280"></textarea>

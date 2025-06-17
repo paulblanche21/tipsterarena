@@ -594,6 +594,10 @@ function setupCentralFeedPost() {
         const text = postInput.value.trim();
         const audience = postAudience.value;
         const sport = postSport ? postSport.value : postBox.dataset.sport;
+        if (!sport) {
+            console.warn('No sport value found');
+            return;
+        }
         const oddsTypeValue = oddsType.value;
         const bet = betType.value;
         const eachWayValue = eachWay.value;
@@ -916,16 +920,31 @@ function handleModalPostSubmit() {
     const oddsDenominator = this.closest('.post-modal-content').querySelector('#odds-denominator');
     const betType = this.closest('.post-modal-content').querySelector('#bet-type');
     const eachWay = this.closest('.post-modal-content').querySelector('#each-way');
-    const confidence = this.closest('.post-modal-content').querySelector('#confidence'); // Replaced stakeInput with confidence
+    const confidence = this.closest('.post-modal-content').querySelector('#confidence');
     const modalPreviewDiv = this.closest('.post-modal-content').querySelector('.post-preview');
 
     const text = modalInput.value.trim();
     const audience = modalAudience.value;
-    const sport = modalSport ? modalSport.value : modal.dataset.sport;
+    
+    // Get sport value and validate it
+    let sport = null;
+    if (modalSport && modalSport.value) {
+        sport = modalSport.value;
+    } else if (modal && modal.dataset.sport) {
+        sport = modal.dataset.sport;
+    }
+    
+    // Validate sport value
+    if (!sport || sport === 'None' || sport === 'none') {
+        console.warn('Invalid sport value:', sport);
+        alert('Please select a valid sport.');
+        return;
+    }
+
     const oddsTypeValue = oddsType.value;
     const bet = betType.value;
     const eachWayValue = eachWay.value;
-    const confidenceValue = confidence.value; // Replaced stake with confidenceValue
+    const confidenceValue = confidence.value;
 
     // Validate form before proceeding
     if (!validateForm(

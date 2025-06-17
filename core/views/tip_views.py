@@ -300,7 +300,14 @@ class ShareTipView(LoginRequiredMixin, View):
         tip = get_object_or_404(Tip, id=tip_id)
         Share.objects.create(user=request.user, tip=tip)
         
-        return JsonResponse({'success': True, 'message': 'Tip shared successfully'})
+        # Get the updated share count
+        share_count = tip.shares.count()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Tip shared successfully',
+            'share_count': share_count
+        })
 
 class CommentTipView(LoginRequiredMixin, View):
     def post(self, request):

@@ -184,7 +184,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                            onerror="this.onerror=null; this.src='/static/img/default-avatar.png';">
                       <div class="follow-details">
                         <a href="${user.profile_url}" class="follow-username">@${user.username}</a>
-                        <p class="follow-bio">${user.bio}</p>
+                        <p class="follow-bio">${user.bio || 'No bio'}</p>
                       </div>
                       <button class="follow-btn" data-username="${user.username}">Follow</button>
                     </div>
