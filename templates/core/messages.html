@@ -22,17 +22,23 @@
             </div>
         </div>
         <div class="messages-list" id="messagesFeedList">
-            {% for message in messages %}
-            <div class="card" data-thread-id="{{ message.thread.id }}">
-                <img src="{{ message.sender.profile.avatar.url|default:'/static/images/default-avatar.png' }}" alt="Avatar" class="avatar">
+            {% for thread_data in message_threads %}
+            {% if thread_data.other_participant and thread_data.last_message %}
+            <div class="card" data-thread-id="{{ thread_data.thread.id }}">
+                {% if thread_data.other_participant.userprofile.avatar %}
+                    <img src="{{ thread_data.other_participant.userprofile.avatar.url }}" alt="Avatar" class="avatar">
+                {% else %}
+                    <img src="{% static 'images/default-avatar.png' %}" alt="Avatar" class="avatar">
+                {% endif %}
                 <div class="card-content">
                     <div class="card-header">
-                        <span class="username">{{ message.sender.username }}</span>
-                        <span class="message-date">{{ message.created_at|timesince }} ago</span>
+                        <span class="username">{{ thread_data.other_participant.username }}</span>
+                        <span class="message-date">{{ thread_data.last_message.created_at|timesince }} ago</span>
                     </div>
-                    <div class="message-preview">{{ message.content|truncatechars:50 }}</div>
+                    <div class="message-preview">{{ thread_data.last_message.content|truncatechars:50 }}</div>
                 </div>
             </div>
+            {% endif %}
             {% empty %}
             <div class="empty-state">
                 <p>No messages yet. Start a conversation!</p>

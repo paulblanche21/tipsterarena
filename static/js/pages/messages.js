@@ -309,19 +309,13 @@ function loadMessages() {
             return response.json();
         })
         .then(data => {
-            messagesFeedList.innerHTML = '';
-            if (data.length > 0) {
-                data.forEach(message => {
-                    const messageElement = createMessageElement(message);
-                    messagesFeedList.appendChild(messageElement);
-                });
-            } else {
-                messagesFeedList.innerHTML = '<div class="empty-state">No messages yet. Start a conversation!</div>';
-            }
+            renderMessagesFeed(data);
         })
         .catch(error => {
             console.error('Error loading messages:', error);
-            messagesFeedList.innerHTML = '<div class="error">Error loading messages</div>';
+            if (messagesFeedList) {
+                messagesFeedList.innerHTML = '<div class="error">Error loading messages</div>';
+            }
         });
 }
 
@@ -332,7 +326,7 @@ function renderMessagesFeed(messages) {
 
     if (!messages || messages.length === 0) {
         messagesFeedList.innerHTML = `
-            <div class="no-messages">
+            <div class="empty-state">
                 <p>No messages yet. Start a conversation!</p>
             </div>
         `;
@@ -375,7 +369,7 @@ async function openThread(threadId) {
     });
 
     try {
-        const response = await fetch(`/api/thread-messages/${threadId}/`);
+        const response = await fetch(`/messages/${threadId}/`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -391,7 +385,7 @@ async function openThread(threadId) {
             messagesList.innerHTML = '';
             data.messages.forEach(message => {
                 const messageElement = document.createElement('div');
-                messageElement.className = `message ${message.sender.username === currentUser ? 'sent' : 'received'}`;
+                messageElement.className = `message ${message.sender.username === window.currentUser ? 'sent' : 'received'}`;
                 messageElement.innerHTML = `
                     <p>${message.content}</p>
                     <small>${new Date(message.created_at).toLocaleString()}</small>
@@ -493,6 +487,9 @@ async function sendMessage() {
                 messagesList.appendChild(messageElement);
                 messagesList.scrollTop = messagesList.scrollHeight;
             }
+            
+            // Refresh the messages feed to show the new message preview
+            loadMessages();
         }
     } catch (error) {
         console.error('Error sending message:', error);
@@ -972,6 +969,9 @@ function handleImageSelect(e) {
             });
             messagesList.appendChild(messageElement);
             messagesList.scrollTop = messagesList.scrollHeight;
+            
+            // Refresh the messages feed to show the new message preview
+            loadMessages();
         }
     })
     .catch(error => {
@@ -1059,7 +1059,7 @@ async function loadThread(threadId) {
             messagesList.innerHTML = '';
             data.messages.forEach(message => {
                 const messageElement = document.createElement('div');
-                messageElement.className = `message ${message.sender.username === currentUser ? 'sent' : 'received'}`;
+                messageElement.className = `message ${message.sender.username === window.currentUser ? 'sent' : 'received'}`;
                 messageElement.innerHTML = `
                     <p>${message.content}</p>
                     <small>${new Date(message.created_at).toLocaleString()}</small>
@@ -1122,6 +1122,10 @@ export function init() {
 
     try {
         console.log('Initializing messages page...');
+        
+        // Initialize current user
+        currentUser = window.currentUser;
+        
         const elements = initializeElements();
         console.log('Elements initialized:', elements);
         
@@ -1148,4 +1152,10 @@ window.selectUser = selectUser;
 window.removeUser = removeUser;
 window.startNewConversation = startNewConversation;
 window.setupWebSocket = setupWebSocket;
-window.loadThread = loadThread; 
+window.loadThread = loadThread;
+
+// Update message list
+function updateMessageList() {
+    // Refresh the messages feed
+    loadMessages();
+} 
