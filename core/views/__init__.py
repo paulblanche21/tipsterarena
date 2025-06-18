@@ -54,6 +54,7 @@ from .interaction_views import (
     StartMessageThreadView,
     SearchUsersView,
     UpdateMessageSettingsView,
+    MarkMessagesReadView,
 )
 
 from .general_views import (
@@ -135,6 +136,7 @@ __all__ = [
     'StartMessageThreadView',
     'SearchUsersView',
     'UpdateMessageSettingsView',
+    'MarkMessagesReadView',
 
     # General views
     'LandingView',

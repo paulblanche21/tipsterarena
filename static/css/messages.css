@@ -34,6 +34,7 @@
 
 /* Styles for message thread cards in the feed */
 .card {
+    position: relative;
     padding: 15px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     cursor: pointer;
@@ -872,6 +873,24 @@
 .messages-icon-base {
     color: #ffffff;
     font-size: clamp(16px, 2.5vw, 18px);
+}
+
+/* Notification dot for unread messages */
+.notification-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #003087; /* Navy blue */
+    border-radius: 50%;
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1;
+}
+
+.card.has-unread .notification-dot {
+    opacity: 1;
 }
 
 /* Mobile styles */

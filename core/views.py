@@ -65,7 +65,8 @@ from .views.interaction_views import (
     get_messages,
     start_message_thread,
     search_users,
-    update_message_settings
+    update_message_settings,
+    MarkMessagesReadView
 )
 
 from .views.subscription_views import (

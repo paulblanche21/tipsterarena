@@ -344,7 +344,13 @@ function createMessageCard(message) {
     card.className = 'card';
     card.dataset.threadId = message.thread_id;
     
+    // Add unread class if there are unread messages
+    if (message.unread_count && message.unread_count > 0) {
+        card.classList.add('has-unread');
+    }
+    
     card.innerHTML = `
+        <div class="notification-dot"></div>
         <img src="${message.avatar || '/static/images/default-avatar.png'}" alt="Avatar" class="avatar">
         <div class="card-content">
             <div class="card-header">
@@ -364,8 +370,12 @@ async function openThread(threadId) {
     
     currentThread = threadId;
     
+    // Remove unread indicator from the clicked card
     document.querySelectorAll('.card').forEach(card => {
         card.classList.toggle('active', card.dataset.threadId === threadId);
+        if (card.dataset.threadId === threadId) {
+            card.classList.remove('has-unread');
+        }
     });
 
     try {
@@ -407,12 +417,15 @@ async function openThread(threadId) {
             
             messagesList.innerHTML = '';
             data.messages.forEach(message => {
-                const messageElement = document.createElement('div');
-                messageElement.className = `message ${message.sender.username === window.currentUser ? 'sent' : 'received'}`;
-                messageElement.innerHTML = `
-                    <p>${message.content}</p>
-                    <small>${new Date(message.created_at).toLocaleString()}</small>
-                `;
+                const messageElement = createMessageElement({
+                    id: message.id,
+                    content: message.content,
+                    image_url: message.image_url,
+                    gif_url: message.gif_url,
+                    created_at: message.created_at,
+                    sender: message.sender.username,
+                    is_sent: message.sender.username === window.currentUser
+                });
                 messagesList.appendChild(messageElement);
             });
             
@@ -421,6 +434,9 @@ async function openThread(threadId) {
             
             // Update WebSocket connection for this thread
             setupWebSocket();
+            
+            // Mark messages as read by calling the API
+            await markMessagesAsRead(threadId);
         }
     } catch (error) {
         console.error('Error loading messages:', error);
@@ -504,12 +520,13 @@ async function sendMessage() {
             messageInput.value = '';
             const messagesList = document.getElementById('messagesList');
             if (messagesList) {
-                const messageElement = document.createElement('div');
-                messageElement.className = 'message sent';
-                messageElement.innerHTML = `
-                    <p>${content}</p>
-                    <small>${new Date().toLocaleString()}</small>
-                `;
+                const messageElement = createMessageElement({
+                    id: data.message_id,
+                    content: content,
+                    created_at: data.created_at,
+                    sender: currentUser?.id,
+                    is_sent: true
+                });
                 messagesList.appendChild(messageElement);
                 messagesList.scrollTop = messagesList.scrollHeight;
             }
@@ -800,7 +817,7 @@ function showGifPicker(textarea, previewDiv) {
                         img.onclick = () => {
                             // Send the GIF URL to the server first
                             if (currentThread) {
-                                fetch(`/api/messages/send/${currentThread}/`, {
+                                fetch(`/api/send-message/`, {
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/json',
@@ -808,7 +825,8 @@ function showGifPicker(textarea, previewDiv) {
                                     },
                                     body: JSON.stringify({
                                         content: '',
-                                        gif_url: gif.images.original.url
+                                        gif_url: gif.images.original.url,
+                                        thread_id: currentThread
                                     })
                                 })
                                 .then(response => response.json())
@@ -825,6 +843,9 @@ function showGifPicker(textarea, previewDiv) {
                                         });
                                         messagesList.appendChild(messageElement);
                                         messagesList.scrollTop = messagesList.scrollHeight;
+                                        
+                                        // Refresh the messages feed to show the new message preview
+                                        loadMessages();
                                     } else {
                                         console.error('Error sending GIF:', data.error);
                                     }
@@ -964,6 +985,11 @@ function handleImageSelect(e) {
     const formData = new FormData();
     formData.append('content', '');
     formData.append('image', file);
+    
+    // Add thread_id if we have a current thread
+    if (currentThread) {
+        formData.append('thread_id', currentThread);
+    }
 
     // Disable the send button while sending
     const sendBtn = document.getElementById('sendMessageBtn');
@@ -1097,12 +1123,15 @@ async function loadThread(threadId) {
             
             messagesList.innerHTML = '';
             data.messages.forEach(message => {
-                const messageElement = document.createElement('div');
-                messageElement.className = `message ${message.sender.username === window.currentUser ? 'sent' : 'received'}`;
-                messageElement.innerHTML = `
-                    <p>${message.content}</p>
-                    <small>${new Date(message.created_at).toLocaleString()}</small>
-                `;
+                const messageElement = createMessageElement({
+                    id: message.id,
+                    content: message.content,
+                    image_url: message.image_url,
+                    gif_url: message.gif_url,
+                    created_at: message.created_at,
+                    sender: message.sender.username,
+                    is_sent: message.sender.username === window.currentUser
+                });
                 messagesList.appendChild(messageElement);
             });
             
@@ -1197,4 +1226,27 @@ window.loadThread = loadThread;
 function updateMessageList() {
     // Refresh the messages feed
     loadMessages();
+}
+
+// Mark messages as read
+async function markMessagesAsRead(threadId) {
+    try {
+        const response = await fetch(`/api/mark-messages-read/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                thread_id: threadId
+            })
+        });
+        
+        if (response.ok) {
+            // Update the unread count in the messages feed
+            loadMessages();
+        }
+    } catch (error) {
+        console.error('Error marking messages as read:', error);
+    }
 } 

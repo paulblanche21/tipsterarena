@@ -31,6 +31,7 @@ urlpatterns = [
     path('api/start-thread/', views.StartMessageThreadView.as_view(), name='start_thread'),
     path('api/search-users/', views.SearchUsersView.as_view(), name='search_users'),
     path('api/update-message-settings/', views.UpdateMessageSettingsView.as_view(), name='update_message_settings'),
+    path('api/mark-messages-read/', views.MarkMessagesReadView.as_view(), name='mark_messages_read'),
     path('message-settings/', views.MessageSettingsView.as_view(), name='message_settings'),
 
     # Notification routes

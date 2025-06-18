@@ -34,6 +34,7 @@ __all__ = [
     'StartMessageThreadView',
     'SearchUsersView',
     'UpdateMessageSettingsView',
+    'MarkMessagesReadView',
 ]
 
 class FollowUserView(LoginRequiredMixin, View):
@@ -187,12 +188,22 @@ class MessagesView(LoginRequiredMixin, View):
             follower_count = other_participant.followers.count() if other_participant else 0
             followed_by = Follow.objects.filter(followed=other_participant).exclude(follower=user).order_by('?')[:3]
             followed_by_names = [f.follower.username for f in followed_by]
+            
+            # Calculate unread count
+            unread_count = 0
+            if other_participant:
+                unread_count = thread.messages.filter(
+                    sender=other_participant,
+                    is_read=False
+                ).count()
+            
             threads_with_participants.append({
                 'thread': thread,
                 'other_participant': other_participant,
                 'last_message': last_message,
                 'follower_count': follower_count,
                 'followed_by': followed_by_names,
+                'unread_count': unread_count,
             })
 
         selected_thread = None
@@ -213,19 +224,29 @@ class SendMessageView(LoginRequiredMixin, View):
     """Handle sending messages in a thread."""
     def post(self, request):
         try:
-            content = request.POST.get('content', '').strip()
-            thread_id = request.POST.get('thread_id')
+            # Handle both JSON and FormData requests
+            if request.content_type == 'application/json':
+                data = json.loads(request.body)
+                content = data.get('content', '').strip()
+                thread_id = data.get('thread_id')
+                gif_url = data.get('gif_url')
+            else:
+                content = request.POST.get('content', '').strip()
+                thread_id = request.POST.get('thread_id')
+                gif_url = None
             
-            if not content:
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Message content is required'
-                }, status=400)
-
             if not thread_id:
                 return JsonResponse({
                     'success': False,
                     'error': 'Thread ID is required'
+                }, status=400)
+
+            # Allow empty content for media messages (images/GIFs)
+            has_media = gif_url or request.FILES.get('image')
+            if not content and not has_media:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Message content or media is required'
                 }, status=400)
 
             # Rate limiting
@@ -244,26 +265,31 @@ class SendMessageView(LoginRequiredMixin, View):
             other_participant = thread.participants.exclude(id=request.user.id).first()
 
             # Create message
-            message = Message.objects.create(
-                thread=thread,
-                sender=request.user,
-                content=content
-            )
+            message_data = {
+                'thread': thread,
+                'sender': request.user,
+                'content': content
+            }
+            
+            # Handle image upload
+            if 'image' in request.FILES:
+                message_data['image'] = request.FILES['image']
+            
+            # Handle GIF URL
+            if gif_url:
+                message_data['gif_url'] = gif_url
+            
+            message = Message.objects.create(**message_data)
 
             # Update thread's updated_at
             thread.save()  # This will update the updated_at field
 
             return JsonResponse({
                 'success': True,
-                'message': {
-                    'id': message.id,
-                    'content': message.content,
-                    'created_at': message.created_at.isoformat(),
-                    'sender': {
-                        'username': message.sender.username,
-                        'avatar_url': message.sender.userprofile.avatar.url if message.sender.userprofile.avatar else None
-                    }
-                }
+                'message_id': message.id,
+                'created_at': message.created_at.isoformat(),
+                'image': message.image.url if message.image else None,
+                'gif_url': message.gif_url
             })
 
         except Exception as e:
@@ -287,6 +313,8 @@ class GetThreadMessagesView(LoginRequiredMixin, View):
                     'id': message.id,
                     'content': message.content,
                     'created_at': message.created_at.isoformat(),
+                    'image_url': message.image.url if message.image else None,
+                    'gif_url': message.gif_url,
                     'sender': {
                         'username': message.sender.username,
                         'avatar_url': message.sender.userprofile.avatar.url if message.sender.userprofile.avatar else None
@@ -680,4 +708,25 @@ class ToggleBookmarkView(LoginRequiredMixin, View):
             return JsonResponse({
                 'success': False,
                 'error': 'An error occurred while processing your request'
-            }, status=500) 
+            }, status=500)
+
+class MarkMessagesReadView(LoginRequiredMixin, View):
+    """Mark messages as read for a specific thread."""
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            thread_id = data.get('thread_id')
+            
+            if not thread_id:
+                return JsonResponse({'success': False, 'error': 'Thread ID is required'}, status=400)
+            
+            # Get the thread and mark messages from other participants as read
+            thread = get_object_or_404(MessageThread, id=thread_id, participants=request.user)
+            other_participants = thread.participants.exclude(id=request.user.id)
+            thread.messages.filter(sender__in=other_participants, is_read=False).update(is_read=True)
+            
+            return JsonResponse({'success': True})
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500) 

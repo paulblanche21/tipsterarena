@@ -24,7 +24,8 @@
         <div class="messages-list" id="messagesFeedList">
             {% for thread_data in message_threads %}
             {% if thread_data.other_participant and thread_data.last_message %}
-            <div class="card" data-thread-id="{{ thread_data.thread.id }}">
+            <div class="card {% if thread_data.unread_count > 0 %}has-unread{% endif %}" data-thread-id="{{ thread_data.thread.id }}">
+                <div class="notification-dot"></div>
                 {% if thread_data.other_participant.userprofile.avatar %}
                     <img src="{{ thread_data.other_participant.userprofile.avatar.url }}" alt="Avatar" class="avatar">
                 {% else %}
