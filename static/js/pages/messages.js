@@ -377,9 +377,32 @@ async function openThread(threadId) {
         
         if (data.success) {
             const messagesList = document.getElementById('messagesList');
+            const sendButton = document.getElementById('sendMessageBtn');
+            const threadHeader = document.querySelector('.thread-header');
+            
             if (!messagesList) {
                 console.error('Messages list container not found');
                 return;
+            }
+            
+            // Set the thread ID on the send button
+            if (sendButton) {
+                sendButton.dataset.threadId = threadId;
+            }
+            
+            // Update thread header with user information
+            if (threadHeader && data.other_participant) {
+                const avatarImg = threadHeader.querySelector('.avatar');
+                const nameElement = threadHeader.querySelector('.thread-header-name');
+                
+                if (avatarImg) {
+                    avatarImg.src = data.other_participant.avatar || '/static/images/default-avatar.png';
+                    avatarImg.alt = `${data.other_participant.username}'s avatar`;
+                }
+                
+                if (nameElement) {
+                    nameElement.textContent = data.other_participant.username;
+                }
             }
             
             messagesList.innerHTML = '';
@@ -395,6 +418,9 @@ async function openThread(threadId) {
             
             // Scroll to bottom
             messagesList.scrollTop = messagesList.scrollHeight;
+            
+            // Update WebSocket connection for this thread
+            setupWebSocket();
         }
     } catch (error) {
         console.error('Error loading messages:', error);
@@ -1002,42 +1028,55 @@ function setupWebSocket() {
         ? `${wsScheme}://${window.location.host}/ws/messages/${currentThread}/`
         : `${wsScheme}://${window.location.host}/ws/messages/`;
     
-    messageSocket = new WebSocket(wsPath);
+    try {
+        messageSocket = new WebSocket(wsPath);
 
-    messageSocket.onopen = function(e) {
-        console.log('WebSocket connected for messages');
-    };
+        messageSocket.onopen = function(e) {
+            console.log('WebSocket connected for messages');
+        };
 
-    messageSocket.onmessage = function(e) {
-        const data = JSON.parse(e.data);
-        if (data.type === 'direct_message') {
-            // Add message to the UI
-            const messageElement = createMessageElement({
-                id: data.message_id,
-                content: data.message,
-                gif_url: data.gif_url,
-                image_url: data.image_url,
-                timestamp: data.created_at,
-                sender: data.sender,
-                is_sent: false
-            });
-            messagesList.appendChild(messageElement);
-            messagesList.scrollTop = messagesList.scrollHeight;
-            
-            // Update message list
-            updateMessageList();
-        }
-    };
+        messageSocket.onmessage = function(e) {
+            try {
+                const data = JSON.parse(e.data);
+                if (data.type === 'direct_message') {
+                    // Add message to the UI
+                    const messageElement = createMessageElement({
+                        id: data.message_id,
+                        content: data.message,
+                        gif_url: data.gif_url,
+                        image_url: data.image_url,
+                        timestamp: data.created_at,
+                        sender: data.sender,
+                        is_sent: false
+                    });
+                    const messagesList = document.getElementById('messagesList');
+                    if (messagesList) {
+                        messagesList.appendChild(messageElement);
+                        messagesList.scrollTop = messagesList.scrollHeight;
+                    }
+                    
+                    // Update message list
+                    updateMessageList();
+                }
+            } catch (error) {
+                console.error('Error parsing WebSocket message:', error);
+            }
+        };
 
-    messageSocket.onclose = function(e) {
-        console.log('WebSocket disconnected for messages');
-        // Try to reconnect after 5 seconds
-        setTimeout(setupWebSocket, 5000);
-    };
+        messageSocket.onclose = function(e) {
+            console.log('WebSocket disconnected for messages');
+            // Only try to reconnect if it wasn't a manual close
+            if (e.code !== 1000) {
+                setTimeout(setupWebSocket, 5000);
+            }
+        };
 
-    messageSocket.onerror = function(e) {
-        console.error('WebSocket error:', e);
-    };
+        messageSocket.onerror = function(e) {
+            console.error('WebSocket error:', e);
+        };
+    } catch (error) {
+        console.error('Error setting up WebSocket:', error);
+    }
 }
 
 // Update WebSocket connection when thread changes

@@ -279,6 +279,7 @@ class GetThreadMessagesView(LoginRequiredMixin, View):
         try:
             thread = get_object_or_404(MessageThread, id=thread_id, participants=request.user)
             messages = thread.messages.order_by('created_at')
+            other_participant = thread.participants.exclude(id=request.user.id).first()
             
             messages_data = []
             for message in messages:
@@ -292,9 +293,18 @@ class GetThreadMessagesView(LoginRequiredMixin, View):
                     }
                 })
             
+            # Include other participant data for the thread header
+            other_participant_data = None
+            if other_participant:
+                other_participant_data = {
+                    'username': other_participant.username,
+                    'avatar': other_participant.userprofile.avatar.url if other_participant.userprofile.avatar else None
+                }
+            
             return JsonResponse({
                 'success': True,
-                'messages': messages_data
+                'messages': messages_data,
+                'other_participant': other_participant_data
             })
             
         except Exception as e:

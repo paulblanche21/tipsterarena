@@ -131,19 +131,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       ]);
     }
 
-    if (page === '/messages/') {
-      try {
-        const messagesModule = await import('./pages/messages.js');
-        // Wait for DOM to be fully loaded and ready
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', () => messagesModule.init());
-        } else {
-          messagesModule.init();
-        }
-      } catch (error) {
-        console.error('Failed to initialize messages module:', error);
-      }
-    }
+    // Messages page is initialized in the template's extra_js block
+    // No need to initialize it here to avoid double initialization
 
     // Who to Follow
     const followList = document.querySelector('.follow-list');
