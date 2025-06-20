@@ -292,22 +292,80 @@ class LikeTipView(LoginRequiredMixin, View):
 
 class ShareTipView(LoginRequiredMixin, View):
     def post(self, request):
-        """Handle sharing a tip."""
+        """Handle retweeting a tip (creates a new tip that references the original)."""
         tip_id = request.POST.get('tip_id')
         if not tip_id:
             return JsonResponse({'success': False, 'error': 'Tip ID is required'}, status=400)
         
-        tip = get_object_or_404(Tip, id=tip_id)
-        Share.objects.create(user=request.user, tip=tip)
-        
-        # Get the updated share count
-        share_count = tip.shares.count()
-        
-        return JsonResponse({
-            'success': True,
-            'message': 'Tip shared successfully',
-            'share_count': share_count
-        })
+        try:
+            original_tip = get_object_or_404(Tip, id=tip_id)
+            
+            # Check if user has already retweeted this tip
+            existing_retweet = Tip.objects.filter(
+                user=request.user,
+                is_retweet=True,
+                original_tip=original_tip
+            ).first()
+            
+            if existing_retweet:
+                # User has already retweeted, so unretweet (delete the retweet)
+                existing_retweet.delete()
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Retweet removed',
+                    'share_count': original_tip.retweets.count(),
+                    'is_retweeted': False
+                })
+            else:
+                # Create a new retweet
+                retweet = Tip.objects.create(
+                    user=request.user,
+                    sport=original_tip.sport,
+                    text=original_tip.text,
+                    image=original_tip.image,
+                    gif_url=original_tip.gif_url,
+                    gif_width=original_tip.gif_width,
+                    gif_height=original_tip.gif_height,
+                    poll=original_tip.poll,
+                    emojis=original_tip.emojis,
+                    location=original_tip.location,
+                    audience=original_tip.audience,
+                    odds=original_tip.odds,
+                    odds_format=original_tip.odds_format,
+                    bet_type=original_tip.bet_type,
+                    each_way=original_tip.each_way,
+                    confidence=original_tip.confidence,
+                    status=original_tip.status,
+                    resolution_note=original_tip.resolution_note,
+                    verified_at=original_tip.verified_at,
+                    visibility=original_tip.visibility,
+                    is_released=original_tip.is_released,
+                    scheduled_release=original_tip.scheduled_release,
+                    is_premium_tip=original_tip.is_premium_tip,
+                    premium_tip_posted_at=original_tip.premium_tip_posted_at,
+                    premium_tip_views=original_tip.premium_tip_views,
+                    release_schedule=original_tip.release_schedule,
+                    is_retweet=True,
+                    original_tip=original_tip
+                )
+                
+                # Copy allowed tiers if any
+                if original_tip.allowed_tiers.exists():
+                    retweet.allowed_tiers.set(original_tip.allowed_tiers.all())
+                
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Tip retweeted successfully',
+                    'share_count': original_tip.retweets.count(),
+                    'is_retweeted': True,
+                    'retweet_id': retweet.id
+                })
+                
+        except Tip.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Tip not found'}, status=404)
+        except Exception as e:
+            logger.error("Error retweeting tip: %s", str(e))
+            return JsonResponse({'success': False, 'error': 'An error occurred while retweeting the tip.'}, status=500)
 
 class CommentTipView(LoginRequiredMixin, View):
     def post(self, request):

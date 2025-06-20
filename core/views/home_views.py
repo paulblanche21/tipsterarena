@@ -3,7 +3,7 @@
 from django.shortcuts import render
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View
-from django.db.models import Count, F
+from django.db.models import Count, F, Q
 from django.conf import settings
 
 from ..models import User, UserProfile, Tip, Follow
@@ -13,11 +13,16 @@ class HomeView(LoginRequiredMixin, View):
     
     def get(self, request):
         """Handle GET requests for the home page."""
-        # Get recent tips
-        tips = Tip.objects.all().order_by('-created_at')[:20]
+        # Get recent tips including retweets
+        tips = Tip.objects.filter(
+            Q(is_retweet=False) | Q(is_retweet=True, user=request.user)
+        ).order_by('-created_at')[:20]
+        
         for tip in tips:
             if not hasattr(tip.user, 'userprofile'):
                 UserProfile.objects.get_or_create(user=tip.user)
+            # Annotate with user_has_retweeted for template logic
+            tip.user_has_retweeted = tip.retweets.filter(user=request.user).exists()
 
         # Get trending tips based on engagement
         trending_tips = Tip.objects.annotate(

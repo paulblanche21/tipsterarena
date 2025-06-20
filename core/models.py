@@ -59,6 +59,11 @@ class Tip(models.Model):
         default='everyone'
     )  # Visibility setting
     created_at = models.DateTimeField(auto_now_add=True)  # Timestamp of tip creation
+    
+    # Retweet functionality
+    is_retweet = models.BooleanField(default=False, help_text='Is this tip a retweet?')
+    original_tip = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='retweets', help_text='Original tip if this is a retweet')
+    
     # Updated fields for tip details
     odds = models.CharField(
         max_length=20,
@@ -174,6 +179,8 @@ class Tip(models.Model):
         return True
 
     def __str__(self):
+        if self.is_retweet:
+            return f"{self.user.username} retweeted {self.original_tip.user.username} - {self.sport}: {self.text[:20]}"
         return f"{self.user.username} - {self.sport}: {self.text[:20]}"  # String representation for admin/debugging
 
     def clean(self):

@@ -2,9 +2,10 @@
 
 from django.shortcuts import render
 from django.views import View
+from django.contrib.auth.mixins import LoginRequiredMixin
 from core.models import Tip
 
-class SportView(View):
+class SportView(LoginRequiredMixin, View):
     def get(self, request, sport):
         valid_sports = [
             'football', 'golf', 'tennis', 'horse_racing',
@@ -17,7 +18,15 @@ class SportView(View):
         if not sport or sport.lower() == 'none' or sport not in valid_sports:
             return render(request, 'core/404.html', status=404)
 
-        tips = Tip.objects.filter(sport=sport).order_by('-created_at')[:20]
+        # Get tips for the given sport including retweets
+        tips = Tip.objects.filter(
+            sport=sport
+        ).order_by('-created_at')[:20]
+        
+        # Annotate each tip with user_has_retweeted boolean
+        for tip in tips:
+            tip.user_has_retweeted = tip.retweets.filter(user=request.user).exists()
+            
         return render(request, 'core/sport.html', {
             'tips': tips,
             'sport': sport,

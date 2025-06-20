@@ -494,20 +494,40 @@ function handleTipClick(e) {
                 return response.json();
             })
             .then(data => {
-                console.log('Share response:', data);
+                console.log('Retweet response:', data);
                 if (data.success) {
-                    const shareCount = action.nextElementSibling;
-                    if (data.share_count !== undefined) {
+                    const shareCount = action.closest('.tip-action-group').querySelector('.share-count');
+                    if (shareCount && data.share_count !== undefined) {
                         shareCount.textContent = data.share_count;
                     }
-                    action.classList.toggle('shared', data.message === 'Tip shared');
+                    
+                    // Toggle the retweeted state
+                    if (data.is_retweeted) {
+                        action.classList.add('shared');
+                        action.setAttribute('aria-label', 'Undo retweet');
+                    } else {
+                        action.classList.remove('shared');
+                        action.setAttribute('aria-label', 'Retweet');
+                    }
+                    
+                    // Update all instances of this tip's retweet count across the page
+                    const allShareCounts = document.querySelectorAll(`.tip[data-tip-id="${tipId}"] .share-count`);
+                    allShareCounts.forEach(count => {
+                        count.textContent = data.share_count;
+                    });
+                    
+                    // If this was a retweet, refresh the page to show the new retweet in feeds
+                    if (data.is_retweeted && data.retweet_id) {
+                        // Optionally refresh the page to show the new retweet
+                        // location.reload();
+                    }
                 } else {
                     showCustomAlert('Error: ' + data.error);
                 }
             })
             .catch(error => {
-                console.error('Error sharing tip:', error);
-                showCustomAlert('An error occurred while sharing the tip.');
+                console.error('Error retweeting tip:', error);
+                showCustomAlert('An error occurred while retweeting the tip.');
             });
         } else if (actionType === 'comment') {
             openCommentModal(this, tipId);

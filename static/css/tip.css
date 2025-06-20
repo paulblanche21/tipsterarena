@@ -114,17 +114,16 @@
   /* Styles for the tip header */
   .tip-header {
     display: flex;
-    align-items: center;
-    gap: clamp(4px, 1vw, 5px);
-    color: black;
-    width: 100%;
     justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--margin-small);
   }
   
   .tip-header-left {
     display: flex;
     align-items: center;
-    gap: clamp(4px, 1vw, 5px);
+    gap: var(--margin-small);
+    flex-wrap: wrap;
   }
   
   /* Styles for the tip username */
@@ -665,4 +664,34 @@
 
   .sport-volleyball {
     background: #3498DB; /* light blue */
+  }
+
+  /* Retweet indicator styles */
+  .retweet-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    width: 100%;
+  }
+
+  .retweet-indicator i {
+    color: #4d94ff;
+    font-size: 0.7rem;
+  }
+
+  .retweet-indicator span {
+    font-weight: 500;
+  }
+
+  /* When there's a retweet indicator, adjust the tip header layout */
+  .tip-header-left:has(.retweet-indicator) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .tip-header-left:has(.retweet-indicator) .tip-username {
+    margin-top: 2px;
   }

@@ -39,8 +39,11 @@ class ProfileView(LoginRequiredMixin, View):
 
         # Filter user's own tips and retweeted tips
         user_tips = Tip.objects.filter(
-            Q(user=user) | Q(shares__user=user)
-        ).order_by('-created_at').select_related('user__userprofile').distinct()
+            Q(user=user) | Q(is_retweet=True, user=user)
+        ).order_by('-created_at').select_related('user__userprofile', 'original_tip__user__userprofile').distinct()
+
+        for tip in user_tips:
+            tip.user_has_retweeted = tip.retweets.filter(user=request.user).exists()
 
         following_count = Follow.objects.filter(follower=user).count()
         followers_count = Follow.objects.filter(followed=user).count()
