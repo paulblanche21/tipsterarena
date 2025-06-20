@@ -104,7 +104,7 @@ class BecomeTipsterView(LoginRequiredMixin, View):
             return render(request, 'core/become_tipster.html', {'profile': profile})
 
 class SetupTiersView(LoginRequiredMixin, View):
-    """Onboarding: Handle tier selection (Free, Basic, Premium) and trial activation."""
+    """Onboarding: Handle tier selection (Free, Premium) and trial activation."""
     
     def get(self, request):
         return render(request, 'core/tier_setup.html')
@@ -113,22 +113,11 @@ class SetupTiersView(LoginRequiredMixin, View):
         user_profile = request.user.userprofile
         selected_tier = request.POST.get('tier')
         
-        if selected_tier not in ['free', 'basic', 'premium']:
+        if selected_tier not in ['free', 'premium']:
             messages.error(request, "Invalid tier selection.")
             return render(request, 'core/tier_setup.html')
 
-        # Handle Basic trial
-        if selected_tier == 'basic':
-            if user_profile.trial_used:
-                messages.error(request, "You have already used your Basic trial.")
-                return render(request, 'core/tier_setup.html')
-            user_profile.tier = 'basic'
-            user_profile.tier_expiry = timezone.now() + timezone.timedelta(days=30)
-            user_profile.trial_used = True
-            user_profile.save()
-            messages.success(request, "Your 1-month Basic trial is now active!")
-            return redirect('home')
-        elif selected_tier == 'premium':
+        if selected_tier == 'premium':
             # In a real app, redirect to payment/upgrade flow
             user_profile.tier = 'premium'
             user_profile.tier_expiry = None  # Set by payment logic

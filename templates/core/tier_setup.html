@@ -11,10 +11,10 @@
     </div>
 
     <div class="tier-cards">
-        <!-- Basic Tier -->
-        <div class="tier-card basic">
+        <!-- Free Tier -->
+        <div class="tier-card free">
             <div class="tier-header">
-                <h2>Basic</h2>
+                <h2>Free</h2>
                 <p class="price">Free</p>
             </div>
             <div class="tier-features">
@@ -30,7 +30,7 @@
                 <form method="post" action="{% url 'setup_tiers' %}">
                     {% csrf_token %}
                     <input type="hidden" name="tier" value="free">
-                    <button type="submit" class="btn-secondary">Continue with Basic</button>
+                    <button type="submit" class="btn-secondary">Continue with Free</button>
                 </form>
             </div>
         </div>
@@ -44,7 +44,7 @@
             </div>
             <div class="tier-features">
                 <ul>
-                    <li><i class="fas fa-check"></i> All Basic features</li>
+                    <li><i class="fas fa-check"></i> All Free features</li>
                     <li><i class="fas fa-check"></i> Access to Top Tipsters</li>
                     <li><i class="fas fa-check"></i> Premium tips access</li>
                     <li><i class="fas fa-check"></i> Advanced statistics</li>

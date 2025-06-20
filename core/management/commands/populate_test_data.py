@@ -1,13 +1,13 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
-from core.models import UserProfile, Tip, TipsterTier, TipsterSubscription
+from core.models import UserProfile, Tip
 from django.utils import timezone
 import random
 from datetime import datetime, timedelta
 import decimal
 
 class Command(BaseCommand):
-    help = 'Populate the database with test users, profiles, tips, and subscriptions'
+    help = 'Populate the database with test users, profiles, and tips'
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -17,15 +17,15 @@ class Command(BaseCommand):
             help='Number of users to create'
         )
         parser.add_argument(
-            '--pro-ratio',
+            '--premium-ratio',
             type=float,
-            default=0.4,  # Increased pro ratio to ensure we have enough pro users
-            help='Ratio of users that should be pro tipsters (0.0 to 1.0)'
+            default=0.4,  # Increased premium ratio to ensure we have enough premium users
+            help='Ratio of users that should be premium (0.0 to 1.0)'
         )
 
     def handle(self, *args, **kwargs):
         num_users = kwargs['users']
-        pro_ratio = kwargs['pro_ratio']
+        premium_ratio = kwargs['premium_ratio']
         
         # Sport-specific tips with more variety and realism
         sport_tips = {
@@ -160,7 +160,7 @@ class Command(BaseCommand):
             username = f"tipster{i}"
             email = f"tipster{i}@example.com"
             password = "password123"
-            is_pro = random.random() < pro_ratio
+            is_premium = random.random() < premium_ratio
 
             user, created = User.objects.get_or_create(
                 username=username,
@@ -185,47 +185,19 @@ class Command(BaseCommand):
                     ]),
                     'location': random.choice(['London', 'Manchester', 'Liverpool', 'Dublin', 'Glasgow', 'Cardiff']),
                     'date_of_birth': (datetime.now() - timedelta(days=random.randint(365*25, 365*45))).date(),
-                    'is_tipster': is_pro,
+                    'is_tipster': True,
                     'kyc_completed': True,
                     'profile_completed': True,
+                    'tier': 'premium' if is_premium else 'free',
                 }
             )
-
-            if is_pro:
-                # Create subscription tiers
-                tier_count = random.randint(2, 3)
-                for t in range(tier_count):
-                    price = decimal.Decimal(random.choice(['9.99', '19.99', '29.99', '49.99']))
-                    name = random.choice(['Bronze', 'Silver', 'Gold', 'Platinum', 'VIP', 'Elite'])
-                    max_subs = random.choice([None, 50, 100, 200])
-                    
-                    # Create tier without Stripe integration for now
-                    tier, created = TipsterTier.objects.get_or_create(
-                        tipster=user,
-                        name=name,
-                        defaults={
-                            'price': price,
-                            'description': f"Premium {name} tier with exclusive tips and insights",
-                            'features': [
-                                "All premium tips",
-                                "Detailed analysis",
-                                "Win probability ratings",
-                                "Early access to tips",
-                                "Monthly performance report",
-                            ],
-                            'max_subscribers': max_subs,
-                            'is_popular': (t == 1),  # Make middle tier popular
-                        }
-                    )
-                    if created:
-                        self.stdout.write(self.style.SUCCESS(f"Created {name} tier for {username}"))
 
             users.append(user)
 
         # Create tips for each user
         for user in users:
-            # More tips for pro users
-            num_tips = random.randint(15, 30) if user.userprofile.is_tipster else random.randint(5, 15)
+            # More tips for premium users
+            num_tips = random.randint(15, 30) if user.userprofile.tier == 'premium' else random.randint(5, 15)
             
             for _ in range(num_tips):
                 sport = random.choice(list(sport_tips.keys()))
@@ -243,7 +215,7 @@ class Command(BaseCommand):
                     confidence=random.randint(1, 5),
                     status=status,
                     created_at=timezone.now() - timedelta(days=random.randint(1, 60)),
-                    visibility='public' if not user.userprofile.is_tipster else random.choice(['public', 'subscribers', 'tier'])
+                    visibility='public' if user.userprofile.tier == 'free' else random.choice(['public', 'premium'])
                 )
                 
                 if status in ['win', 'loss']:
@@ -251,43 +223,5 @@ class Command(BaseCommand):
                     tip.save()
 
             self.stdout.write(self.style.SUCCESS(f"Created {num_tips} tips for: {user.username}"))
-
-        # Create subscriptions between users
-        pro_users = [u for u in users if u.userprofile.is_tipster]
-        regular_users = [u for u in users if not u.userprofile.is_tipster]
-
-        if pro_users and regular_users:  # Only create subscriptions if we have both pro and regular users
-            for regular_user in regular_users:
-                # Subscribe to 1-3 pro tipsters
-                num_subs = random.randint(1, min(3, len(pro_users)))
-                selected_pros = random.sample(pro_users, num_subs)
-                
-                for pro_user in selected_pros:
-                    # Get a random tier from the pro user
-                    tiers = TipsterTier.objects.filter(tipster=pro_user)
-                    if tiers.exists():  # Only create subscription if pro user has tiers
-                        tier = random.choice(tiers)
-                        
-                        # Create subscription
-                        start_date = timezone.now() - timedelta(days=random.randint(1, 90))
-                        TipsterSubscription.objects.create(
-                            subscriber=regular_user,
-                            tier=tier,
-                            status='active',
-                            start_date=start_date,
-                            end_date=start_date + timedelta(days=30),
-                            auto_renew=True
-                        )
-                        
-                        # Update tipster stats
-                        pro_user.userprofile.total_subscribers += 1
-                        pro_user.userprofile.subscription_revenue += tier.price
-                        pro_user.userprofile.save()
-                        
-                        self.stdout.write(
-                            self.style.SUCCESS(
-                                f"Created subscription: {regular_user.username} -> {pro_user.username} ({tier.name})"
-                            )
-                        )
 
         self.stdout.write(self.style.SUCCESS("Successfully populated test data!"))

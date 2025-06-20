@@ -164,13 +164,13 @@ class Tip(models.Model):
         if user.userprofile.tier == 'premium':
             return True
 
-        # For basic users, check if the tip is from a top tipster
+        # For free users, check if the tip is from a top tipster
         if self.user.userprofile.is_top_tipster:
             # Check if 1 hour has passed since tip creation
             time_since_creation = timezone.now() - self.created_at
             return time_since_creation.total_seconds() >= 3600  # 1 hour in seconds
 
-        # Basic users can see non-top-tipster tips immediately
+        # Free users can see non-top-tipster tips immediately
         return True
 
     def __str__(self):
@@ -481,8 +481,8 @@ class UserProfile(models.Model):
         return self.tier == 'premium' and self.is_tipster
 
     def get_tip_visibility_delay(self):
-        """Get the delay in minutes before tips become visible to basic users."""
-        return 60 if self.is_top_tipster else 0  # 1 hour delay for top tipsters
+        """Get the delay in minutes before tips become visible to free users."""
+        return 60  # 1 hour delay for free users
 
     def get_premium_features(self):
         """Get list of premium features available to user."""

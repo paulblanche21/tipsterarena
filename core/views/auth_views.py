@@ -80,9 +80,9 @@ class SignupView(View):
                 profile.handle = handle
                 profile.save()
                 
-                # Add user to basic permissions group
-                basic_group, _ = Group.objects.get_or_create(name='Basic Users')
-                user.groups.add(basic_group)
+                # Add user to free permissions group
+                free_group, _ = Group.objects.get_or_create(name='Free Users')
+                user.groups.add(free_group)
                 
                 # Create and send verification email
                 token = get_random_string(length=32)

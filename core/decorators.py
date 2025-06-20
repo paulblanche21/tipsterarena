@@ -8,12 +8,12 @@ the integrity of the platform's features.
 
 Available Decorators:
 1. check_daily_tip_limit
-   - Enforces a daily limit of 2 tips for Basic users
+   - Enforces a daily limit of 2 tips for Free users
    - Premium users have unlimited tips
    - Raises PermissionDenied if limit is exceeded
 
 2. check_follow_limit
-   - Restricts Basic users to following a maximum of 10 users
+   - Restricts Free users to following a maximum of 10 users
    - Premium users can follow unlimited users
    - Raises PermissionDenied if limit is exceeded
 
@@ -53,7 +53,7 @@ from django.contrib import messages
 
 
 def check_daily_tip_limit(view_func):
-    """Decorator to enforce daily tip limit for Basic users."""
+    """Decorator to enforce daily tip limit for Free users."""
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -65,14 +65,14 @@ def check_daily_tip_limit(view_func):
         
         if profile.tier == 'free':
             if tips_today >= 2:
-                messages.warning(request, 'Basic tier: Max 2 tips per day. Upgrade to Premium for unlimited tips!')
+                messages.warning(request, 'Free tier: Max 2 tips per day. Upgrade to Premium for unlimited tips!')
                 return redirect('setup_tiers')
                 
         return view_func(request, *args, **kwargs)
     return wrapper
 
 def check_follow_limit(view_func):
-    """Decorator to enforce follow limit for Basic users."""
+    """Decorator to enforce follow limit for Free users."""
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -83,7 +83,7 @@ def check_follow_limit(view_func):
         
         if profile.tier == 'free':
             if following_count >= 20:
-                messages.warning(request, 'Basic tier: Max 20 follows. Upgrade to Premium for unlimited follows!')
+                messages.warning(request, 'Free tier: Max 20 follows. Upgrade to Premium for unlimited follows!')
                 return redirect('setup_tiers')
                 
         return view_func(request, *args, **kwargs)

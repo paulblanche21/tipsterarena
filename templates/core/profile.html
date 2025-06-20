@@ -57,15 +57,12 @@
                     <div class="profile-tier-status">
                         <span class="tier-badge tier-{{ user_profile.tier }}" style="margin-right: 0.5rem;">
                             {% if user_profile.tier == 'free' %}<span class="tier-badge-outline">Free</span>{% endif %}
-                            {% if user_profile.tier == 'basic' %}Basic{% endif %}
                             {% if user_profile.tier == 'premium' %}Premium{% endif %}
                         </span>
                         {% if is_owner and user_profile.tier != 'premium' %}
                             <a href="{% url 'setup_tiers' %}" class="upgrade-btn btn-outline">Upgrade</a>
                         {% endif %}
-                        {% if user_profile.tier == 'basic' and user_profile.tier_expiry %}
-                            <span class="tier-expiry">Trial ends: {{ user_profile.tier_expiry|date:"F j, Y" }}</span>
-                        {% elif user_profile.tier == 'premium' and user_profile.tier_expiry %}
+                        {% if user_profile.tier == 'premium' and user_profile.tier_expiry %}
                             <span class="tier-expiry">Valid until: {{ user_profile.tier_expiry|date:"F j, Y" }}</span>
                         {% endif %}
                     </div>
