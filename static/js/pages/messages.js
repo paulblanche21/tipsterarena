@@ -816,21 +816,29 @@ function showGifPicker(textarea, previewDiv) {
                         img.className = 'msg-gif-result';
                         img.onclick = () => {
                             // Send the GIF URL to the server first
+                            console.log('GIF clicked, currentThread:', currentThread);
                             if (currentThread) {
+                                const requestData = {
+                                    content: '',
+                                    gif_url: gif.images.original.url,
+                                    thread_id: currentThread
+                                };
+                                console.log('Sending GIF request:', requestData);
+                                
                                 fetch(`/api/send-message/`, {
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/json',
                                         'X-CSRFToken': getCookie('csrftoken')
                                     },
-                                    body: JSON.stringify({
-                                        content: '',
-                                        gif_url: gif.images.original.url,
-                                        thread_id: currentThread
-                                    })
+                                    body: JSON.stringify(requestData)
                                 })
-                                .then(response => response.json())
+                                .then(response => {
+                                    console.log('GIF response status:', response.status);
+                                    return response.json();
+                                })
                                 .then(data => {
+                                    console.log('GIF response data:', data);
                                     if (data.success) {
                                         // Only add the message to the UI after successful server confirmation
                                         const messageElement = createMessageElement({
@@ -853,6 +861,8 @@ function showGifPicker(textarea, previewDiv) {
                                 .catch(error => {
                                     console.error('Error sending GIF:', error);
                                 });
+                            } else {
+                                console.error('No currentThread available for GIF');
                             }
 
                             // Close the modal
@@ -989,12 +999,17 @@ function handleImageSelect(e) {
     // Add thread_id if we have a current thread
     if (currentThread) {
         formData.append('thread_id', currentThread);
+        console.log('Image upload - currentThread:', currentThread);
+    } else {
+        console.error('No currentThread available for image upload');
+        return;
     }
 
     // Disable the send button while sending
     const sendBtn = document.getElementById('sendMessageBtn');
     if (sendBtn) sendBtn.disabled = true;
 
+    console.log('Sending image request to /api/send-message/');
     fetch('/api/send-message/', {
         method: 'POST',
         headers: {
@@ -1003,12 +1018,14 @@ function handleImageSelect(e) {
         body: formData
     })
     .then(response => {
+        console.log('Image response status:', response.status);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         return response.json();
     })
     .then(data => {
+        console.log('Image response data:', data);
         if (data.success) {
             // Add the message to the UI only after server confirmation
             const messageElement = createMessageElement({
