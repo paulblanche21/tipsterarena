@@ -22,6 +22,13 @@ urlpatterns = [
 
     # Subscription routes
     path('setup-tiers/', SetupTiersView.as_view(), name='setup_tiers'),
+    path('become-tipster/', views.BecomeTipsterView.as_view(), name='become_tipster'),
+    path('tipster-dashboard/', views.TipsterDashboardView.as_view(), name='tipster_dashboard'),
+    path('manage-tiers/', views.ManageTiersView.as_view(), name='manage_tiers'),
+    path('subscribe/<str:username>/<int:tier_id>/', views.SubscribeToTipsterView.as_view(), name='subscribe_to_tipster'),
+    path('cancel-subscription/', views.CancelSubscriptionView.as_view(), name='cancel_subscription'),
+    path('stripe-webhook/', views.StripeWebhookView.as_view(), name='stripe_webhook'),
+    path('top-tipsters/', views.TopTipstersLeaderboardView.as_view(), name='top_tipsters_leaderboard'),
 
     # Messaging routes
     path('messages/', views.MessagesView.as_view(), name='messages'),
