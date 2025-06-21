@@ -487,6 +487,13 @@
                         cardErrors.textContent = data.error;
                         submitButton.disabled = false;
                         submitButton.innerHTML = '<i class="fas fa-lock" style="margin-right: 8px;"></i>Complete Subscription';
+                    } else if (data.test_mode) {
+                        // Test mode - payment completed successfully
+                        cardErrors.textContent = 'Test payment completed successfully! Redirecting...';
+                        cardErrors.style.color = '#4CAF50';
+                        setTimeout(() => {
+                            window.location.href = '/home/';
+                        }, 2000);
                     } else {
                         await stripe.redirectToCheckout({ sessionId: data.id });
                     }

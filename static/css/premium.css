@@ -1751,4 +1751,282 @@
         flex-direction: column;
         gap: 10px;
     }
+}
+
+/* Signup Page Styles */
+.signup-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #001f3f 0%, #003366 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.signup-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    overflow: hidden;
+    max-width: 500px;
+    width: 100%;
+    padding: 40px;
+}
+
+.signup-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.signup-logo {
+    margin-bottom: 20px;
+}
+
+.signup-logo img {
+    max-width: 180px;
+    height: auto;
+}
+
+.signup-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #001f3f;
+    margin-bottom: 10px;
+}
+
+.signup-subtitle {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.signup-step-indicator {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 30px;
+}
+
+.signup-step {
+    display: flex;
+    align-items: center;
+    margin: 0 10px;
+    font-size: 14px;
+    color: #999;
+}
+
+.signup-step-number {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #e1e8ed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 8px;
+    font-weight: bold;
+    color: #666;
+}
+
+.signup-step.active .signup-step-number {
+    background: #ff4136;
+    color: white;
+}
+
+.signup-step.completed .signup-step-number {
+    background: #4CAF50;
+    color: white;
+}
+
+.signup-form {
+    margin-bottom: 30px;
+}
+
+.signup-form-group {
+    margin-bottom: 20px;
+}
+
+.signup-label {
+    display: block;
+    font-weight: 600;
+    color: #001f3f;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.signup-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e1e8ed;
+    border-radius: 12px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.signup-input:focus {
+    outline: none;
+    border-color: #ff4136;
+    box-shadow: 0 0 0 3px rgba(255, 65, 54, 0.1);
+}
+
+.signup-error {
+    color: #ff4136;
+    font-size: 14px;
+    margin-top: 5px;
+    display: block;
+}
+
+.social-login {
+    margin-bottom: 20px;
+}
+
+.social-login a {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    border: 2px solid #e1e8ed;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #001f3f;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.social-login a:hover {
+    border-color: #ff4136;
+    background: #fff7f6;
+}
+
+.social-login i {
+    margin-right: 8px;
+}
+
+.auth-divider {
+    text-align: center;
+    color: #666;
+    margin: 20px 0;
+    position: relative;
+}
+
+.auth-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #e1e8ed;
+}
+
+.auth-divider span {
+    background: white;
+    padding: 0 15px;
+    color: #666;
+}
+
+.signup-submit-btn {
+    width: 100%;
+    padding: 14px 20px;
+    background: linear-gradient(135deg, #ff4136 0%, #e63946 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+}
+
+.signup-submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 65, 54, 0.3);
+}
+
+.signup-submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.signup-links {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.signup-links p {
+    margin: 10px 0;
+    text-align: center;
+    color: #001f3f !important;
+}
+
+.signup-links a {
+    color: #ff4136;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.signup-links a:hover {
+    text-decoration: underline;
+}
+
+/* Ensure password fields are styled correctly */
+.signup-input[type="password"] {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e1e8ed;
+    border-radius: 12px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.signup-input[type="password"]:focus {
+    outline: none;
+    border-color: #ff4136;
+    box-shadow: 0 0 0 3px rgba(255, 65, 54, 0.1);
+}
+
+/* Override any default password field styling */
+input[type="password"].signup-input {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background: white !important;
+    border: 2px solid #e1e8ed !important;
+    border-radius: 12px !important;
+    padding: 12px 16px !important;
+    font-size: 16px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+input[type="password"].signup-input:focus {
+    border-color: #ff4136 !important;
+    box-shadow: 0 0 0 3px rgba(255, 65, 54, 0.1) !important;
+    outline: none !important;
+}
+
+@media (max-width: 768px) {
+    .signup-card {
+        padding: 30px 20px;
+        margin: 10px;
+    }
+    
+    .signup-title {
+        font-size: 24px;
+    }
+    
+    .signup-step {
+        font-size: 12px;
+    }
+    
+    .signup-step-number {
+        width: 25px;
+        height: 25px;
+        font-size: 12px;
+    }
 } 

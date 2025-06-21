@@ -6,74 +6,103 @@
     <title>Sign Up - Tipster Arena</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/landing.css' %}">
+    <link rel="stylesheet" href="{% static 'css/premium.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
-    <div class="auth-container">
-        <div class="auth-logo">
-            <img src="{% static 'img/tipster-arena-logo.png' %}" alt="Tipster Arena Logo" class="auth-logo-img">
+    <div class="signup-container">
+        <div class="signup-card">
+            <div class="signup-header">
+                <div class="signup-logo">
+                    <img src="{% static 'img/tipster-arena-logo.png' %}" alt="Tipster Arena Logo">
+                </div>
+                
+                <div class="signup-step-indicator">
+                    <div class="signup-step active">
+                        <div class="signup-step-number">1</div>
+                        <span>Signup</span>
+                    </div>
+                    <div class="signup-step">
+                        <div class="signup-step-number">2</div>
+                        <span>KYC</span>
+                    </div>
+                    <div class="signup-step">
+                        <div class="signup-step-number">3</div>
+                        <span>Profile</span>
+                    </div>
+                    <div class="signup-step">
+                        <div class="signup-step-number">4</div>
+                        <span>Payment</span>
+                    </div>
+                </div>
+                
+                <h1 class="signup-title">Create Your Account</h1>
+                <p class="signup-subtitle">Step 1: Join Tipster Arena</p>
+            </div>
+
+            <!-- Social Login Buttons -->
+            <div class="social-login">
+                <a href="{% url 'social:begin' 'google-oauth2' %}">
+                    <i class="fab fa-google"></i> Sign up with Google
+                </a>
+                <a href="{% url 'social:begin' 'twitter' %}">
+                    <i class="fab fa-twitter"></i> Sign up with Twitter
+                </a>
+                <a href="{% url 'social:begin' 'facebook' %}">
+                    <i class="fab fa-facebook"></i> Sign up with Facebook
+                </a>
+            </div>
+
+            <div class="auth-divider">
+                <span>or sign up with email</span>
+            </div>
+
+            <!-- Manual Signup Form -->
+            <form method="post" class="signup-form">
+                {% csrf_token %}
+                <div class="signup-form-group">
+                    <label for="{{ form.username.id_for_label }}" class="signup-label">Username</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                        <span class="signup-error">{{ form.username.errors }}</span>
+                    {% endif %}
+                </div>
+                <div class="signup-form-group">
+                    <label for="{{ form.handle.id_for_label }}" class="signup-label">Handle (e.g., @username)</label>
+                    {{ form.handle }}
+                    {% if form.handle.errors %}
+                        <span class="signup-error">{{ form.handle.errors }}</span>
+                    {% endif %}
+                </div>
+                <div class="signup-form-group">
+                    <label for="{{ form.email.id_for_label }}" class="signup-label">Email</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <span class="signup-error">{{ form.email.errors }}</span>
+                    {% endif %}
+                </div>
+                <div class="signup-form-group">
+                    <label for="{{ form.password1.id_for_label }}" class="signup-label">Password</label>
+                    {{ form.password1 }}
+                    {% if form.password1.errors %}
+                        <span class="signup-error">{{ form.password1.errors }}</span>
+                    {% endif %}
+                </div>
+                <div class="signup-form-group">
+                    <label for="{{ form.password2.id_for_label }}" class="signup-label">Confirm Password</label>
+                    {{ form.password2 }}
+                    {% if form.password2.errors %}
+                        <span class="signup-error">{{ form.password2.errors }}</span>
+                    {% endif %}
+                </div>
+                <button type="submit" class="signup-submit-btn">Next: KYC</button>
+            </form>
+
+            <div class="signup-links">
+                <p>Already have an account? <a href="{% url 'login' %}">Log in here</a>.</p>
+                <p><a href="{% url 'landing' %}">Back to Landing</a></p>
+            </div>
         </div>
-        <h1>Sign Up for Tipster Arena</h1>
-        <p class="auth-subtitle">Step 1: Create your account</p>
-
-        <!-- Social Login Buttons -->
-        <div class="social-login">
-            <a href="{% url 'social:begin' 'google-oauth2' %}" class="landing-button landing-button--secondary">
-                <i class="fab fa-google"></i> Sign up with Google
-            </a>
-            <a href="{% url 'social:begin' 'twitter' %}" class="landing-button landing-button--secondary">
-                <i class="fab fa-twitter"></i> Sign up with Twitter
-            </a>
-            <a href="{% url 'social:begin' 'facebook' %}" class="landing-button landing-button--secondary">
-                <i class="fab fa-facebook"></i> Sign up with Facebook
-            </a>
-        </div>
-
-        <p class="auth-divider">or sign up with email</p>
-
-        <!-- Manual Signup Form -->
-        <form method="post" class="auth-form">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="{{ form.username.id_for_label }}">Username</label>
-                {{ form.username }}
-                {% if form.username.errors %}
-                    <span class="error">{{ form.username.errors }}</span>
-                {% endif %}
-            </div>
-            <div class="form-group">
-                <label for="{{ form.handle.id_for_label }}">Handle (e.g., @username)</label>
-                {{ form.handle }}
-                {% if form.handle.errors %}
-                    <span class="error">{{ form.handle.errors }}</span>
-                {% endif %}
-            </div>
-            <div class="form-group">
-                <label for="{{ form.email.id_for_label }}">Email</label>
-                {{ form.email }}
-                {% if form.email.errors %}
-                    <span class="error">{{ form.email.errors }}</span>
-                {% endif %}
-            </div>
-            <div class="form-group">
-                <label for="{{ form.password1.id_for_label }}">Password</label>
-                {{ form.password1 }}
-                {% if form.password1.errors %}
-                    <span class="error">{{ form.password1.errors }}</span>
-                {% endif %}
-            </div>
-            <div class="form-group">
-                <label for="{{ form.password2.id_for_label }}">Confirm Password</label>
-                {{ form.password2 }}
-                {% if form.password2.errors %}
-                    <span class="error">{{ form.password2.errors }}</span>
-                {% endif %}
-            </div>
-            <button type="submit" class="landing-button landing-button--primary">Next: KYC</button>
-        </form>
-
-        <p class="auth-links">Already have an account? <a href="{% url 'login' %}" class="auth-link">Log in here</a>.</p>
-        <p class="auth-links"><a href="{% url 'landing' %}" class="auth-link">Back to Landing</a></p>
     </div>
 </body>
 </html>

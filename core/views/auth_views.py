@@ -248,6 +248,17 @@ class CreateCheckoutSessionView(LoginRequiredMixin, View):
             
             logger.info(f"Creating checkout session for user {request.user.username} with plan: {plan}")
             
+            # Check if Stripe is configured
+            if not settings.STRIPE_SECRET_KEY or not settings.STRIPE_MONTHLY_PRICE_ID:
+                logger.warning("Stripe not configured - using test mode")
+                # In test mode, complete the payment immediately
+                profile = request.user.userprofile
+                profile.payment_completed = True
+                profile.tier = 'premium'
+                profile.save()
+                logger.info(f"Test payment completed for user {request.user.username}")
+                return JsonResponse({'success': True, 'test_mode': True})
+            
             # Select the appropriate price ID based on plan
             if plan == 'yearly':
                 price_id = settings.STRIPE_YEARLY_PRICE_ID

@@ -16,7 +16,7 @@ urlpatterns = [
     path('profile-setup/', views.ProfileSetupView.as_view(), name='profile_setup'),
     path('skip-profile-setup/', views.SkipProfileSetupView.as_view(), name='skip_profile_setup'),
     path('payment/', views.PaymentView.as_view(), name='payment'),
-    path('create-checkout-session/', views.CreateCheckoutSessionView.as_view(), name='create_checkout_session'),
+    path('payment/create-checkout-session/', views.CreateCheckoutSessionView.as_view(), name='create_checkout_session'),
     path('payment/success/', views.PaymentSuccessView.as_view(), name='payment_success'),
     path('skip-payment/', views.SkipPaymentView.as_view(), name='skip_payment'),
 

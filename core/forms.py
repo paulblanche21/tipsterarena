@@ -6,16 +6,16 @@ from .models import UserProfile
 from datetime import datetime
 
 class CustomUserCreationForm(UserCreationForm):
-    email = forms.EmailField(required=True, help_text="Required. Enter a valid email address.", widget=forms.EmailInput(attrs={'class': 'form-control'}))
-    handle = forms.CharField(max_length=15, label="Handle", help_text="Your unique handle starting with @ (e.g., @username)", required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    email = forms.EmailField(required=True, help_text="Required. Enter a valid email address.", widget=forms.EmailInput(attrs={'class': 'signup-input'}))
+    handle = forms.CharField(max_length=15, label="Handle", help_text="Your unique handle starting with @ (e.g., @username)", required=True, widget=forms.TextInput(attrs={'class': 'signup-input'}))
 
     class Meta:
         model = User
         fields = ('username', 'email', 'handle', 'password1', 'password2')
         widgets = {
-            'username': forms.TextInput(attrs={'class': 'form-control'}),
-            'password1': forms.PasswordInput(attrs={'class': 'form-control'}),
-            'password2': forms.PasswordInput(attrs={'class': 'form-control'}),
+            'username': forms.TextInput(attrs={'class': 'signup-input'}),
+            'password1': forms.PasswordInput(attrs={'class': 'signup-input'}),
+            'password2': forms.PasswordInput(attrs={'class': 'signup-input'}),
         }
 
     def clean_handle(self):
