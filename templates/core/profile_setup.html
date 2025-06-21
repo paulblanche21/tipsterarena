@@ -6,43 +6,67 @@
     <title>Profile Setup - Tipster Arena</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/landing.css' %}">
+    <link rel="stylesheet" href="{% static 'css/premium.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
-    <div class="auth-container">
-        <div class="auth-logo">
-            <img src="{% static 'img/tipster-arena-logo.png' %}" alt="Tipster Arena Logo" class="auth-logo-img">
+    <div class="profile-setup-container">
+        <div class="profile-setup-card">
+            <div class="profile-setup-header">
+                <img src="{% static 'img/tipster-arena-logo.png' %}" alt="Tipster Arena Logo" class="profile-setup-logo">
+                <h1 class="profile-setup-title">Setup Your Profile</h1>
+                <p class="profile-setup-subtitle">Step 3: Add an avatar and banner (optional)</p>
+                <div class="profile-setup-step-indicator">
+                    <div class="profile-setup-step completed">
+                        <div class="profile-setup-step-number">1</div>
+                        <span>Signup</span>
+                    </div>
+                    <div class="profile-setup-step completed">
+                        <div class="profile-setup-step-number">2</div>
+                        <span>KYC</span>
+                    </div>
+                    <div class="profile-setup-step active">
+                        <div class="profile-setup-step-number">3</div>
+                        <span>Profile</span>
+                    </div>
+                    <div class="profile-setup-step">
+                        <div class="profile-setup-step-number">4</div>
+                        <span>Payment</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Profile Setup Form -->
+            <form method="post" enctype="multipart/form-data" class="profile-setup-form" id="profileSetupForm">
+                {% csrf_token %}
+                <div class="profile-setup-form-group">
+                    <label for="{{ form.avatar.id_for_label }}" class="profile-setup-label">Avatar</label>
+                    {{ form.avatar }}
+                    {% if form.avatar.errors %}
+                        <span class="profile-setup-error">{{ form.avatar.errors }}</span>
+                    {% endif %}
+                    <img id="avatar-preview" src="{% if user.userprofile.avatar %}{{ user.userprofile.avatar.url }}{% else %}{% static 'img/default-avatar.png' %}{% endif %}" alt="Avatar Preview" class="profile-setup-preview" data-default-src="{% static 'img/default-avatar.png' %}">
+                </div>
+                <div class="profile-setup-form-group">
+                    <label for="{{ form.banner.id_for_label }}" class="profile-setup-label">Banner</label>
+                    {{ form.banner }}
+                    {% if form.banner.errors %}
+                        <span class="profile-setup-error">{{ form.banner.errors }}</span>
+                    {% endif %}
+                    <img id="banner-preview" src="{% if user.userprofile.banner %}{{ user.userprofile.banner.url }}{% else %}{% static 'img/default-banner.png' %}{% endif %}" alt="Banner Preview" class="profile-setup-banner-preview" data-default-src="{% static 'img/default-banner.png' %}">
+                </div>
+                <div class="profile-setup-buttons">
+                    <button type="submit" class="landing-button landing-button--primary" aria-label="Save Profile and Continue">
+                        <i class="fas fa-arrow-right" style="margin-right: 8px;"></i>
+                        Save and Continue
+                    </button>
+                    <a href="{% url 'skip_profile_setup' %}" class="landing-button landing-button--secondary" aria-label="Skip Profile Setup">Skip for Now</a>
+                </div>
+            </form>
+            <div class="kyc-logout-link" style="margin-top: 20px;">
+                <a href="{% url 'logout' %}">Log out</a>
+            </div>
         </div>
-        <h1>Setup Your Profile</h1>
-        <p class="auth-subtitle">Step 3: Add an avatar and banner (optional)</p>
-
-        <!-- Profile Setup Form -->
-        <form method="post" enctype="multipart/form-data" class="auth-form" id="profileSetupForm">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="{{ form.avatar.id_for_label }}">Avatar</label>
-                {{ form.avatar }}
-                {% if form.avatar.errors %}
-                    <span class="error">{{ form.avatar.errors }}</span>
-                {% endif %}
-                <img id="avatar-preview" src="{% if user.userprofile.avatar %}{{ user.userprofile.avatar.url }}{% else %}{% static 'img/default-avatar.png' %}{% endif %}" alt="Avatar Preview" class="preview-image" style="max-width: 100px; border-radius: 50%; margin-top: 10px;" data-default-src="{% static 'img/default-avatar.png' %}">
-            </div>
-            <div class="form-group">
-                <label for="{{ form.banner.id_for_label }}">Banner</label>
-                {{ form.banner }}
-                {% if form.banner.errors %}
-                    <span class="error">{{ form.banner.errors }}</span>
-                {% endif %}
-                <img id="banner-preview" src="{% if user.userprofile.banner %}{{ user.userprofile.banner.url }}{% else %}{% static 'img/default-banner.png' %}{% endif %}" alt="Banner Preview" class="preview-image" style="max-width: 200px; border-radius: var(--border-radius); margin-top: 10px;" data-default-src="{% static 'img/default-banner.png' %}">
-            </div>
-            <div class="landing-buttons">
-                <button type="submit" class="landing-button landing-button--primary" aria-label="Save Profile and Continue">Save and Continue</button>
-                <a href="{% url 'skip_profile_setup' %}" class="landing-button landing-button--secondary" aria-label="Skip Profile Setup">Skip for Now</a>
-            </div>
-        </form>
-
-        <p class="auth-links"><a href="{% url 'logout' %}" class="auth-link">Log out</a></p>
     </div>
-
     <script>
         function previewImage(input, previewId) {
             const preview = document.getElementById(previewId);
@@ -50,7 +74,7 @@
             if (file) {
                 if (file.size > 5 * 1024 * 1024) {
                     const errorDiv = document.createElement('div');
-                    errorDiv.className = 'error';
+                    errorDiv.className = 'profile-setup-error';
                     errorDiv.textContent = 'File size exceeds 5MB.';
                     input.parentElement.append(errorDiv);
                     input.value = '';
@@ -58,7 +82,7 @@
                 }
                 if (!file.type.startsWith('image/')) {
                     const errorDiv = document.createElement('div');
-                    errorDiv.className = 'error';
+                    errorDiv.className = 'profile-setup-error';
                     errorDiv.textContent = 'Please upload an image file.';
                     input.parentElement.append(errorDiv);
                     input.value = '';

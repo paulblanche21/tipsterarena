@@ -1581,4 +1581,174 @@
     .email-verification-icon i {
         font-size: 2rem;
     }
+}
+
+/* Profile Setup Page Styles */
+.profile-setup-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #001f3f 0%, #003366 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.profile-setup-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    padding: 40px;
+    max-width: 600px;
+    width: 100%;
+}
+
+.profile-setup-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.profile-setup-logo {
+    max-width: 180px;
+    height: auto;
+    margin-bottom: 20px;
+}
+
+.profile-setup-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #001f3f;
+    margin-bottom: 10px;
+}
+
+.profile-setup-subtitle {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.profile-setup-step-indicator {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 30px;
+}
+
+.profile-setup-step {
+    display: flex;
+    align-items: center;
+    margin: 0 10px;
+    font-size: 14px;
+    color: #666;
+}
+
+.profile-setup-step-number {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #e1e8ed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 8px;
+    font-weight: bold;
+    color: #666;
+}
+
+.profile-setup-step.completed .profile-setup-step-number {
+    background: #4CAF50;
+    color: white;
+}
+
+.profile-setup-step.active .profile-setup-step-number {
+    background: #ff4136;
+    color: white;
+}
+
+.profile-setup-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.profile-setup-form-group {
+    margin-bottom: 20px;
+}
+
+.profile-setup-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #001f3f;
+    font-size: 14px;
+}
+
+.profile-setup-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e1e8ed;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+    background: white;
+}
+
+.profile-setup-input:focus {
+    outline: none;
+    border-color: #ff4136;
+    box-shadow: 0 0 0 3px rgba(255, 65, 54, 0.1);
+}
+
+.profile-setup-preview {
+    display: block;
+    margin-top: 10px;
+    border-radius: 50%;
+    max-width: 100px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.profile-setup-banner-preview {
+    border-radius: 16px;
+    max-width: 200px;
+    margin-top: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.profile-setup-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.profile-setup-error {
+    color: #ff4136;
+    font-size: 14px;
+    margin-top: 8px;
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .profile-setup-card {
+        padding: 30px 20px;
+    }
+    .profile-setup-title {
+        font-size: 22px;
+    }
+    .profile-setup-preview {
+        max-width: 70px;
+    }
+    .profile-setup-banner-preview {
+        max-width: 120px;
+    }
+    .profile-setup-step {
+        font-size: 12px;
+    }
+    .profile-setup-step-number {
+        width: 25px;
+        height: 25px;
+        font-size: 12px;
+    }
+    .profile-setup-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
 } 
