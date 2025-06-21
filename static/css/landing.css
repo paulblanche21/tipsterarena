@@ -699,13 +699,15 @@ body {
 
 /* Secondary button variant */
 .landing-button--secondary {
-    background-color: var(--secondary-bg);
-    color: var(--primary-bg);
+    background-color: var(--primary-bg);
+    color: white;
+    border: 2px solid var(--primary-bg);
 }
 
 /* Hover state for secondary button */
 .landing-button--secondary:hover {
-    background-color: #e6e6e6;
+    background-color: var(--red-accent);
+    border-color: var(--red-accent);
     transform: translateY(-2px);
 }
 
