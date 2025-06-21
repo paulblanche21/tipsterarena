@@ -221,27 +221,87 @@ body {
     justify-content: center;
 }
 
-/* Pricing grid layout */
+/* Pricing grid layout - updated for two plans */
 .pricing-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 30px;
     padding: 20px;
+    flex-wrap: wrap;
 }
 
 /* Individual pricing items */
 .pricing-item {
     text-align: center;
-    padding: 20px;
-    background: rgba(255, 255, 255, 0.1);
+    padding: 30px;
+    background: linear-gradient(135deg, var(--red-accent) 0%, #d9362e 100%);
     border-radius: var(--border-radius);
+    color: white;
+    box-shadow: 0 8px 32px rgba(255,65,54,0.20);
+    max-width: 400px;
+    width: 100%;
+    position: relative;
+}
+
+/* Yearly pricing item with special styling */
+.pricing-item.yearly {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    border: 3px solid var(--red-accent);
+    transform: scale(1.05);
+    box-shadow: 0 12px 48px rgba(255,65,54,0.30);
+}
+
+/* Savings badge */
+.savings-badge {
+    position: absolute;
+    top: -15px;
+    right: -15px;
+    background: var(--red-accent);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.9em;
+    box-shadow: 0 4px 12px rgba(255,65,54,0.40);
+}
+
+/* Price subtitle for yearly option */
+.price-subtitle {
+    font-size: 1.1em;
+    margin: 10px 0 20px 0;
+    color: #4CAF50;
+    font-weight: bold;
 }
 
 /* Heading within pricing items */
 .pricing-item h3 {
+    font-size: 1.5em;
+    margin-bottom: 20px;
+    color: white;
+    font-weight: bold;
+}
+
+/* Pricing item list styles */
+.pricing-item ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+}
+
+.pricing-item ul li {
+    padding: 8px 0;
+    position: relative;
+    padding-left: 25px;
+}
+
+.pricing-item ul li:before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #4CAF50;
+    font-weight: bold;
     font-size: 1.2em;
-    margin-bottom: 10px;
-    color: var(--red-accent);
 }
 
 /* Pricing section container */
@@ -325,6 +385,14 @@ body {
 
     .profile-edit-modal-content {
         width: 90%;
+    }
+    
+    .pricing-grid {
+        padding: 10px;
+    }
+    
+    .pricing-item {
+        padding: 20px;
     }
 }
 

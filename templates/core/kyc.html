@@ -6,83 +6,111 @@
     <title>KYC - Tipster Arena</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/landing.css' %}">
+    <link rel="stylesheet" href="{% static 'css/premium.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
-    <div class="auth-container">
-        <div class="auth-logo">
-            <img src="{% static 'img/tipster-arena-logo.png' %}" alt="Tipster Arena Logo" class="auth-logo-img">
-        </div>
-        <h1>Verify Your Identity</h1>
-        <p class="auth-subtitle">Step 2: Enter your details to proceed</p>
-
-        <!-- KYC Form -->
-        <form method="post" class="auth-form">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="{{ form.full_name.id_for_label }}">{{ form.full_name.label }}</label>
-                {{ form.full_name }}
-                {% if form.full_name.errors %}
-                    <span class="error">{{ form.full_name.errors }}</span>
-                {% endif %}
-            </div>
-            <div class="form-group">
-                <label>Date of Birth</label>
-                <div class="dob-container" style="display: flex; gap: 10px;">
-                    <div style="flex: 1;">
-                        {{ form.dob_day }}
-                        {% if form.dob_day.errors %}
-                            <span class="error">{{ form.dob_day.errors }}</span>
-                        {% endif %}
+    <div class="kyc-container">
+        <div class="kyc-card">
+            <div class="kyc-header">
+                <img src="{% static 'img/tipster-arena-logo.png' %}" alt="Tipster Arena Logo" class="kyc-logo">
+                <h1 class="kyc-title">Verify Your Identity</h1>
+                <p class="kyc-subtitle">Step 2: Enter your details to proceed</p>
+                
+                <div class="kyc-step-indicator">
+                    <div class="kyc-step completed">
+                        <div class="kyc-step-number">1</div>
+                        <span>Signup</span>
                     </div>
-                    <div style="flex: 1;">
-                        {{ form.dob_month }}
-                        {% if form.dob_month.errors %}
-                            <span class="error">{{ form.dob_month.errors }}</span>
-                        {% endif %}
+                    <div class="kyc-step active">
+                        <div class="kyc-step-number">2</div>
+                        <span>KYC</span>
                     </div>
-                    <div style="flex: 2;">
-                        {{ form.dob_year }}
-                        {% if form.dob_year.errors %}
-                            <span class="error">{{ form.dob_year.errors }}</span>
-                        {% endif %}
+                    <div class="kyc-step">
+                        <div class="kyc-step-number">3</div>
+                        <span>Profile</span>
+                    </div>
+                    <div class="kyc-step">
+                        <div class="kyc-step-number">4</div>
+                        <span>Payment</span>
                     </div>
                 </div>
-                {% if form.non_field_errors %}
-                    <span class="error">{{ form.non_field_errors }}</span>
-                {% endif %}
             </div>
-            <div class="form-group">
-                <label for="{{ form.street_address.id_for_label }}">{{ form.street_address.label }}</label>
-                {{ form.street_address }}
-                {% if form.street_address.errors %}
-                    <span class="error">{{ form.street_address.errors }}</span>
-                {% endif %}
-            </div>
-            <div class="form-group">
-                <label for="{{ form.city.id_for_label }}">{{ form.city.label }}</label>
-                {{ form.city }}
-                {% if form.city.errors %}
-                    <span class="error">{{ form.city.errors }}</span>
-                {% endif %}
-            </div>
-            <div class="form-group">
-                <label for="{{ form.postal_code.id_for_label }}">{{ form.postal_code.label }}</label>
-                {{ form.postal_code }}
-                {% if form.postal_code.errors %}
-                    <span class="error">{{ form.postal_code.errors }}</span>
-                {% endif %}
-            </div>
-            <div class="form-group">
-                <label for="{{ form.country.id_for_label }}">{{ form.country.label }}</label>
-                {{ form.country }}
-                {% if form.country.errors %}
-                    <span class="error">{{ form.country.errors }}</span>
-                {% endif %}
-            </div>
-            <button type="submit" class="landing-button landing-button--primary" aria-label="Submit KYC Details">Submit and Continue</button>
-        </form>
 
-        <p class="auth-links"><a href="{% url 'logout' %}" class="auth-link">Log out</a></p>
+            <!-- KYC Form -->
+            <form method="post" class="kyc-form">
+                {% csrf_token %}
+                <div class="kyc-form-group">
+                    <label for="{{ form.full_name.id_for_label }}">{{ form.full_name.label }}</label>
+                    {{ form.full_name }}
+                    {% if form.full_name.errors %}
+                        <span class="kyc-error">{{ form.full_name.errors }}</span>
+                    {% endif %}
+                </div>
+                <div class="kyc-form-group">
+                    <label>Date of Birth</label>
+                    <div class="kyc-dob-container">
+                        <div class="kyc-form-group">
+                            {{ form.dob_day }}
+                            {% if form.dob_day.errors %}
+                                <span class="kyc-error">{{ form.dob_day.errors }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="kyc-form-group">
+                            {{ form.dob_month }}
+                            {% if form.dob_month.errors %}
+                                <span class="kyc-error">{{ form.dob_month.errors }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="kyc-form-group">
+                            {{ form.dob_year }}
+                            {% if form.dob_year.errors %}
+                                <span class="kyc-error">{{ form.dob_year.errors }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if form.non_field_errors %}
+                        <span class="kyc-error">{{ form.non_field_errors }}</span>
+                    {% endif %}
+                </div>
+                <div class="kyc-form-group">
+                    <label for="{{ form.street_address.id_for_label }}">{{ form.street_address.label }}</label>
+                    {{ form.street_address }}
+                    {% if form.street_address.errors %}
+                        <span class="kyc-error">{{ form.street_address.errors }}</span>
+                    {% endif %}
+                </div>
+                <div class="kyc-form-group">
+                    <label for="{{ form.city.id_for_label }}">{{ form.city.label }}</label>
+                    {{ form.city }}
+                    {% if form.city.errors %}
+                        <span class="kyc-error">{{ form.city.errors }}</span>
+                    {% endif %}
+                </div>
+                <div class="kyc-form-group">
+                    <label for="{{ form.postal_code.id_for_label }}">{{ form.postal_code.label }}</label>
+                    {{ form.postal_code }}
+                    {% if form.postal_code.errors %}
+                        <span class="kyc-error">{{ form.postal_code.errors }}</span>
+                    {% endif %}
+                </div>
+                <div class="kyc-form-group">
+                    <label for="{{ form.country.id_for_label }}">{{ form.country.label }}</label>
+                    {{ form.country }}
+                    {% if form.country.errors %}
+                        <span class="kyc-error">{{ form.country.errors }}</span>
+                    {% endif %}
+                </div>
+                <button type="submit" class="kyc-submit-btn" aria-label="Submit KYC Details">
+                    <i class="fas fa-arrow-right" style="margin-right: 8px;"></i>
+                    Submit and Continue
+                </button>
+            </form>
+
+            <div class="kyc-logout-link">
+                <a href="{% url 'logout' %}">Log out</a>
+            </div>
+        </div>
     </div>
 </body>
 </html>

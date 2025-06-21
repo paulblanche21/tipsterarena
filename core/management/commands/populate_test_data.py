@@ -160,7 +160,6 @@ class Command(BaseCommand):
             username = f"tipster{i}"
             email = f"tipster{i}@example.com"
             password = "password123"
-            is_premium = random.random() < premium_ratio
 
             user, created = User.objects.get_or_create(
                 username=username,
@@ -188,7 +187,7 @@ class Command(BaseCommand):
                     'is_tipster': True,
                     'kyc_completed': True,
                     'profile_completed': True,
-                    'tier': 'premium' if is_premium else 'free',
+                    'tier': 'premium',  # All users now have premium access
                 }
             )
 
@@ -196,8 +195,8 @@ class Command(BaseCommand):
 
         # Create tips for each user
         for user in users:
-            # More tips for premium users
-            num_tips = random.randint(15, 30) if user.userprofile.tier == 'premium' else random.randint(5, 15)
+            # All users now have unlimited tips
+            num_tips = random.randint(15, 30)
             
             for _ in range(num_tips):
                 sport = random.choice(list(sport_tips.keys()))
@@ -215,7 +214,7 @@ class Command(BaseCommand):
                     confidence=random.randint(1, 5),
                     status=status,
                     created_at=timezone.now() - timedelta(days=random.randint(1, 60)),
-                    visibility='public' if user.userprofile.tier == 'free' else random.choice(['public', 'premium'])
+                    visibility=random.choice(['public', 'premium'])  # All users can post premium tips
                 )
                 
                 if status in ['win', 'loss']:

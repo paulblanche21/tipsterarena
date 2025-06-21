@@ -6,12 +6,17 @@ from .models import UserProfile
 from datetime import datetime
 
 class CustomUserCreationForm(UserCreationForm):
-    email = forms.EmailField(required=True, help_text="Required. Enter a valid email address.")
-    handle = forms.CharField(max_length=15, label="Handle", help_text="Your unique handle starting with @ (e.g., @username)", required=True)
+    email = forms.EmailField(required=True, help_text="Required. Enter a valid email address.", widget=forms.EmailInput(attrs={'class': 'form-control'}))
+    handle = forms.CharField(max_length=15, label="Handle", help_text="Your unique handle starting with @ (e.g., @username)", required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
 
     class Meta:
         model = User
         fields = ('username', 'email', 'handle', 'password1', 'password2')
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'password1': forms.PasswordInput(attrs={'class': 'form-control'}),
+            'password2': forms.PasswordInput(attrs={'class': 'form-control'}),
+        }
 
     def clean_handle(self):
         handle = self.cleaned_data.get('handle')
@@ -31,14 +36,64 @@ class CustomUserCreationForm(UserCreationForm):
         return user
 
 class KYCForm(forms.Form):
-    full_name = forms.CharField(max_length=100, label="Full Name")
-    dob_day = forms.IntegerField(min_value=1, max_value=31, label="Day", widget=forms.NumberInput(attrs={'placeholder': 'DD', 'min': 1, 'max': 31}))
-    dob_month = forms.IntegerField(min_value=1, max_value=12, label="Month", widget=forms.NumberInput(attrs={'placeholder': 'MM', 'min': 1, 'max': 12}))
-    dob_year = forms.IntegerField(min_value=1900, max_value=datetime.now().year - 18, label="Year", widget=forms.NumberInput(attrs={'placeholder': 'YYYY', 'min': 1900, 'max': datetime.now().year - 18}))
-    street_address = forms.CharField(max_length=255, label="Street Address")
-    city = forms.CharField(max_length=100, label="City")
-    postal_code = forms.CharField(max_length=20, label="Postal Code")
-    country = forms.CharField(max_length=100, label="Country")
+    full_name = forms.CharField(
+        max_length=100, 
+        label="Full Name",
+        widget=forms.TextInput(attrs={'class': 'kyc-form-control', 'placeholder': 'Enter your full name'})
+    )
+    dob_day = forms.IntegerField(
+        min_value=1, 
+        max_value=31, 
+        label="Day", 
+        widget=forms.NumberInput(attrs={
+            'class': 'kyc-form-control', 
+            'placeholder': 'DD', 
+            'min': 1, 
+            'max': 31
+        })
+    )
+    dob_month = forms.IntegerField(
+        min_value=1, 
+        max_value=12, 
+        label="Month", 
+        widget=forms.NumberInput(attrs={
+            'class': 'kyc-form-control', 
+            'placeholder': 'MM', 
+            'min': 1, 
+            'max': 12
+        })
+    )
+    dob_year = forms.IntegerField(
+        min_value=1900, 
+        max_value=datetime.now().year - 18, 
+        label="Year", 
+        widget=forms.NumberInput(attrs={
+            'class': 'kyc-form-control', 
+            'placeholder': 'YYYY', 
+            'min': 1900, 
+            'max': datetime.now().year - 18
+        })
+    )
+    street_address = forms.CharField(
+        max_length=255, 
+        label="Street Address",
+        widget=forms.TextInput(attrs={'class': 'kyc-form-control', 'placeholder': 'Enter your street address'})
+    )
+    city = forms.CharField(
+        max_length=100, 
+        label="City",
+        widget=forms.TextInput(attrs={'class': 'kyc-form-control', 'placeholder': 'Enter your city'})
+    )
+    postal_code = forms.CharField(
+        max_length=20, 
+        label="Postal Code",
+        widget=forms.TextInput(attrs={'class': 'kyc-form-control', 'placeholder': 'Enter your postal code'})
+    )
+    country = forms.CharField(
+        max_length=100, 
+        label="Country",
+        widget=forms.TextInput(attrs={'class': 'kyc-form-control', 'placeholder': 'Enter your country'})
+    )
 
     def clean(self):
         cleaned_data = super().clean()
@@ -73,8 +128,8 @@ class UserProfileForm(forms.ModelForm):
         model = UserProfile
         fields = ['avatar', 'banner']
         widgets = {
-            'avatar': forms.FileInput(attrs={'accept': 'image/*'}),
-            'banner': forms.FileInput(attrs={'accept': 'image/*'}),
+            'avatar': forms.FileInput(attrs={'accept': 'image/*', 'class': 'form-control'}),
+            'banner': forms.FileInput(attrs={'accept': 'image/*', 'class': 'form-control'}),
         }
 
     def clean_avatar(self):

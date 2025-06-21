@@ -95,8 +95,8 @@ class BecomeTipsterView(LoginRequiredMixin, View):
                 
                 # Store step 1 completion in session
                 request.session['pro_setup_step1_complete'] = True
-                messages.success(request, "Profile updated successfully! Let's set up your subscription tiers.")
-                return redirect('setup_tiers')
+                messages.success(request, "Profile updated successfully! You're now a pro tipster.")
+                return redirect('home')
                 
         except Exception:
             logger.error("Error in become_tipster")
@@ -104,33 +104,26 @@ class BecomeTipsterView(LoginRequiredMixin, View):
             return render(request, 'core/become_tipster.html', {'profile': profile})
 
 class SetupTiersView(LoginRequiredMixin, View):
-    """Onboarding: Handle tier selection (Free, Premium) and trial activation."""
+    """Onboarding: Handle subscription activation for €7/month or €70/year."""
     
     def get(self, request):
         return render(request, 'core/tier_setup.html')
     
     def post(self, request):
         user_profile = request.user.userprofile
-        selected_tier = request.POST.get('tier')
+        plan = request.POST.get('plan', 'monthly')
         
-        if selected_tier not in ['free', 'premium']:
-            messages.error(request, "Invalid tier selection.")
-            return render(request, 'core/tier_setup.html')
-
-        if selected_tier == 'premium':
-            # In a real app, redirect to payment/upgrade flow
-            user_profile.tier = 'premium'
-            user_profile.tier_expiry = None  # Set by payment logic
-            user_profile.save()
-            messages.success(request, "You are now a Premium member!")
-            return redirect('home')
+        # All users now get premium access with the single pricing model
+        user_profile.tier = 'premium'
+        user_profile.tier_expiry = None  # Set by payment logic
+        user_profile.save()
+        
+        if plan == 'yearly':
+            messages.success(request, "Welcome to Tipster Arena! You've selected the yearly plan (€70/year) and now have full access to all features.")
         else:
-            # Free tier
-            user_profile.tier = 'free'
-            user_profile.tier_expiry = None
-            user_profile.save()
-            messages.success(request, "You are now on the Free plan.")
-            return redirect('home')
+            messages.success(request, "Welcome to Tipster Arena! You've selected the monthly plan (€7/month) and now have full access to all features.")
+        
+        return redirect('home')
 
 class TipsterDashboardView(LoginRequiredMixin, View):
     """Dashboard for tipsters to manage their tiers and subscribers."""
@@ -410,7 +403,7 @@ def handle_subscription_updated(subscription):
             user.userprofile.tier = 'premium'
             user.userprofile.tier_expiry = timezone.now() + timedelta(days=30)
         elif subscription.status == 'canceled':
-            user.userprofile.tier = 'free'
+            user.userprofile.tier = 'premium'  # Keep premium since there's no free tier
             user.userprofile.tier_expiry = None
         user.userprofile.save()
     except User.DoesNotExist:
@@ -423,7 +416,7 @@ def handle_subscription_deleted(subscription):
     
     try:
         user = User.objects.get(userprofile__stripe_customer_id=subscription.customer)
-        user.userprofile.tier = 'free'
+        user.userprofile.tier = 'premium'  # Keep premium since there's no free tier
         user.userprofile.tier_expiry = None
         user.userprofile.save()
     except User.DoesNotExist:
@@ -449,7 +442,7 @@ def handle_payment_failed(invoice):
     
     try:
         user = User.objects.get(userprofile__stripe_customer_id=invoice.customer)
-        user.userprofile.tier = 'free'
+        user.userprofile.tier = 'premium'  # Keep premium since there's no free tier
         user.userprofile.tier_expiry = None
         user.userprofile.save()
     except User.DoesNotExist:

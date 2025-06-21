@@ -1,63 +1,71 @@
 {% extends 'core/base.html' %}
 {% load static %}
 
-{% block title %}Choose Your Plan - Tipster Arena{% endblock %}
+{% block title %}Join Tipster Arena - €7/month or €70/year{% endblock %}
 
 {% block content %}
 <div class="tier-setup">
     <div class="tier-setup-header">
-        <h1>Choose Your Plan</h1>
-        <p class="subtitle">Select the plan that best fits your needs</p>
+        <h1>Welcome to Tipster Arena</h1>
+        <p class="subtitle">Join our betting community for just €7/month or €70/year</p>
     </div>
 
     <div class="tier-cards">
-        <!-- Free Tier -->
-        <div class="tier-card free">
-            <div class="tier-header">
-                <h2>Free</h2>
-                <p class="price">Free</p>
-            </div>
-            <div class="tier-features">
-                <ul>
-                    <li><i class="fas fa-check"></i> Access to free tips</li>
-                    <li><i class="fas fa-check"></i> Basic tipster profiles</li>
-                    <li><i class="fas fa-check"></i> Community engagement</li>
-                    <li><i class="fas fa-check"></i> Basic statistics</li>
-                    <li><i class="fas fa-check"></i> Standard support</li>
-                </ul>
-            </div>
-            <div class="tier-action">
-                <form method="post" action="{% url 'setup_tiers' %}">
-                    {% csrf_token %}
-                    <input type="hidden" name="tier" value="free">
-                    <button type="submit" class="btn-secondary">Continue with Free</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- Premium Tier -->
+        <!-- Monthly Tier -->
         <div class="tier-card premium">
             <div class="tier-header">
-                <h2>Premium</h2>
+                <h2>Full Access Membership</h2>
                 <p class="price">€7/month</p>
                 <p class="price-subtitle">Billed monthly</p>
             </div>
             <div class="tier-features">
                 <ul>
-                    <li><i class="fas fa-check"></i> All Free features</li>
+                    <li><i class="fas fa-check"></i> Unlimited tips per day</li>
+                    <li><i class="fas fa-check"></i> Unlimited follows</li>
                     <li><i class="fas fa-check"></i> Access to Top Tipsters</li>
-                    <li><i class="fas fa-check"></i> Premium tips access</li>
+                    <li><i class="fas fa-check"></i> Instant access to all tips</li>
                     <li><i class="fas fa-check"></i> Advanced statistics</li>
                     <li><i class="fas fa-check"></i> Priority support</li>
-                    <li><i class="fas fa-check"></i> Exclusive content</li>
                     <li><i class="fas fa-check"></i> Ad-free experience</li>
+                    <li><i class="fas fa-check"></i> Revenue sharing opportunity</li>
                 </ul>
             </div>
             <div class="tier-action">
                 <form method="post" action="{% url 'setup_tiers' %}">
                     {% csrf_token %}
-                    <input type="hidden" name="tier" value="premium">
-                    <button type="submit" class="btn-primary">Upgrade to Premium</button>
+                    <input type="hidden" name="plan" value="monthly">
+                    <button type="submit" class="btn-primary">Join Now for €7/month</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Yearly Tier -->
+        <div class="tier-card premium yearly">
+            <div class="savings-badge">Save €14</div>
+            <div class="tier-header">
+                <h2>Full Access Membership</h2>
+                <p class="price">€70/year</p>
+                <p class="price-subtitle">Just €5.83/month</p>
+            </div>
+            <div class="tier-features">
+                <ul>
+                    <li><i class="fas fa-check"></i> All monthly features included</li>
+                    <li><i class="fas fa-check"></i> Unlimited tips per day</li>
+                    <li><i class="fas fa-check"></i> Unlimited follows</li>
+                    <li><i class="fas fa-check"></i> Access to Top Tipsters</li>
+                    <li><i class="fas fa-check"></i> Instant access to all tips</li>
+                    <li><i class="fas fa-check"></i> Advanced statistics</li>
+                    <li><i class="fas fa-check"></i> Priority support</li>
+                    <li><i class="fas fa-check"></i> Ad-free experience</li>
+                    <li><i class="fas fa-check"></i> Revenue sharing opportunity</li>
+                    <li><i class="fas fa-check"></i> Best value option</li>
+                </ul>
+            </div>
+            <div class="tier-action">
+                <form method="post" action="{% url 'setup_tiers' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="plan" value="yearly">
+                    <button type="submit" class="btn-primary">Join Now for €70/year</button>
                 </form>
             </div>
         </div>
@@ -91,9 +99,8 @@
 }
 
 .tier-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
+    display: flex;
+    justify-content: center;
     margin-top: 2rem;
 }
 
@@ -103,6 +110,8 @@
     padding: 2rem;
     box-shadow: var(--shadow-light);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    max-width: 400px;
+    width: 100%;
 }
 
 .tier-card:hover {
@@ -113,6 +122,18 @@
 .tier-card.premium {
     border: 2px solid var(--red-accent);
     position: relative;
+    background: linear-gradient(135deg, var(--red-accent) 0%, #d9362e 100%);
+    color: white;
+}
+
+.tier-card.premium .tier-header h2,
+.tier-card.premium .tier-header .price,
+.tier-card.premium .tier-features li {
+    color: white;
+}
+
+.tier-card.premium .price-subtitle {
+    color: rgba(255, 255, 255, 0.8);
 }
 
 .tier-header {
@@ -160,6 +181,10 @@
     margin-right: 1rem;
 }
 
+.tier-card.premium .tier-features i {
+    color: #4CAF50;
+}
+
 .tier-action {
     text-align: center;
     margin-top: 2rem;
@@ -197,14 +222,43 @@
     transform: translateY(-2px);
 }
 
+.tier-card.yearly {
+    border: 3px solid var(--red-accent);
+    transform: scale(1.05);
+    box-shadow: 0 12px 48px rgba(255,65,54,0.30);
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+}
+
+.savings-badge {
+    position: absolute;
+    top: -15px;
+    right: -15px;
+    background: var(--red-accent);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.9em;
+    box-shadow: 0 4px 12px rgba(255,65,54,0.40);
+}
+
+.tier-card.yearly .price-subtitle {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
 @media (max-width: 768px) {
-    .tier-cards {
-        grid-template-columns: 1fr;
+    .tier-setup {
+        margin: 1rem;
+        padding: 1rem;
     }
     
-    .tier-setup {
-        padding: 1rem;
-        margin: 1rem;
+    .tier-setup-header h1 {
+        font-size: 2rem;
+    }
+    
+    .tier-card {
+        padding: 1.5rem;
     }
 }
 </style>

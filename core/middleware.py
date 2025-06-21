@@ -95,8 +95,8 @@ class PaywallMiddleware:
                 if not profile.profile_completed and any(current_path.startswith(path) for path in ['/messages/', '/follow/']):
                     return redirect('profile_setup')
                 
-                # Only enforce payment for premium features
-                if not profile.payment_completed and any(current_path.startswith(path) for path in ['/premium/', '/analytics/']):
+                # Only enforce payment for all features since payment is now required
+                if not profile.payment_completed and not any(current_path.startswith(path) for path in ['/payment/', '/logout/']):
                     return redirect('payment')
                     
         return self.get_response(request)

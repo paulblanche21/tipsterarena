@@ -3,57 +3,461 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment - Tipster Arena</title>
+    <title>Complete Your Subscription - Tipster Arena</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/landing.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        .payment-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #001f3f 0%, #003366 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .payment-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            overflow: hidden;
+            max-width: 900px;
+            width: 100%;
+            display: flex;
+            min-height: 600px;
+        }
+        
+        .payment-sidebar {
+            background: linear-gradient(135deg, #ff4136 0%, #d9362e 100%);
+            color: white;
+            padding: 40px 30px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .payment-main {
+            flex: 2;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .logo-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo-section img {
+            max-width: 180px;
+            height: auto;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 0 10px;
+            font-size: 14px;
+            color: rgba(255,255,255,0.8);
+        }
+        
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 8px;
+            font-weight: bold;
+        }
+        
+        .step.active .step-number {
+            background: white;
+            color: #ff4136;
+        }
+        
+        .step.completed .step-number {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .payment-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .payment-subtitle {
+            font-size: 16px;
+            color: rgba(255,255,255,0.9);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .features-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .features-list li {
+            padding: 12px 0;
+            display: flex;
+            align-items: center;
+            font-size: 16px;
+        }
+        
+        .features-list li:before {
+            content: "✓";
+            margin-right: 12px;
+            font-weight: bold;
+            color: #4CAF50;
+            font-size: 18px;
+        }
+        
+        .plan-selection {
+            margin-bottom: 30px;
+        }
+        
+        .plan-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .plan-option {
+            border: 2px solid #e1e8ed;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .plan-option:hover {
+            border-color: #ff4136;
+            transform: translateY(-2px);
+        }
+        
+        .plan-option.selected {
+            border-color: #ff4136;
+            background: #fff7f6;
+        }
+        
+        .plan-option.yearly {
+            border-color: #2c3e50;
+        }
+        
+        .plan-option.yearly.selected {
+            border-color: #ff4136;
+            background: #fff7f6;
+        }
+        
+        .savings-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #ff4136;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .plan-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #001f3f;
+        }
+        
+        .plan-price {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff4136;
+            margin-bottom: 5px;
+        }
+        
+        .plan-period {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .plan-savings {
+            font-size: 14px;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        
+        .card-section {
+            margin-bottom: 30px;
+        }
+        
+        .card-section label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #001f3f;
+        }
+        
+        .card-element {
+            padding: 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 12px;
+            background: white;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .card-element:focus {
+            outline: none;
+            border-color: #ff4136;
+            box-shadow: 0 0 0 3px rgba(255, 65, 54, 0.1);
+        }
+        
+        .error {
+            color: #ff4136;
+            font-size: 14px;
+            margin-top: 8px;
+            display: block;
+        }
+        
+        .submit-button {
+            background: linear-gradient(135deg, #ff4136 0%, #d9362e 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 16px 32px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .submit-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 65, 54, 0.3);
+        }
+        
+        .submit-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .security-info {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .security-info i {
+            margin-right: 5px;
+            color: #4CAF50;
+        }
+        
+        .logout-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .logout-link a {
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .logout-link a:hover {
+            color: #ff4136;
+        }
+        
+        @media (max-width: 768px) {
+            .payment-card {
+                flex-direction: column;
+                min-height: auto;
+            }
+            
+            .payment-sidebar {
+                order: 2;
+                padding: 30px 20px;
+            }
+            
+            .payment-main {
+                order: 1;
+                padding: 30px 20px;
+            }
+            
+            .plan-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .step {
+                font-size: 12px;
+            }
+            
+            .step-number {
+                width: 25px;
+                height: 25px;
+                font-size: 12px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="auth-container">
-        <div class="auth-logo">
-            <img src="{% static 'img/tipster-arena-logo.png' %}" alt="Tipster Arena Logo" class="auth-logo-img">
+    <div class="payment-container">
+        <div class="payment-card">
+            <!-- Sidebar with features -->
+            <div class="payment-sidebar">
+                <div>
+                    <div class="logo-section">
+                        <img src="{% static 'img/tipster-arena-logo.png' %}" alt="Tipster Arena Logo">
+                    </div>
+                    
+                    <div class="step-indicator">
+                        <div class="step completed">
+                            <div class="step-number">1</div>
+                            <span>Signup</span>
+                        </div>
+                        <div class="step completed">
+                            <div class="step-number">2</div>
+                            <span>KYC</span>
+                        </div>
+                        <div class="step completed">
+                            <div class="step-number">3</div>
+                            <span>Profile</span>
+                        </div>
+                        <div class="step active">
+                            <div class="step-number">4</div>
+                            <span>Payment</span>
+                        </div>
+                    </div>
+                    
+                    <h2 class="payment-title">Join Tipster Arena</h2>
+                    <p class="payment-subtitle">Get full access to all features</p>
+                    
+                    <ul class="features-list">
+                        <li>Unlimited tips per day</li>
+                        <li>Unlimited follows</li>
+                        <li>Ad-free experience</li>
+                        <li>Instant access to all tips</li>
+                        <li>Top Tipsters leaderboard</li>
+                        <li>Revenue sharing opportunity</li>
+                        <li>Enhanced engagement features</li>
+                        <li>Priority customer support</li>
+                    </ul>
+                </div>
+                
+                <div class="security-info">
+                    <i class="fas fa-shield-alt"></i>
+                    Secure payment powered by Stripe
+                </div>
+            </div>
+            
+            <!-- Main payment form -->
+            <div class="payment-main">
+                <h1 style="color: #001f3f; margin-bottom: 30px; text-align: center;">Complete Your Subscription</h1>
+                
+                <form class="payment-form" id="payment-form">
+                    {% csrf_token %}
+                    
+                    <div class="plan-selection">
+                        <label style="margin-bottom: 15px; display: block; font-weight: bold; color: #001f3f;">Choose Your Plan</label>
+                        <div class="plan-options">
+                            <div class="plan-option" data-plan="monthly">
+                                <div class="plan-name">Monthly Plan</div>
+                                <div class="plan-price">€7</div>
+                                <div class="plan-period">per month</div>
+                            </div>
+                            <div class="plan-option yearly" data-plan="yearly">
+                                <div class="savings-badge">Save €14</div>
+                                <div class="plan-name">Yearly Plan</div>
+                                <div class="plan-price">€70</div>
+                                <div class="plan-period">per year</div>
+                                <div class="plan-savings">Just €5.83/month</div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="plan" name="plan" value="monthly">
+                    </div>
+                    
+                    <div class="card-section">
+                        <label for="card-element">Credit or Debit Card</label>
+                        <div id="card-element" class="card-element"></div>
+                        <div id="card-errors" class="error" role="alert"></div>
+                    </div>
+                    
+                    <button type="submit" class="submit-button" id="submit-payment">
+                        <i class="fas fa-lock" style="margin-right: 8px;"></i>
+                        Complete Subscription
+                    </button>
+                </form>
+                
+                <div class="logout-link">
+                    <a href="{% url 'logout' %}">Log out</a>
+                </div>
+            </div>
         </div>
-        <h1>Complete Your Subscription</h1>
-        <p class="auth-subtitle">Step 4: Choose your plan to join Tipster Arena</p>
-
-        <!-- Payment Form -->
-        <form class="payment-form" id="payment-form">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="plan">Select Plan</label>
-                <select id="plan" name="plan" class="form-control">
-                    <option value="monthly">Monthly (€5/month)</option>
-                    <option value="yearly">Yearly (€40/year)</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="card-element">Credit or Debit Card</label>
-                <div id="card-element" class="card-element"></div>
-                <div id="card-errors" class="error" role="alert"></div>
-            </div>
-            <button type="submit" class="landing-button landing-button--primary" id="submit-payment" aria-label="Complete Payment">Pay Now</button>
-        </form>
-
-        <p class="auth-links"><a href="{% url 'skip_payment' %}" class="landing-button landing-button--secondary" aria-label="Skip Payment">Skip for Now</a></p>
-        <p class="auth-links"><a href="{% url 'logout' %}" class="auth-link">Log out</a></p>
     </div>
 
     <script>
         const stripe = Stripe('{{ stripe_publishable_key }}');
         const elements = stripe.elements();
-        const card = elements.create('card');
+        const card = elements.create('card', {
+            style: {
+                base: {
+                    fontSize: '16px',
+                    color: '#001f3f',
+                    '::placeholder': {
+                        color: '#aab7c4',
+                    },
+                },
+                invalid: {
+                    color: '#ff4136',
+                },
+            },
+        });
         card.mount('#card-element');
 
         const form = document.getElementById('payment-form');
         const submitButton = document.getElementById('submit-payment');
         const cardErrors = document.getElementById('card-errors');
+        const planInput = document.getElementById('plan');
+        const planOptions = document.querySelectorAll('.plan-option');
+
+        // Plan selection
+        planOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                planOptions.forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                planInput.value = option.dataset.plan;
+            });
+        });
+
+        // Set default selection
+        document.querySelector('[data-plan="monthly"]').classList.add('selected');
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             submitButton.disabled = true;
-            submitButton.textContent = 'Processing...';
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>Processing...';
 
-            const plan = document.getElementById('plan').value;
+            const plan = planInput.value;
             const { paymentMethod, error } = await stripe.createPaymentMethod({
                 type: 'card',
                 card: card,
@@ -62,7 +466,7 @@
             if (error) {
                 cardErrors.textContent = error.message;
                 submitButton.disabled = false;
-                submitButton.textContent = 'Pay Now';
+                submitButton.innerHTML = '<i class="fas fa-lock" style="margin-right: 8px;"></i>Complete Subscription';
             } else {
                 try {
                     const response = await fetch('/payment/create-checkout-session/', {
@@ -82,14 +486,14 @@
                     if (data.error) {
                         cardErrors.textContent = data.error;
                         submitButton.disabled = false;
-                        submitButton.textContent = 'Pay Now';
+                        submitButton.innerHTML = '<i class="fas fa-lock" style="margin-right: 8px;"></i>Complete Subscription';
                     } else {
                         await stripe.redirectToCheckout({ sessionId: data.id });
                     }
                 } catch (error) {
                     cardErrors.textContent = 'An error occurred. Please try again.';
                     submitButton.disabled = false;
-                    submitButton.textContent = 'Pay Now';
+                    submitButton.innerHTML = '<i class="fas fa-lock" style="margin-right: 8px;"></i>Complete Subscription';
                 }
             }
         });

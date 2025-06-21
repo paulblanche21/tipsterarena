@@ -165,17 +165,17 @@ class Tip(models.Model):
         if not user.is_authenticated:
             return False
 
-        # Premium users can see all tips immediately
+        # All users can see all tips immediately with the single pricing model
         if user.userprofile.tier == 'premium':
             return True
 
-        # For free users, check if the tip is from a top tipster
+        # For all users, check if the tip is from a top tipster
         if self.user.userprofile.is_top_tipster:
             # Check if 1 hour has passed since tip creation
             time_since_creation = timezone.now() - self.created_at
             return time_since_creation.total_seconds() >= 3600  # 1 hour in seconds
 
-        # Free users can see non-top-tipster tips immediately
+        # All users can see non-top-tipster tips immediately
         return True
 
     def __str__(self):
@@ -381,12 +381,11 @@ class UserProfile(models.Model):
 
     tier = models.CharField(
         max_length=10,
-        choices=[('free', 'Free'), ('premium', 'Premium')],
-        default='free',
+        choices=[('premium', 'Premium')],
+        default='premium',
         help_text='Current subscription tier for the user.'
     )
     tier_expiry = models.DateTimeField(null=True, blank=True, help_text='When the current paid tier expires.')
-    trial_used = models.BooleanField(default=False, help_text='Has the user used their free trial?')
     is_top_tipster = models.BooleanField(default=False, help_text='Is this user a Top Tipster?')
     top_tipster_since = models.DateTimeField(null=True, blank=True, help_text='When the user became a Top Tipster.')
 
@@ -444,23 +443,16 @@ class UserProfile(models.Model):
         today = now.date()
         tips_today = self.user.tip_set.filter(created_at__date=today).count()
         tips_this_month = self.user.tip_set.filter(created_at__year=now.year, created_at__month=now.month).count()
-        if self.tier == 'free':
-            if tips_today >= 2:
-                return False, 'Free tier: Max 2 tips per day.'
-            if tips_this_month >= 60:
-                return False, 'Free tier: Max 60 tips per month.'
-        elif self.tier == 'premium':
-            if tips_this_month >= 100:
-                return False, 'Premium tier: Max 100 tips per month.'
-        # Premium: no enforced limit (could add a cap if desired)
+        
+        # All users now have unlimited tips with the single pricing model
+        if tips_this_month >= 100:
+            return False, 'Premium tier: Max 100 tips per month.'
+        # No enforced limit (could add a cap if desired)
         return True, ''
 
     def can_follow_more(self):
         """Return (True, reason) if user can follow another tipster."""
-        if self.tier == 'free':
-            following_count = self.user.following.count()
-            if following_count >= 20:
-                return False, 'Free tier: Max 20 follows.'
+        # All users now have unlimited follows with the single pricing model
         return True, ''
 
     def can_comment(self):
@@ -489,7 +481,7 @@ class UserProfile(models.Model):
 
     def get_tip_visibility_delay(self):
         """Get the delay in minutes before tips become visible to free users."""
-        return 60  # 1 hour delay for free users
+        return 0  # No delay since all users have premium access
 
     def get_premium_features(self):
         """Get list of premium features available to user."""

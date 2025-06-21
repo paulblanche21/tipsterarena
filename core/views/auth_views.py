@@ -15,6 +15,7 @@ from django.template.loader import render_to_string
 from django.utils.crypto import get_random_string
 import logging
 from django.contrib import messages
+import json
 
 from ..forms import CustomUserCreationForm, KYCForm, UserProfileForm
 from ..models import EmailVerificationToken
@@ -80,9 +81,9 @@ class SignupView(View):
                 profile.handle = handle
                 profile.save()
                 
-                # Add user to free permissions group
-                free_group, _ = Group.objects.get_or_create(name='Free Users')
-                user.groups.add(free_group)
+                # Add user to premium permissions group
+                premium_group, _ = Group.objects.get_or_create(name='Premium Users')
+                user.groups.add(premium_group)
                 
                 # Create and send verification email
                 token = get_random_string(length=32)
@@ -242,11 +243,21 @@ class CreateCheckoutSessionView(LoginRequiredMixin, View):
             return redirect('home')
         
         try:
-            logger.info(f"Creating checkout session for user {request.user.username}")
+            data = json.loads(request.body) if request.body else request.POST
+            plan = data.get('plan', 'monthly')
+            
+            logger.info(f"Creating checkout session for user {request.user.username} with plan: {plan}")
+            
+            # Select the appropriate price ID based on plan
+            if plan == 'yearly':
+                price_id = settings.STRIPE_YEARLY_PRICE_ID
+            else:
+                price_id = settings.STRIPE_MONTHLY_PRICE_ID
+            
             checkout_session = stripe.checkout.Session.create(
                 payment_method_types=['card'],
                 line_items=[{
-                    'price': settings.STRIPE_PRICE_ID,
+                    'price': price_id,
                     'quantity': 1,
                 }],
                 mode='subscription',
@@ -269,6 +280,7 @@ class PaymentSuccessView(LoginRequiredMixin, View):
             logger.info(f"Processing payment success for user {request.user.username}")
             profile = request.user.userprofile
             profile.payment_completed = True
+            profile.tier = 'premium'
             profile.save()
             logger.info(f"Payment completed successfully for user {request.user.username}")
             return redirect('home')
@@ -282,6 +294,7 @@ class SkipPaymentView(LoginRequiredMixin, View):
         profile = request.user.userprofile
         if profile.profile_completed:
             profile.payment_completed = True
+            profile.tier = 'premium'
             profile.save()
             return redirect('home')
         return redirect('payment')
@@ -290,6 +303,7 @@ class SkipPaymentView(LoginRequiredMixin, View):
         profile = request.user.userprofile
         if profile.profile_completed:
             profile.payment_completed = True
+            profile.tier = 'premium'
             profile.save()
             return redirect('home')
         return redirect('payment') 

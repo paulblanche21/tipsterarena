@@ -1,58 +1,64 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .button {
-            display: inline-block;
-            padding: 12px 24px;
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            margin: 20px 0;
-        }
-        .footer {
-            margin-top: 30px;
-            font-size: 12px;
-            color: #666;
-            text-align: center;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Email - Tipster Arena</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/landing.css' %}">
+    <link rel="stylesheet" href="{% static 'css/premium.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
-    <div class="header">
-        <h1>Welcome to Tipster Arena!</h1>
-    </div>
-    
-    <p>Hi {{ user.username }},</p>
-    
-    <p>Thank you for signing up for Tipster Arena. To complete your registration and start using all features, please verify your email address by clicking the button below:</p>
-    
-    <div style="text-align: center;">
-        <a href="{{ verification_url }}" class="button">Verify Email Address</a>
-    </div>
-    
-    <p>If the button above doesn't work, you can also copy and paste this link into your browser:</p>
-    <p>{{ verification_url }}</p>
-    
-    <p>This verification link will expire in 24 hours.</p>
-    
-    <div class="footer">
-        <p>If you didn't create an account with Tipster Arena, you can safely ignore this email.</p>
-        <p>&copy; 2024 Tipster Arena. All rights reserved.</p>
+    <div class="email-verification-container">
+        <div class="email-verification-card">
+            <div class="email-verification-header">
+                <img src="{% static 'img/tipster-arena-logo.png' %}" alt="Tipster Arena Logo" class="email-verification-logo">
+                <h1 class="email-verification-title">Welcome to Tipster Arena!</h1>
+                <p class="email-verification-subtitle">Please verify your email address to complete your registration</p>
+            </div>
+            
+            <div class="email-verification-icon">
+                <i class="fas fa-envelope"></i>
+            </div>
+            
+            <div class="email-verification-message">
+                <p>Hi {{ user.username }},</p>
+                <p>Thanks for joining Tipster Arena! We're excited to have you on board. To complete your registration and start accessing all our features, please verify your email address.</p>
+            </div>
+            
+            <a href="{{ verification_url }}" class="email-verification-btn">
+                <i class="fas fa-check" style="margin-right: 8px;"></i>
+                Verify Email Address
+            </a>
+            
+            <p>If the button above doesn't work, you can copy and paste this link into your browser:</p>
+            <div class="email-verification-link">{{ verification_url }}</div>
+            
+            <div class="email-verification-warning">
+                <strong>Important:</strong> This verification link will expire in 24 hours. If you don't verify your email within this time, you'll need to request a new verification link.
+            </div>
+            
+            <div class="email-verification-features">
+                <h4>Once verified, you'll have full access to:</h4>
+                <ul>
+                    <li>Unlimited tips per day</li>
+                    <li>Unlimited follows</li>
+                    <li>Ad-free experience</li>
+                    <li>Instant access to all tips</li>
+                    <li>Access to Top Tipsters leaderboard</li>
+                    <li>Revenue sharing opportunity</li>
+                    <li>Enhanced engagement features</li>
+                    <li>Priority customer support</li>
+                </ul>
+            </div>
+            
+            <div class="email-verification-footer">
+                <p>If you didn't create an account with Tipster Arena, you can safely ignore this email.</p>
+                <p>&copy; 2025 Tipster Arena. All rights reserved.</p>
+                <p>This email was sent to {{ user.email }}</p>
+            </div>
+        </div>
     </div>
 </body>
 </html> 

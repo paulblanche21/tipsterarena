@@ -56,12 +56,8 @@
                     </div>
                     <div class="profile-tier-status">
                         <span class="tier-badge tier-{{ user_profile.tier }}" style="margin-right: 0.5rem;">
-                            {% if user_profile.tier == 'free' %}<span class="tier-badge-outline">Free</span>{% endif %}
                             {% if user_profile.tier == 'premium' %}Premium{% endif %}
                         </span>
-                        {% if is_owner and user_profile.tier != 'premium' %}
-                            <a href="{% url 'setup_tiers' %}" class="upgrade-btn btn-outline">Upgrade</a>
-                        {% endif %}
                         {% if user_profile.tier == 'premium' and user_profile.tier_expiry %}
                             <span class="tier-expiry">Valid until: {{ user_profile.tier_expiry|date:"F j, Y" }}</span>
                         {% endif %}
@@ -70,8 +66,8 @@
                     <div class="top-tipster-stats">
                         <strong>Top Tipster Stats:</strong>
                         <ul>
-                            <li>Premium Tips posted: {{ premium_tips_count }}</li>
-                            <li>Premium Tip views: {{ premium_tips_views }}</li>
+                            <li>Full Access Tips posted: {{ premium_tips_count }}</li>
+                            <li>Full Access Tip views: {{ premium_tips_views }}</li>
                             <li>Revenue share: Up to €500/month (see <a href="{% url 'top_tipsters_leaderboard' %}">leaderboard</a>)</li>
                         </ul>
                     </div>

@@ -1,35 +1,11 @@
 """
-Constants for the Tipster Arena Application.
+Constants for Tipster Arena application.
 
-This module defines all the constant values used throughout the Tipster Arena application.
-These constants are primarily used for configuration and other static data
-that needs to be consistent across the application.
-
-Available Constants:
-1. SPORTS
-   - Configuration for all supported sports
-   - Each sport entry contains:
-     * sport_id: Unique identifier (e.g., 'football' for Football)
-     * name: Display name of the sport
-     * icon: Emoji representing the sport
-     * priority: Display order (1 being highest priority)
-
-2. VIEW_CONSTANTS
-   - Pagination limits for different views
-   - Rate limiting settings
-   - Cache timeouts
-   - File upload limits
-   - API response limits
-
-3. SUBSCRIPTION_CONSTANTS
-   - Tier configurations
-   - Trial period settings
-   - Subscription limits
-
-4. API_CONSTANTS
-   - API rate limits
-   - Response formats
-   - Error codes
+This module contains all the constants used throughout the application:
+- Sports and leagues configuration
+- View-specific constants and limits
+- API settings and response formats
+- Error codes
 
 Usage:
     These constants are used throughout the application for:
@@ -199,7 +175,6 @@ VIEW_CONSTANTS = {
 
 # Subscription-related constants
 SUBSCRIPTION_CONSTANTS = {
-    'TRIAL_PERIOD_DAYS': 30,
     'MAX_TIERS_PER_TIPSTER': 3,
     'MIN_TIER_PRICE': 5.00,
     'MAX_TIER_PRICE': 100.00,

@@ -106,16 +106,6 @@ class FollowUserView(LoginRequiredMixin, View):
                     'error': 'Cannot follow yourself'
                 }, status=400)
 
-            # Check follow limit for free tier users
-            if request.user.userprofile.tier == 'free':
-                following_count = Follow.objects.filter(follower=request.user).count()
-                if following_count >= 20:
-                    logger.info(f"Free tier user {request.user.username} hit follow limit")
-                    return JsonResponse({
-                        'success': False,
-                        'error': 'Free tier limit reached. Upgrade to Premium for unlimited follows!'
-                    }, status=403)
-
             # Check if already following
             follow_exists = Follow.objects.filter(
                 follower=request.user,

@@ -36,7 +36,6 @@ class TierFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         return (
-            ('free', 'Free'),
             ('premium', 'Premium (€7/month)'),
         )
 
@@ -140,8 +139,8 @@ class UserProfileAdmin(admin.ModelAdmin):
             'fields': ('user', 'handle', 'avatar', 'banner', 'description', 'location', 'date_of_birth')
         }),
         ('Subscription Status', {
-            'fields': ('tier', 'tier_expiry', 'trial_used'),
-            'description': 'Premium users (€7/month) get access to Top Tipsters and an ad-free experience.'
+            'fields': ('tier', 'tier_expiry'),
+            'description': 'Full Access users (€7/month or €70/year) get access to Top Tipsters and an ad-free experience.'
         }),
         ('Tipster Status', {
             'fields': ('is_tipster', 'is_top_tipster', 'top_tipster_since', 'tipster_description', 'tipster_rules')
@@ -153,23 +152,15 @@ class UserProfileAdmin(admin.ModelAdmin):
             'fields': ('allow_messages', 'kyc_completed', 'payment_completed', 'profile_completed')
         })
     )
-    actions = ['upgrade_to_premium', 'downgrade_to_free']
+    actions = ['upgrade_to_premium']
 
     def upgrade_to_premium(self, request, queryset):
-        """Upgrade selected users to Premium tier."""
+        """Ensure selected users have Full Access tier access."""
         for profile in queryset:
             profile.tier = 'premium'
             profile.save()
-        self.message_user(request, f"Successfully upgraded {queryset.count()} users to Premium tier.")
-    upgrade_to_premium.short_description = "Upgrade selected users to Premium (€7/month)"
-
-    def downgrade_to_free(self, request, queryset):
-        """Downgrade selected users to Free tier."""
-        for profile in queryset:
-            profile.tier = 'free'
-            profile.save()
-        self.message_user(request, f"Successfully downgraded {queryset.count()} users to Free tier.")
-    downgrade_to_free.short_description = "Downgrade selected users to Free"
+        self.message_user(request, f"Successfully ensured {queryset.count()} users have Full Access tier access.")
+    upgrade_to_premium.short_description = "Ensure Full Access (€7/month or €70/year)"
 
 # Other registrations unchanged...
 admin.site.register(Like)
