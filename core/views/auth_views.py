@@ -17,7 +17,7 @@ import logging
 from django.contrib import messages
 import json
 
-from ..forms import CustomUserCreationForm, KYCForm, UserProfileForm
+from ..forms import CustomUserCreationForm, KYCForm, UserProfileForm, LoginForm
 from ..models import EmailVerificationToken
 
 import stripe
@@ -31,7 +31,7 @@ class LoginView(View):
     def get(self, request):
         if request.user.is_authenticated:
             return redirect('home')
-        form = AuthenticationForm()
+        form = LoginForm()
         return render(request, 'core/login.html', {'form': form})
     
     def post(self, request):
@@ -45,7 +45,7 @@ class LoginView(View):
                 'error': 'Too many login attempts. Please try again later.'
             }, status=429)
         
-        form = AuthenticationForm(request, data=request.POST)
+        form = LoginForm(request, data=request.POST)
         if form.is_valid():
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')

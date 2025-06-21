@@ -472,12 +472,14 @@ body {
 }
 
 /* Focus state for form inputs */
+/*
 .form-group input:focus,
 .form-group textarea:focus {
     outline: none;
     border-color: var(--red-accent);
     box-shadow: 0 0 5px rgba(255, 65, 54, 0.3);
 }
+*/
 
 /* Error message styles */
 .error {
@@ -500,10 +502,12 @@ body {
 }
 
 /* Hover state for auth links */
+/*
 .auth-link:hover {
     color: #5a6268;
     text-decoration: underline;
 }
+*/
 
 /* Social login buttons */
 .social-login {

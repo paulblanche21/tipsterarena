@@ -1,6 +1,6 @@
 # forms.py
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from .models import UserProfile
 from datetime import datetime
@@ -147,3 +147,7 @@ class UserProfileForm(forms.ModelForm):
         if banner and not banner.content_type.startswith('image/'):
             raise forms.ValidationError("Banner must be an image file.")
         return banner
+
+class LoginForm(AuthenticationForm):
+    username = forms.CharField(widget=forms.TextInput(attrs={'class': 'login-input', 'placeholder': 'Username'}))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'login-input', 'placeholder': 'Password'}))

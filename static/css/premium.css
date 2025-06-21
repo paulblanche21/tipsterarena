@@ -1973,8 +1973,8 @@
     text-decoration: underline;
 }
 
-/* Ensure password fields are styled correctly */
-.signup-input[type="password"] {
+/* Higher specificity selector to force correct styles on signup inputs */
+.signup-form .signup-input {
     width: 100%;
     padding: 12px 16px;
     border: 2px solid #e1e8ed;
@@ -1982,32 +1982,16 @@
     font-size: 16px;
     transition: all 0.3s ease;
     background: white;
-}
-
-.signup-input[type="password"]:focus {
-    outline: none;
-    border-color: #ff4136;
-    box-shadow: 0 0 0 3px rgba(255, 65, 54, 0.1);
-}
-
-/* Override any default password field styling */
-input[type="password"].signup-input {
+    box-sizing: border-box;
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    background: white !important;
-    border: 2px solid #e1e8ed !important;
-    border-radius: 12px !important;
-    padding: 12px 16px !important;
-    font-size: 16px !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
 }
 
-input[type="password"].signup-input:focus {
-    border-color: #ff4136 !important;
-    box-shadow: 0 0 0 3px rgba(255, 65, 54, 0.1) !important;
-    outline: none !important;
+.signup-form .signup-input:focus {
+    outline: none;
+    border-color: #ff4136;
+    box-shadow: 0 0 0 3px rgba(255, 65, 54, 0.1);
 }
 
 @media (max-width: 768px) {
@@ -2027,6 +2011,34 @@ input[type="password"].signup-input:focus {
     .signup-step-number {
         width: 25px;
         height: 25px;
+        font-size: 12px;
+    }
+}
+
+/* Login Page Specific Styles */
+.login-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e1e8ed;
+    border-radius: 12px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background: white;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.login-input:focus {
+    outline: none;
+    border-color: #ff4136;
+    box-shadow: 0 0 0 3px rgba(255, 65, 54, 0.1);
+}
+
+@media (max-width: 768px) {
+    .signup-card {
+        padding: 30px 20px;
         font-size: 12px;
     }
 } 
