@@ -2,9 +2,8 @@
 
 # tipsterarena/core/admin.py
 from django.contrib import admin
-from django.conf import settings
 from django.contrib import messages
-from rest_framework.authtoken.models import Token
+
 
 from .models import (
       Tip, UserProfile, Like,
@@ -70,7 +69,7 @@ class TipAdmin(admin.ModelAdmin):
             updated_count += 1
         
         if updated_count == 1:
-            self.message_user(request, f"Successfully verified 1 tip as win.", messages.SUCCESS)
+            self.message_user(request, "Successfully verified 1 tip as win.", messages.SUCCESS)
         else:
             self.message_user(request, f"Successfully verified {updated_count} tips as win.", messages.SUCCESS)
 
@@ -87,7 +86,7 @@ class TipAdmin(admin.ModelAdmin):
             updated_count += 1
         
         if updated_count == 1:
-            self.message_user(request, f"Successfully verified 1 tip as loss.", messages.SUCCESS)
+            self.message_user(request, "Successfully verified 1 tip as loss.", messages.SUCCESS)
         else:
             self.message_user(request, f"Successfully verified {updated_count} tips as loss.", messages.SUCCESS)
 
@@ -104,7 +103,7 @@ class TipAdmin(admin.ModelAdmin):
             updated_count += 1
         
         if updated_count == 1:
-            self.message_user(request, f"Successfully verified 1 tip as dead heat.", messages.SUCCESS)
+            self.message_user(request, "Successfully verified 1 tip as dead heat.", messages.SUCCESS)
         else:
             self.message_user(request, f"Successfully verified {updated_count} tips as dead heat.", messages.SUCCESS)
 
@@ -121,7 +120,7 @@ class TipAdmin(admin.ModelAdmin):
             updated_count += 1
         
         if updated_count == 1:
-            self.message_user(request, f"Successfully verified 1 tip as void/non runner.", messages.SUCCESS)
+            self.message_user(request, "Successfully verified 1 tip as void/non runner.", messages.SUCCESS)
         else:
             self.message_user(request, f"Successfully verified {updated_count} tips as void/non runner.", messages.SUCCESS)
 
