@@ -818,4 +818,217 @@
     -webkit-text-fill-color: transparent;
 }
 
+/* Top Tipster Position Widget */
+.top-tipster-position-widget {
+    background: linear-gradient(135deg, #001f3f 0%, #003366 100%);
+    color: white;
+    border-radius: 16px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 8px 32px rgba(0, 31, 63, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.top-tipster-position-widget .widget-title {
+    color: white;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.top-tipster-status {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.position-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--red-accent);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: bold;
+    font-size: 1rem;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 15px rgba(255, 65, 54, 0.3);
+}
+
+.position-badge.climbing {
+    background: #28a745;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.position-badge i {
+    font-size: 1.1rem;
+}
+
+.position-info {
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.earnings-info {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.earnings-label {
+    display: block;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 8px;
+}
+
+.earnings-amount {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #FFD700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.top-tipster-since {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.since-label {
+    display: block;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 5px;
+}
+
+.since-date {
+    display: block;
+    font-weight: 600;
+    color: white;
+}
+
+.stats-summary {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stats-summary .stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stats-summary .stat-item:last-child {
+    margin-bottom: 0;
+    border-bottom: none;
+}
+
+.stats-summary .stat-label {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.stats-summary .stat-value {
+    font-weight: bold;
+    color: white;
+    font-size: 1.1rem;
+}
+
+.view-leaderboard-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: var(--red-accent);
+    color: white;
+    text-decoration: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    width: 100%;
+    box-shadow: 0 4px 15px rgba(255, 65, 54, 0.3);
+}
+
+.view-leaderboard-btn:hover {
+    background: #d9362e;
+    transform: translateY(-2px);
+    color: white;
+    text-decoration: none;
+    box-shadow: 0 6px 20px rgba(255, 65, 54, 0.4);
+}
+
+.view-leaderboard-btn i {
+    font-size: 1.1rem;
+}
+
+/* Responsive adjustments for Top Tipster widget */
+@media (max-width: 768px) {
+    .top-tipster-position-widget {
+        margin: 15px 0;
+        padding: 15px;
+    }
+    
+    .position-badge {
+        font-size: 0.9rem;
+        padding: 8px 16px;
+    }
+    
+    .position-info {
+        font-size: 0.9rem;
+    }
+    
+    .earnings-amount {
+        font-size: 1.3rem;
+    }
+    
+    .stats-summary .stat-value {
+        font-size: 1rem;
+    }
+    
+    .view-leaderboard-btn {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .top-tipster-position-widget {
+        padding: 12px;
+    }
+    
+    .widget-title {
+        font-size: 1.1rem;
+    }
+    
+    .position-badge {
+        font-size: 0.8rem;
+        padding: 6px 12px;
+    }
+    
+    .position-info {
+        font-size: 0.85rem;
+    }
+    
+    .earnings-amount {
+        font-size: 1.2rem;
+    }
+}
+
 

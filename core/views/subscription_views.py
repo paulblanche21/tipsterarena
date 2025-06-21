@@ -12,7 +12,7 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.contrib import messages
-from django.db.models import F, Count, Q
+from django.db.models import F, Count, Q, Avg
 from django.core.exceptions import ValidationError
 from datetime import timedelta
 from django.views.generic import View
@@ -449,35 +449,126 @@ def handle_payment_failed(invoice):
         pass
 
 class TopTipstersLeaderboardView(LoginRequiredMixin, View):
-    """Display the top tipsters leaderboard."""
+    """Display the top tipsters leaderboard with comprehensive scoring and revenue sharing."""
     
     def get(self, request):
         try:
-            # Get top tipsters based on win rate and number of tips
-            top_tipsters = User.objects.filter(
+            # Get all tipsters with minimum activity - simplified approach
+            tipsters = User.objects.filter(
                 userprofile__is_tipster=True
-            ).annotate(
-                total_tips=Count('tip'),
-                win_rate=Count('tip', filter=Q(tip__status='win')) * 100.0 / 
-                        Count('tip', filter=Q(tip__status__in=['win', 'loss']))
-            ).filter(
-                total_tips__gte=10  # Minimum 10 tips to be considered
-            ).order_by('-win_rate', '-total_tips')[:10]
+            ).prefetch_related('tip', 'followers', 'tip__likes', 'tip__comments', 'tip__shares')
             
+            # Calculate comprehensive scores for each tipster
             tipsters_data = []
-            for tipster in top_tipsters:
+            for tipster in tipsters:
                 profile = tipster.userprofile
+                
+                # Get tip statistics
+                tips = tipster.tip.all()
+                total_tips = tips.count()
+                
+                if total_tips < 5:  # Skip tipsters with less than 5 tips
+                    continue
+                
+                # Calculate win/loss statistics
+                wins = tips.filter(status='win').count()
+                losses = tips.filter(status='loss').count()
+                dead_heats = tips.filter(status='dead_heat').count()
+                void_tips = tips.filter(status='void_non_runner').count()
+                total_verified = tips.filter(status__in=['win', 'loss', 'dead_heat', 'void_non_runner']).count()
+                
+                # Calculate win rate
+                win_rate = (wins / total_verified * 100) if total_verified > 0 else 0
+                
+                # Get engagement statistics
+                total_likes = sum(tip.likes.count() for tip in tips)
+                total_comments = sum(tip.comments.count() for tip in tips)
+                total_shares = sum(tip.shares.count() for tip in tips)
+                engagement_score = (total_likes * 1) + (total_comments * 2) + (total_shares * 3)
+                
+                # Calculate consistency score (recent activity)
+                thirty_days_ago = timezone.now() - timedelta(days=30)
+                recent_tips = tips.filter(created_at__gte=thirty_days_ago).count()
+                consistency_score = min(recent_tips * 10, 100)  # Max 100 points for recent activity
+                
+                # Calculate confidence score
+                confidence_tips = tips.exclude(confidence__isnull=True)
+                avg_confidence = confidence_tips.aggregate(Avg('confidence'))['confidence__avg'] or 0
+                confidence_score = (avg_confidence / 5) * 50  # Max 50 points for confidence
+                
+                # Calculate comprehensive score
+                base_score = win_rate * 2  # Win rate is most important (0-200 points)
+                volume_score = min(total_tips * 2, 100)  # Volume bonus (0-100 points)
+                engagement_bonus = min(engagement_score / 10, 50)  # Engagement bonus (0-50 points)
+                
+                total_score = base_score + volume_score + engagement_bonus + consistency_score + confidence_score
+                
                 tipsters_data.append({
                     'username': tipster.username,
                     'handle': profile.handle or tipster.username,
                     'avatar_url': profile.avatar.url if profile.avatar else None,
-                    'total_tips': tipster.total_tips,
-                    'win_rate': round(tipster.win_rate, 1) if tipster.win_rate else 0,
-                    'followers_count': Follow.objects.filter(followed=tipster).count()
+                    'total_tips': total_tips,
+                    'wins': wins,
+                    'losses': losses,
+                    'dead_heats': dead_heats,
+                    'void_tips': void_tips,
+                    'win_rate': round(win_rate, 1),
+                    'total_verified': total_verified,
+                    'followers_count': tipster.followers.count(),
+                    'total_likes': total_likes,
+                    'total_comments': total_comments,
+                    'total_shares': total_shares,
+                    'avg_confidence': round(avg_confidence, 1) if avg_confidence else 0,
+                    'recent_tips': recent_tips,
+                    'total_score': round(total_score, 0),
+                    'is_top_tipster': profile.is_top_tipster,
+                    'top_tipster_since': profile.top_tipster_since,
+                    'total_earnings': profile.total_earnings,
+                    'monthly_earnings': profile.monthly_earnings,
+                    'revenue_share_percentage': profile.revenue_share_percentage,
+                    'is_current_user': tipster == request.user
                 })
             
+            # Sort by total score (highest first)
+            tipsters_data.sort(key=lambda x: x['total_score'], reverse=True)
+            
+            # Add ranking and top 20 status
+            for i, tipster in enumerate(tipsters_data):
+                tipster['rank'] = i + 1
+                tipster['is_top_20'] = i < 20
+                
+                # Calculate estimated monthly revenue for top 20
+                if i < 20:
+                    # Simple revenue sharing calculation (20% of monthly revenue split among top 20)
+                    # This is a placeholder - you'd implement actual revenue calculation
+                    base_revenue = 1000  # Example monthly revenue
+                    tipster['estimated_monthly_revenue'] = round((base_revenue * 0.2) / 20, 2)
+                else:
+                    tipster['estimated_monthly_revenue'] = 0
+            
+            # Get current user's position
+            current_user_position = None
+            current_user_data = None
+            for tipster in tipsters_data:
+                if tipster['is_current_user']:
+                    current_user_position = tipster['rank']
+                    current_user_data = tipster
+                    break
+            
+            # Calculate leaderboard statistics
+            total_tipsters = len(tipsters_data)
+            active_tipsters = len([t for t in tipsters_data if t['recent_tips'] > 0])
+            avg_win_rate = sum(t['win_rate'] for t in tipsters_data) / len(tipsters_data) if tipsters_data else 0
+            
             return render(request, 'core/top_tipsters.html', {
-                'tipsters': tipsters_data
+                'tipsters': tipsters_data[:50],  # Show top 50
+                'current_user_position': current_user_position,
+                'current_user_data': current_user_data,
+                'total_tipsters': total_tipsters,
+                'active_tipsters': active_tipsters,
+                'avg_win_rate': round(avg_win_rate, 1),
+                'revenue_pool': 1000,  # Example monthly revenue pool
+                'revenue_share_percentage': 20,  # 20% shared among top 20
             })
             
         except Exception as e:

@@ -11,18 +11,74 @@
 <div class="main-feed-container">
     <div class="feed-card">
         <div class="leaderboard-header">
-            <h1>Top Tipsters Leaderboard</h1>
+            <h1>🏆 Top Tipsters Leaderboard</h1>
             <div class="leaderboard-premium-note" style="background:#ffeceb; color:var(--primary-bg); border-radius:8px; padding:0.75rem 1.25rem; margin-bottom:1rem; font-weight:500;">
                 <i class="fas fa-crown" style="color:var(--red-accent);"></i>
                 <span>All <strong>Full Access members</strong> are eligible to compete for Top Tipster status and share in the monthly prize pool. Start tipping to climb the leaderboard and earn rewards!</span>
             </div>
-            <p class="leaderboard-description">
-                The Top Tipsters are the best performers on Tipster Arena, recognized for their skill, consistency, and community impact.<br>
-                <strong>Each month, 20% of all subscription revenue is shared among the Top Tipsters (up to €500/month per tipster).</strong><br>
-                <br>
-                <b>How are points tallied?</b> Points are based on a mix of win rate, total tips, engagement, and community reputation. Consistency and quality matter most!
-            </p>
         </div>
+
+        <!-- Leaderboard Statistics -->
+        <div class="leaderboard-stats">
+            <div class="stat-card">
+                <div class="stat-value">{{ total_tipsters }}</div>
+                <div class="stat-label">Total Tipsters</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ active_tipsters }}</div>
+                <div class="stat-label">Active This Month</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ avg_win_rate }}%</div>
+                <div class="stat-label">Average Win Rate</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">€{{ revenue_pool }}</div>
+                <div class="stat-label">Monthly Revenue Pool</div>
+            </div>
+        </div>
+
+        <!-- Current User Position -->
+        {% if current_user_position %}
+        <div class="current-user-position">
+            <h3>Your Position</h3>
+            <div class="position-number">#{{ current_user_position }}</div>
+            <p>
+                {% if current_user_position <= 20 %}
+                    🎉 You're in the Top 20! You're eligible for revenue sharing this month.
+                {% else %}
+                    Keep tipping to climb the leaderboard! You need to reach the Top 20 to earn revenue sharing.
+                {% endif %}
+            </p>
+            {% if current_user_data %}
+            <div style="margin-top: 15px; font-size: 0.9rem;">
+                <strong>Your Stats:</strong> {{ current_user_data.total_tips }} tips • {{ current_user_data.win_rate }}% win rate • {{ current_user_data.total_score }} points
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Revenue Sharing Information -->
+        <div class="revenue-info">
+            <h3>💰 Revenue Sharing Program</h3>
+            <p>Each month, <strong>{{ revenue_share_percentage }}% of all subscription revenue</strong> is shared among the Top 20 tipsters based on their performance.</p>
+            <div class="revenue-details">
+                <div class="revenue-item">
+                    <div class="revenue-amount">€{{ revenue_pool }}</div>
+                    <div class="revenue-label">Total Monthly Revenue</div>
+                </div>
+                <div class="revenue-item">
+                    <div class="revenue-amount">€{{ revenue_pool|floatformat:0 }}</div>
+                    <div class="revenue-label">Revenue Pool ({{ revenue_share_percentage }}%)</div>
+                </div>
+                <div class="revenue-item">
+                    <div class="revenue-amount">€{{ revenue_pool|floatformat:0 }}</div>
+                    <div class="revenue-label">Average per Top 20</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leaderboard Table -->
         <div class="leaderboard-table-wrapper">
             <table class="leaderboard-table">
                 <thead>
@@ -30,35 +86,117 @@
                         <th>Rank</th>
                         <th>Tipster</th>
                         <th>Win Rate</th>
-                        <th>Total Tips</th>
+                        <th>Tips</th>
                         <th>Followers</th>
-                        <th>Premium Tips</th>
-                        <th>Points</th>
+                        <th>Engagement</th>
+                        <th>Score</th>
+                        <th>Est. Monthly</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for tipster in top_tipsters %}
-                    <tr>
-                        <td>{{ forloop.counter }}</td>
+                    {% for tipster in tipsters %}
+                    <tr {% if tipster.is_current_user %}class="current-user-row"{% endif %}>
                         <td>
-                            <img src="{{ tipster.avatar_url }}" alt="{{ tipster.username }} Avatar" class="leaderboard-avatar">
-                            <a href="{% url 'profile' tipster.username %}"><strong>{{ tipster.username }}</strong></a>
+                            <div class="rank-badge 
+                                {% if tipster.rank == 1 %}rank-1
+                                {% elif tipster.rank == 2 %}rank-2
+                                {% elif tipster.rank == 3 %}rank-3
+                                {% elif tipster.is_top_20 %}rank-top20
+                                {% else %}rank-other{% endif %}">
+                                {{ tipster.rank }}
+                            </div>
                         </td>
-                        <td>{{ tipster.win_rate|floatformat:1 }}%</td>
-                        <td>{{ tipster.total_tips }}</td>
+                        <td>
+                            <div class="tipster-info">
+                                <img src="{{ tipster.avatar_url|default:'/static/img/default-avatar.png' }}" 
+                                     alt="{{ tipster.username }} Avatar" 
+                                     class="tipster-avatar">
+                                <div class="tipster-details">
+                                    <h4>
+                                        {{ tipster.handle }}
+                                        {% if tipster.is_top_20 %}<span class="top20-indicator">TOP 20</span>{% endif %}
+                                    </h4>
+                                    <p>@{{ tipster.username }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <span class="stat-label">Win Rate:</span>
+                                    <span class="stat-value">{{ tipster.win_rate }}%</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">W/L:</span>
+                                    <span class="stat-value">{{ tipster.wins }}/{{ tipster.losses }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <span class="stat-label">Total:</span>
+                                    <span class="stat-value">{{ tipster.total_tips }}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Recent:</span>
+                                    <span class="stat-value">{{ tipster.recent_tips }}</span>
+                                </div>
+                            </div>
+                        </td>
                         <td>{{ tipster.followers_count }}</td>
-                        <td>{{ tipster.premium_tips }}</td>
-                        <td>{{ tipster.points|default:'—' }}</td>
+                        <td>
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <span class="stat-label">Likes:</span>
+                                    <span class="stat-value">{{ tipster.total_likes }}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Comments:</span>
+                                    <span class="stat-value">{{ tipster.total_comments }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="score-badge">{{ tipster.total_score }}</div>
+                        </td>
+                        <td>
+                            {% if tipster.is_top_20 %}
+                                <div class="revenue-badge">€{{ tipster.estimated_monthly_revenue }}</div>
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="7">No Top Tipsters yet. Start tipping to climb the leaderboard!</td></tr>
+                    <tr><td colspan="8" style="text-align: center; padding: 40px;">No tipsters found. Start posting tips to appear on the leaderboard!</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-        {% if user.is_authenticated and not user.userprofile.is_top_tipster %}
-        <!-- Removed application section: No application needed for Top Tipster -->
-        {% endif %}
+
+        <!-- How to Climb the Leaderboard -->
+        <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 12px;">
+            <h3>📈 How to Climb the Leaderboard</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 15px;">
+                <div>
+                    <h4>🏆 Win Rate (40% of score)</h4>
+                    <p>Focus on quality over quantity. Higher win rates earn more points.</p>
+                </div>
+                <div>
+                    <h4>📊 Volume (20% of score)</h4>
+                    <p>Post regular tips. More tips = more opportunities to score points.</p>
+                </div>
+                <div>
+                    <h4>💬 Engagement (20% of score)</h4>
+                    <p>Engage with the community. Likes, comments, and shares boost your score.</p>
+                </div>
+                <div>
+                    <h4>⏰ Consistency (20% of score)</h4>
+                    <p>Stay active. Recent tips from the last 30 days earn bonus points.</p>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %} 
