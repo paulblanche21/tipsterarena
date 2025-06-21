@@ -5,6 +5,8 @@ Test script to verify retweet functionality
 import os
 import sys
 import django
+from django.contrib.auth.models import User
+from core.models import Tip, UserProfile
 
 # Add the project directory to the Python path
 sys.path.append('/Users/paulblanche/Desktop/Tipster Arena')
@@ -13,8 +15,7 @@ sys.path.append('/Users/paulblanche/Desktop/Tipster Arena')
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tipsterarena.settings')
 django.setup()
 
-from django.contrib.auth.models import User
-from core.models import Tip, UserProfile
+
 
 def test_retweet_functionality():
     """Test the retweet functionality"""
