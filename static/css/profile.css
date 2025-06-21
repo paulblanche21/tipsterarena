@@ -357,6 +357,22 @@
     color: var(--red-accent);
 }
 
+.profile-stats .profile-leaderboard-rank i {
+    color: #FFD700;
+}
+
+.profile-stats .top20-indicator {
+    background: var(--red-accent);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-size: 0.6rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-left: 4px;
+}
+
 /* Subscribe Modal Styles */
 .subscribe-modal {
     display: none;
@@ -684,16 +700,19 @@
 .profile-badges {
     margin-top: 20px;
     padding: 20px;
-    background-color: #f8f9fa;
+    background: white;
     border-radius: 12px;
-    border: 1px solid #e1e8ed;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .badges-title {
     font-size: 18px;
     font-weight: 600;
-    color: #14171a;
+    color: var(--primary-bg);
     margin-bottom: 20px;
+    border-bottom: 2px solid var(--red-accent);
+    padding-bottom: 8px;
 }
 
 .badge-category {
@@ -703,15 +722,15 @@
 .category-title {
     font-size: 16px;
     font-weight: 500;
-    color: #657786;
+    color: var(--primary-bg);
     margin-bottom: 15px;
     padding-bottom: 8px;
-    border-bottom: 1px solid #e1e8ed;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .badges-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: 15px;
 }
 
@@ -719,32 +738,30 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 12px;
+    padding: 15px 10px;
     background: white;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: all 0.2s ease;
     cursor: help;
 }
 
 .badge-item:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-color: var(--red-accent);
 }
 
 .badge-item i {
     font-size: 24px;
     margin-bottom: 8px;
-    background: linear-gradient(45deg, var(--red-accent), #ff6b6b);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--red-accent);
 }
 
 .badge-name {
     font-size: 12px;
     font-weight: 600;
-    color: #14171a;
+    color: var(--primary-bg);
     text-align: center;
     white-space: nowrap;
     overflow: hidden;
@@ -861,6 +878,11 @@
     box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
 }
 
+.position-badge.not-tipster {
+    background: #6c757d;
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+}
+
 .position-badge i {
     font-size: 1.1rem;
 }
@@ -889,7 +911,7 @@
 
 .earnings-amount {
     display: block;
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     font-weight: bold;
     color: #FFD700;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
@@ -1030,5 +1052,43 @@
         font-size: 1.2rem;
     }
 }
+
+/* Simple Leaderboard Rank Display */
+.leaderboard-rank-display {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 15px 0;
+    padding: 10px 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.rank-label {
+    font-size: 0.9rem;
+    color: var(--primary-bg);
+    font-weight: 500;
+}
+
+.rank-number {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--red-accent);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.top20-indicator {
+    background: var(--red-accent);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* End of file */
 
 

@@ -96,61 +96,14 @@
                             <span class="profile-win-rate"><i class="fas fa-trophy"></i> Win Rate: {{ win_rate|floatformat:1 }}%</span>
                             <span class="profile-following"><i class="fas fa-user-friends"></i> Following: {{ following_count }}</span>
                             <span class="profile-followers"><i class="fas fa-users"></i> Followers: {{ followers_count }}</span>
+                            <span class="profile-leaderboard-rank">
+                                <i class="fas fa-medal"></i> 
+                                Rank: #{{ leaderboard_rank|default:"--" }}
+                                {% if leaderboard_rank and leaderboard_rank <= 20 %}
+                                    <span class="top20-indicator">TOP 20</span>
+                                {% endif %}
+                            </span>
                         </div>
-                        
-                        <!-- Top Tipster Position Widget -->
-                        {% if user_profile.is_tipster %}
-                        <div class="top-tipster-position-widget">
-                            <h3 class="widget-title">🏆 Leaderboard Position</h3>
-                            {% if user_profile.is_top_tipster %}
-                                <div class="top-tipster-status top20">
-                                    <div class="position-badge">
-                                        <i class="fas fa-crown"></i>
-                                        <span>TOP 20</span>
-                                    </div>
-                                    <p class="position-info">
-                                        <strong>Congratulations!</strong> You're in the Top 20 and eligible for revenue sharing.
-                                    </p>
-                                    {% if user_profile.monthly_earnings > 0 %}
-                                    <div class="earnings-info">
-                                        <span class="earnings-label">This month's earnings:</span>
-                                        <span class="earnings-amount">€{{ user_profile.monthly_earnings }}</span>
-                                    </div>
-                                    {% endif %}
-                                    {% if user_profile.top_tipster_since %}
-                                    <div class="top-tipster-since">
-                                        <span class="since-label">Top Tipster since:</span>
-                                        <span class="since-date">{{ user_profile.top_tipster_since|date:"F j, Y" }}</span>
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            {% else %}
-                                <div class="top-tipster-status climbing">
-                                    <div class="position-badge climbing">
-                                        <i class="fas fa-chart-line"></i>
-                                        <span>CLIMBING</span>
-                                    </div>
-                                    <p class="position-info">
-                                        Keep posting quality tips to reach the Top 20 and earn revenue sharing!
-                                    </p>
-                                    <div class="stats-summary">
-                                        <div class="stat-item">
-                                            <span class="stat-label">Tips:</span>
-                                            <span class="stat-value">{{ user_profile.total_tips }}</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <span class="stat-label">Win Rate:</span>
-                                            <span class="stat-value">{{ user_profile.win_rate|floatformat:1 }}%</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endif %}
-                            <a href="{% url 'top_tipsters_leaderboard' %}" class="view-leaderboard-btn">
-                                <i class="fas fa-trophy"></i>
-                                View Full Leaderboard
-                            </a>
-                        </div>
-                        {% endif %}
                         
                         <!-- Achievement Badges Section -->
                         <div class="profile-badges">

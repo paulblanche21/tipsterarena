@@ -4,8 +4,10 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.http import JsonResponse, Http404
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, Avg
 from django.views import View
+from django.utils import timezone
+from datetime import timedelta
 import logging
 
 from ..models import UserProfile, Tip, Follow
@@ -87,6 +89,64 @@ class ProfileView(LoginRequiredMixin, View):
             total_views=Sum('premium_tip_views')
         )['total_views'] or 0
 
+        # Calculate leaderboard rank
+        leaderboard_rank = None
+        try:
+            # Get all users with minimum activity (similar to TopTipstersLeaderboardView)
+            all_users = User.objects.filter(
+                userprofile__is_tipster=True
+            ).prefetch_related('tip', 'followers', 'tip__likes', 'tip__comments', 'tip__shares')
+            
+            user_scores = []
+            for u in all_users:
+                tips = u.tip.all()
+                total_tips = tips.count()
+                
+                if total_tips < 5:  # Skip users with less than 5 tips
+                    continue
+                
+                # Calculate win/loss statistics
+                wins = tips.filter(status='win').count()
+                total_verified = tips.filter(status__in=['win', 'loss', 'dead_heat', 'void_non_runner']).count()
+                win_rate = (wins / total_verified * 100) if total_verified > 0 else 0
+                
+                # Get engagement statistics
+                total_likes = sum(tip.likes.count() for tip in tips)
+                total_comments = sum(tip.comments.count() for tip in tips)
+                total_shares = sum(tip.shares.count() for tip in tips)
+                engagement_score = (total_likes * 1) + (total_comments * 2) + (total_shares * 3)
+                
+                # Calculate consistency score (recent activity)
+                thirty_days_ago = timezone.now() - timedelta(days=30)
+                recent_tips = tips.filter(created_at__gte=thirty_days_ago).count()
+                consistency_score = min(recent_tips * 10, 100)
+                
+                # Calculate confidence score
+                confidence_tips = tips.exclude(confidence__isnull=True)
+                avg_confidence = confidence_tips.aggregate(Avg('confidence'))['confidence__avg'] or 0
+                confidence_score = (avg_confidence / 5) * 50
+                
+                # Calculate comprehensive score
+                base_score = win_rate * 2
+                volume_score = min(total_tips * 2, 100)
+                engagement_bonus = min(engagement_score / 10, 50)
+                total_score = base_score + volume_score + engagement_bonus + consistency_score + confidence_score
+                
+                user_scores.append((u, total_score))
+            
+            # Sort by total score (highest first)
+            user_scores.sort(key=lambda x: x[1], reverse=True)
+            
+            # Find user's rank
+            for rank, (u, score) in enumerate(user_scores, 1):
+                if u == user:
+                    leaderboard_rank = rank
+                    break
+                    
+        except Exception as e:
+            logger.error(f"Error calculating leaderboard rank for user {user.username}: {str(e)}")
+            leaderboard_rank = None
+
         context = {
             'user': user,
             'user_profile': user_profile,
@@ -102,6 +162,7 @@ class ProfileView(LoginRequiredMixin, View):
             'average_odds': average_odds,
             'premium_tips_count': premium_tips_count,
             'premium_tips_views': premium_tips_views,
+            'leaderboard_rank': leaderboard_rank,
         }
         return render(request, 'core/profile.html', context)
 
